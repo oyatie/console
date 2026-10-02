@@ -8695,3 +8695,230 @@ fn account_auth_database_is_optional_without_serving_account_auth() {
         }
     }
 }
+
+/// V18 owner regression: the Person who opened a request survives a later
+/// requester relink. Fixture SQL establishes identities; only the real owners
+/// open/decide approvals and change the requester's employee link.
+#[sqlx::test(migrations = false)]
+async fn approval_requester_person_is_pinned_before_real_identity_relink(pool: PgPool) {
+    use console_governance_adapter_postgres::{PgGovernanceError, PgGovernanceStore};
+    use console_governance_application::{
+        ApprovalDecision, CreateApprovalCommand, DecidePendingApprovalCommand,
+    };
+    use console_identity_adapter_postgres::PgOrgStore;
+    use console_identity_application::UpdateUserCommand;
+    use console_kernel_core::ErrorKind;
+    use console_platform_request_context::scope_org;
+    use console_platform_test_support::login_test_pool;
+
+    prepare_http_database(&pool).await;
+    let org = OrgId::knl();
+    let org_id = *org.as_uuid();
+    let (p1, p2, p3) = (Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4());
+    let (e1, e2, relink_employee, e3) = (
+        Uuid::new_v4(),
+        Uuid::new_v4(),
+        Uuid::new_v4(),
+        Uuid::new_v4(),
+    );
+    let (u1, u2, u3) = (UserId::new(), UserId::new(), UserId::new());
+    assert_ne!(u1, u2, "different Users must exercise the Person bar");
+    assert_ne!(p1, p2, "relink must change the current Person");
+    assert_ne!(p1, p3, "positive approver must be a distinct Person");
+    assert_ne!(
+        p2, p3,
+        "positive approver must remain distinct after relink"
+    );
+
+    for person in [p1, p2, p3] {
+        sqlx::query("INSERT INTO persons (id, org_id) VALUES ($1, $2)")
+            .bind(person)
+            .bind(org_id)
+            .execute(&pool)
+            .await
+            .unwrap();
+    }
+    let bindings = [(e1, p1), (e2, p1), (relink_employee, p2), (e3, p3)];
+    for (employee, _) in bindings {
+        sqlx::query(
+            "INSERT INTO employees (id, org_id, company, name, source_filename, source_sheet, source_row, source_key) \
+             VALUES ($1, $2, 'ACME', $1::text, 'fixture.xlsx', 'Sheet1', 1, $1::text)",
+        )
+        .bind(employee)
+        .bind(org_id)
+        .execute(&pool)
+        .await
+        .unwrap();
+    }
+    for (user, employee, name) in [(u1, e1, "U1"), (u2, e2, "U2"), (u3, e3, "U3")] {
+        sqlx::query(
+            "INSERT INTO users (id, org_id, display_name, employee_id, roles) \
+             VALUES ($1, $2, $3, $4, ARRAY['SUPER_ADMIN'])",
+        )
+        .bind(*user.as_uuid())
+        .bind(org_id)
+        .bind(name)
+        .bind(employee)
+        .execute(&pool)
+        .await
+        .unwrap();
+    }
+    for (employee, person) in bindings {
+        sqlx::query(
+            "INSERT INTO employee_person_bindings (org_id, employee_id, person_id, actor_id, payload_digest) \
+             VALUES ($1, $2, $3, $4, $5)",
+        )
+        .bind(org_id)
+        .bind(employee)
+        .bind(person)
+        .bind(*u3.as_uuid())
+        .bind([7_u8; 32].as_slice())
+        .execute(&pool)
+        .await
+        .unwrap();
+    }
+    for (user, person) in [(u1, p1), (u2, p1), (u3, p3)] {
+        let actual: Uuid = sqlx::query_scalar(
+            "SELECT b.person_id FROM users u JOIN employee_person_bindings b \
+             ON b.org_id = u.org_id AND b.employee_id = u.employee_id \
+             WHERE u.org_id = $1 AND u.id = $2",
+        )
+        .bind(org_id)
+        .bind(*user.as_uuid())
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(actual, person, "initial owner-visible Person prerequisite");
+    }
+
+    let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let governance = PgGovernanceStore::new(runtime.clone());
+    let identity = PgOrgStore::new(runtime);
+    let (control_ref, request_ref, target_ref) = (Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4());
+    for reference in [control_ref, request_ref] {
+        let opened = scope_org(
+            org,
+            governance.create_approval(CreateApprovalCommand {
+                requester: u1,
+                request_ref: reference,
+                kind: "company.revise".to_owned(),
+                target_ref: Some(target_ref),
+                payload_summary: json!({"case": "request-opening Person pin"}),
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+        .await
+        .expect("real governance owner opens the request while U1 belongs to P1");
+        assert_eq!(opened.requested_by, u1);
+        assert_eq!(opened.request_ref, reference);
+        let stored_target: Option<Uuid> = sqlx::query_scalar(
+            "SELECT target_ref FROM gov_approval_requests WHERE org_id = $1 AND request_ref = $2",
+        )
+        .bind(org_id)
+        .bind(reference)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(stored_target, Some(target_ref));
+    }
+    let decide = |approver, reference| {
+        scope_org(
+            org,
+            governance.decide_pending_approval(DecidePendingApprovalCommand {
+                approver,
+                request_ref: reference,
+                kind: "company.revise".to_owned(),
+                decision: ApprovalDecision::Approved,
+                trace: TraceContext::generate(),
+                occurred_at: OffsetDateTime::now_utc(),
+            }),
+        )
+    };
+    let control = decide(u3, control_ref)
+        .await
+        .expect("distinct U3/P3 approval must work before the denial oracle");
+    assert_eq!(control.approver_id, u3);
+    assert_eq!(control.decision, ApprovalDecision::Approved);
+
+    let updated = scope_org(
+        org,
+        identity.update_user(UpdateUserCommand {
+            actor: u3,
+            user_id: u1,
+            display_name: None,
+            employee_id: Some(Some(relink_employee)),
+            phone: None,
+            team: None,
+            roles: None,
+            branch_ids: None,
+            preview_receipt_id: None,
+            trace: TraceContext::generate(),
+            occurred_at: OffsetDateTime::now_utc(),
+        }),
+    )
+    .await
+    .expect("real identity owner must relink U1 without a role/scope change");
+    assert_eq!(updated.employee_id, Some(relink_employee));
+    let relinked_person: Uuid = sqlx::query_scalar(
+        "SELECT b.person_id FROM users u JOIN employee_person_bindings b \
+         ON b.org_id = u.org_id AND b.employee_id = u.employee_id \
+         WHERE u.org_id = $1 AND u.id = $2",
+    )
+    .bind(org_id)
+    .bind(*u1.as_uuid())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(relinked_person, p2, "actual persisted relink prerequisite");
+
+    let effect_sql = "SELECT \
+         (SELECT count(*) FROM gov_approvals WHERE org_id = $1 AND request_ref = $2), \
+         (SELECT count(*) FROM audit_events WHERE org_id = $1 AND action = 'governance.approval.decide' AND after_snap->>'request_ref' = $2::text), \
+         (SELECT count(*) FROM audit_events WHERE org_id = $1), \
+         (SELECT count(*) FROM gov_approval_consumptions WHERE org_id = $1)";
+    let before: (i64, i64, i64, i64) = sqlx::query_as(effect_sql)
+        .bind(org_id)
+        .bind(request_ref)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!((before.0, before.1, before.3), (0, 0, 0));
+    let refused = decide(u2, request_ref).await;
+    let after: (i64, i64, i64, i64) = sqlx::query_as(effect_sql)
+        .bind(org_id)
+        .bind(request_ref)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert!(
+        matches!(&refused, Err(PgGovernanceError::Domain(error)) if error.kind == ErrorKind::Forbidden),
+        "GOVERNANCE_REQUESTER_PERSON_PIN_RED: U2/P1 must not approve U1/P1's request after U1 relinks to P2; got {refused:?}"
+    );
+    assert_eq!(
+        after, before,
+        "denial must add zero decision/audit/consumption effects"
+    );
+    let allowed = decide(u3, request_ref)
+        .await
+        .expect("distinct U3/P3 can still decide the original pinned request after denial");
+    assert_eq!(allowed.approver_id, u3);
+    assert_eq!(allowed.requested_by, u1);
+    let stored_target: Option<Uuid> = sqlx::query_scalar(
+        "SELECT target_ref FROM gov_approvals WHERE org_id = $1 AND request_ref = $2",
+    )
+    .bind(org_id)
+    .bind(request_ref)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(stored_target, Some(target_ref));
+    assert_eq!(allowed.decision, ApprovalDecision::Approved);
+    let committed: (i64, i64, i64, i64) = sqlx::query_as(effect_sql)
+        .bind(org_id)
+        .bind(request_ref)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(committed, (1, 1, before.2 + 1, 0));
+}
