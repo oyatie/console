@@ -980,6 +980,41 @@ pub async fn submit_run_in_tx(
     if open > 0 {
         return Err(LifecycleError::ExceptionsOpen(open));
     }
+    // Compare identities at one run-wide revision in one statement snapshot.
+    // Matching counts or each line's latest row can hide a partial revision.
+    let roster_ready: bool = sqlx::query_scalar(
+        "WITH run_scope AS ( \
+           SELECT id, org_id FROM payroll_draft_runs WHERE id = $1 \
+         ), roster AS ( \
+           SELECT l.org_id, l.run_id, l.id, l.calculation_status, l.blockers \
+           FROM payroll_draft_lines l JOIN run_scope r \
+             ON r.org_id = l.org_id AND r.id = l.run_id \
+         ), latest_calculations AS ( \
+           SELECT c.org_id, c.run_id, c.line_id \
+           FROM payroll_line_calculations c JOIN run_scope r \
+             ON r.org_id = c.org_id AND r.id = c.run_id \
+           WHERE c.version = (SELECT MAX(v.version) FROM payroll_line_calculations v \
+                              WHERE v.org_id = r.org_id AND v.run_id = r.id) \
+         ) \
+         SELECT EXISTS (SELECT 1 FROM roster) \
+           AND NOT EXISTS (SELECT 1 FROM roster \
+                           WHERE calculation_status IS DISTINCT FROM 'READY_FOR_REVIEW' \
+                              OR blockers IS DISTINCT FROM '[]'::jsonb) \
+           AND NOT EXISTS (SELECT 1 FROM roster l WHERE NOT EXISTS ( \
+             SELECT 1 FROM latest_calculations c \
+             WHERE c.org_id = l.org_id AND c.run_id = l.run_id AND c.line_id = l.id)) \
+           AND NOT EXISTS (SELECT 1 FROM latest_calculations c WHERE NOT EXISTS ( \
+             SELECT 1 FROM roster l \
+             WHERE l.org_id = c.org_id AND l.run_id = c.run_id AND l.id = c.line_id))",
+    )
+    .bind(run_id)
+    .fetch_one(tx.as_mut())
+    .await?;
+    if !roster_ready {
+        return Err(LifecycleError::InvalidState(
+            "payroll roster is not fully calculated and ready for review".to_owned(),
+        ));
+    }
     sqlx::query(
         "UPDATE payroll_draft_runs \
          SET status = 'SUBMITTED', submitted_by = $2, submitted_at = now(), updated_at = now() \
