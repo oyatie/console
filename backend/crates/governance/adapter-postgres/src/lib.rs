@@ -1,6 +1,6 @@
 //! Postgres governance adapter.
 //!
-//! Every mutation flows through `with_audit` (mutation + audit row in one tx),
+//! Every mutation flows through an audited transaction (mutation + audit row),
 //! every read through `with_org_conn`, so `app.current_org` is armed before any
 //! statement and RLS scopes it to the tenant. All three tables run FORCE RLS;
 //! the two record tables are append-only (REVOKE UPDATE/DELETE).
@@ -8,9 +8,10 @@
 //! # Distinct-natural-person four-eyes (console-dgo.1)
 //!
 //! For kinds under `company.*` / `hr.*` / `payroll.*` only, open and decide
-//! resolve each party via `users.employee_id → employee_person_bindings →
-//! Person`. Unbound or non-person accounts fail closed; two accounts that map
-//! to the same `person_id` are denied even when `user_id` differs. Generic
+//! pin the requester Person at opening and the approver Person at decision via
+//! retained `users.employee_id → employee_person_bindings` row locks. Relinking
+//! the requester never changes that pin. Unbound parties and historical NULL
+//! pins fail closed; matching Person IDs are denied even for distinct Users. Generic
 //! kinds keep the account-level `approver_id <> requested_by` bar so NULL
 //! `users.employee_id` (migration 0076's normal admin-gated state) still works.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
@@ -27,7 +28,7 @@ use console_governance_domain::{
 };
 use console_kernel_core::{KernelError, UserId};
 use console_platform_authz::cedar_pbac::DecisionEffect;
-use console_platform_db::{DbError, with_audit, with_org_conn};
+use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_platform_request_context::current_org;
 use sqlx::{PgConnection, PgPool, Row};
 use time::OffsetDateTime;
@@ -211,40 +212,24 @@ impl PgGovernanceStore {
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
         let request_id = Uuid::new_v4();
-        let event = governance_audit_event(
-            "governance.approval.request",
-            command.requester,
-            "gov_approval_request",
-            request_id,
-            command.trace,
-            command.occurred_at,
-        )?
-        .with_org(org)
-        .with_snapshots(
-            None,
-            Some(serde_json::json!({
-                "request_ref": command.request_ref,
-                "kind": command.kind,
-            })),
-        );
-
-        with_audit::<_, ApprovalRequestSummary, PgGovernanceError>(&self.pool, event, |tx| {
+        with_audits::<_, ApprovalRequestSummary, PgGovernanceError>(&self.pool, org, |tx| {
             Box::pin(async move {
-                // Company/HR/Payroll opens fail closed when the requester cannot
-                // be resolved to a natural person. Generic kinds skip this so
-                // NULL employee_id accounts keep working.
-                require_natural_person_bound_conn(
-                    tx.as_mut(),
-                    command.kind.trim(),
-                    command.requester,
-                    "requester",
-                )
-                .await?;
+                approval_reference_lock_conn(tx.as_mut(), org_uuid, command.request_ref).await?;
+                let requester_person = if requires_natural_person_four_eyes(command.kind.trim()) {
+                    Some(require_natural_person_bound_conn(
+                        tx.as_mut(),
+                        org_uuid,
+                        command.requester,
+                        "requester",
+                    ).await?)
+                } else {
+                    None
+                };
                 sqlx::query(
                     r#"
                     INSERT INTO gov_approval_requests
-                        (id, org_id, request_ref, kind, requested_by, target_ref, payload_summary, created_at)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        (id, org_id, request_ref, kind, requested_by, target_ref, payload_summary, created_at, requester_person_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                     "#,
                 )
                 .bind(request_id)
@@ -255,9 +240,28 @@ impl PgGovernanceStore {
                 .bind(command.target_ref)
                 .bind(&command.payload_summary)
                 .bind(command.occurred_at)
+                .bind(requester_person)
                 .execute(tx.as_mut())
                 .await?;
-                approval_request_row_conn(tx.as_mut(), request_id).await
+                let result = approval_request_row_conn(tx.as_mut(), request_id).await?;
+                let mut snapshot = serde_json::json!({
+                    "request_ref": command.request_ref,
+                    "kind": result.kind,
+                });
+                if let Some(person) = requester_person {
+                    snapshot["requester_person_id"] = serde_json::json!(person);
+                }
+                let event = governance_audit_event(
+                    "governance.approval.request",
+                    command.requester,
+                    "gov_approval_request",
+                    request_id,
+                    command.trace,
+                    command.occurred_at,
+                )?
+                .with_org(org)
+                .with_snapshots(None, Some(snapshot));
+                Ok((result, vec![event]))
             })
         })
         .await
@@ -403,26 +407,9 @@ impl PgGovernanceStore {
         let org = current_org().map_err(KernelError::from)?;
         let org_uuid = *org.as_uuid();
         let approval_id = Uuid::new_v4();
-        let event = governance_audit_event(
-            "governance.approval.decide",
-            command.approver,
-            "gov_approval",
-            approval_id,
-            command.trace,
-            command.occurred_at,
-        )?
-        .with_org(org)
-        .with_snapshots(
-            None,
-            Some(serde_json::json!({
-                "request_ref": command.request_ref,
-                "kind": command.kind,
-                "decision": command.decision.as_db_str(),
-            })),
-        );
-
-        with_audit::<_, ApprovalSummary, PgGovernanceError>(&self.pool, event, |tx| {
+        with_audits::<_, ApprovalSummary, PgGovernanceError>(&self.pool, org, |tx| {
             Box::pin(async move {
+                approval_reference_lock_conn(tx.as_mut(), org_uuid, command.request_ref).await?;
                 // If a pending request exists for this ref, IT is authoritative for
                 // every field a §16 gate later matches on — never the
                 // client-supplied values — so an approver can neither spoof the
@@ -430,7 +417,7 @@ impl PgGovernanceStore {
                 // binding target, nor swap the kind to open a gate that was never
                 // requested. Read it in THIS tx (RLS-armed, TOCTOU-safe).
                 let pending =
-                    pending_request_binding_conn(tx.as_mut(), command.request_ref).await?;
+                    pending_request_binding_conn(tx.as_mut(), org_uuid, command.request_ref).await?;
                 let requires_open_request = match contract {
                     DecisionContract::Hardened => true,
                     DecisionContract::DeprecatedCompat => false,
@@ -452,10 +439,8 @@ impl PgGovernanceStore {
                     Some(pending) => pending.target_ref,
                     None => command.target_ref,
                 };
-                // `kind` is rejected on mismatch rather than silently overridden:
-                // the audit event's payload was snapshotted from the command before
-                // this closure runs, so overriding would leave the audit row and the
-                // approval row disagreeing about which gate was opened.
+                // The pending row binds the exact gate; never let a decision
+                // silently change which kind the requester opened.
                 if let Some(pending) = pending.as_ref()
                     && pending.kind != command.kind.trim()
                 {
@@ -474,21 +459,20 @@ impl PgGovernanceStore {
                     )
                     .into());
                 }
-                // Company/HR/Payroll: distinct *natural persons*, not merely
-                // distinct accounts. Same Person under two capacities is denied;
-                // unbound/service (non-person) parties fail closed.
-                enforce_natural_person_four_eyes_conn(
+                let requester_person = pending.as_ref().and_then(|p| p.requester_person_id);
+                let approver_person = enforce_pinned_natural_person_four_eyes_conn(
                     tx.as_mut(),
+                    org_uuid,
                     command.kind.trim(),
-                    requested_by,
+                    requester_person,
                     command.approver,
                 )
                 .await?;
                 sqlx::query(
                     r#"
                     INSERT INTO gov_approvals
-                        (id, org_id, request_ref, kind, requested_by, approver_id, target_ref, decision, decided_at)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                        (id, org_id, request_ref, kind, requested_by, approver_id, target_ref, decision, decided_at, approver_person_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                     "#,
                 )
                 .bind(approval_id)
@@ -500,9 +484,30 @@ impl PgGovernanceStore {
                 .bind(target_ref)
                 .bind(command.decision.as_db_str())
                 .bind(command.occurred_at)
+                .bind(approver_person)
                 .execute(tx.as_mut())
                 .await?;
-                approval_row_conn(tx.as_mut(), approval_id).await
+                let result = approval_row_conn(tx.as_mut(), approval_id).await?;
+                let mut snapshot = serde_json::json!({
+                    "request_ref": command.request_ref,
+                    "kind": result.kind,
+                    "decision": result.decision.as_db_str(),
+                });
+                if let Some(person) = approver_person {
+                    snapshot["requester_person_id"] = serde_json::json!(requester_person);
+                    snapshot["approver_person_id"] = serde_json::json!(person);
+                }
+                let event = governance_audit_event(
+                    "governance.approval.decide",
+                    command.approver,
+                    "gov_approval",
+                    approval_id,
+                    command.trace,
+                    command.occurred_at,
+                )?
+                .with_org(org)
+                .with_snapshots(None, Some(snapshot));
+                Ok((result, vec![event]))
             })
         })
         .await
@@ -800,104 +805,120 @@ async fn approval_request_row_conn(
 /// chooses which gate their decision opens.
 struct PendingRequestBinding {
     requested_by: UserId,
+    requester_person_id: Option<Uuid>,
     kind: String,
     target_ref: Option<Uuid>,
 }
 
 async fn pending_request_binding_conn(
     conn: &mut PgConnection,
+    org: Uuid,
     request_ref: Uuid,
 ) -> Result<Option<PendingRequestBinding>, PgGovernanceError> {
     let row = sqlx::query(
-        "SELECT requested_by, kind, target_ref FROM gov_approval_requests WHERE request_ref = $1",
+        "SELECT requested_by, requester_person_id, kind, target_ref FROM gov_approval_requests WHERE org_id = $1 AND request_ref = $2",
     )
+    .bind(org)
     .bind(request_ref)
     .fetch_optional(conn)
     .await?;
     Ok(row.map(|row| PendingRequestBinding {
         requested_by: UserId::from_uuid(row.get("requested_by")),
+        requester_person_id: row.get("requester_person_id"),
         kind: row.get("kind"),
         target_ref: row.get("target_ref"),
     }))
 }
 
-/// Resolve a platform account to its bound natural `person_id`, or `None` when
-/// the account has no `users.employee_id`, no binding row, or is otherwise not a
-/// natural person (service / unbound). RLS-scoped by the armed org.
+/// Serialize canonical writers of one approval reference before any mutable
+/// identity lookup. Future database guards must use this exact key derivation.
+async fn approval_reference_lock_conn(
+    conn: &mut PgConnection,
+    org: Uuid,
+    request_ref: Uuid,
+) -> Result<(), PgGovernanceError> {
+    let isolation: String = sqlx::query_scalar("SELECT current_setting('transaction_isolation')")
+        .fetch_one(&mut *conn)
+        .await?;
+    if isolation != "read committed" {
+        return Err(KernelError::conflict("approval writes require READ COMMITTED").into());
+    }
+    sqlx::query(
+        "SELECT pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('governance.approval:' || $1::uuid::text || ':' || $2::uuid::text, 0))",
+    )
+    .bind(org)
+    .bind(request_ref)
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
+/// Retain both mutable linkage rows until the audited transaction commits.
+/// Lock User first; binding deletion/reinsertion cannot replace the observed pin.
 async fn natural_person_id_conn(
     conn: &mut PgConnection,
+    org: Uuid,
     user_id: Uuid,
 ) -> Result<Option<Uuid>, PgGovernanceError> {
-    let person_id: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        SELECT b.person_id
-        FROM users u
-        INNER JOIN employee_person_bindings b
-            ON b.org_id = u.org_id
-           AND b.employee_id = u.employee_id
-        WHERE u.id = $1
-          AND u.employee_id IS NOT NULL
-        "#,
+    let employee: Option<Option<Uuid>> =
+        sqlx::query_scalar("SELECT employee_id FROM users WHERE org_id = $1 AND id = $2 FOR SHARE")
+            .bind(org)
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(Some(employee)) = employee else {
+        return Ok(None);
+    };
+    let person = sqlx::query_scalar(
+        "SELECT person_id FROM employee_person_bindings WHERE org_id = $1 AND employee_id = $2 FOR SHARE",
     )
-    .bind(user_id)
+    .bind(org)
+    .bind(employee)
     .fetch_optional(conn)
     .await?;
-    Ok(person_id)
+    Ok(person)
 }
 
-/// For Company/HR/Payroll kinds, the named party must resolve to a Person.
-/// No-op for every other kind (generic four-eyes path).
 async fn require_natural_person_bound_conn(
     conn: &mut PgConnection,
-    kind: &str,
+    org: Uuid,
     user: UserId,
     role: &str,
-) -> Result<(), PgGovernanceError> {
-    if !requires_natural_person_four_eyes(kind) {
-        return Ok(());
-    }
-    match natural_person_id_conn(conn, *user.as_uuid()).await? {
-        Some(_) => Ok(()),
-        None => Err(KernelError::forbidden(format!(
-            "natural-person four-eyes: {role} is unbound or not a natural person"
-        ))
-        .into()),
-    }
+) -> Result<Uuid, PgGovernanceError> {
+    natural_person_id_conn(conn, org, *user.as_uuid())
+        .await?
+        .ok_or_else(|| {
+            KernelError::forbidden(format!(
+                "natural-person four-eyes: {role} is unbound or not a natural person"
+            ))
+            .into()
+        })
 }
 
-/// Deny same-Person (different capacity) and fail closed on unbound parties for
-/// Company/HR/Payroll kinds. Account-level self-approval is already rejected
-/// before this runs; this layer catches two user_ids that share one Person.
-async fn enforce_natural_person_four_eyes_conn(
+/// The requester identity is immutable request-opening evidence, never a later
+/// User linkage. Generic kinds retain their existing User-level contract.
+async fn enforce_pinned_natural_person_four_eyes_conn(
     conn: &mut PgConnection,
+    org: Uuid,
     kind: &str,
-    requester: UserId,
+    requester_person: Option<Uuid>,
     approver: UserId,
-) -> Result<(), PgGovernanceError> {
+) -> Result<Option<Uuid>, PgGovernanceError> {
     if !requires_natural_person_four_eyes(kind) {
-        return Ok(());
+        return Ok(None);
     }
-    let requester_person = natural_person_id_conn(conn, *requester.as_uuid())
-        .await?
-        .ok_or_else(|| {
-            KernelError::forbidden(
-                "natural-person four-eyes: requester is unbound or not a natural person",
-            )
-        })?;
-    let approver_person = natural_person_id_conn(conn, *approver.as_uuid())
-        .await?
-        .ok_or_else(|| {
-            KernelError::forbidden(
-                "natural-person four-eyes: approver is unbound or not a natural person",
-            )
-        })?;
+    let requester_person = requester_person.ok_or_else(|| {
+        KernelError::forbidden("natural-person four-eyes: request has no pinned requester Person")
+    })?;
+    let approver_person =
+        require_natural_person_bound_conn(conn, org, approver, "approver").await?;
     if requester_person == approver_person {
         return Err(KernelError::forbidden(
             "natural-person four-eyes: approver and requester resolve to the same Person",
         )
         .into());
     }
-    Ok(())
+    Ok(Some(approver_person))
 }
 
 async fn approval_row_conn(

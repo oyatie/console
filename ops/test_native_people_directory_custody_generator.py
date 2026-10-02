@@ -67,11 +67,39 @@ class NativeDirectoryCaptureGeneration(unittest.TestCase):
 DIRECTORY_ROW_LOCK_PREDECESSOR_OUTPUTS = {'backend/app/src/account_custody_state.sql': '5fb0a2608c5904fe0c1d58723290b9603afb9af08eef19c410d023a484230865', 'ops/postgres-finalize-account-custody.sql': 'fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8', 'ops/account-custody-migrations.sha384': '25e02488cdaf864f6d15ee21d62df98eb263bb82de1e2a283470ca659d160325', 'ops/postgres-verify-account-native.sql': 'c4e30ee9560b4d443acad1813a63667cbab9a32aadfbd893542f4b054bf6b308', 'ops/postgres-company-enrollment-input.sql': 'cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290', 'ops/postgres-company-enrollment-schema.sql': '7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb', 'ops/postgres-company-enrollment-intake.sql': '2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532', 'ops/postgres-company-enrollment-guards.sql': 'e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a', 'ops/postgres-company-enrollment-owner.sql': '2a7fffb57eedff3c3ba5981015e22f53ea80972e3222c38ff1c6ace1f0858d2d', 'ops/postgres-capture-company-enrollment-custody.sql': '6ef7b2754176952da89a0b61a7ba999d64b4c12e70fc949add18c63171b0abb5', 'backend/app/src/company_enrollment_custody_state.sql': 'fb2030a4d2891b206c41454ce8258d65920034e8ef817c5f7a812569aae614bd', 'ops/postgres-finalize-company-enrollment.sql': 'bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f', 'backend/app/src/account_credential_custody_state.sql': '0bc6fe6579414ebed546d076c0ec1b7f1cc5ba30f4fe5e135159f4e75c0416a2', 'ops/postgres-finalize-account-credentials.sql': '2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9', 'ops/postgres-native-company-policy-owner.sql': '833300caeac6874f35ebb08017bfbb7891a5fe765a4c761b139466ae221573d5', 'ops/postgres-capture-native-company-policy-custody.sql': 'd5d2c45c691383ddde9ac213d9fe2674db0750f3ceabdc733eaaf2a570d937e3', 'ops/postgres-native-company-policy-custody-state.sql': '072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479', 'backend/app/src/native_company_policy_custody_state.sql': '072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479', 'ops/postgres-finalize-native-company-policy.sql': '4e7fc41b1d2ed6c2155d44d43347c18815ed9e70611eb9285f21e1c590bf996a', 'ops/postgres-native-company-policy-v2-owner.sql': 'f2050f21ef8151339289b2f013abdd543e90f8803fb6f6d4b9f004abf4409602', 'ops/postgres-capture-native-company-policy-v2-custody.sql': '7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4', 'ops/postgres-native-company-policy-v2-custody-state.sql': 'e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc', 'backend/app/src/native_company_policy_v2_custody_state.sql': 'e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc', 'ops/postgres-finalize-native-company-policy-v2.sql': 'ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e', 'ops/postgres-native-people-directory-owner.sql': '3dd0524bc751eba2aa806ee0dc670dc3cecbf8838c20b83896773a0c5b6016a0', 'ops/postgres-capture-native-people-directory-custody.sql': 'bc8a1f87f57cd676ca1a3deae12263b1cca4a290c71a12e9a1749d189e090ca7', 'ops/postgres-capture-native-people-directory-staged-custody.sql': '890ebc034fe9836f45e26c13d05352085db753f17e4a72b1ec05b6ecbe0a0e36', 'ops/postgres-native-people-directory-custody-state.sql': '20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd', 'backend/app/src/native_people_directory_custody_state.sql': '20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd', 'ops/postgres-finalize-native-people-directory.sql': 'f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357'}
 
 class NativeDirectoryRowLockGeneration(unittest.TestCase):
+    def test_corrupted_predecessor_and_current_ledgers_are_refused(self):
+        outputs = GENERATOR.generated_files()
+        name = 'ops/account-custody-migrations.sha384'
+        records = outputs[name].splitlines(keepends=True)
+        corrupted = [
+            '9' + outputs[name][1:],  # Changed historical version bytes.
+            ''.join(records[:-1]) + records[-1].replace('231\t', '232\t', 1),
+            ''.join(records[:-1]) + records[-1].replace('\t', '\t0', 1),
+            ''.join(records[:-1]),  # Missing current expansion.
+            outputs[name] + records[-1],  # Unreviewed extra record.
+        ]
+        for ledger in corrupted:
+            with self.subTest(ledger_sha256=hashlib.sha256(ledger.encode()).hexdigest()):
+                with patch.object(GENERATOR, 'generated_files', return_value={**outputs, name: ledger}):
+                    with self.assertRaises(AssertionError):
+                        self.test_all_thirty_predecessor_outputs_and_embedded_finalizer_remain_exact()
+
     def test_all_thirty_predecessor_outputs_and_embedded_finalizer_remain_exact(self):
         outputs = GENERATOR.generated_files()
         self.assertEqual(len(DIRECTORY_ROW_LOCK_PREDECESSOR_OUTPUTS), 30)
         for name, expected in DIRECTORY_ROW_LOCK_PREDECESSOR_OUTPUTS.items():
-            self.assertEqual(hashlib.sha256(outputs[name].encode()).hexdigest(), expected, name)
+            content = outputs[name].encode()
+            if name == 'ops/account-custody-migrations.sha384':
+                records = content.splitlines(keepends=True)
+                self.assertEqual(len(records), 231, 'exact reviewed migration roster')
+                # The original independent digest continues to attest every
+                # predecessor byte; the current expansion has its own exact pin.
+                self.assertEqual(hashlib.sha256(b''.join(records[:230])).hexdigest(), expected, name)
+                self.assertEqual(hashlib.sha256(content).hexdigest(),
+                                 '42079d3f1b8077e163960adc65f35f1959c22a67bf42acf43d6b816721ba1357',
+                                 'reviewed 231-migration ledger drift')
+            else:
+                self.assertEqual(hashlib.sha256(content).hexdigest(), expected, name)
         self.assertEqual(set(outputs) - set(DIRECTORY_ROW_LOCK_PREDECESSOR_OUTPUTS), {
             'ops/postgres-native-people-directory-row-lock-custody-state.sql',
             'backend/app/src/native_people_directory_row_lock_custody_state.sql',

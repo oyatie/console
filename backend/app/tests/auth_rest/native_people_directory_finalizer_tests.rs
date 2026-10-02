@@ -43,9 +43,18 @@ pub(super) mod native_people_directory_finalizer_tests {
         sqlx::migrate!("../crates/platform/db/migrations");
     const APPLIED_LEDGER: &str = include_str!("../../../../ops/account-custody-migrations.sha384");
     async fn assert_actual_applied_ledger(pool: &PgPool) {
+        let ledger_records: Vec<_> = APPLIED_LEDGER.split_inclusive('\n').collect();
+        assert_eq!(ledger_records.len(), 231, "exact reviewed migration roster");
+        // Preserve the independently reviewed predecessor, including all bytes
+        // and record boundaries, while separately admitting the exact expansion.
+        assert_eq!(
+            hex::encode(Sha256::digest(ledger_records[..230].concat().as_bytes())),
+            "25e02488cdaf864f6d15ee21d62df98eb263bb82de1e2a283470ca659d160325",
+            "historical 230-migration ledger drift"
+        );
         assert_eq!(
             hex::encode(Sha256::digest(APPLIED_LEDGER.as_bytes())),
-            "25e02488cdaf864f6d15ee21d62df98eb263bb82de1e2a283470ca659d160325",
+            "42079d3f1b8077e163960adc65f35f1959c22a67bf42acf43d6b816721ba1357",
             "reviewed packaged migration ledger drift"
         );
         let expected: Vec<(i64, bool, Vec<u8>)> = APPLIED_LEDGER
@@ -60,7 +69,7 @@ pub(super) mod native_people_directory_finalizer_tests {
                 (version, true, checksum)
             })
             .collect();
-        assert_eq!(expected.len(), 230);
+        assert_eq!(expected.len(), 231);
         assert_eq!(CURRENT_MIGRATOR.iter().count(), expected.len());
         for (migration, wanted) in CURRENT_MIGRATOR.iter().zip(&expected) {
             assert_eq!(migration.version, wanted.0);
@@ -89,7 +98,7 @@ pub(super) mod native_people_directory_finalizer_tests {
         .unwrap();
         assert_eq!(
             actual, expected,
-            "actual full1..230 migration ledger prerequisite"
+            "actual full1..231 migration ledger prerequisite"
         );
         tx.rollback().await.unwrap();
     }
