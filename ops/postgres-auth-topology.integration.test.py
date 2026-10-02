@@ -284,6 +284,65 @@ def main():
             ('startup_late_refusal_atomicity', startup_late_refusal),
         ])
 
+        # Native custody captures the schema owner and every ACL grantor. Exercise
+        # the shared operator writer, rather than repairing only a SQLx fixture.
+        def public_metadata():
+            return sql("SELECT jsonb_build_object('database_owner',pg_get_userbyid(d.datdba),'schema_owner',pg_get_userbyid(n.nspowner),'namespace',to_jsonb(n),'default_acl',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY a.oid),'[]'::jsonb) FROM pg_default_acl a)) FROM pg_namespace n CROSS JOIN pg_database d WHERE n.nspname='public' AND d.datname=current_database();")
+
+        def native_public_owner():
+            require(topology(auth_password, startup=startup_password).returncode == 0, 'native public topology invocation failed')
+            metadata = json.loads(public_metadata())
+            require(metadata['database_owner'] == 'console_app', 'native database owner differs')
+            require(metadata['schema_owner'] in ['console_app', 'pg_database_owner'], 'unexpected native public schema owner')
+            require(metadata['schema_owner'] == 'pg_database_owner', 'topology.public_schema_native_owner: actual console_app; required pg_database_owner')
+            require(sql("SELECT count(*) FROM pg_auth_members WHERE roleid='pg_database_owner'::regrole OR member='pg_database_owner'::regrole;") == '0', 'builtin owner has explicit membership')
+
+        def native_public_login_rights():
+            owner = login('console_app', passwords['CONSOLE_APP_POSTGRES_PASSWORD'], "SELECT session_user,current_user,pg_has_role(session_user,'pg_database_owner','MEMBER'),has_schema_privilege(session_user,'public','USAGE'),has_schema_privilege(session_user,'public','CREATE');")
+            require(owner.returncode == 0 and owner.stdout.strip() == 'console_app|console_app|t|t|t', 'native owner actual LOGIN rights differ')
+            for role, key in [('console_rt', 'CONSOLE_RT_POSTGRES_PASSWORD'), ('console_leave_cmd', 'CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD'), ('console_ontology_cmd', 'CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD'), ('console_platform_force_cmd', 'CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD'), ('console_auth_rt', 'CONSOLE_AUTH_POSTGRES_PASSWORD'), ('console_auth_startup', 'CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD')]:
+                rights = login(role, passwords[key], "SELECT session_user,current_user,pg_has_role(session_user,'pg_database_owner','MEMBER'),has_schema_privilege(session_user,'public','CREATE');")
+                require(rights.returncode == 0 and rights.stdout.strip() == role + '|' + role + '|f|f', 'nonowner actual LOGIN acquired schema authority')
+                refused = login(role, passwords[key], 'CREATE TABLE public.native_topology_unauthorized (id integer);')
+                require(refused.returncode != 0 and 'permission denied for schema public' in refused.stderr, 'nonowner actual CREATE was not denied at schema boundary')
+            require(sql("SELECT to_regclass('public.native_topology_unauthorized') IS NULL;") == 't', 'denied CREATE left an object')
+
+        def native_public_repeat():
+            before = public_metadata()
+            require(topology(auth_password, startup=startup_password).returncode == 0, 'native public repeat failed')
+            require(public_metadata() == before, 'native public repeat changed raw namespace/default ACL')
+
+        def native_public_other_database():
+            sql('CREATE DATABASE native_public_other_owner;')
+            try:
+                rights = login('console_app', passwords['CONSOLE_APP_POSTGRES_PASSWORD'], "SELECT session_user,current_user,pg_has_role(session_user,'pg_database_owner','MEMBER'),has_schema_privilege(session_user,'public','CREATE');", database='native_public_other_owner')
+                require(rights.returncode == 0 and rights.stdout.strip() == 'console_app|console_app|f|f', 'native owner gained another database owner authority')
+                refused = login('console_app', passwords['CONSOLE_APP_POSTGRES_PASSWORD'], 'CREATE TABLE public.native_topology_unauthorized (id integer);', database='native_public_other_owner')
+                require(refused.returncode != 0 and 'permission denied for schema public' in refused.stderr, 'other database actual CREATE was not denied')
+                require(sql("SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname='native_public_other_owner';") == 'operator', 'other database owner changed')
+            finally:
+                sql('DROP DATABASE native_public_other_owner WITH (FORCE);')
+
+        def native_public_transition_refusal():
+            # Inject catalog drift only in this owned topology fixture. The late
+            # census must roll back the proposed schema-owner transition too.
+            sql('ALTER SCHEMA public OWNER TO console_app;')
+            try:
+                before = snapshot()
+                refused = topology(auth_password, startup=startup_password, require_canonical=True)
+                require(refused.returncode != 0 and 'ERROR:  topology.canonical_enforcement_examined_no_tables:' in refused.stderr, 'native owner transition did not reach late canonical census refusal')
+                require(snapshot() == before, 'native owner transition refusal changed raw roles/namespaces/default ACL')
+            finally:
+                sql('ALTER SCHEMA public OWNER TO pg_database_owner;')
+
+        cases.extend([
+            ('native_public_schema_owner_matches_frozen_custody', native_public_owner),
+            ('native_public_actual_owner_and_nonowner_login_rights', native_public_login_rights),
+            ('native_public_reconcile_is_metadata_idempotent', native_public_repeat),
+            ('native_public_owner_is_database_local', native_public_other_database),
+            ('native_public_owner_transition_late_refusal_atomicity', native_public_transition_refusal),
+        ])
+
         report['discovered'] = len(cases)
         try:
             cached = run('docker', 'image', 'inspect', '--format', '{{.Id}}', IMAGE)

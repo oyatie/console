@@ -690,4 +690,49 @@ for secret in \
   fi
 done
 
-echo "topology-test: fresh, idempotent, drift, secret-log, absent/canonical conversion, and preflight-rejection ACL checks passed"
+# Additive legacy controls: neither existing legacy fixture changes. Exercise
+# public's explicit old owner through the real guarded conversion, with both
+# absent and canonical migration-owned default privileges.
+for legacy_defaults in absent canonical; do
+  legacy_public_sql="ALTER SCHEMA public OWNER TO console_app"
+  if [[ "${legacy_defaults}" == canonical ]]; then
+    legacy_public_sql+="; CREATE ROLE console_rt NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT; ALTER DEFAULT PRIVILEGES FOR ROLE console_app IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO console_rt"
+  fi
+  prepare_legacy_volume "${legacy_public_sql}"
+  compose run --rm postgres-topology
+  unset CONSOLE_ALLOW_LEGACY_CONSOLE_APP_SUPERUSER_CONVERSION
+  legacy_public_identity="$(docker exec "${legacy_container}" psql -U console_cluster_admin -d "${CONSOLE_POSTGRES_DB}" -At -F '|' -c \
+    "SELECT pg_get_userbyid(d.datdba),pg_get_userbyid(n.nspowner),has_schema_privilege('console_app','public','CREATE'),has_schema_privilege('console_rt','public','CREATE'),pg_has_role('console_app','pg_database_owner','MEMBER'),(SELECT tableowner FROM pg_tables WHERE schemaname='public' AND tablename='legacy_owned_marker') FROM pg_namespace n CROSS JOIN pg_database d WHERE n.nspname='public' AND d.datname=current_database()")"
+  test "${legacy_public_identity}" = 'console_app|pg_database_owner|t|f|t|console_app'
+  legacy_public_snapshot_sql="SELECT jsonb_build_object('namespace',to_jsonb(n),'default_acl',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY a.oid),'[]'::jsonb) FROM pg_default_acl a)) FROM pg_namespace n WHERE n.nspname='public'"
+  legacy_public_before="$(docker exec "${legacy_container}" psql -U console_cluster_admin -d "${CONSOLE_POSTGRES_DB}" -Atqc "${legacy_public_snapshot_sql}")"
+  compose run --rm postgres-topology
+  legacy_public_after="$(docker exec "${legacy_container}" psql -U console_cluster_admin -d "${CONSOLE_POSTGRES_DB}" -Atqc "${legacy_public_snapshot_sql}")"
+  test "${legacy_public_before}" = "${legacy_public_after}"
+  legacy_public_defaults="$(docker exec "${legacy_container}" psql -U console_cluster_admin -d "${CONSOLE_POSTGRES_DB}" -Atqc \
+    "SELECT count(*) FROM pg_default_acl d CROSS JOIN LATERAL aclexplode(d.defaclacl) a WHERE d.defaclrole='console_app'::regrole AND a.grantee='console_rt'::regrole")"
+  if [[ "${legacy_defaults}" == canonical ]]; then
+    test "${legacy_public_defaults}" = 4
+  else
+    test "${legacy_public_defaults}" = 0
+  fi
+  docker exec -e PGPASSWORD="${CONSOLE_APP_POSTGRES_PASSWORD}" "${legacy_container}" \
+    psql -h 127.0.0.1 -U console_app -d "${CONSOLE_POSTGRES_DB}" -v ON_ERROR_STOP=1 -qc \
+    "CREATE TABLE public.post_conversion_native_public_acl (id bigint PRIMARY KEY)"
+  legacy_public_dml="$(docker exec "${legacy_container}" psql -U console_cluster_admin -d "${CONSOLE_POSTGRES_DB}" -At -F '|' -c \
+    "SELECT has_table_privilege('console_rt','public.post_conversion_native_public_acl','SELECT'),has_table_privilege('console_rt','public.post_conversion_native_public_acl','INSERT'),has_table_privilege('console_rt','public.post_conversion_native_public_acl','UPDATE'),has_table_privilege('console_rt','public.post_conversion_native_public_acl','DELETE'),has_table_privilege('console_rt','public.post_conversion_native_public_acl','TRUNCATE'),has_table_privilege('console_rt','public.post_conversion_native_public_acl','REFERENCES'),has_table_privilege('console_rt','public.post_conversion_native_public_acl','TRIGGER')")"
+  if [[ "${legacy_defaults}" == canonical ]]; then
+    test "${legacy_public_dml}" = 't|t|t|t|f|f|f'
+  else
+    test "${legacy_public_dml}" = 'f|f|f|f|f|f|f'
+  fi
+  legacy_public_logs="$(compose logs --no-color postgres 2>&1)"
+  for secret in "${CONSOLE_POSTGRES_ADMIN_PASSWORD}" "${CONSOLE_APP_POSTGRES_PASSWORD}" "${CONSOLE_RT_POSTGRES_PASSWORD}" "${CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD}" "${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD}" "${CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD}"; do
+    if grep -Fq "${secret}" <<<"${legacy_public_logs}"; then
+      echo "topology-test: legacy public conversion leaked a database password" >&2
+      exit 1
+    fi
+  done
+done
+
+echo "topology-test: fresh, idempotent, drift, secret-log, absent/canonical conversion, public owner, and preflight-rejection ACL checks passed"
