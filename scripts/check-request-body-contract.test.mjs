@@ -2425,6 +2425,43 @@ describe("native Company raw-byte request contracts", () => {
     }), (root) => assertSourceRefused(root, [enroll, cancel]));
   });
 
+  it("refuses ambiguous duplicate canonical router declarations", () => {
+    withMutation((edit) => edit(rest, (source) => {
+      const start = source.indexOf("pub fn router<S>");
+      const end = source.indexOf("\nfn private(", start);
+      assert.ok(start >= 0 && end > start, "canonical Company router fixture no longer matches");
+      const original = source.slice(start, end);
+      assert.equal(source.split("pub fn router<S>").length, 2, "exactly one canonical router must precede duplication");
+      return `${source}\n${original}\n`;
+    }), (root) => assertSourceRefused(root, [enroll, cancel]));
+  });
+
+  for (const [operation, path] of [
+    [enroll, "/api/v2/companies/enroll"],
+    [cancel, "/api/v2/companies/enrollments/{command_id}/cancel"],
+  ]) {
+    for (const [name, transform] of [
+      ["requestBody", (document) => { deleteOwned(document.paths[path].post, "requestBody"); }],
+      ["whole operation", (document) => { deleteOwned(document.paths[path], "post"); }],
+    ]) {
+      it(`keeps ${operation} in the source-first census after router drift and ${name} deletion`, () => {
+        withMutation((edit) => {
+          // Valid Rust trivia changes the pinned declaration while retaining
+          // both real named router registrations. An uncertain descriptor must
+          // not erase either known raw-byte source from the contract census.
+          edit(rest, (source) => replaceOnce(source, "pub fn router<S>",
+            "pub fn router<S> /* reviewed router declaration drift */"));
+          changeDocument(edit, transform);
+        }, (root) => {
+          assertSourceRefused(root, [enroll, cancel]);
+          const report = evaluateRequestBodyContract({ repoRoot: root });
+          const missing = companyUndecidables(report).find((entry) => entry.operation === operation);
+          assert.equal(missing?.reason, "no_openapi_request_body");
+        });
+      });
+    }
+  }
+
   it("refuses ambiguous duplicate enrollment handler declarations", () => {
     withMutation((edit) => edit(rest, (source) => `${source}\nasync fn enroll<S>() {}\n`),
       (root) => assertSourceRefused(root, [enroll]));
@@ -2461,6 +2498,12 @@ describe("native Company raw-byte request contracts", () => {
     });
   }
 
+  it("refuses a conditional owner UUID import for both raw-body operations", () => {
+    withMutation((edit) => edit(owner, (source) => replaceOnce(source,
+      "use uuid::Uuid;", "#[cfg(any())]\nuse uuid::Uuid;")),
+      (root) => assertSourceRefused(root, [enroll, cancel]));
+  });
+
   it("refuses Group admission moved after durable preparation", () => {
     withMutation((edit) => edit(owner, (source) => replaceOnce(source,
       `    if input.group_id().is_some() {
@@ -2476,11 +2519,16 @@ describe("native Company raw-byte request contracts", () => {
   for (const [name, path, decoy, operations] of [
     ["REST axum namespace", rest, "mod axum {}", [enroll, cancel]],
     ["REST application namespace", rest, "mod console_identity_application {}", [enroll, cancel]],
+    ["REST axum namespace alias", rest, "use unrelated as axum;", [enroll, cancel]],
+    ["REST application namespace alias", rest, "use unrelated_application as console_identity_application;", [enroll, cancel]],
     ["unknown REST glob import", rest, "use unrelated::*;", [enroll, cancel]],
     ["ancestor extern crate alias", restExports, "extern crate unrelated as axum;", [enroll, cancel]],
     ["codec serde_json namespace", codec, "mod serde_json {}", [enroll]],
     ["codec serde namespace", codec, "mod serde {}", [enroll]],
     ["owner type shadow", owner, "struct CompanyEnrollmentV1;", [enroll]],
+    ["application ancestor extern UUID alias", exports, "extern crate unrelated as uuid;", [enroll, cancel]],
+    ["unknown application ancestor glob", exports, "use unrelated::*;", [enroll, cancel]],
+    ["owner UUID namespace alias", owner, "use unrelated as uuid;", [enroll, cancel]],
   ]) {
     it(`refuses namespace replacement: ${name}`, () => {
       withMutation((edit) => edit(path, (source) => `${source}\n${decoy}\n`),
