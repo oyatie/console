@@ -70,9 +70,18 @@ class CompanyInputGeneratorTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha384((ROOT/'backend/crates/platform/db/migrations/0230_native_people_directory_storage.sql').read_bytes()).hexdigest(),checksum230)
                 suffix230 = ('230\t'+checksum230+'\n').encode()
                 complete_ledger = outputs[path].encode()
-                self.assertTrue(complete_ledger.endswith(suffix230))
-                self.assertEqual(len(complete_ledger.splitlines()),230)
-                ledger = complete_ledger[:-len(suffix230)]
+                # Pin the additive approval evidence migration before restoring
+                # the exact historical230 ledger and its existing checks.
+                checksum231 = '84ff6af6b0a607b596a7b9cfb126ed10c7ab744f6a3abbb005569a1fc182ec055afae72fb9c5b793bee376dec316fbe2'
+                self.assertEqual(hashlib.sha384((ROOT/'backend/crates/platform/db/migrations/0231_governance_person_evidence.sql').read_bytes()).hexdigest(),checksum231)
+                suffix231 = ('231\t'+checksum231+'\n').encode()
+                self.assertTrue(complete_ledger.endswith(suffix231))
+                self.assertEqual(len(complete_ledger.splitlines()),231)
+                historical230 = complete_ledger[:-len(suffix231)]
+                self.assertTrue(historical230.endswith(suffix230))
+                self.assertEqual(len(historical230.splitlines()),230)
+                self.assertEqual(hashlib.sha256(historical230).hexdigest(),'25e02488cdaf864f6d15ee21d62df98eb263bb82de1e2a283470ca659d160325')
+                ledger = historical230[:-len(suffix230)]
                 self.assertTrue(ledger.endswith(suffix))
                 self.assertEqual(len(ledger.splitlines()),229)
                 self.assertEqual(hashlib.sha256(ledger[:-len(suffix)]).hexdigest(),digest,path)
