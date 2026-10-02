@@ -681,7 +681,7 @@ GRANT console_leave_definer, console_ontology_writer TO console_app
     WITH ADMIN FALSE, INHERIT TRUE, SET TRUE;
 
 SELECT format('ALTER DATABASE %I OWNER TO console_app', current_database()) \gexec
-ALTER SCHEMA public OWNER TO console_app;
+ALTER SCHEMA public OWNER TO pg_database_owner;
 
 DO $block$
 DECLARE
