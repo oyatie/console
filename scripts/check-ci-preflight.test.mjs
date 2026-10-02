@@ -87,6 +87,8 @@ const backendBuckAppLegIf =
   "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}";
 const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
 const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
+const pythonFanoutProofName = "Python lane fan-out harness regression";
+const pythonFanoutProofCommand = "python3 tools/lanes/fanout.test.py";
 
 function expectFailure(
   source,
@@ -987,7 +989,7 @@ describe("CI preflight contract", () => {
 
   it("rejects every run-step condition, soft-failure, and retained-text early-exit bypass", () => {
     const requiredRunStepCounts = {
-      preflight: 33,
+      preflight: 34,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
       backend: 25,
@@ -1063,9 +1065,64 @@ describe("CI preflight contract", () => {
     // 2026-08-25: +1 always-on Buck impact planner regression. This closes the
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
-    assert.equal(runStepCount, 132, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 132*3 = 396.
-    assert.equal(mutationCount, 396, "exhaustive bypass matrix must not shrink");
+    // +1 required Python lane-harness proof; every old run step remains covered.
+    assert.equal(runStepCount, 133, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 133*3 = 399.
+    assert.equal(mutationCount, 399, "exhaustive bypass matrix must not shrink");
+  });
+
+  it("runs the Python lane harness beside JavaScript in required preflight", () => {
+    const model = yaml.load(workflow);
+    const steps = model.jobs.preflight.steps;
+    const matching = steps.filter((step) => step.run === pythonFanoutProofCommand);
+    assert.equal(matching.length, 1, "PYTHON_FANOUT_PREFLIGHT_PROOF_MISSING_OR_DUPLICATED");
+    assert.deepEqual(matching[0], {
+      name: pythonFanoutProofName,
+      id: "python-lane-fanout",
+      if: npmCiIf,
+      run: pythonFanoutProofCommand,
+    });
+    const javascriptIndex = steps.findIndex((step) => (
+      step.run === "node scripts/console/workflows/lane-fanout.test.mjs"
+    ));
+    assert.notEqual(javascriptIndex, -1, "existing JavaScript harness proof missing");
+    assert.equal(steps.indexOf(matching[0]), javascriptIndex + 1);
+    assert.ok(model.jobs["required-ci"].needs.includes("preflight"));
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+  });
+
+  it("rejects Python lane-harness deletion, heavy-only skips and hidden failure", () => {
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+    const mutateProof = (mutate) => mutateNamedStep(
+      workflow, "preflight", pythonFanoutProofName, mutate,
+    );
+    expectFailure(
+      mutateProof(() => ""),
+      `preflight must run ${pythonFanoutProofCommand}`,
+    );
+    expectFailure(
+      mutateProof((step) => duplicateNamedStep(step, pythonFanoutProofName)),
+      "preflight must preserve all 34 ordered setup/proof run steps",
+    );
+    for (const guard of [
+      "${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}",
+      "${{ github.event_name == 'pull_request' }}",
+    ]) {
+      expectFailure(
+        mutateProof((step) => step.replace(`        if: ${npmCiIf}`, `        if: ${guard}`)),
+        "preflight proof run step",
+      );
+    }
+    for (const bypass of [
+      "true",
+      `${pythonFanoutProofCommand} || true`,
+      `${pythonFanoutProofCommand} || exit 0`,
+    ]) {
+      expectFailure(
+        mutateProof((step) => step.replace(pythonFanoutProofCommand, bypass)),
+        "preflight proof run step",
+      );
+    }
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

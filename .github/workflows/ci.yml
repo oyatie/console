@@ -236,6 +236,10 @@ jobs:
         id: lane-fanout
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
         run: node scripts/console/workflows/lane-fanout.test.mjs
+      - name: Python lane fan-out harness regression
+        id: python-lane-fanout
+        if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
+        run: python3 tools/lanes/fanout.test.py
       - name: Workflow test-runner credential literals
         id: test-credentials
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
