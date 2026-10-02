@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -124,8 +125,8 @@ function assertLiveCycleKindProbationFinding(root) {
       enumSkipped: report.enumSkipped,
     },
     {
-      population: 297,
-      resolved: 122,
+      population: 299,
+      resolved: 124,
       skipped: 175,
       enumCandidates: 50,
       enumResolved: 20,
@@ -970,8 +971,8 @@ describe("request body enum-variant contract", () => {
         enumSkipped: report.enumSkipped,
       },
       {
-        population: 297,
-        resolved: 122,
+        population: 299,
+        resolved: 124,
         skipped: 175,
         enumCandidates: 50,
         enumResolved: 20,
@@ -2193,8 +2194,8 @@ describe("live request body census", () => {
   it("binds the exact source-first body and enum populations to the reviewed register", () => {
     const report = evaluateRequestBodyContract({ repoRoot });
 
-    assert.equal(report.population, 297);
-    assert.equal(report.resolved, 122);
+    assert.equal(report.population, 299);
+    assert.equal(report.resolved, 124);
     assert.equal(report.skipped, 175);
     assert.equal(report.enumCandidates, 50);
     assert.equal(report.enumResolved, 20);
@@ -2204,5 +2205,300 @@ describe("live request body census", () => {
     assert.deepEqual(report.unresolvedLiteralAnchors, []);
     assert.deepEqual(report.unresolvedEnumAnchors, []);
     assert.deepEqual(report.registerFindings, []);
+  });
+});
+
+describe("native Company raw-byte request contracts", () => {
+  const enroll = "POST /api/v2/companies/enroll";
+  const cancel = "POST /api/v2/companies/enrollments/{command_id}/cancel";
+  const rest = "backend/crates/identity/rest/src/company.rs";
+  const restExports = "backend/crates/identity/rest/src/lib.rs";
+  const codec = "backend/crates/identity/application/src/company.rs";
+  const owner = "backend/crates/identity/application/src/company_enrollment.rs";
+  const exports = "backend/crates/identity/application/src/lib.rs";
+  const register = "scripts/request-body-contract-undecidable.json";
+  const registerDigest = "7be3cba4991191def9f203d96f28be01b6e384e26f2e1487a958281a3e918577";
+  let live;
+
+  // Mutate a copy of the actual mounted sources and composed contract, never an
+  // invented JSON extractor or DTO. Restore each mutation even when its oracle
+  // fails, so a preceding failure cannot supply another test's expected result.
+  function withMutation(mutate, verify) {
+    live ??= liveSourceFixture();
+    const originals = new Map();
+    function edit(path, transform) {
+      const absolute = join(live, path);
+      const original = readFileSync(absolute, "utf8");
+      originals.set(absolute, original);
+      const changed = transform(original);
+      assert.notEqual(changed, original, `fixture no longer matches ${path}`);
+      writeFileSync(absolute, changed);
+    }
+    try {
+      mutate(edit);
+      verify(live);
+    } finally {
+      for (const [absolute, original] of originals) writeFileSync(absolute, original);
+      assert.equal(createHash("sha256").update(readFileSync(join(live, register))).digest("hex"), registerDigest);
+    }
+  }
+
+  function replaceOnce(source, before, after) {
+    assert.equal(source.split(before).length, 2, "reviewed mutation must match exactly once");
+    return source.replace(before, after);
+  }
+
+  function census(report) {
+    assert.equal(report.population, 299);
+    assert.deepEqual([report.enumCandidates, report.enumResolved, report.enumSkipped], [50, 20, 30]);
+  }
+
+  function companyUndecidables(report) {
+    return report.observedRegister.body.filter((entry) => [enroll, cancel].includes(entry.operation));
+  }
+
+  function assertResolved(root) {
+    const report = evaluateRequestBodyContract({ repoRoot: root });
+    census(report);
+    assert.deepEqual([report.resolved, report.skipped], [124, 175]);
+    assert.deepEqual(companyUndecidables(report), []);
+    assert.deepEqual(report.findings, []);
+    assert.deepEqual(report.registerFindings, []);
+    const result = spawnSync(process.execPath, [cli, root], { encoding: "utf8" });
+    assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+  }
+
+  function assertSourceRefused(root, operations) {
+    const report = evaluateRequestBodyContract({ repoRoot: root });
+    census(report);
+    assert.deepEqual(companyUndecidables(report).map((entry) => entry.operation).sort(), [...operations].sort());
+    assert.deepEqual([report.resolved, report.skipped], [124 - operations.length, 175 + operations.length]);
+    assert.deepEqual(report.findings, []);
+    const result = spawnSync(process.execPath, [cli, root], { encoding: "utf8" });
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    for (const operation of operations) {
+      assert.ok(report.registerFindings.includes(`unregistered body undecidable: ${operation}`));
+      assert.ok(result.stderr.includes(`unregistered body undecidable: ${operation}`));
+    }
+  }
+
+  function assertSchemaMismatch(root, operation) {
+    const report = evaluateRequestBodyContract({ repoRoot: root });
+    census(report);
+    // Known source remains classified: a contract disagreement is a finding,
+    // not a new undecidable entry which conceals the mismatch in a register.
+    assert.deepEqual([report.resolved, report.skipped], [124, 175]);
+    assert.deepEqual(companyUndecidables(report), []);
+    assert.deepEqual(report.registerFindings, []);
+    assert.ok(report.findings.length > 0, "Company schema drift must produce a finding");
+    assert.ok(report.findings.every((finding) => finding.operation === operation), JSON.stringify(report.findings));
+    const result = spawnSync(process.execPath, [cli, root], { encoding: "utf8" });
+    assert.equal(result.status, 1, `${result.stdout}${result.stderr}`);
+    assert.ok(result.stderr.includes(`${operation}:`), result.stderr);
+  }
+
+  function changeDocument(edit, transform) {
+    edit("backend/openapi/openapi.yaml", (source) => {
+      const document = yaml.load(source);
+      const before = structuredClone(document);
+      transform(document);
+      assert.notDeepEqual(document, before, "OpenAPI fixture mutation must change its semantic structure");
+      return yaml.dump(document, { noRefs: true, lineWidth: -1 });
+    });
+  }
+
+  function deleteOwned(object, key) {
+    assert.ok(Object.hasOwn(object, key), `fixture must own ${key} before deletion`);
+    delete object[key];
+    assert.equal(Object.hasOwn(object, key), false, `fixture must omit ${key} after deletion`);
+  }
+
+  it("proves schema mutation controls reject semantic no-ops and missing delete targets", () => {
+    assert.throws(() => withMutation((edit) => changeDocument(edit, () => {}),
+      () => assert.fail("a semantic no-op must not reach its oracle")),
+    /OpenAPI fixture mutation must change its semantic structure/);
+    assert.throws(() => deleteOwned({}, "requestBody"), /fixture must own requestBody before deletion/);
+  });
+
+  it("resolves both real handlers without changing the reviewed register or enum census", () => {
+    withMutation(() => {}, assertResolved);
+  });
+
+  it("ignores unmounted nested handler names instead of selecting their bytes", () => {
+    withMutation((edit) => edit(rest, (source) => `${source}\nmod unmounted_company_decoy {
+    fn enroll() { let _ = "CompanyEnrollmentV1::from_json_slice"; }
+    fn cancel() { let _ = "body.is_empty() || body.as_ref() == b\\\"{}\\\""; }
+}\n`), assertResolved);
+  });
+
+  for (const [name, transform] of [
+    ["missing required nullable Group", (schema) => { schema.required = schema.required.filter((name) => name !== "group_id"); }],
+    ["nullable Group broadened to a UUID", (schema) => { schema.properties.group_id = { type: ["string", "null"], format: "uuid" }; }],
+    ["unknown members allowed", (schema) => { schema.additionalProperties = true; }],
+    ["extra declared member", (schema) => { schema.properties.unowned = { type: "string" }; }],
+    ["missing actual name property", (schema) => { deleteOwned(schema.properties, "name"); }],
+    ["administrative Account UUID wrong type", (schema) => { schema.properties.administrative_account_id.type = "integer"; }],
+    ["administrative Account UUID wrong format", (schema) => { schema.properties.administrative_account_id.format = "email"; }],
+    ["administrative Account UUID wrong length", (schema) => { schema.properties.administrative_account_id.maxLength = 37; }],
+    ["non-object input", (schema) => { schema.type = "array"; }],
+    ["weaker name bound", (schema) => { schema.properties.name.maxLength = 257; }],
+    ["noncanonical command UUIDs", (schema) => { deleteOwned(schema.properties.command_id, "pattern"); }],
+    ["slug character policy drift", (schema) => { schema.properties.slug.pattern = ".*"; }],
+  ]) {
+    it(`reports enrollment schema mismatch: ${name}`, () => {
+      withMutation((edit) => changeDocument(edit, (document) => {
+        transform(document.components.schemas.NativeCompanyEnrollmentInput);
+      }), (root) => assertSchemaMismatch(root, enroll));
+    });
+  }
+
+  for (const [name, transform] of [
+    ["optional enrollment body", (body) => { body.required = false; }],
+    ["omitted enrollment body requirement", (body) => { deleteOwned(body, "required"); }],
+  ]) {
+    it(`reports ${name} instead of promising a zero-byte command`, () => {
+      withMutation((edit) => changeDocument(edit, (document) => {
+        transform(document.paths["/api/v2/companies/enroll"].post.requestBody);
+      }), (root) => assertSchemaMismatch(root, enroll));
+    });
+  }
+
+  for (const [name, transform] of [
+    ["required body excludes the zero-byte form", (body) => { body.required = true; }],
+    ["missing empty-object bound", (body) => { deleteOwned(body.content["application/json"].schema, "maxProperties"); }],
+    ["nonzero empty-object bound", (body) => { body.content["application/json"].schema.maxProperties = 1; }],
+    ["unknown members allowed", (body) => { body.content["application/json"].schema.additionalProperties = true; }],
+    ["declared nonempty body", (body) => { body.content["application/json"].schema.properties = { memo: { type: "string" } }; }],
+    ["non-object body", (body) => { body.content["application/json"].schema.type = "string"; }],
+  ]) {
+    it(`reports cancellation schema mismatch: ${name}`, () => {
+      withMutation((edit) => changeDocument(edit, (document) => {
+        transform(document.paths["/api/v2/companies/enrollments/{command_id}/cancel"].post.requestBody);
+      }), (root) => assertSchemaMismatch(root, cancel));
+    });
+  }
+
+  for (const [name, path, before, after, operations = [enroll]] of [
+    ["codec allows unknown members", codec, "#[serde(deny_unknown_fields)]", "#[serde(default)]"],
+    ["codec makes nullable Group optional", codec, '#[serde(deserialize_with = "required_group")]', "#[serde(default)]"],
+    ["required Group parser is replaced", codec, "Option::<String>::deserialize(d)", "let _ = d; Ok(None)"],
+    ["codec admits non-object forms", codec, ".deserialize_map(InputObject)", ".deserialize_any(InputObject)"],
+    ["codec omits trailing-byte refusal", codec, "        parser.end().map_err(|_| invalid())?;", "        // Trailing bytes no longer checked."],
+    ["codec body bound changes", codec, "if input.len() > 4096", "if input.len() > 8192"],
+    ["codec drops canonical UUID validation", codec, "if id.hyphenated().to_string() != raw", "if false"],
+    ["codec drops control-character validation", codec, "        || name.chars().any(char::is_control)", ""],
+    ["owner admits existing Group", owner, "    if input.group_id().is_some() {", "    if false {"],
+    ["enrollment reads a larger transport body", rest, "let bytes = match to_bytes(request.into_body(), 4096).await", "let bytes = match to_bytes(request.into_body(), 8192).await"],
+    ["enrollment validates different bytes", rest, "CompanyEnrollmentV1::from_json_slice(&bytes)", 'CompanyEnrollmentV1::from_json_slice(b"{}")'],
+    ["cancellation removes zero-byte admission", rest, 'body.is_empty() || body.as_ref() == b"{}"', 'body.as_ref() == b"{}"', [cancel]],
+    ["cancellation admits whitespace bytes", rest, 'body.as_ref() == b"{}"', 'body.as_ref() == b"{ }"', [cancel]],
+    ["cancellation broadens byte admission", rest, 'body.is_empty() || body.as_ref() == b"{}"', "body.len() <= 4096", [cancel]],
+    ["cancellation reads unrelated body", rest, "    match to_bytes(request.into_body(), 4096).await", '    match to_bytes(axum::body::Body::from("{}"), 4096).await', [cancel]],
+    ["cancellation transport bound changes", rest, "    match to_bytes(request.into_body(), 4096).await", "    match to_bytes(request.into_body(), 8192).await", [cancel]],
+    ["canonical type export points elsewhere", exports, "pub use company::CompanyEnrollmentV1;", "pub use org::CompanyEnrollmentV1;"],
+    ["codec module is remapped", exports, "mod company;", '#[path = "company.rs"]\nmod company;'],
+    ["REST Company module is remapped", restExports, "pub mod company;", '#[path = "company.rs"]\npub mod company;', [enroll, cancel]],
+    ["codec module is conditional", exports, "mod company;", "#[cfg(any())]\nmod company;"],
+    ["enrollment handler is conditional", rest, "async fn enroll<S>", "#[cfg(any())]\nasync fn enroll<S>"],
+    ["cancellation handler is conditional", rest, "async fn cancel<S>", "#[cfg(any())]\nasync fn cancel<S>", [cancel]],
+    ["application imports point to a different crate", rest, "use console_identity_application::{", "use unrelated_application::{", [enroll, cancel]],
+    ["body reader namespace import is conditional", rest, "use axum::{", "#[cfg(any())]\nuse axum::{", [enroll, cancel]],
+    ["body reader import is replaced", rest, "    body::to_bytes,", "    body::collect as to_bytes,", [enroll, cancel]],
+  ]) {
+    it(`refuses source drift: ${name}`, () => {
+      withMutation((edit) => edit(path, (source) => replaceOnce(source, before, after)),
+        (root) => assertSourceRefused(root, operations));
+    });
+  }
+
+  it("does not let routes moved into an unused same-file router establish a binding", () => {
+    withMutation((edit) => edit(rest, (source) => {
+      const start = source.indexOf("pub fn router<S>");
+      const end = source.indexOf("\nfn private(", start);
+      assert.ok(start >= 0 && end > start, "canonical Company router fixture no longer matches");
+      const original = source.slice(start, end);
+      const body = original.indexOf("{\n    Router::new()");
+      assert.ok(body >= 0, "canonical Company router body no longer matches");
+      const empty = `${original.slice(0, body)}{\n    Router::new().with_state(state)\n}\n`;
+      const unused = replaceOnce(original, "pub fn router<S>", "fn unused_company_router<S>");
+      return replaceOnce(source, original, `${empty}\n${unused}`);
+    }), (root) => assertSourceRefused(root, [enroll, cancel]));
+  });
+
+  it("refuses ambiguous duplicate enrollment handler declarations", () => {
+    withMutation((edit) => edit(rest, (source) => `${source}\nasync fn enroll<S>() {}\n`),
+      (root) => assertSourceRefused(root, [enroll]));
+  });
+
+  for (const [operation, path] of [
+    [enroll, "/api/v2/companies/enroll"],
+    [cancel, "/api/v2/companies/enrollments/{command_id}/cancel"],
+  ]) {
+    for (const [name, transform] of [
+      ["requestBody", (document) => { deleteOwned(document.paths[path].post, "requestBody"); }],
+      ["whole operation", (document) => { deleteOwned(document.paths[path], "post"); }],
+    ]) {
+      it(`keeps ${operation} in the source-first census when its ${name} is deleted`, () => {
+        withMutation((edit) => changeDocument(edit, transform), (root) => {
+          assertSourceRefused(root, [operation]);
+          const report = evaluateRequestBodyContract({ repoRoot: root });
+          assert.equal(companyUndecidables(report)[0].reason, "no_openapi_request_body");
+        });
+      });
+    }
+    it(`keeps ${operation} in the source-first census after body-limit drift and requestBody deletion`, () => {
+      withMutation((edit) => {
+        const before = operation === enroll
+          ? "let bytes = match to_bytes(request.into_body(), 4096).await"
+          : "    match to_bytes(request.into_body(), 4096).await";
+        edit(rest, (source) => replaceOnce(source, before, before.replace("4096", "8192")));
+        changeDocument(edit, (document) => { deleteOwned(document.paths[path].post, "requestBody"); });
+      }, (root) => {
+        assertSourceRefused(root, [operation]);
+        const report = evaluateRequestBodyContract({ repoRoot: root });
+        assert.equal(companyUndecidables(report)[0].reason, "no_openapi_request_body");
+      });
+    });
+  }
+
+  it("refuses Group admission moved after durable preparation", () => {
+    withMutation((edit) => edit(owner, (source) => replaceOnce(source,
+      `    if input.group_id().is_some() {
+        return Err(CompanyEnrollmentError::GroupUnavailable);
+    }
+    store.prepare(credentials, &input).await?;`,
+      `    store.prepare(credentials, &input).await?;
+    if input.group_id().is_some() {
+        return Err(CompanyEnrollmentError::GroupUnavailable);
+    }`)), (root) => assertSourceRefused(root, [enroll]));
+  });
+
+  for (const [name, path, decoy, operations] of [
+    ["REST axum namespace", rest, "mod axum {}", [enroll, cancel]],
+    ["REST application namespace", rest, "mod console_identity_application {}", [enroll, cancel]],
+    ["unknown REST glob import", rest, "use unrelated::*;", [enroll, cancel]],
+    ["ancestor extern crate alias", restExports, "extern crate unrelated as axum;", [enroll, cancel]],
+    ["codec serde_json namespace", codec, "mod serde_json {}", [enroll]],
+    ["codec serde namespace", codec, "mod serde {}", [enroll]],
+    ["owner type shadow", owner, "struct CompanyEnrollmentV1;", [enroll]],
+  ]) {
+    it(`refuses namespace replacement: ${name}`, () => {
+      withMutation((edit) => edit(path, (source) => `${source}\n${decoy}\n`),
+        (root) => assertSourceRefused(root, operations));
+    });
+  }
+
+  it("does not let an unexpanded copy of the strict codec rescue its mounted replacement", () => {
+    withMutation((edit) => edit(codec, (source) => {
+      const broken = replaceOnce(source, "#[serde(deny_unknown_fields)]", "#[serde(default)]");
+      return `${broken}\nmacro_rules! unexpanded_strict_codec { () => { ${source} }; }\n`;
+    }), (root) => assertSourceRefused(root, [enroll]));
+  });
+
+  it("does not let an unmounted original cancellation rescue its changed byte guard", () => {
+    withMutation((edit) => edit(rest, (source) => {
+      const broken = replaceOnce(source, 'body.as_ref() == b"{}"', 'body.as_ref() == b"{ }"');
+      return `${broken}\nmod unmounted_original_transport { ${source} }\n`;
+    }), (root) => assertSourceRefused(root, [cancel]));
   });
 });
