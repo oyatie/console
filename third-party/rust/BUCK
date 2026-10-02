@@ -14657,28 +14657,28 @@ buildscript_run(
 
 alias(
     name = "opentelemetry",
-    actual = ":opentelemetry-0.32",
+    actual = ":opentelemetry-0.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "opentelemetry-0.32.0.crate",
-    sha256 = "b0142c63252a9e054e68a4c61a5778f7b14f576274d593f8ce883d191a099682",
-    strip_prefix = "opentelemetry-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry/0.32.0/download"],
+    name = "opentelemetry-0.33.0.crate",
+    sha256 = "6cdb0b1b267eb9db3331b434ed9ddab10d50e280a9adf9d13e5233e2002b61b5",
+    strip_prefix = "opentelemetry-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-0.32",
-    srcs = [":opentelemetry-0.32.0.crate"],
+    name = "opentelemetry-0.33",
+    srcs = [":opentelemetry-0.33.0.crate"],
     crate = "opentelemetry",
-    crate_root = "opentelemetry-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry",
         "CARGO_CRATE_NAME": "opentelemetry",
-        "CARGO_MANIFEST_DIR": "opentelemetry-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "OpenTelemetry API for Rust",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry",
@@ -14686,9 +14686,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14716,23 +14716,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "opentelemetry-http-0.32.0.crate",
-    sha256 = "5683015d09e2df236ef005b17f6f196f0d5f6313c4fa43a7b6a53b52776e4331",
-    strip_prefix = "opentelemetry-http-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry-http/0.32.0/download"],
+    name = "opentelemetry-http-0.33.0.crate",
+    sha256 = "ee2c3625b8aa04209f7e01e513bc8044da9687fa38a9eacf59628ca5f3b87300",
+    strip_prefix = "opentelemetry-http-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry-http/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-http-0.32",
-    srcs = [":opentelemetry-http-0.32.0.crate"],
+    name = "opentelemetry-http-0.33",
+    srcs = [":opentelemetry-http-0.33.0.crate"],
     crate = "opentelemetry_http",
-    crate_root = "opentelemetry-http-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-http-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_http",
         "CARGO_CRATE_NAME": "opentelemetry_http",
-        "CARGO_MANIFEST_DIR": "opentelemetry-http-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-http-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Helper implementations for sending HTTP requests. Uses include propagating and extracting context over http, exporting telemetry, requesting sampling strategies.",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-http",
@@ -14740,9 +14740,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-http",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14755,35 +14755,35 @@ cargo.rust_library(
         ":async-trait-0.1",
         ":bytes-1",
         ":http-1",
-        ":opentelemetry-0.32",
+        ":opentelemetry-0.33",
         ":reqwest-0.13",
     ],
 )
 
 alias(
     name = "opentelemetry-otlp",
-    actual = ":opentelemetry-otlp-0.32",
+    actual = ":opentelemetry-otlp-0.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "opentelemetry-otlp-0.32.0.crate",
-    sha256 = "9966929966d17620d7c316c643ba62631826e10021409357772d5eea84f62c35",
-    strip_prefix = "opentelemetry-otlp-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry-otlp/0.32.0/download"],
+    name = "opentelemetry-otlp-0.33.0.crate",
+    sha256 = "699a67345e21962a231955b9059a157e428b219fa5df8efe11f08346fb23a344",
+    strip_prefix = "opentelemetry-otlp-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry-otlp/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-otlp-0.32",
-    srcs = [":opentelemetry-otlp-0.32.0.crate"],
+    name = "opentelemetry-otlp-0.33",
+    srcs = [":opentelemetry-otlp-0.33.0.crate"],
     crate = "opentelemetry_otlp",
-    crate_root = "opentelemetry-otlp-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-otlp-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_otlp",
         "CARGO_CRATE_NAME": "opentelemetry_otlp",
-        "CARGO_MANIFEST_DIR": "opentelemetry-otlp-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-otlp-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Exporter for the OpenTelemetry Collector",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-otlp",
@@ -14791,9 +14791,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-otlp",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14802,6 +14802,7 @@ cargo.rust_library(
         "grpc-tonic",
         "http",
         "http-proto",
+        "httpdate",
         "internal-logs",
         "logs",
         "metrics",
@@ -14817,10 +14818,11 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":http-1",
-        ":opentelemetry-0.32",
-        ":opentelemetry-http-0.32",
-        ":opentelemetry-proto-0.32",
-        ":opentelemetry_sdk-0.32",
+        ":httpdate-1",
+        ":opentelemetry-0.33",
+        ":opentelemetry-http-0.33",
+        ":opentelemetry-proto-0.33",
+        ":opentelemetry_sdk-0.33",
         ":prost-0.14",
         ":reqwest-0.13",
         ":thiserror-2",
@@ -14831,23 +14833,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "opentelemetry-proto-0.32.0.crate",
-    sha256 = "56d658ba1faf63f7b9c492cfbe6e0ec365440a16132d3270c1065f7b33f1b638",
-    strip_prefix = "opentelemetry-proto-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry-proto/0.32.0/download"],
+    name = "opentelemetry-proto-0.33.0.crate",
+    sha256 = "25da1ac11a0aeccf38d7f77ee0348715adaf8340f65ad46c94a02c6b20e2f65d",
+    strip_prefix = "opentelemetry-proto-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry-proto/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-proto-0.32",
-    srcs = [":opentelemetry-proto-0.32.0.crate"],
+    name = "opentelemetry-proto-0.33",
+    srcs = [":opentelemetry-proto-0.33.0.crate"],
     crate = "opentelemetry_proto",
-    crate_root = "opentelemetry-proto-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-proto-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_proto",
         "CARGO_CRATE_NAME": "opentelemetry_proto",
-        "CARGO_MANIFEST_DIR": "opentelemetry-proto-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-proto-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Protobuf generated files and transformations.",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-proto",
@@ -14855,9 +14857,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-proto",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14873,8 +14875,8 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":opentelemetry-0.32",
-        ":opentelemetry_sdk-0.32",
+        ":opentelemetry-0.33",
+        ":opentelemetry_sdk-0.33",
         ":prost-0.14",
         ":tonic-0.14",
         ":tonic-prost-0.14",
@@ -14883,28 +14885,28 @@ cargo.rust_library(
 
 alias(
     name = "opentelemetry_sdk",
-    actual = ":opentelemetry_sdk-0.32",
+    actual = ":opentelemetry_sdk-0.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "opentelemetry_sdk-0.32.1.crate",
-    sha256 = "9b59f80e1ac4d5ff7a2db8fb6c80badb7f0f3f858211fba08dd9aaec750894f9",
-    strip_prefix = "opentelemetry_sdk-0.32.1",
-    urls = ["https://static.crates.io/crates/opentelemetry_sdk/0.32.1/download"],
+    name = "opentelemetry_sdk-0.33.0.crate",
+    sha256 = "cb39533d9d1c912123efd7d41d7e0c29d16917b60ce15b4c8d87cb1af7f67520",
+    strip_prefix = "opentelemetry_sdk-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry_sdk/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry_sdk-0.32",
-    srcs = [":opentelemetry_sdk-0.32.1.crate"],
+    name = "opentelemetry_sdk-0.33",
+    srcs = [":opentelemetry_sdk-0.33.0.crate"],
     crate = "opentelemetry_sdk",
-    crate_root = "opentelemetry_sdk-0.32.1.crate/src/lib.rs",
+    crate_root = "opentelemetry_sdk-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_sdk",
         "CARGO_CRATE_NAME": "opentelemetry_sdk",
-        "CARGO_MANIFEST_DIR": "opentelemetry_sdk-0.32.1.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry_sdk-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "The SDK for the OpenTelemetry metrics collection and distributed tracing framework",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-sdk",
@@ -14912,10 +14914,10 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-sdk",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.1",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
-        "CARGO_PKG_VERSION_PATCH": "1",
+        "CARGO_PKG_VERSION_MINOR": "33",
+        "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
@@ -14932,7 +14934,7 @@ cargo.rust_library(
         ":futures-channel-0.3",
         ":futures-executor-0.3",
         ":futures-util-0.3",
-        ":opentelemetry-0.32",
+        ":opentelemetry-0.33",
         ":percent-encoding-2",
         ":rand-0.9",
         ":thiserror-2",
@@ -23208,34 +23210,34 @@ alias(
 )
 
 http_archive(
-    name = "thiserror-2.0.20.crate",
-    sha256 = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f",
-    strip_prefix = "thiserror-2.0.20",
-    urls = ["https://static.crates.io/crates/thiserror/2.0.20/download"],
+    name = "thiserror-2.0.21.crate",
+    sha256 = "09e52cb86a36cede5cb101bf8908837b3e4c6e5e59fe7fd85c23fb56200d189e",
+    strip_prefix = "thiserror-2.0.21",
+    urls = ["https://static.crates.io/crates/thiserror/2.0.21/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "thiserror-2",
-    srcs = [":thiserror-2.0.20.crate"],
+    srcs = [":thiserror-2.0.21.crate"],
     crate = "thiserror",
-    crate_root = "thiserror-2.0.20.crate/src/lib.rs",
+    crate_root = "thiserror-2.0.21.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "thiserror",
         "CARGO_CRATE_NAME": "thiserror",
-        "CARGO_MANIFEST_DIR": "thiserror-2.0.20.crate",
+        "CARGO_MANIFEST_DIR": "thiserror-2.0.21.crate",
         "CARGO_PKG_AUTHORS": "David Tolnay <dtolnay@gmail.com>",
         "CARGO_PKG_DESCRIPTION": "derive(Error)",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "thiserror",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "2.0.20",
+        "CARGO_PKG_RUST_VERSION": "1.77",
+        "CARGO_PKG_VERSION": "2.0.21",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
         "OUT_DIR": "$(location :thiserror-2-build-script-run[out_dir])",
     },
@@ -23250,25 +23252,25 @@ cargo.rust_library(
 
 cargo.rust_binary(
     name = "thiserror-2-build-script-build",
-    srcs = [":thiserror-2.0.20.crate"],
+    srcs = [":thiserror-2.0.21.crate"],
     crate = "build_script_build",
-    crate_root = "thiserror-2.0.20.crate/build.rs",
+    crate_root = "thiserror-2.0.21.crate/build.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "build-script-build",
         "CARGO_CRATE_NAME": "build_script_build",
-        "CARGO_MANIFEST_DIR": "thiserror-2.0.20.crate",
+        "CARGO_MANIFEST_DIR": "thiserror-2.0.21.crate",
         "CARGO_PKG_AUTHORS": "David Tolnay <dtolnay@gmail.com>",
         "CARGO_PKG_DESCRIPTION": "derive(Error)",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "thiserror",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "2.0.20",
+        "CARGO_PKG_RUST_VERSION": "1.77",
+        "CARGO_PKG_VERSION": "2.0.21",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
@@ -23288,17 +23290,17 @@ buildscript_run(
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
+        "CARGO_PKG_RUST_VERSION": "1.77",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
         "default",
         "std",
     ],
-    version = "2.0.20",
+    version = "2.0.21",
 )
 
 http_archive(
@@ -23342,34 +23344,34 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "thiserror-impl-2.0.20.crate",
-    sha256 = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af",
-    strip_prefix = "thiserror-impl-2.0.20",
-    urls = ["https://static.crates.io/crates/thiserror-impl/2.0.20/download"],
+    name = "thiserror-impl-2.0.21.crate",
+    sha256 = "fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524",
+    strip_prefix = "thiserror-impl-2.0.21",
+    urls = ["https://static.crates.io/crates/thiserror-impl/2.0.21/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "thiserror-impl-2",
-    srcs = [":thiserror-impl-2.0.20.crate"],
+    srcs = [":thiserror-impl-2.0.21.crate"],
     crate = "thiserror_impl",
-    crate_root = "thiserror-impl-2.0.20.crate/src/lib.rs",
+    crate_root = "thiserror-impl-2.0.21.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "thiserror_impl",
         "CARGO_CRATE_NAME": "thiserror_impl",
-        "CARGO_MANIFEST_DIR": "thiserror-impl-2.0.20.crate",
+        "CARGO_MANIFEST_DIR": "thiserror-impl-2.0.21.crate",
         "CARGO_PKG_AUTHORS": "David Tolnay <dtolnay@gmail.com>",
         "CARGO_PKG_DESCRIPTION": "Implementation detail of the `thiserror` crate",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "thiserror-impl",
         "CARGO_PKG_README": "",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "2.0.20",
+        "CARGO_PKG_RUST_VERSION": "1.77",
+        "CARGO_PKG_VERSION": "2.0.21",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
     },
     proc_macro = True,
@@ -24864,28 +24866,28 @@ cargo.rust_library(
 
 alias(
     name = "tracing-opentelemetry",
-    actual = ":tracing-opentelemetry-0.33",
+    actual = ":tracing-opentelemetry-0.34",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "tracing-opentelemetry-0.33.0.crate",
-    sha256 = "adbc64cba7137545b8044cb1fe9814f7aacf3c6b5f9b45be8bb5db538befdb26",
-    strip_prefix = "tracing-opentelemetry-0.33.0",
-    urls = ["https://static.crates.io/crates/tracing-opentelemetry/0.33.0/download"],
+    name = "tracing-opentelemetry-0.34.0.crate",
+    sha256 = "0a904802a1b902f43638b677ff2a650847e3b4404101b6c586d648e8c1e3e8fe",
+    strip_prefix = "tracing-opentelemetry-0.34.0",
+    urls = ["https://static.crates.io/crates/tracing-opentelemetry/0.34.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "tracing-opentelemetry-0.33",
-    srcs = [":tracing-opentelemetry-0.33.0.crate"],
+    name = "tracing-opentelemetry-0.34",
+    srcs = [":tracing-opentelemetry-0.34.0.crate"],
     crate = "tracing_opentelemetry",
-    crate_root = "tracing-opentelemetry-0.33.0.crate/src/lib.rs",
+    crate_root = "tracing-opentelemetry-0.34.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "tracing_opentelemetry",
         "CARGO_CRATE_NAME": "tracing_opentelemetry",
-        "CARGO_MANIFEST_DIR": "tracing-opentelemetry-0.33.0.crate",
+        "CARGO_MANIFEST_DIR": "tracing-opentelemetry-0.34.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "OpenTelemetry integration for tracing",
         "CARGO_PKG_HOMEPAGE": "https://github.com/tokio-rs/tracing-opentelemetry",
@@ -24893,9 +24895,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/tokio-rs/tracing-opentelemetry",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.33.0",
+        "CARGO_PKG_VERSION": "0.34.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "33",
+        "CARGO_PKG_VERSION_MINOR": "34",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -24907,7 +24909,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":opentelemetry-0.32",
+        ":opentelemetry-0.33",
         ":smallvec-1",
         ":tracing-0.1",
         ":tracing-core-0.1",
