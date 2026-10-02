@@ -1514,7 +1514,7 @@ function requestBodySchema(document, path, method) {
   if (own(schema, "oneOf") || own(schema, "allOf") || own(schema, "anyOf")) {
     return { reason: "openapi_schema_composition_unsupported" };
   }
-  return { schema };
+  return { schema, rawSchema: raw };
 }
 
 export function jsonRequestSchema(document, path, method) {
@@ -1736,14 +1736,21 @@ function exactStringSet(value, expected) {
     && [...value].sort(compareText).every((item, index) => item === [...expected].sort(compareText)[index]);
 }
 
-function schemaFields(schema, expected) {
-  return Object.entries(expected).every(([key, value]) => own(schema, key) === value);
+const COMPANY_SCHEMA_ANNOTATIONS = new Set(["description", "examples", "title"]);
+
+function schemaFields(schema, expected, supported = []) {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) return false;
+  const fields = new Set([...Object.keys(expected), ...supported, ...COMPANY_SCHEMA_ANNOTATIONS]);
+  return Object.entries(expected).every(([key, value]) => own(schema, key) === value)
+    && Object.keys(schema).every((key) => fields.has(key));
 }
 
-function compareCompanyRawBody({ document, path, method, operation, kind, schema, findings }) {
+function compareCompanyRawBody({ document, path, method, operation, kind, schema, rawSchema, findings }) {
   const requestBody = own(own(own(document, "paths"), path), method)?.requestBody;
   const properties = own(schema, "properties");
+  const rawReference = own(rawSchema, "$ref");
   let matches = requestBody && typeof requestBody === "object"
+    && (typeof rawReference !== "string" || schemaFields(rawSchema, { $ref: rawReference }))
     && own(schema, "type") === "object"
     && own(schema, "additionalProperties") === false;
 
@@ -1751,6 +1758,7 @@ function compareCompanyRawBody({ document, path, method, operation, kind, schema
     const names = ["command_id", "group_id", "slug", "name", "administrative_account_id"];
     matches = matches
       && own(requestBody, "required") === true
+      && schemaFields(schema, { type: "object", additionalProperties: false }, ["properties", "required"])
       && properties && typeof properties === "object" && !Array.isArray(properties)
       && exactStringSet(Object.keys(properties), names)
       && exactStringSet(own(schema, "required"), names)
@@ -1774,6 +1782,9 @@ function compareCompanyRawBody({ document, path, method, operation, kind, schema
     matches = matches
       && own(requestBody, "required") === false
       && own(schema, "maxProperties") === 0
+      && schemaFields(schema, {
+        type: "object", additionalProperties: false, maxProperties: 0,
+      }, ["properties", "required"])
       && (properties === undefined
         || (properties && typeof properties === "object" && Object.keys(properties).length === 0))
       && (required === undefined || (Array.isArray(required) && required.length === 0));
@@ -1923,6 +1934,7 @@ export function evaluateRequestBodyContract({ repoRoot }) {
         operation: candidate.operation,
         kind: route.companyRawBody,
         schema: schemaResult.schema,
+        rawSchema: schemaResult.rawSchema,
         findings,
       });
       continue;
