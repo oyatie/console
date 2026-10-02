@@ -2784,6 +2784,8 @@ dependencies = [
 name = "console-payroll-adapter-postgres"
 version = "0.1.0"
 dependencies = [
+ "console-attendance-adapter-postgres",
+ "console-attendance-application",
  "console-identity-application",
  "console-kernel-core",
  "console-ontology-canonical-adapter-postgres",

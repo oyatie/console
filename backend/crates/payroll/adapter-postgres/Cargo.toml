@@ -40,6 +40,8 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 uuid = { workspace = true }
 
 [dev-dependencies]
+console-attendance-application = { workspace = true }
+console-attendance-adapter-postgres = { workspace = true }
 console-platform-test-support = { workspace = true }
 # Dev-only: the empty-tenant PayRun lifecycle sits on Company/OrgUnit/JobPosition/
 # Person/hr.appoint. Adapter → adapter is forbidden as a production edge; the
