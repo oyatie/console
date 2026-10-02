@@ -42,8 +42,7 @@ cleanup() {
   docker rm -f "${pg16_container}" "${prepared_container}" \
     "${legacy_pg16_container}" "${legacy_prepared_container}" >/dev/null 2>&1 || true
   compose down -v --remove-orphans >/dev/null 2>&1 || true
-  rm -f "${rendered_cnpg_script}" "${rendered_cnpg_dir}/custody-exports"
-  rm -rf -- "${rendered_cnpg_dir}/custody"
+  rm -f "${rendered_cnpg_script}"
   rmdir "${rendered_cnpg_dir}" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -492,26 +491,8 @@ fi
 
 docker rm -f "${fresh_container}" >/dev/null
 
-# LC07 makes server TLS and operator transport paths mandatory at Compose
-# parse time. Use the actual local provisioning helper for this test's private
-# TLS material. These legacy cases deliberately stop before migrations: the
-# reserved inventory/password paths are not a claim that finalization ran.
-node --input-type=module - "${REPO_ROOT}" "${rendered_cnpg_dir}" <<'JS'
-import { pathToFileURL } from 'node:url';
-import { writeFileSync } from 'node:fs';
-const [root, directory] = process.argv.slice(2);
-const { prepareLocalCustody } = await import(pathToFileURL(root + '/scripts/lib/dev-account-custody.mjs'));
-for (const key of Object.keys(process.env)) if (key.startsWith('ACCOUNT_CUSTODY_')) delete process.env[key];
-prepareLocalCustody(directory + '/custody', 'docker', process.env.CONSOLE_POSTGRES_ADMIN_PASSWORD);
-const keys = ['ACCOUNT_CUSTODY_PG_TLS_DIR', 'ACCOUNT_CUSTODY_TARGET_ENV_FILE',
-  'ACCOUNT_CUSTODY_PASSWORD_FILE', 'ACCOUNT_CUSTODY_CA_FILE',
-  'ACCOUNT_CUSTODY_RUN_UID', 'ACCOUNT_CUSTODY_RUN_GID'];
-writeFileSync(directory + '/custody-exports', keys.map(key => key + '=' + process.env[key] + '\0').join(''), { mode: 0o600, flag: 'wx' });
-JS
-while IFS= read -r -d '' custody_entry; do
-  export "${custody_entry}"
-done < "${rendered_cnpg_dir}/custody-exports"
-unset custody_entry
+# These legacy histories run only the tracked Compose PostgreSQL and topology
+# services, and deliberately stop before migrations or custody finalization.
 
 prepare_legacy_volume() {
   local default_acl_sql="$1"
