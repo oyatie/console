@@ -126,7 +126,8 @@ assert_prerequisite_refusal_before_mutation "${prepared_container}" "${POSTGRES_
 
 legacy_catalog_snapshot() {
   local container="$1"
-  docker exec "${container}" psql -U console_app -d "${CONSOLE_POSTGRES_DB}" -At -F '|' <<'SQL'
+  local snapshot
+  snapshot="$(docker exec -i "${container}" psql -X -U console_app -d "${CONSOLE_POSTGRES_DB}" -v ON_ERROR_STOP=1 -At -F '|' <<'SQL'
 SELECT 'role', oid::text, rolname, rolcanlogin::text, rolsuper::text,
        rolbypassrls::text, rolinherit::text, rolcreatedb::text,
        rolcreaterole::text, rolreplication::text, COALESCE(rolpassword, '')
@@ -146,6 +147,16 @@ FROM pg_default_acl defaults
 WHERE defaults.defaclrole = (SELECT oid FROM pg_roles WHERE rolname='console_app')
 ORDER BY 1, 3;
 SQL
+)" || return 1
+  printf '%s\n' "${snapshot}" | awk -F '|' '
+    NF != 11 ||
+    (NR == 1 && $1 != "default_acl") ||
+    (NR == 2 && ($1 != "relation" || $3 != "public.legacy_prerequisite_marker")) ||
+    (NR == 3 && ($1 != "role" || $3 != "console_app")) ||
+    (NR == 4 && ($1 != "role" || $3 != "console_rt")) { exit 1 }
+    END { if (NR != 4) exit 1 }
+  ' || return 1
+  printf '%s\n' "${snapshot}"
 }
 
 assert_legacy_prerequisite_refusal_before_mutation() {
