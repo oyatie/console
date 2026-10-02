@@ -29,6 +29,8 @@ import json
 import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 
@@ -88,6 +90,29 @@ def main() -> int:
         ok,
         "collapsing ownership across directories is what a slice must not do",
     )
+
+    # Git porcelain's leading status column is data, not whitespace padding.
+    # This is the actual first-line shape that falsely reported "cripts/...".
+    with patch.object(FANOUT.subprocess, "run", return_value=SimpleNamespace(
+        stdout=" M scripts/check-request-body-contract.mjs\n"
+    )):
+        check("first unstaged path retains its first character",
+              FANOUT._changed(Path(".")) == ["scripts/check-request-body-contract.mjs"])
+
+    with patch.object(FANOUT.subprocess, "run", return_value=SimpleNamespace(
+        stdout=" M outside/private.rs\n M scripts/checker.mjs\n"
+    )):
+        changed = FANOUT._changed(Path("."))
+        check("first out-of-slice path is reported exactly and denied",
+              changed == ["outside/private.rs", "scripts/checker.mjs"]
+              and not in_slice(changed[0], ["scripts"])
+              and in_slice(changed[1], ["scripts"]))
+
+    with patch.object(FANOUT.subprocess, "run", return_value=SimpleNamespace(
+        stdout="M  scripts/staged.mjs\n M scripts/unstaged.mjs\n?? outside/new.rs\n"
+    )):
+        check("mixed index worktree and untracked flags retain exact paths",
+              FANOUT._changed(Path(".")) == ["scripts/staged.mjs", "scripts/unstaged.mjs", "outside/new.rs"])
 
     # --- the lane build environment must make sccache visible ---
     env = FANOUT._build_env()
