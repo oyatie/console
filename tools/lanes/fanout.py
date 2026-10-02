@@ -171,7 +171,7 @@ def _codex(prompt: str, cwd: Path, sandbox: str, model: str, log: Path) -> tuple
 
 def _git(cwd: Path, *args: str) -> str:
     return subprocess.run(["git", "-C", str(cwd), *args],
-                          capture_output=True, text=True).stdout.strip()
+                          capture_output=True, text=True).stdout.rstrip("\n")
 
 
 def _changed(worktree: Path) -> list[str]:
