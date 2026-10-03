@@ -7056,12 +7056,64 @@ def native_people_directory_row_lock_files():
     }
 
 
+COMPANY_PROVENANCE_SOURCE_SHA256 = {
+    'ops/company-enrollment/provenance-v1.sql': '58f6275c37c6b3722871b9cf89980ebae4f651fb2979f3fe97b17371d006a284',
+    'ops/company-enrollment/provenance-acl-v1.sql': '9a09acfe856cf76ac4491a3460da366240cd8aa3ecf88ca052492e2bf8fb791c',
+}
+
+
+def company_provenance_regular_path(name, *, required):
+    path = ROOT / name
+    for parent in path.parents:
+        if parent == ROOT:
+            break
+        if parent.is_symlink() or not parent.is_dir():
+            raise SystemExit('Company provenance regular file path required: ' + name)
+    if path.is_symlink() or (path.exists() and not path.is_file()) or (required and not path.is_file()):
+        raise SystemExit('Company provenance regular file required: ' + name)
+    return path
+
+
+def company_provenance_capture_files():
+    sources = {}
+    for name, digest in COMPANY_PROVENANCE_SOURCE_SHA256.items():
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest:
+            raise SystemExit('Company provenance source differs from reviewed bytes: ' + name)
+        sources[name] = raw.decode('utf-8')
+    query = native_people_directory_snapshot_query()
+    anchor = '), owner_roles AS ('
+    if query.count(anchor) != 1:
+        raise ValueError('Company provenance routine capture boundary drift')
+    query = query.replace(anchor,
+        " OR (n.nspname='public' AND p.proname IN ('account_company_provenance_v1','account_company_provenance_lock_v1'))\n" + anchor)
+    return {
+        'ops/postgres-company-provenance-v1-owner.sql':
+            '-- Generated UNINSTALLED Company provenance source; not a custody finalizer.\n'
+            '-- No finalized profile or installation is authorized by this artifact.\n'
+            + '\n'.join('-- source: ' + name + '\n' + source for name, source in sources.items()),
+        'ops/postgres-capture-company-provenance-v1-custody.sql': query + ';\n',
+    }
+
+
 def main():
-    if sys.argv[1:] not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--check]')
+    arguments = sys.argv[1:]
+    if arguments in (['--company-provenance-capture'], ['--company-provenance-capture', '--check']):
+        files = company_provenance_capture_files()
+        paths = {name: company_provenance_regular_path(name, required=False) for name in files}
+        if '--check' in arguments:
+            for name, expected in files.items():
+                if not paths[name].is_file() or paths[name].read_bytes() != expected.encode():
+                    raise SystemExit('generated Company provenance artifact differs: ' + name)
+        else:
+            for name, expected in files.items():
+                paths[name].write_bytes(expected.encode())
+        return
+    if arguments not in ([], ['--check']):
+        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
-        if sys.argv[1:]:
+        if arguments:
             if not path.is_file() or path.read_bytes() != expected.encode():
                 raise SystemExit('generated Account custody artifact differs: ' + name)
         else:
