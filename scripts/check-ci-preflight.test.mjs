@@ -2893,3 +2893,179 @@ it("requires Company preview machinery execution in its protected browser step",
     );
   }
 });
+
+
+// Preserve the complete DB-backed Identity REST unit binary on its existing
+// native PostgreSQL wrapper, outside the database-free Domain Cargo sweep.
+import {
+  executableWorkflowCommands as identityUnitWorkflowCommands,
+  allWorkflowCommands as identityUnitAllCommands,
+  directExecutable as identityUnitExecutable,
+} from "./lib/ci-workflow-executables.mjs";
+
+function assertCompleteIdentityUnitScheduling(source) {
+  const parsed = yaml.load(source);
+  const pureSteps = parsed.jobs["domain-unit"].steps.filter(
+    (step) => step.name === "Domain crate unit tests",
+  );
+  assert.equal(pureSteps.length, 1, "one actual database-free unit step required");
+  const pure = pureSteps[0];
+  assert.ok(pure && typeof pure.run === "string");
+  // Reuse the repository's command/quote/continuation/segment extraction.
+  // Cargo package options are a narrow argv grammar, not a shell interpreter.
+  for (const entry of identityUnitAllCommands(source).filter((item) => item.job === "domain-unit")) {
+    const executable = identityUnitExecutable(entry.tokens);
+    assert.equal(entry.malformed || executable.malformed, false,
+      "database-free unit commands must have unambiguous executable arguments");
+    const command = executable.tokens;
+    if (command[0] !== "cargo" || command[1] !== "test") continue;
+    const argumentsEnd = command.indexOf("--", 2);
+    const argumentsOnly = command.slice(2, argumentsEnd < 0 ? undefined : argumentsEnd);
+    for (let index = 0; index < argumentsOnly.length; index += 1) {
+      const argument = argumentsOnly[index];
+      const selected = argument === "-p" || argument === "--package" ? argumentsOnly[index + 1]
+        : argument.startsWith("--package=") ? argument.slice("--package=".length)
+          : argument.startsWith("-p") ? argument.slice(2).replace(/^=/, "") : null;
+      assert.notEqual(selected, "console-identity-rest",
+        "the SQLx unit test must not run without its database");
+    }
+  }
+  const admitted = identityUnitWorkflowCommands(source).filter((entry) => {
+    const executable = identityUnitExecutable(entry.tokens);
+    const command = executable.tokens;
+    return entry.job === "backend" && !entry.malformed && !entry.controlFlow
+      && !executable.malformed && command[0] === "tools/buck/test_needs_postgres.sh"
+      && command.includes("//tools/buck:identity-rest-unit-pg");
+  });
+  assert.equal(admitted.length, 1,
+    "exactly one real native PostgreSQL command must run the complete unit binary");
+  // Decode the actual admitted raw step, bind it to the exact unique parsed
+  // canonical step, then inspect that executing step's effective environment.
+  const executing = yaml.load("      - " + admitted[0].step)[0];
+  const canonical = parsed.jobs.backend.steps.filter((item) => item.id === "app-inline-pg");
+  assert.equal(canonical.length, 1, "one unique canonical app-inline-pg step required");
+  assert.equal(executing.id, "app-inline-pg",
+    "the admitted command must execute in the canonical app-inline-pg step");
+  assert.deepEqual(executing, canonical[0], "admitted and inspected step identities must match");
+  assert.equal(executing.name, "Buck2 console-app inline PostgreSQL suites");
+  const step = executing;
+  assert.ok(step && typeof step.run === "string");
+  for (const environment of [parsed.env, parsed.jobs.backend.env, step.env]) {
+    for (const selector of ["CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT", "CONSOLE_BUCK_RUST_TEST_EXACT"]) {
+      assert.ok(!Object.hasOwn(environment ?? {}, selector),
+        "effective workflow/job/step environment must not filter the moved unit binary");
+    }
+  }
+  // Inspect pre-strip tokens and the actual script: directExecutable removes
+  // shell/env assignments, including the wrapper's exact-case selector.
+  for (const raw of [admitted[0].tokens.join(" "), step.run]) {
+    assert.doesNotMatch(raw,
+      /CONSOLE_BUCK_(?:NEEDS_POSTGRES_TEST|RUST_TEST)_EXACT|--(?:exact|skip|ignored|include-ignored|list|test-filter|test-name-pattern)\b/,
+      "the moved unit binary must retain all 67 cases without filtering");
+  }
+}
+
+it("identity REST complete unit binary uses the native PostgreSQL prerequisite", () => {
+  assertCompleteIdentityUnitScheduling(workflow);
+});
+
+it("identity REST scheduling oracle rejects selectors and nonexecuting wrapper claims", () => {
+  const original = yaml.load(workflow);
+  const control = structuredClone(original);
+  const pure = control.jobs["domain-unit"].steps.find((step) => step.name === "Domain crate unit tests");
+  pure.run = pure.run.replace(/\s+-p\s+console-identity-rest\b/g, "");
+  const target = "//tools/buck:identity-rest-unit-pg";
+  const command = "tools/buck/test_needs_postgres.sh --num-threads=1 " + target;
+  const step = control.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+  step.run = command;
+  assertCompleteIdentityUnitScheduling(yaml.dump(control));
+  for (const altered of [
+    "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one " + command,
+    "env CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one " + command,
+    "CONSOLE_BUCK_RUST_TEST_EXACT=one " + command,
+    "export CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one\n" + command,
+    command + " --test-filter one",
+    "echo " + command,
+    "# " + command,
+  ]) {
+    const changed = structuredClone(control);
+    changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run = altered;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      undefined, "corruption must not claim complete binary execution: " + altered);
+  }
+  for (const level of ["workflow", "job", "step"]) {
+    for (const selector of ["CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT", "CONSOLE_BUCK_RUST_TEST_EXACT"]) {
+      const changed = structuredClone(control);
+      const holder = level === "workflow" ? changed : level === "job" ? changed.jobs.backend
+        : changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+      holder.env = { ...holder.env, [selector]: "one" };
+      assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+        /must not filter/, "effective " + level + " selector must be rejected");
+    }
+  }
+});
+
+
+it("identity REST scheduling oracle binds executing step identity and Cargo aliases and refuses list", () => {
+  const original = yaml.load(workflow);
+  const control = structuredClone(original);
+  const pure = control.jobs["domain-unit"].steps.find((step) => step.name === "Domain crate unit tests");
+  pure.run = pure.run.replace(/\s+-p\s+console-identity-rest\b/g, "");
+  const command = "tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:identity-rest-unit-pg";
+  const step = control.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+  step.run = command;
+  assertCompleteIdentityUnitScheduling(yaml.dump(control));
+  let controls = 0;
+  for (const selector of [null, "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT", "CONSOLE_BUCK_RUST_TEST_EXACT"]) {
+    const changed = structuredClone(control);
+    const canonical = changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+    const actual = structuredClone(canonical);
+    actual.id = "identity-rest-filtered";
+    if (selector) actual.env = { ...actual.env, [selector]: "one" };
+    canonical.run = original.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run;
+    changed.jobs.backend.steps.push(actual);
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /canonical app-inline-pg/, "same display name must not substitute for actual step identity");
+    controls += 1;
+  }
+  {
+    const changed = structuredClone(control);
+    const duplicate = structuredClone(changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg"));
+    duplicate.run = "echo canonical step clone";
+    changed.jobs.backend.steps.push(duplicate);
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /unique canonical/, "duplicate canonical IDs are ambiguous");
+    controls += 1;
+  }
+  for (const alias of [
+    "--package console-identity-rest", "--package=console-identity-rest",
+    "-p=console-identity-rest", '-p "console-identity-rest"',
+    "-p 'console-identity-rest'", '"-p" console-identity-rest', "-pconsole-identity-rest",
+  ]) {
+    const changed = structuredClone(control);
+    changed.jobs["domain-unit"].steps.find((item) => item.name === "Domain crate unit tests").run =
+      "cargo test --manifest-path backend/Cargo.toml --lib " + alias;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /without its database/, "database-free Cargo alias must retain package selection: " + alias);
+    controls += 1;
+  }
+  for (const altered of [command + " --list", command + " -- --list"]) {
+    const changed = structuredClone(control);
+    changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run = altered;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /without filtering/, "enumeration is not complete unit execution");
+    controls += 1;
+  }
+  for (const claim of ["duplicate", "omitted", "quoted", "disabled"]) {
+    const changed = structuredClone(control);
+    const altered = changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+    if (claim === "duplicate") altered.run = command + "\n" + command;
+    if (claim === "omitted") altered.run = "echo identity binary omitted";
+    if (claim === "quoted") altered.run = 'printf "%s\\n" "' + command + '"';
+    if (claim === "disabled") altered.if = false;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /exactly one real native PostgreSQL command/, "nonexecuting or duplicate claim refused: " + claim);
+    controls += 1;
+  }
+  assert.equal(controls, 17, "four step identities, seven Cargo aliases, two list and four execution controls");
+});
