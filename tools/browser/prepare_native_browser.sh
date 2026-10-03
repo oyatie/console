@@ -32,11 +32,12 @@ verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d19
 verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
 for entry in \
   account:3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d \
-  company:1a497a40550918022dcc0ded2c24bba16cb8eb216b23d8ae659988f27c147617 \
+  company:3e66484ed5ff9d5befda5725f21a1c53d146c131e8f121a1235aa24f96261917 \
   company-preview:a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90 \
   hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c \
   native_header:daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d \
   people_journey:d69b37066e92f6c2d95d3475bad8f461969422cf07fb83a05252f77a23c27ecc \
+  group_process_journey:65270aa5751360928133a24c6c562879cd1d421172a19dddd0276ddbf4b22871 \
   policy_journey:766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea \
   recovery_controls:fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6; do
   cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"
@@ -72,7 +73,7 @@ const drivers = {
   CONSOLE_COMPANY_PREVIEW_BROWSER: 'company-preview',
   CONSOLE_HYDRATION_BROWSER: 'hydration',
 };
-const companions = ['native_header', 'people_journey', 'policy_journey', 'recovery_controls'];
+const companions = ['native_header', 'people_journey', 'group_process_journey', 'policy_journey', 'recovery_controls'];
 const digests = {
   package: hash('runtime/package.json'), lock: hash('runtime/package-lock.json'),
   browsers: hash('runtime/node_modules/playwright-core/browsers.json'),

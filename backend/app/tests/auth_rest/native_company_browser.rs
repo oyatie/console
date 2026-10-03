@@ -21,7 +21,24 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
     company_browser_journey_mode(pool, policy_entry, false).await;
 }
 
+#[sqlx::test(migrations = false)]
+async fn native_group_process_real_browser_adopt_reopen_suspend_replace(pool: PgPool) {
+    company_browser_journey_with_group_process(pool, false, false, true).await;
+}
+
+#[path = "native_group_process_browser.rs"]
+mod native_group_process_browser;
+
 async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_entry: bool) {
+    company_browser_journey_with_group_process(pool, policy_entry, people_entry, false).await;
+}
+
+async fn company_browser_journey_with_group_process(
+    pool: PgPool,
+    policy_entry: bool,
+    people_entry: bool,
+    group_process_entry: bool,
+) {
     use futures::FutureExt;
     use std::process::Stdio;
     // Explicit local evidence prerequisites, never a silently skipped browser test.
@@ -60,6 +77,21 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
         "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d"
     );
     policy_helpers.push((header_path, header_bytes));
+    if group_process_entry {
+        let path = driver.parent().unwrap().join("group_process_journey.cjs");
+        assert!(
+            std::fs::symlink_metadata(&path)
+                .unwrap()
+                .file_type()
+                .is_file()
+        );
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            hex::encode(Sha256::digest(&bytes)),
+            "65270aa5751360928133a24c6c562879cd1d421172a19dddd0276ddbf4b22871"
+        );
+        policy_helpers.push((path, bytes));
+    }
     if policy_entry {
         for (name, digest) in [
             (
@@ -127,7 +159,9 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
         .arg(&driver)
         .arg(address.port().to_string())
         .arg(&output)
-        .args(if people_entry {
+        .args(if group_process_entry {
+            Some("group-process-entry")
+        } else if people_entry {
             Some("people-entry")
         } else {
             policy_entry.then_some("policy-entry")
@@ -467,6 +501,11 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
             native_people_browser::observe(&pool, &mut input, &mut events, account, result.company).await;
             checkpoint_receipts.push("PEOPLE_JOURNEY_VERIFIED");
         }
+        if group_process_entry {
+            native_group_process_browser::observe(&pool, &mut input, &mut events,
+                account, result.company, result.group).await;
+            checkpoint_receipts.push("GROUP_PROCESS_AGGREGATE_VERIFIED");
+        }
         let final_event = browser_owner_event(&mut events).await;
         exact_keys(&final_event, &["kind", "status", "result_path"]);
         assert!(
@@ -512,7 +551,7 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
             .iter()
             .all(|(path, original)| std::fs::read(path).is_ok_and(|bytes| &bytes == original));
     let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
+    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
     if output.is_dir() {
         std::fs::write(
             output.join("owner-receipt.json"),
