@@ -683,3 +683,176 @@ mod native_org_bridge_transport_red {
         close_states(&[state], outcome).await;
     }
 }
+
+mod native_org_provenance_contract_red {
+    use super::*;
+
+    #[sqlx::test(migrations = false)]
+    async fn positive_company_provenance_requires_exact_source_contract(pool: PgPool) {
+        let (app, _, state) =
+            native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
+        let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+        let outcome = AssertUnwindSafe(async {
+            assert_eq!(ready_status(&state).await, StatusCode::OK);
+            let role: (String, bool, bool) = sqlx::query_as(
+                "SELECT current_user::text, rolsuper, rolbypassrls FROM pg_roles WHERE rolname=current_user",
+            )
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+            assert_eq!(role, ("console_rt".into(), false, false));
+            assert_eq!(
+                classified(
+                    &runtime,
+                    include_str!("../../../../ops/postgres-native-people-directory-row-lock-custody-state.sql"),
+                )
+                .await,
+                "native_people_directory.finalized",
+            );
+
+            // Genuine enrollment proves its receipt, topology, root authority,
+            // actor and catalog prerequisites through the existing owner oracle.
+            let (app, _, created) = create_owned_company(&pool, app).await;
+            let legacy = *OrgId::knl().as_uuid();
+            assert_ne!(created.company, legacy);
+            let legacy_source: bool = sqlx::query_scalar(
+                "SELECT o.origin_account_id IS NULL AND o.origin_command_id IS NULL \
+                    AND o.origin_receipt_id IS NULL AND g.origin_account_id IS NULL \
+                    AND g.origin_command_id IS NULL AND g.origin_receipt_id IS NULL \
+                    AND h.revision>0 AND h.incarnation<>'00000000-0000-0000-0000-000000000000'::uuid \
+                    AND r.state='ACTIVE' AND r.to_time IS NULL AND r.provenance_kind='LEGACY_BACKFILL' \
+                    AND r.native_account_id IS NULL AND r.legacy_actor_user_id IS NULL \
+                    AND r.force_actor_user_id IS NULL AND r.command_id IS NULL AND r.command_receipt IS NULL \
+                    AND NOT EXISTS(SELECT 1 FROM public.company_enrollment_receipts x WHERE x.org_id=o.id OR x.group_id=g.id) \
+                    AND NOT EXISTS(SELECT 1 FROM public.company_enrollment_effect_bindings x WHERE x.org_id=o.id OR x.group_id=g.id) \
+                    AND NOT EXISTS(SELECT 1 FROM public.company_authority_heads x JOIN public.organizations n ON n.id=x.org_id WHERE x.org_id=o.id OR n.group_id=g.id) \
+                    AND NOT EXISTS(SELECT 1 FROM public.company_actors x JOIN public.organizations n ON n.id=x.org_id WHERE x.org_id=o.id OR n.group_id=g.id) \
+                    AND NOT EXISTS(SELECT 1 FROM public.native_company_catalog_installs x JOIN public.organizations n ON n.id=x.org_id WHERE x.org_id=o.id OR n.group_id=g.id) \
+                 FROM public.organizations o JOIN public.groups g ON g.id=o.group_id \
+                 JOIN public.group_authority_heads h ON h.group_id=g.id \
+                 JOIN public.group_memberships m ON m.org_id=o.id AND m.group_id=g.id \
+                 JOIN public.group_membership_revisions r ON (r.group_id,r.org_id,r.membership_id,r.revision,r.incarnation) \
+                    =(m.group_id,m.org_id,m.membership_id,m.current_revision,m.incarnation) WHERE o.id=$1",
+            )
+            .bind(legacy)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert!(legacy_source, "positive legacy source prerequisite");
+            let missing = Uuid::new_v4();
+            let missing_source: bool = sqlx::query_scalar(
+                "SELECT NOT EXISTS(SELECT 1 FROM public.organizations WHERE id=$1)",
+            )
+            .bind(missing)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert!(missing_source);
+            let before = all_rows(&pool).await;
+
+            // This exact absence assertion is the predecessor RED. No source
+            // installer, copied SQL body or guessed fingerprint is supplied here.
+            let source: Option<i64> = sqlx::query_scalar(
+                "SELECT to_regprocedure('public.account_company_provenance_v1(uuid)')::oid::bigint",
+            )
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+            assert!(
+                source.is_some(),
+                "ORG_PROVENANCE_CONTRACT: exact public.account_company_provenance_v1(uuid) source is absent",
+            );
+            let contract: Value = sqlx::query_scalar(
+                "SELECT jsonb_build_object( \
+                    'schema',n.nspname,'name',p.proname,'arguments',pg_get_function_identity_arguments(p.oid), \
+                    'result',pg_get_function_result(p.oid),'owner',pg_get_userbyid(p.proowner),'language',l.lanname, \
+                    'kind',p.prokind,'security_definer',p.prosecdef,'strict',p.proisstrict,'returns_set',p.proretset, \
+                    'leakproof',p.proleakproof,'volatility',p.provolatile,'parallel',p.proparallel, \
+                    'config',p.proconfig,'argnames',p.proargnames, \
+                    'plain_arguments',p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL AND p.proargmodes IS NULL, \
+                    'acl',COALESCE((SELECT jsonb_agg(jsonb_build_array(pg_get_userbyid(a.grantor), \
+                        CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type,a.is_grantable) \
+                        ORDER BY pg_get_userbyid(a.grantor),CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type) \
+                        FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a),'[]'::jsonb)) \
+                 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang \
+                 WHERE p.oid=to_regprocedure('public.account_company_provenance_v1(uuid)')",
+            )
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+            assert_eq!(
+                contract,
+                json!({
+                    "schema":"public", "name":"account_company_provenance_v1", "arguments":"p_company uuid",
+                    "result":"text", "owner":"console_account_owner", "language":"plpgsql", "kind":"f",
+                    "security_definer":true, "strict":false, "returns_set":false, "leakproof":false,
+                    "volatility":"v", "parallel":"u", "config":["search_path=pg_catalog, pg_temp","row_security=on"],
+                    "argnames":["p_company"], "plain_arguments":true,
+                    "acl":[["console_account_owner","console_account_owner","EXECUTE",false],
+                           ["console_account_owner","console_rt","EXECUTE",false]],
+                }),
+            );
+            let unchanged_privileges: bool = sqlx::query_scalar(
+                "SELECT NOT has_any_column_privilege('console_account_owner','public.organizations','UPDATE') \
+                    AND NOT has_any_column_privilege('console_account_owner','public.groups','UPDATE') \
+                    AND NOT has_any_column_privilege('console_account_owner','public.group_memberships','UPDATE') \
+                    AND NOT has_any_column_privilege('console_account_owner','public.group_membership_revisions','UPDATE') \
+                    AND NOT has_any_column_privilege('console_rt','public.company_enrollment_receipts','SELECT') \
+                    AND NOT has_any_column_privilege('console_rt','public.company_enrollment_effect_bindings','SELECT') \
+                    AND NOT has_any_column_privilege('console_rt','public.company_authority_heads','SELECT') \
+                    AND NOT has_any_column_privilege('console_rt','public.company_actors','SELECT') \
+                    AND NOT has_any_column_privilege('console_rt','public.native_company_catalog_installs','SELECT') \
+                    AND NOT has_function_privilege('console_auth_rt','public.account_company_provenance_v1(uuid)','EXECUTE') \
+                    AND NOT has_function_privilege('console_auth_startup','public.account_company_provenance_v1(uuid)','EXECUTE')",
+            )
+            .fetch_one(&runtime)
+            .await
+            .unwrap();
+            assert!(unchanged_privileges, "classifier widened raw or Auth privileges");
+
+            let cases = [
+                ("native", Some(created.company), "NATIVE"),
+                ("legacy", Some(legacy), "LEGACY"),
+                ("null", None, "UNKNOWN"),
+                ("nil", Some(Uuid::nil()), "UNKNOWN"),
+                ("missing", Some(missing), "UNKNOWN"),
+            ];
+            let mut executed = 0;
+            for (label, company, expected) in cases {
+                let mut tx = runtime.begin().await.unwrap();
+                sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+                    .execute(tx.as_mut())
+                    .await
+                    .unwrap();
+                sqlx::query("SELECT set_config('app.current_org',$1,true)")
+                    .bind(legacy.to_string())
+                    .execute(tx.as_mut())
+                    .await
+                    .unwrap();
+                let result: Option<String> = sqlx::query_scalar(
+                    "SELECT public.account_company_provenance_v1($1::uuid)",
+                )
+                .bind(company)
+                .fetch_one(tx.as_mut())
+                .await
+                .unwrap();
+                assert_eq!(result.as_deref(), Some(expected), "{label}");
+                let context: String =
+                    sqlx::query_scalar("SELECT current_setting('app.current_org')")
+                        .fetch_one(tx.as_mut())
+                        .await
+                        .unwrap();
+                assert_eq!(context, legacy.to_string(), "{label}: source leaked RLS context");
+                tx.commit().await.unwrap();
+                executed += 1;
+            }
+            assert_eq!(executed, 5);
+            assert!(before == all_rows(&pool).await, "classification changed durable rows");
+            drop(app);
+        })
+        .catch_unwind()
+        .await;
+        runtime.close().await;
+        close_states(&[state], outcome).await;
+    }
+}
