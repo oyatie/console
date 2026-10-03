@@ -61,6 +61,27 @@ def check_lock(canonical, projected):
             raise ValueError("hydration dependency introduced an unreviewed edge: " + repr(identity))
 
 
+def root_aliases(ui, metadata, graph):
+    resolve = metadata["resolve"]
+    roots = [node for node in resolve["nodes"] if node["id"] == resolve["root"]]
+    if len(roots) != 1:
+        raise ValueError("hydration metadata requires one resolved root")
+    aliases = []
+    for edge in roots[0]["deps"]:
+        declared = [dep for dep in ui["dependencies"]
+                    if (dep["rename"] or dep["name"]).replace("-", "_") == edge["name"]]
+        packages = [package for package in metadata["packages"] if package["id"] == edge["pkg"]]
+        if len(declared) != 1 or len(packages) != 1 or declared[0]["name"] != packages[0]["name"]:
+            raise ValueError("missing or ambiguous active hydration dependency: " + repr(edge))
+        name = declared[0]["rename"] or declared[0]["name"]
+        if graph.count('alias(\n    name = ' + value(name) + ',') != 1:
+            raise ValueError("missing or ambiguous active hydration alias: " + name)
+        aliases.append("//third-party/rust/hydrate:" + name)
+    if len(set(aliases)) != len(aliases):
+        raise ValueError("duplicate active hydration dependency")
+    return sorted(aliases)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reindeer", required=True, help="authenticated repository-pinned Reindeer executable")
@@ -116,6 +137,8 @@ def main():
     # against the canonical lock before permitting locked Reindeer discovery.
     run(metadata_command + ["--no-default-features", "--features", "hydrate,islands"])
     check_lock(tomllib.loads(canonical_bytes.decode()), tomllib.loads((OUTPUT / "Cargo.lock").read_text()))
+    active = json.loads(run(metadata_command + ["--locked", "--no-default-features", "--features",
+                                               "hydrate,islands", "--filter-platform", "wasm32-unknown-unknown"]))
     discovery = json.loads(run(metadata_command + ["--locked", "--all-features"]))
     if (REPO / "backend/Cargo.lock").read_bytes() != canonical_bytes:
         raise ValueError("canonical lock changed during hydration generation")
@@ -172,12 +195,7 @@ def main():
     graph = (OUTPUT / "BUCK").read_text()
     if "//third-party/rust:" in graph:
         raise ValueError("hydration graph leaked server namespace")
-    aliases = []
-    for dep in ui["dependencies"]:
-        name = dep["rename"] or dep["name"]
-        if 'alias(\n    name = "' + name + '",' in graph:
-            aliases.append("//third-party/rust/hydrate:" + name)
-    (OUTPUT / "root-dependencies.json").write_text(json.dumps(sorted(aliases), indent=2) + "\n")
+    (OUTPUT / "root-dependencies.json").write_text(json.dumps(root_aliases(ui, active, graph), indent=2) + "\n")
     (OUTPUT / "input-lock.json").write_text(json.dumps({
         "inputs": {path: hashlib.sha256((REPO / path).read_bytes()).hexdigest()
                    for path in sorted(set(GENERATION_INPUTS) | {

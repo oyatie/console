@@ -1,6 +1,5 @@
 [
   "//third-party/rust/hydrate:leptos",
   "//third-party/rust/hydrate:serde",
-  "//third-party/rust/hydrate:serde_json",
   "//third-party/rust/hydrate:wasm-bindgen"
 ]

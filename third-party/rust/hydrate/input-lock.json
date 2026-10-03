@@ -124,7 +124,7 @@
     "third-party/rust/fixups/zip/fixups.toml": "4ce9f17656425efd64fa11884da439de2dd117b4b6bc7e07ebebb1875dce6a67",
     "third-party/rust/fixups/zmij/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e",
     "third-party/rust/reindeer.toml": "784157dc41867d84e0da8899c587428e69cfd14fe927e81e91759cc3b2ee4ffd",
-    "tools/buck/gen_hydrate.py": "af1b6651e50f394d9e7f72e2fc717eeb55dd836a68d4dbf182d7ca0bc304855c",
+    "tools/buck/gen_hydrate.py": "227729e955c248ff16e83ea747643e2c502450e34eb8a183fc355fc478ae6661",
     "tools/ui/wasm_bundle.py": "2113298b59972a872070327071ed367acbc4eed37a09506f86d1a3e58d47f42f"
   },
   "rust_channel": "1.98.1"
