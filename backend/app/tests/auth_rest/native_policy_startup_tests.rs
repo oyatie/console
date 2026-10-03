@@ -687,11 +687,35 @@ mod native_org_bridge_transport_red {
 mod native_org_provenance_contract_red {
     use super::*;
 
+    // The same full ABI/ACL oracle checks both declared routine signatures.
+    async fn routine_contract(runtime: &PgPool, signature: &str) -> Value {
+        sqlx::query_scalar(
+                "SELECT jsonb_build_object( \
+                    'schema',n.nspname,'name',p.proname,'arguments',pg_get_function_identity_arguments(p.oid), \
+                    'result',pg_get_function_result(p.oid),'owner',pg_get_userbyid(p.proowner),'language',l.lanname, \
+                    'kind',p.prokind,'security_definer',p.prosecdef,'strict',p.proisstrict,'returns_set',p.proretset, \
+                    'leakproof',p.proleakproof,'volatility',p.provolatile,'parallel',p.proparallel, \
+                    'config',p.proconfig,'argnames',p.proargnames, \
+                    'plain_arguments',p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL AND p.proargmodes IS NULL, \
+                    'acl',COALESCE((SELECT jsonb_agg(jsonb_build_array(pg_get_userbyid(a.grantor), \
+                        CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type,a.is_grantable) \
+                        ORDER BY pg_get_userbyid(a.grantor),CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type) \
+                        FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a),'[]'::jsonb)) \
+                 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang \
+                 WHERE p.oid=to_regprocedure($1)",
+        )
+        .bind(signature)
+        .fetch_one(runtime)
+        .await
+        .unwrap()
+    }
+
     #[sqlx::test(migrations = false)]
     async fn positive_company_provenance_requires_exact_source_contract(pool: PgPool) {
-        let (app, _, state) =
+        let (app, key, state) =
             native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
         let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+        let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
         let outcome = AssertUnwindSafe(async {
             assert_eq!(ready_status(&state).await, StatusCode::OK);
             let role: (String, bool, bool) = sqlx::query_as(
@@ -712,7 +736,7 @@ mod native_org_provenance_contract_red {
 
             // Genuine enrollment proves its receipt, topology, root authority,
             // actor and catalog prerequisites through the existing owner oracle.
-            let (app, _, created) = create_owned_company(&pool, app).await;
+            let (app, cookies, created) = create_owned_company(&pool, app).await;
             let legacy = *OrgId::knl().as_uuid();
             assert_ne!(created.company, legacy);
             let legacy_source: bool = sqlx::query_scalar(
@@ -748,10 +772,52 @@ mod native_org_provenance_contract_red {
             .await
             .unwrap();
             assert!(missing_source);
+            // Exercise real policy work before provenance installation; origin is
+            // historical evidence, independent of the current policy head.
+            let config = account_browser_config(&pool, app._artifacts.root.clone(), &key);
+            let (verifier, issuer, ttl) = bindings(&config);
+            let store = PgOrgStore::new(runtime.clone()).with_native_account_policy(verifier, issuer, ttl);
+            let policy = CompanyPolicy::new().unwrap();
+            let install = NativeCompanyBusinessCommandV1::install(
+                Uuid::new_v4(), OrgId::from_uuid(created.company), 1,
+            ).unwrap();
+            let form = native_policy_form(&store, &policy, &read_credentials(&cookies),
+                NativePolicyCommandRef::from_command(&install)).await.unwrap();
+            let credentials = AccountEnrollmentCredentials::for_mutation(
+                &cookies.0[ACCESS], form.proof.as_str(),
+            ).unwrap();
+            let installed = submit_native_policy_command(&store, &policy, &credentials,
+                &install, &TraceContext::generate()).await.unwrap();
+            assert!(matches!(installed.terminal.outcome,
+                NativePolicyOutcome::Committed(
+                    console_identity_application::company_policy::workflow::NativePolicyEffect::Installed { .. }
+                )));
+            let epoch: i64 = sqlx::query_scalar(
+                "SELECT epoch FROM public.company_authority_heads WHERE org_id=$1",
+            ).bind(created.company).fetch_one(&pool).await.unwrap();
+            assert_eq!(epoch, 2, "genuine policy install did not advance the Company head");
             let before = all_rows(&pool).await;
 
-            // This exact absence assertion is the predecessor RED. No source
-            // installer, copied SQL body or guessed fingerprint is supplied here.
+            // Install only the exact committed UNINSTALLED resource in this
+            // disposable database. This is not a production finalizer/profile.
+            const SOURCE: &str = include_str!("../../../../ops/postgres-company-provenance-v1-owner.sql");
+            assert_eq!(hex::encode(Sha256::digest(SOURCE.as_bytes())),
+                "e813293ace00c46358a0c1c62093e0911aae4da1b93c4dd1577dcb351c5398c2");
+            let mut setup = pool.begin().await.unwrap();
+            sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='30s'")
+                .execute(setup.as_mut()).await.unwrap();
+            let setup_identity: bool = sqlx::query_scalar(
+                "SELECT session_user=current_user AND current_user='console_buck_admin' \
+                   AND starts_with(current_database(),'_sqlx_test_') \
+                   AND current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' \
+                   AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user)",
+            ).fetch_one(setup.as_mut()).await.unwrap();
+            assert!(setup_identity, "declared source installer is not the marked disposable owner");
+            sqlx::raw_sql(SOURCE).execute(setup.as_mut()).await.expect("declared source installation prerequisite");
+            setup.commit().await.unwrap();
+            assert!(before == all_rows(&pool).await, "source DDL changed durable business rows");
+
+            // Preserve the original exact public source-presence oracle.
             let source: Option<i64> = sqlx::query_scalar(
                 "SELECT to_regprocedure('public.account_company_provenance_v1(uuid)')::oid::bigint",
             )
@@ -762,24 +828,7 @@ mod native_org_provenance_contract_red {
                 source.is_some(),
                 "ORG_PROVENANCE_CONTRACT: exact public.account_company_provenance_v1(uuid) source is absent",
             );
-            let contract: Value = sqlx::query_scalar(
-                "SELECT jsonb_build_object( \
-                    'schema',n.nspname,'name',p.proname,'arguments',pg_get_function_identity_arguments(p.oid), \
-                    'result',pg_get_function_result(p.oid),'owner',pg_get_userbyid(p.proowner),'language',l.lanname, \
-                    'kind',p.prokind,'security_definer',p.prosecdef,'strict',p.proisstrict,'returns_set',p.proretset, \
-                    'leakproof',p.proleakproof,'volatility',p.provolatile,'parallel',p.proparallel, \
-                    'config',p.proconfig,'argnames',p.proargnames, \
-                    'plain_arguments',p.provariadic=0 AND p.pronargdefaults=0 AND p.proargdefaults IS NULL AND p.proargmodes IS NULL, \
-                    'acl',COALESCE((SELECT jsonb_agg(jsonb_build_array(pg_get_userbyid(a.grantor), \
-                        CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type,a.is_grantable) \
-                        ORDER BY pg_get_userbyid(a.grantor),CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type) \
-                        FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a),'[]'::jsonb)) \
-                 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang \
-                 WHERE p.oid=to_regprocedure('public.account_company_provenance_v1(uuid)')",
-            )
-            .fetch_one(&runtime)
-            .await
-            .unwrap();
+            let contract = routine_contract(&runtime, "public.account_company_provenance_v1(uuid)").await;
             assert_eq!(
                 contract,
                 json!({
@@ -792,6 +841,42 @@ mod native_org_provenance_contract_red {
                            ["console_account_owner","console_rt","EXECUTE",false]],
                 }),
             );
+            assert_eq!(
+                routine_contract(&runtime, "public.account_company_provenance_lock_v1(uuid,uuid)").await,
+                json!({
+                    "schema":"public", "name":"account_company_provenance_lock_v1",
+                    "arguments":"p_company uuid, p_group uuid", "result":"boolean",
+                    "owner":"console_app", "language":"plpgsql", "kind":"f",
+                    "security_definer":true, "strict":false, "returns_set":false,
+                    "leakproof":false, "volatility":"v", "parallel":"u",
+                    "config":["search_path=pg_catalog, pg_temp","row_security=on"],
+                    "argnames":["p_company","p_group"], "plain_arguments":true,
+                    "acl":[["console_app","console_account_owner","EXECUTE",false],
+                           ["console_app","console_app","EXECUTE",false]],
+                }),
+            );
+            let exact_namespace: Vec<String> = sqlx::query_scalar(
+                "SELECT p.oid::regprocedure::text FROM pg_catalog.pg_proc p \
+                 JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace \
+                 WHERE n.nspname='public' AND p.proname IN \
+                    ('account_company_provenance_v1','account_company_provenance_lock_v1') \
+                 ORDER BY p.oid::regprocedure::text",
+            ).fetch_all(&runtime).await.unwrap();
+            assert_eq!(exact_namespace, vec![
+                "account_company_provenance_lock_v1(uuid,uuid)",
+                "account_company_provenance_v1(uuid)",
+            ]);
+            for denied in [&runtime, &auth] {
+                let error = sqlx::query("SELECT public.account_company_provenance_lock_v1($1,$2)")
+                    .bind(created.company).bind(created.group).execute(denied).await.unwrap_err();
+                match error {
+                    sqlx::Error::Database(error) => {
+                        assert_eq!(error.code().as_deref(), Some("42501"));
+                        assert!(error.message().contains("account_company_provenance_lock_v1"));
+                    }
+                    error => panic!("helper denial was an unrelated error: {error}"),
+                }
+            }
             let unchanged_privileges: bool = sqlx::query_scalar(
                 "SELECT NOT has_any_column_privilege('console_account_owner','public.organizations','UPDATE') \
                     AND NOT has_any_column_privilege('console_account_owner','public.groups','UPDATE') \
@@ -847,12 +932,88 @@ mod native_org_provenance_contract_red {
                 executed += 1;
             }
             assert_eq!(executed, 5);
+            for isolation in ["REPEATABLE READ", "SERIALIZABLE"] {
+                let mut tx = runtime.begin().await.unwrap();
+                sqlx::raw_sql(sqlx::AssertSqlSafe(format!("SET TRANSACTION ISOLATION LEVEL {isolation}")))
+                    .execute(tx.as_mut()).await.unwrap();
+                sqlx::query("SELECT set_config('app.current_org',$1,true)")
+                    .bind(legacy.to_string()).execute(tx.as_mut()).await.unwrap();
+                let value: String = sqlx::query_scalar("SELECT public.account_company_provenance_v1($1)")
+                    .bind(created.company).fetch_one(tx.as_mut()).await.unwrap();
+                assert_eq!(value, "UNKNOWN", "unsupported isolation did not fail closed");
+                let context: String = sqlx::query_scalar("SELECT current_setting('app.current_org')")
+                    .fetch_one(tx.as_mut()).await.unwrap();
+                assert_eq!(context, legacy.to_string());
+                tx.commit().await.unwrap();
+            }
+            for (company, expected) in [(created.company,"NATIVE"),(legacy,"LEGACY")] {
+                let mut tx = runtime.begin().await.unwrap();
+                sqlx::query("SELECT set_config('app.current_org','',true)")
+                    .execute(tx.as_mut()).await.unwrap();
+                let value: String = sqlx::query_scalar("SELECT public.account_company_provenance_v1($1)")
+                    .bind(company).fetch_one(tx.as_mut()).await.unwrap();
+                assert_eq!(value, expected);
+                let context: String = sqlx::query_scalar("SELECT current_setting('app.current_org')")
+                    .fetch_one(tx.as_mut()).await.unwrap();
+                assert_eq!(context, "");
+                tx.commit().await.unwrap();
+            }
+            // Deterministic unknown-ID corpus is a bounded generated-input check;
+            // it does not claim coverage-guided fuzzing or the full browser suite.
+            let mut corpus = runtime.begin().await.unwrap();
+            sqlx::query("SELECT set_config('app.current_org',$1,true)")
+                .bind(legacy.to_string()).execute(corpus.as_mut()).await.unwrap();
+            for index in 0..64 {
+                let digest = Sha256::digest(format!("company-provenance-unknown-id-v1/{index}").as_bytes());
+                let unknown = Uuid::from_slice(&digest[..16]).unwrap();
+                let absent: bool = sqlx::query_scalar(
+                    "SELECT NOT EXISTS(SELECT 1 FROM public.organizations WHERE id=$1)",
+                ).bind(unknown).fetch_one(&pool).await.unwrap();
+                assert!(absent, "generated case is not an unknown Company");
+                let value: String = sqlx::query_scalar("SELECT public.account_company_provenance_v1($1)")
+                    .bind(unknown).fetch_one(corpus.as_mut()).await.unwrap();
+                assert_eq!(value, "UNKNOWN", "generated case {index}");
+            }
+            let context: String = sqlx::query_scalar("SELECT current_setting('app.current_org')")
+                .fetch_one(corpus.as_mut()).await.unwrap();
+            assert_eq!(context, legacy.to_string());
+            corpus.commit().await.unwrap();
+
+            let lock_queries = [
+                ("Company", "SELECT 1 FROM public.organizations WHERE id=$1 FOR UPDATE NOWAIT", created.company),
+                ("Group", "SELECT 1 FROM public.groups WHERE id=$1 FOR UPDATE NOWAIT", created.group),
+                ("Group head", "SELECT 1 FROM public.group_authority_heads WHERE group_id=$1 FOR UPDATE NOWAIT", created.group),
+                ("membership", "SELECT 1 FROM public.group_memberships WHERE org_id=$1 FOR UPDATE NOWAIT", created.company),
+                ("history", "SELECT 1 FROM public.group_membership_revisions h JOIN public.group_memberships m ON (h.group_id,h.org_id,h.membership_id,h.revision,h.incarnation)=(m.group_id,m.org_id,m.membership_id,m.current_revision,m.incarnation) WHERE m.org_id=$1 FOR UPDATE OF h NOWAIT", created.company),
+            ];
+            let mut holder = runtime.begin().await.unwrap();
+            let held: String = sqlx::query_scalar("SELECT public.account_company_provenance_v1($1)")
+                .bind(created.company).fetch_one(holder.as_mut()).await.unwrap();
+            assert_eq!(held, "NATIVE");
+            for (label, query, id) in lock_queries {
+                let mut contender = pool.begin().await.unwrap();
+                let error = sqlx::query(sqlx::AssertSqlSafe(query)).bind(id)
+                    .fetch_one(contender.as_mut()).await.unwrap_err();
+                match error {
+                    sqlx::Error::Database(error) => assert_eq!(error.code().as_deref(),Some("55P03"),"{label}"),
+                    error => panic!("{label}: unrelated lock-probe failure: {error}"),
+                }
+                contender.rollback().await.unwrap();
+            }
+            holder.commit().await.unwrap();
+            for (label, query, id) in lock_queries {
+                let mut contender = pool.begin().await.unwrap();
+                sqlx::query(sqlx::AssertSqlSafe(query)).bind(id)
+                    .fetch_one(contender.as_mut()).await.unwrap_or_else(|error| panic!("{label}: committed classifier retained lock: {error}"));
+                contender.rollback().await.unwrap();
+            }
             assert!(before == all_rows(&pool).await, "classification changed durable rows");
             drop(app);
         })
         .catch_unwind()
         .await;
         runtime.close().await;
+        auth.close().await;
         close_states(&[state], outcome).await;
     }
 }

@@ -132,3 +132,9 @@ export_file(
     name = "native-people-directory/input-row-lock-v1.sql",
     visibility = ["PUBLIC"],
 )
+
+# Declared UNINSTALLED provenance input for isolated owner-contract tests.
+export_file(
+    name = "postgres-company-provenance-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
