@@ -71,6 +71,15 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
         return Ok(VerifiedCustodyProfile::NativeOrgBridgeCompatible);
     }
     if provenance != "company_provenance.absent" {
+        let closed: String = sqlx::query_scalar(include_str!(
+            "native_org_unit_closed_perimeter_v1_custody_state.sql"
+        ))
+        .fetch_one(&mut *transaction)
+        .await?;
+        if closed == "native_org_unit.closed_perimeter_compatible" {
+            transaction.commit().await?;
+            return Ok(VerifiedCustodyProfile::NativeOrgBridgeCompatible);
+        }
         return Err(AppError::Config(provenance));
     }
     let directory: String = sqlx::query_scalar(include_str!(
