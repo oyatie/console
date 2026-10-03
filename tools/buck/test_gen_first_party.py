@@ -944,7 +944,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             source_text,
             re.MULTILINE,
         )
-        self.assertEqual(166, len(ordinary_tests))
+        self.assertEqual(170, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
         self.assertEqual(23, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
