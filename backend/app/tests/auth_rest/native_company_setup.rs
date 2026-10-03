@@ -2024,6 +2024,7 @@ pub(crate) mod company_setup {
         include!("native_policy_declared_successor_capture.rs");
         include!("native_people_directory_declared_capture.rs");
         include!("native_people_directory_row_lock_capture.rs");
+        include!("native_company_provenance_pair_capture.rs");
         include!("native_people_directory_staged_startup.rs");
         include!("native_people_directory_absent_startup.rs");
         include!("native_people_directory_finalizer_tests.rs");

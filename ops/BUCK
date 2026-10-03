@@ -138,3 +138,9 @@ export_file(
     name = "postgres-company-provenance-v1-owner.sql",
     visibility = ["PUBLIC"],
 )
+
+# Exact UNINSTALLED metadata input for isolated provenance capture diagnostics.
+export_file(
+    name = "postgres-capture-company-provenance-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
