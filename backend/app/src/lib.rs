@@ -5862,9 +5862,8 @@ mod readiness_tests {
     use axum::response::IntoResponse;
     use http::StatusCode;
     use sqlx::PgPool;
-    use sqlx::postgres::PgPoolOptions;
 
-    use super::{AppConfig, AppRole, AppState, DatabaseDependency, readyz};
+    use super::{AppConfig, AppRole, AppState, DatabaseDependency, account_custody, readyz};
 
     fn api_config() -> AppConfig {
         AppConfig::from_pairs([
@@ -5878,22 +5877,38 @@ mod readiness_tests {
         .expect("valid api test config")
     }
 
-    async fn separate_pool(pool: &PgPool) -> PgPool {
-        PgPoolOptions::new()
-            .max_connections(1)
-            .connect_with(pool.connect_options().as_ref().clone())
-            .await
-            .expect("separate readiness pool connects")
-    }
-
     #[cfg(feature = "test-postgres")]
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn api_readiness_fails_closed_when_either_command_pool_degrades(pool: PgPool) {
-        let leave = separate_pool(&pool).await;
-        let ontology = separate_pool(&pool).await;
-        let platform_force = separate_pool(&pool).await;
-        let mut state =
-            AppState::new(api_config(), DatabaseDependency::Postgres(pool)).expect("state builds");
+        console_platform_test_support::prepare_account_test_database(&pool).await;
+        let runtime = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::Business,
+        )
+        .await;
+        assert_eq!(
+            account_custody::verify(&runtime)
+                .await
+                .expect("actual finalized Account custody prerequisite"),
+            account_custody::VerifiedCustodyProfile::NativeAccount
+        );
+        let leave = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::LeaveCommand,
+        )
+        .await;
+        let ontology = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::OntologyCommand,
+        )
+        .await;
+        let platform_force = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::PlatformForceCommand,
+        )
+        .await;
+        let mut state = AppState::new(api_config(), DatabaseDependency::Postgres(runtime))
+            .expect("state builds");
         state.leave_command_database = DatabaseDependency::Postgres(leave.clone());
         state.ontology_command_database = DatabaseDependency::Postgres(ontology);
         state.platform_force_command_database = DatabaseDependency::Postgres(platform_force);
