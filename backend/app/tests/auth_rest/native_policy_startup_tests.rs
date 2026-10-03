@@ -1200,7 +1200,7 @@ mod native_org_bridge_readiness_red {
                 assert!(html.contains("native-people-workspace") && html.contains("id=\"people-directory-heading\"")
                     && html.contains("표시할 사람이 없습니다") && html.contains(&company_name));
                 assert!(!html.contains("data-people-record="));
-                let policy_form = document(&app, &format!("/companies/{}/policy/people-directory/read/grant", created.company), &cookies).await;
+                let policy_form = document(&app, &format!("/companies/{}/policy/people-directory/read/revoke", created.company), &cookies).await;
                 assert_eq!(policy_form.status, StatusCode::OK);
                 policy_form.private();
                 let html = std::str::from_utf8(&policy_form.bytes).unwrap();
