@@ -53,13 +53,36 @@ for(const key of ['company_layout_320','company_layout_desktop','payroll_company
 // Mandatory native policy/Payroll header classifier controls. No product fixtures.
 const {expectedNativeHeaders,completeNativeHeaders}=require(process.env.CONSOLE_NAVIGATION_DRIVER||'./company.cjs');
 // Classifier-only positive record; never published as browser acceptance evidence.
+// Synthetic classifier witness only; never used by the real DOM collector.
+function sectionWitness(expected) {
+  const selected = expected.currentPath ?? expected.locationPath;
+  const markers = selected ? [{tag: 'a', href: selected,
+    value: expected.currentPath ? 'page' : 'location'}] : [];
+  const region = mode => {
+    const structure = expected.groups[mode].flatMap(group => [
+      {tag: 'p', label: group.label},
+      {tag: 'nav', landmark: group.landmark, paths: [...group.paths]},
+    ]).concat([{tag: 'nav', landmark: '계정 탐색', paths: ['/account']}]);
+    const shortcuts = mode === 'mobile' && expected.payrollPath ? [{tag: 'a', href: expected.payrollPath,
+      value: expected.currentPath === expected.payrollPath ? 'page' : null,
+      direct_child: true, inside_disclosure: false}] : [];
+    return {structure, group_labels: expected.groups[mode].map(group => group.label),
+      landmarks: structure.filter(node => node.tag === 'nav'),
+      paths: shortcuts.map(link => link.href).concat(expected.groups[mode].flatMap(group => group.paths), ['/account']),
+      markers: structuredClone(markers), shortcuts,
+      ...(mode === 'mobile' ? {menu_count: 1, body_count: 1, native_disclosure: true, body_inside_disclosure: true} : {})};
+  };
+  return {kind: 'RAW_NATIVE_SECTION_SNAPSHOT_V2', region_counts: {desktop: 1, mobile: 1},
+    desktop: region('desktop'), mobile: region('mobile'), outside_markers: []};
+}
+
 function headerWitness(expected) {
   return {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
     allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
     payroll_path: expected.payrollPath ?? null, denied_prefixes: [...(expected.deniedPrefixes ?? [])].sort(),
     widths: [320, 680, 681, 1280].map(width => ({width, header_height: 90, main_top: 90,
       title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
-      routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true})),
+      routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true, sections: sectionWitness(expected)})),
     enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
     values_preserved: true, location_preserved: true, no_product_script: true,
     unique_ids: true, network_requests: 0};
@@ -106,6 +129,14 @@ test('duplicate policy Payroll header refused', () => { const r = headerEvidence
 test('reordered policy Payroll header refused', () => { const r = headerEvidence(); [r.native_headers[0], r.native_headers[1]] = [r.native_headers[1], r.native_headers[0]]; assert.equal(completeNativeHeaders(r), false); });
 test('missing entire policy Payroll header history refused', () => { const r = headerEvidence(); delete r.native_headers; assert.equal(completeNativeHeaders(r), false); });
 test('People and policy origin disagreement refused', () => { const r = headerEvidence(); r.people_entry = true; r.people = {header_origin: 'https://localhost:4321'}; assert.equal(completeNativeHeaders(r), false); });
+
+// Mandatory additive raw records propagate through the existing full classifier.
+for (let i = 0; i < expectedNativeHeaders(headerEvidence()).length; i++) {
+  for (let width = 0; width < 4; width++) test(`policy Payroll header ${i} omitted raw sections at width ${width} refused`, () => {
+    const r = headerEvidence(); delete r.native_headers[i].widths[width].sections;
+    assert.equal(completeNativeHeaders(r), false);
+  });
+}
 
 // Same first mounted Company observation is mandatory in every real launch mode.
 for (const mode of ['company', 'policy', 'people']) {
@@ -273,3 +304,15 @@ test('Policy DOM collector controls under pinned Chromium, never business accept
     assert.equal(await page.locator('details').evaluate(e=>e.open),false);
   });
 });
+
+// Mandatory V2 ownership propagates through every retained policy/Payroll header.
+for (let i = 0; i < expectedNativeHeaders(headerEvidence()).length; i++) {
+  for (let width = 0; width < 4; width++) {
+    for (const ownership of [false, undefined]) test(`policy Payroll header ${i} width ${width} disclosure ownership ${String(ownership)} refused`, () => {
+      const r = headerEvidence(); const mobile = r.native_headers[i].widths[width].sections.mobile;
+      if (ownership === undefined) delete mobile.body_inside_disclosure;
+      else mobile.body_inside_disclosure = ownership;
+      assert.equal(completeNativeHeaders(r), false);
+    });
+  }
+}

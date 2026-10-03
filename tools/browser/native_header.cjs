@@ -3,6 +3,98 @@
 // existing keyboard tabTo helper and exact authorized paths from its test case.
 const assert = require('node:assert/strict');
 
+// Mandatory caller-authored expectations. These are not inferred from the DOM
+// and are not authority: the server already projects the permitted destinations.
+function expectedSectionSnapshot(expected) {
+  assert.equal(Object.hasOwn(expected, 'locationPath'), true);
+  assert.equal(expected.locationPath === null || typeof expected.locationPath === 'string', true);
+  assert.equal(expected.currentPath == null || expected.locationPath === null, true);
+  assert.deepEqual(Object.keys(expected.groups).sort(), ['desktop', 'mobile']);
+  const chosen = expected.currentPath ?? expected.locationPath;
+  if (chosen) assert.equal(expected.paths.includes(chosen), true);
+  if (expected.locationPath) {
+    assert.equal(['/', '/account', expected.payrollPath].includes(expected.locationPath), false);
+  }
+  const markers = chosen ? [{tag: 'a', href: chosen,
+    value: expected.currentPath ? 'page' : 'location'}] : [];
+  const region = mode => {
+    const groups = expected.groups[mode];
+    assert.equal(Array.isArray(groups), true);
+    const labels = groups.map(group => group.label);
+    assert.equal(new Set(labels).size, labels.length);
+    assert.deepEqual(labels, ['사람과 조직', '관리'].filter(label => labels.includes(label)));
+    for (const group of groups) {
+      assert.equal(typeof group.landmark === 'string' && group.landmark.length > 0, true);
+      assert.equal(Array.isArray(group.paths) && group.paths.length > 0, true);
+      assert.equal(group.paths.every(path => typeof path === 'string' && path.length > 0), true);
+    }
+    const structure = groups.flatMap(group => [
+      {tag: 'p', label: group.label},
+      {tag: 'nav', landmark: group.landmark, paths: [...group.paths]},
+    ]).concat([{tag: 'nav', landmark: '계정 탐색', paths: ['/account']}]);
+    const shortcut = mode === 'mobile' && expected.payrollPath ? [{tag: 'a', href: expected.payrollPath,
+      value: expected.currentPath === expected.payrollPath ? 'page' : null,
+      direct_child: true, inside_disclosure: false}] : [];
+    const paths = shortcut.map(link => link.href).concat(groups.flatMap(group => group.paths), ['/account']);
+    assert.equal(new Set(paths).size, paths.length);
+    assert.deepEqual([...paths].sort(), [...expected.paths].sort());
+    return {structure, group_labels: labels, landmarks: structure.filter(node => node.tag === 'nav'),
+      paths, markers, shortcuts: shortcut,
+      ...(mode === 'mobile' ? {menu_count: 1, body_count: 1, native_disclosure: true, body_inside_disclosure: true} : {})};
+  };
+  return {kind: 'RAW_NATIVE_SECTION_SNAPSHOT_V2', region_counts: {desktop: 1, mobile: 1},
+    desktop: region('desktop'), mobile: region('mobile'), outside_markers: []};
+}
+
+// Validate actual raw order/attributes, not observer-provided pass booleans.
+function validSectionEvidence(record, expected) {
+  try { assert.deepEqual(record, expectedSectionSnapshot(expected)); return true; }
+  catch { return false; }
+}
+
+// Self-contained DOM collector passed to Playwright evaluate. It records both
+// complete regions, including the inactive presentation and hidden disclosure.
+function collectSectionSnapshot(header) {
+  const matching = selector => [...header.querySelectorAll(selector)];
+  const desktop = matching('[data-native-navigation="desktop"]');
+  const mobile = matching('[data-native-navigation="mobile"]');
+  const hrefs = element => [...element.querySelectorAll('a[href]')].map(link => link.getAttribute('href'));
+  const marker = element => ({tag: element.tagName.toLowerCase(),
+    href: element.getAttribute('href'), value: element.getAttribute('aria-current')});
+  const marked = element => [element, ...element.querySelectorAll('[aria-current]')]
+    .filter(node => node.hasAttribute('aria-current')).map(marker);
+  const describe = element => element.tagName === 'NAV' ?
+    {tag: 'nav', landmark: element.getAttribute('aria-label'), paths: hrefs(element)} :
+    element.tagName === 'P' && element.classList.contains('nav-group') ?
+      {tag: 'p', label: element.textContent.trim()} : {tag: element.tagName.toLowerCase()};
+  const region = (outer, body, isMobile) => ({
+    structure: [...body.children].map(describe),
+    group_labels: [...body.querySelectorAll('.nav-group')].map(element => element.textContent.trim()),
+    landmarks: [...body.querySelectorAll('nav')].map(describe),
+    paths: hrefs(outer), markers: marked(outer),
+    shortcuts: [...outer.querySelectorAll('[data-native-payroll-shortcut]')].map(element => ({
+      ...marker(element), direct_child: element.parentElement === outer,
+      inside_disclosure: element.closest('details') !== null,
+    })),
+    ...(isMobile ? {
+      menu_count: outer.querySelectorAll('.native-mobile-menu').length,
+      body_count: outer.querySelectorAll('.native-mobile-menu-body').length,
+      native_disclosure: outer.querySelector('.native-mobile-menu')?.tagName === 'DETAILS',
+      // The body belongs to this exact native DETAILS, not a detached sibling
+      // or another disclosure with otherwise identical links and structure.
+      body_inside_disclosure: body.closest('details') === outer.querySelector('.native-mobile-menu'),
+    } : {}),
+  });
+  return {kind: 'RAW_NATIVE_SECTION_SNAPSHOT_V2',
+    region_counts: {desktop: desktop.length, mobile: mobile.length},
+    desktop: region(desktop[0], desktop[0], false),
+    mobile: region(mobile[0], mobile[0].querySelector('.native-mobile-menu-body'), true),
+    outside_markers: [header, ...header.querySelectorAll('[aria-current]')]
+      .filter(element => element.hasAttribute('aria-current') &&
+        !desktop.some(root => root.contains(element)) && !mobile.some(root => root.contains(element))).map(marker),
+  };
+}
+
 function validHeaderEvidence(record, expected) {
   try {
     assert.equal(record.kind, 'REAL_NATIVE_HEADER_BROWSER_CHECK');
@@ -14,6 +106,7 @@ function validHeaderEvidence(record, expected) {
     assert.deepEqual(record.denied_prefixes, [...(expected.deniedPrefixes ?? [])].sort());
     assert.deepEqual(record.widths.map(x => x.width), [320, 680, 681, 1280]);
     for (const row of record.widths) {
+      assert.equal(validSectionEvidence(row.sections, expected), true);
       assert.equal(row.no_overflow, true);
       assert.equal(row.routes_exact, true);
       assert.equal(row.current_exact, true);
@@ -137,8 +230,10 @@ async function assertNativeHeader(page, tabTo, expected) {
       }
       const noOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
       assert.equal(noOverflow, true);
+      const sections = await banner.evaluate(collectSectionSnapshot);
+      assert.equal(validSectionEvidence(sections, expected), true, 'native section order/location differs');
       record.widths.push({width, header_height: header.height, main_top: main.y, title_top: title.y,
-        no_overflow: true, open_no_overflow: openNoOverflow, routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true});
+        no_overflow: true, open_no_overflow: openNoOverflow, routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true, sections});
     }
     await page.setViewportSize({width: 680, height: 900});
     await openMenu();
@@ -176,4 +271,4 @@ async function assertNativeHeader(page, tabTo, expected) {
     if (originalViewport) await page.setViewportSize(originalViewport);
   }
 }
-module.exports = {assertNativeHeader, validHeaderEvidence};
+module.exports = {assertNativeHeader, validHeaderEvidence, validSectionEvidence, collectSectionSnapshot};

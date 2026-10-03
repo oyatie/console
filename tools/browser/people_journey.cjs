@@ -35,13 +35,20 @@ function expectedNativeHeaders(r) {
   assert.match(r.header_origin, /^https:\/\/localhost:[1-9][0-9]*$/);
   const w = `/companies/${id(r.company)}`, d = w + '/people';
   const base = ['/account', w, w + '/policy'];
-  const item = (phase, path, read, create, currentPath) => ({phase, url: r.header_origin + path,
-    paths: [...base, ...(read ? [d] : []), ...(create ? [d + '/new'] : [])], currentPath, boundTitle: true});
+  const item = (phase, path, read, create, currentPath, locationPath = null) => {
+    const groups = () => [
+      {label: '사람과 조직', landmark: '사람과 조직 탐색', paths: [...(read ? [d] : []), ...(create ? [d + '/new'] : [])]},
+      {label: '관리', landmark: '회사 관리', paths: [w, w + '/policy']},
+    ];
+    return {phase, url: r.header_origin + path,
+      paths: [...base, ...(read ? [d] : []), ...(create ? [d + '/new'] : [])], currentPath,
+      locationPath, groups: {desktop: groups(), mobile: groups()}, boundTitle: true};
+  };
   return [item('PEOPLE_HEADER_READ_ONLY', d, true, false, d),
     item('PEOPLE_HEADER_REGISTRATION', d + '/new', true, true, d + '/new'),
-    item('PEOPLE_HEADER_PENDING', d + '/requests/' + r.command, true, true),
-    item('PEOPLE_HEADER_DETAIL', d + '/' + r.employee, true, true),
-    item('PEOPLE_HEADER_CREATE_ONLY', d + '/requests/' + r.command, false, true)];
+    item('PEOPLE_HEADER_PENDING', d + '/requests/' + r.command, true, true, undefined, d + '/new'),
+    item('PEOPLE_HEADER_DETAIL', d + '/' + r.employee, true, true, undefined, d),
+    item('PEOPLE_HEADER_CREATE_ONLY', d + '/requests/' + r.command, false, true, undefined, d + '/new')];
 }
 function completeNativeHeaders(r) {
   try {
@@ -51,10 +58,30 @@ function completeNativeHeaders(r) {
   } catch { return false; }
 }
 
+// Separate additive history; the five original known-page observations remain
+// unchanged. These existing denied responses disclose only Account recovery.
+function expectedDenialHeaders(r) {
+  assert.match(r.header_origin, /^https:\/\/localhost:[1-9][0-9]*$/);
+  const w = `/companies/${id(r.company)}`, d = w + '/people';
+  const denied = (phase, path) => ({phase, url: r.header_origin + path,
+    paths: ['/account'], currentPath: null, locationPath: null,
+    groups: {desktop: [], mobile: []}, deniedPrefixes: [w], boundTitle: true});
+  return [denied('PEOPLE_HEADER_DENIED_DETAIL', d + '/' + id(r.employee)),
+    denied('PEOPLE_HEADER_DENIED_RECEIPT', d + '/requests/' + id(r.command))];
+}
+function completeDenialHeaders(r) {
+  try {
+    const expected = expectedDenialHeaders(r);
+    return Array.isArray(r.denied_headers) && r.denied_headers.length === expected.length &&
+      r.denied_headers.every((row, i) => validHeaderEvidence(row, expected[i]));
+  } catch { return false; }
+}
+
 function validEvidence(r) {
   try {
     id(r.company); id(r.account); id(r.command); id(r.employee); id(r.person);
     assert.equal(completeNativeHeaders(r), true);
+    assert.equal(completeDenialHeaders(r), true);
     assert.equal(r.employee, r.person);
     assert.deepEqual(r.checkpoints.map(x => x.phase), PHASES);
     assert.equal(r.mutations.length, 7);
@@ -117,11 +144,16 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   const directory = workspace + '/people';
   const policy = workspace + '/policy/people-directory';
   const result = {company, account, checkpoints: [], mutations: [], screenshots: [],
-    header_origin: origin, native_headers: []};
+    header_origin: origin, native_headers: [], denied_headers: []};
   async function header(phase) {
     const expected = expectedNativeHeaders(result).filter(row => row.phase === phase);
     assert.equal(expected.length, 1);
     result.native_headers.push(await assertNativeHeader(page, tabTo, expected[0]));
+  }
+  async function denialHeader(phase) {
+    const expected = expectedDenialHeaders(result).filter(row => row.phase === phase);
+    assert.equal(expected.length, 1);
+    result.denied_headers.push(await assertNativeHeader(page, tabTo, expected[0]));
   }
   async function directoryNavigation() {
     const banner = page.getByRole('banner');
@@ -409,7 +441,9 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await page.getByRole('main').getByRole('link', {name: '검색 지우기', exact: true}).count(), 0);
   await witness('PEOPLE_SEARCH_CLEAR'); result.search_clear = true;
   await open(workspace); await policyCommand('revoke', 'read');
-  await open(directory, 404); await open(detailPath, 404); await witness('PEOPLE_READ_DENIED'); result.read_revoked = true;
+  await open(directory, 404); await open(detailPath, 404);
+  await denialHeader('PEOPLE_HEADER_DENIED_DETAIL');
+  await witness('PEOPLE_READ_DENIED'); result.read_revoked = true;
   const deniedSearch = await open(matchPath, 404);
   searchPolicy(deniedSearch);
   await witness('PEOPLE_SEARCH_READ_DENIED'); result.search_denied = true;
@@ -425,9 +459,10 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await page.getByRole('main').locator(`a[href="${directory}/new"]`).count(), 0);
   await nextTask('사람 등록 권한 연결', policy + '/create/grant');
   await open(directory + '/new', 404);
-  await open(pendingPath, 404); await witness('PEOPLE_RECEIPT_DENIED'); result.create_revoked = true;
+  await open(pendingPath, 404); await denialHeader('PEOPLE_HEADER_DENIED_RECEIPT');
+  await witness('PEOPLE_RECEIPT_DENIED'); result.create_revoked = true;
   await noBusinessStorage(); result.no_local_business_storage = true;
   result.keyboard = true; result.reflow_320 = true;
   assert.equal(validEvidence(result), true); return result;
 }
-module.exports = {expectedNativeHeaders, completeNativeHeaders, runPeopleJourney, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};
+module.exports = {expectedNativeHeaders, completeNativeHeaders, expectedDenialHeaders, completeDenialHeaders, runPeopleJourney, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};

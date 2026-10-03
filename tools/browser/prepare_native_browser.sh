@@ -32,11 +32,11 @@ verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d19
 verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
 for entry in \
   account:3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d \
-  company:bddce91c882cc903f499cf5a9919ec863354975132b41f39230a64f25a031a0e \
+  company:1a497a40550918022dcc0ded2c24bba16cb8eb216b23d8ae659988f27c147617 \
   company-preview:a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90 \
   hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c \
-  native_header:3e8cf19a45086dc07cf0ddba012404e9d1c9614b43a0c7363eb18deefeab00e3 \
-  people_journey:a9a05aefe5db9e27109270d969da2ea0ea86664b586f8447eb38265db1adecea \
+  native_header:daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d \
+  people_journey:d69b37066e92f6c2d95d3475bad8f461969422cf07fb83a05252f77a23c27ecc \
   policy_journey:766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea \
   recovery_controls:fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6; do
   cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"

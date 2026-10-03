@@ -87,20 +87,27 @@ function validCompanyLayout(value,expectedCount,viewport){
 }
 function completeCompanyWorkspace(r){return ['company_layout_320','company_layout_desktop'].every(key=>r[key]===true)&&(r.policy_entry!==true||['payroll_company_layout_320','payroll_company_layout_desktop'].every(key=>r[key]===true));}
 function completeNavigation(r){return ['payroll_nav_before_grant_absent','payroll_receipt_link','payroll_workspace_link','keyboard_payroll_navigation','reflow_payroll_workspace_320','payroll_nav_after_revoke_absent'].every(key=>r[key]===true);}
+function companyHeaderGroups(workspace,payroll){
+ const administration=()=>({label:'관리',landmark:'회사 업무 탐색',paths:[workspace,workspace+'/policy']});
+ return {desktop:[...(payroll?[{label:'사람과 조직',landmark:'사람과 조직 탐색',paths:[payroll]}]:[]),administration()],mobile:[administration()]};
+}
+function payrollHeaderGroups(payroll){
+ return {desktop:[{label:'사람과 조직',landmark:'사람과 조직 탐색',paths:[payroll]}],mobile:[]};
+}
 function expectedNativeHeaders(r){
  if(!validOrigin(r.header_origin)||!nonnil(r.org_id))throw Error('NATIVE_HEADER_IDENTITY');
  const w=`/companies/${r.org_id}`,p=w+'/policy/payroll-read',payroll=w+'/payroll';
- const initial=(phase,path=w)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy'],currentPath:path,boundTitle:true,deniedPrefixes:[w+'/people',payroll]});
+ const initial=(phase,path=w)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy'],currentPath:path,locationPath:null,groups:companyHeaderGroups(w),boundTitle:true,deniedPrefixes:[w+'/people',payroll]});
  const first=initial('COMPANY_HEADER_FIRST');
  if(r.policy_entry!==true)return [first,initial('POLICY_ROOT_OPENED',w+'/policy'),initial('POLICY_ROOT_REOPENED',w+'/policy'),initial('COMPANY_POLICY_RETURNED')];
  const commands=r.policy?.mutations?.map(m=>m.command_id)||[];
- const policy=(phase,path,active=false)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,boundTitle:true});
- const read=phase=>({phase,url:r.header_origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,boundTitle:true});
+ const policy=(phase,path,active=false)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,locationPath:w+'/policy',groups:companyHeaderGroups(w,active?payroll:undefined),boundTitle:true});
+ const read=phase=>({phase,url:r.header_origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,locationPath:null,groups:payrollHeaderGroups(payroll),boundTitle:true});
  return [first,policy('POLICY_HEADER_PREFLIGHT',p+'/install'),
   policy('CATALOG_INSTALLED',p+'/requests/install/'+commands[0]),
   policy('GRANT_COMMITTED',p+'/requests/grant/'+commands[1],true),
   policy('GRANT_REOPENED',p+'/requests/grant/'+commands[1],true),
-  {...policy('PAYROLL_COMPANY_HEADER',w,true),currentPath:w},
+  {...policy('PAYROLL_COMPANY_HEADER',w,true),currentPath:w,locationPath:null},
   read('PAYROLL_READ'),read('PAYROLL_REOPENED'),
   policy('REVOKE_COMMITTED',p+'/requests/revoke/'+commands[2]),
   policy('REVOKE_REOPENED',p+'/requests/revoke/'+commands[2]),
@@ -367,7 +374,7 @@ async function main(backendPort,out,mode){
     const html=await response.text();
     if(status===200){requireFact(html.includes('data-screen="payroll"')&&html.includes('data-state="empty"'),'POLICY_PREFLIGHT');requireFact(await page.locator('[data-screen="payroll"] [data-state="empty"]').isVisible(),'POLICY_PREFLIGHT');}
     else {for(const secret of [account,body.org_id,body.group_id,companyName])requireFact(!html.includes(secret),'SECRET_DISCLOSURE');requireFact(await page.locator('[data-screen="payroll"], [data-run-id], form').count()===0,'SECRET_DISCLOSURE');}
-    if(status===200)result.native_headers.push(await assertNativeHeader(page,tabTo,{phase,url:origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,boundTitle:true}));
+    if(status===200)result.native_headers.push(await assertNativeHeader(page,tabTo,{phase,url:origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,locationPath:null,groups:payrollHeaderGroups(payroll),boundTitle:true}));
     await exchange({phase});result.checkpoints.push(phase);await capture(phase.toLowerCase()+'.png');
    };
    const jsonPhase=async(phase,status)=>{
@@ -387,7 +394,7 @@ async function main(backendPort,out,mode){
      const active=['GRANT_COMMITTED','GRANT_REOPENED'].includes(event.phase);
      const kind=event.phase==='CATALOG_INSTALLED'?'install':active?'grant':'revoke';
      const w=`/companies/${body.org_id}`;
-     result.native_headers.push(await assertNativeHeader(page,tabTo,{phase:event.phase,url:origin+`${w}/policy/payroll-read/requests/${kind}/${event.command_id}`,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,boundTitle:true}));
+     result.native_headers.push(await assertNativeHeader(page,tabTo,{phase:event.phase,url:origin+`${w}/policy/payroll-read/requests/${kind}/${event.command_id}`,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,locationPath:w+'/policy',groups:companyHeaderGroups(w,active?payroll:undefined),boundTitle:true}));
      return reply.witness;},
     readPayroll:async()=>{const receiptPath=new URL(page.url()).pathname;
      const receiptPayroll=page.getByRole('link',{name:'급여',exact:true});

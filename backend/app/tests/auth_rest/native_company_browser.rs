@@ -57,7 +57,7 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
     let header_bytes = std::fs::read(&header_path).unwrap();
     assert_eq!(
         hex::encode(Sha256::digest(&header_bytes)),
-        "3e8cf19a45086dc07cf0ddba012404e9d1c9614b43a0c7363eb18deefeab00e3"
+        "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d"
     );
     policy_helpers.push((header_path, header_bytes));
     if policy_entry {

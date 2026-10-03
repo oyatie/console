@@ -6,15 +6,39 @@ const assert = require('node:assert/strict');
 const {expectedNativeHeaders, completeNativeHeaders, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME} = require('./people_journey.cjs');
 const {completeDocuments, completeMutations, observeDocuments, observeMutations} = require('./company.cjs');
 const {EventEmitter} = require('node:events');
+const {expectedDenialHeaders, completeDenialHeaders} = require('./people_journey.cjs');
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 // Classifier-only positive record; never published as browser acceptance evidence.
+// Synthetic classifier witness only; never used by the real DOM collector.
+function sectionWitness(expected) {
+  const selected = expected.currentPath ?? expected.locationPath;
+  const markers = selected ? [{tag: 'a', href: selected,
+    value: expected.currentPath ? 'page' : 'location'}] : [];
+  const region = mode => {
+    const structure = expected.groups[mode].flatMap(group => [
+      {tag: 'p', label: group.label},
+      {tag: 'nav', landmark: group.landmark, paths: [...group.paths]},
+    ]).concat([{tag: 'nav', landmark: '계정 탐색', paths: ['/account']}]);
+    const shortcuts = mode === 'mobile' && expected.payrollPath ? [{tag: 'a', href: expected.payrollPath,
+      value: expected.currentPath === expected.payrollPath ? 'page' : null,
+      direct_child: true, inside_disclosure: false}] : [];
+    return {structure, group_labels: expected.groups[mode].map(group => group.label),
+      landmarks: structure.filter(node => node.tag === 'nav'),
+      paths: shortcuts.map(link => link.href).concat(expected.groups[mode].flatMap(group => group.paths), ['/account']),
+      markers: structuredClone(markers), shortcuts,
+      ...(mode === 'mobile' ? {menu_count: 1, body_count: 1, native_disclosure: true, body_inside_disclosure: true} : {})};
+  };
+  return {kind: 'RAW_NATIVE_SECTION_SNAPSHOT_V2', region_counts: {desktop: 1, mobile: 1},
+    desktop: region('desktop'), mobile: region('mobile'), outside_markers: []};
+}
+
 function headerWitness(expected) {
   return {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
     allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
     payroll_path: expected.payrollPath ?? null, denied_prefixes: [...(expected.deniedPrefixes ?? [])].sort(),
     widths: [320, 680, 681, 1280].map(width => ({width, header_height: 90, main_top: 90,
       title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
-      routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true})),
+      routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true, sections: sectionWitness(expected)})),
     enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
     values_preserved: true, location_preserved: true, no_product_script: true,
     unique_ids: true, network_requests: 0};
@@ -39,6 +63,7 @@ function evidence() {
     p + `/create/grants/${r.create_assignment}/revoke`].map((path, i) => ({path, command: i === 3 || i === 4 ? r.command : uuid(10 + i), status: 303, body_sha256: 'a'.repeat(64)}));
   r.header_origin = 'https://localhost:1234';
   r.native_headers = expectedNativeHeaders(r).map(headerWitness);
+  r.denied_headers = expectedDenialHeaders(r).map(headerWitness);
   return r;
 }
 test('positive People evidence control', () => assert.equal(validEvidence(evidence()), true));
@@ -158,6 +183,61 @@ for (let i = 0; i < 5; i++) {
     const r = evidence(); r.native_headers[i].allowed_paths.push('/companies/foreign/people'); assert.equal(validEvidence(r), false);
   });
 }
+
+test('People additive denial-header positive control', () => assert.equal(completeDenialHeaders(evidence()), true));
+test('People denied-detail and denied-receipt declarations retain only Account recovery', () => {
+  const r = evidence(), w = '/companies/' + r.company, d = w + '/people';
+  const expected = expectedDenialHeaders(r);
+  assert.deepEqual(expected.map(row => row.phase), ['PEOPLE_HEADER_DENIED_DETAIL', 'PEOPLE_HEADER_DENIED_RECEIPT']);
+  assert.deepEqual(expected.map(row => row.url), [d + '/' + r.employee, d + '/requests/' + r.command].map(path => r.header_origin + path));
+  for (const row of expected) {
+    assert.deepEqual(row.paths, ['/account']); assert.equal(row.currentPath, null); assert.equal(row.locationPath, null);
+    assert.deepEqual(row.groups, {desktop: [], mobile: []}); assert.deepEqual(row.deniedPrefixes, [w]);
+  }
+});
+for (let i = 0; i < 2; i++) {
+  test(`People omitted denial header ${i} refused by full evidence`, () => {const r = evidence(); r.denied_headers.splice(i, 1); assert.equal(validEvidence(r), false);});
+  test(`People duplicated denial header ${i} refused`, () => {const r = evidence(); r.denied_headers.splice(i, 0, r.denied_headers[i]); assert.equal(validEvidence(r), false);});
+  for (let width = 0; width < 4; width++) {
+    test(`People denial header ${i} missing width ${width} sections refused`, () => {const r = evidence(); delete r.denied_headers[i].widths[width].sections; assert.equal(validEvidence(r), false);});
+    for (const mode of ['desktop', 'mobile']) {
+      test(`People denial header ${i} width ${width} ${mode} invented selection refused`, () => {
+        const r = evidence(); r.denied_headers[i].widths[width].sections[mode].markers.push({tag: 'a', href: '/account', value: 'location'});
+        assert.equal(r.denied_headers[i].current_path, null); assert.equal(r.denied_headers[i].widths[width].current_exact, true);
+        assert.equal(validEvidence(r), false);
+      });
+      test(`People denial header ${i} width ${width} ${mode} invented group refused`, () => {
+        const r = evidence(); r.denied_headers[i].widths[width].sections[mode].structure.unshift({tag: 'p', label: '사람과 조직'},
+          {tag: 'nav', landmark: '사람과 조직 탐색', paths: ['/companies/foreign/people']});
+        assert.equal(validEvidence(r), false);
+      });
+    }
+  }
+}
+test('People missing additive denial history refused', () => {const r = evidence(); delete r.denied_headers; assert.equal(validEvidence(r), false);});
+test('People reordered additive denial history refused', () => {const r = evidence(); r.denied_headers.reverse(); assert.equal(validEvidence(r), false);});
 test('duplicate People header refused', () => { const r = evidence(); r.native_headers.push(r.native_headers[0]); assert.equal(validEvidence(r), false); });
 test('reordered People header refused', () => { const r = evidence(); [r.native_headers[0], r.native_headers[1]] = [r.native_headers[1], r.native_headers[0]]; assert.equal(validEvidence(r), false); });
 test('missing entire People header history refused', () => { const r = evidence(); delete r.native_headers; assert.equal(validEvidence(r), false); });
+
+// Mandatory additive raw records propagate through the unchanged business census.
+for (let i = 0; i < 5; i++) {
+  for (let width = 0; width < 4; width++) test(`People header ${i} omitted raw sections at width ${width} refused`, () => {
+    const r = evidence(); delete r.native_headers[i].widths[width].sections;
+    assert.equal(validEvidence(r), false);
+  });
+}
+
+// Mandatory V2 ownership propagates through known and separately denied history.
+for (const [history, count] of [['native_headers', 5], ['denied_headers', 2]]) {
+  for (let i = 0; i < count; i++) {
+    for (let width = 0; width < 4; width++) {
+      for (const ownership of [false, undefined]) test(`People ${history} ${i} width ${width} disclosure ownership ${String(ownership)} refused`, () => {
+        const r = evidence(); const mobile = r[history][i].widths[width].sections.mobile;
+        if (ownership === undefined) delete mobile.body_inside_disclosure;
+        else mobile.body_inside_disclosure = ownership;
+        assert.equal(validEvidence(r), false);
+      });
+    }
+  }
+}
