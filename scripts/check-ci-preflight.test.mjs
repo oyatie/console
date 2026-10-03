@@ -3070,3 +3070,213 @@ it("identity REST scheduling oracle binds executing step identity and Cargo alia
   }
   assert.equal(controls, 17, "four step identities, seven Cargo aliases, two list and four execution controls");
 });
+
+// Navigation V2 machinery is additive to the retained native Company owner leaf.
+// Synthetic workflow/runtime inputs below qualify the scheduling oracle only.
+const navV2Executables = await import("./lib/ci-workflow-executables.mjs");
+const navV2Vm = await import("node:vm");
+const navV2Path = await import("node:path");
+const navV2SuitePaths = [
+  "tools/browser/native-header-sections.test.cjs",
+  "tools/browser/company-navigation.test.cjs",
+  "tools/browser/people-journey.test.cjs",
+];
+const navV2MachineryCommand = "node --test " + navV2SuitePaths.join(" ");
+const navV2PreviewName = "Native Company preview browser";
+const navV2PrerequisiteName = "Install pinned native browser prerequisites";
+const navV2BrowserIf = "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
+const navV2PrerequisiteIf = "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}";
+const navV2OriginalPreviewRun = "node --test tools/browser/company-preview.test.cjs\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-preview-input-preserved.png; do\n  evidence_path=\"${CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT:?}/${evidence_file}\"\n  if [[ ! -f \"${evidence_path}\" || ! -s \"${evidence_path}\" || -L \"${evidence_path}\" ]]; then\n    echo \"native browser: required retained evidence missing or invalid\" >&2\n    exit 1\n  fi\ndone\n";
+const navV2ExpectedRun = navV2OriginalPreviewRun.replace(
+  "node --test tools/browser/company-preview.test.cjs\n",
+  "node --test tools/browser/company-preview.test.cjs\n" + navV2MachineryCommand + "\n",
+);
+const navV2BootstrapSource = readFileSync(new URL("../tools/browser/prepare_native_browser.sh", import.meta.url), "utf8");
+const navV2PackageSource = JSON.parse(readFileSync(new URL(
+  "../docs/evidence/console/integration/2026-09-19-root-entry-browser/playwright-package.json", import.meta.url,
+), "utf8"));
+const navV2LockSource = JSON.parse(readFileSync(new URL(
+  "../docs/evidence/console/integration/2026-09-19-root-entry-browser/playwright-package-lock.json", import.meta.url,
+), "utf8"));
+
+function navV2AssertProtectedScheduling(source) {
+  const model = yaml.load(source);
+  const backend = model.jobs.backend;
+  const steps = backend.steps;
+  const preview = steps.filter(entry => entry.id === "company-preview-browser" || entry.name === navV2PreviewName);
+  assert.equal(preview.length, 1, "one canonical Navigation machinery executor required");
+  assert.deepEqual(preview[0], {
+    name: navV2PreviewName, id: "company-preview-browser", if: navV2BrowserIf,
+    "working-directory": ".", run: navV2ExpectedRun,
+  }, "Navigation V2 machinery must execute between retained preview machinery and real owner leaf");
+  const prerequisites = steps.filter(entry => entry.id === "browser-prerequisites" || entry.name === navV2PrerequisiteName);
+  assert.equal(prerequisites.length, 1, "one canonical pinned runtime prerequisite required");
+  assert.deepEqual(prerequisites[0], {
+    name: navV2PrerequisiteName, id: "browser-prerequisites", if: navV2PrerequisiteIf,
+    "working-directory": ".", run: "tools/browser/prepare_native_browser.sh",
+  }, "Navigation machinery requires the existing pinned runtime installer");
+  assert.ok(steps.indexOf(prerequisites[0]) < steps.indexOf(preview[0]), "staged runtime must be published before execution");
+  for (const owner of [model, backend, prerequisites[0], preview[0]]) {
+    for (const selector of ["CONSOLE_COMPANY_BROWSER_DRIVER", "CONSOLE_NAVIGATION_DRIVER", "NODE_OPTIONS", "NODE_PATH", "BASH_ENV", "ENV"]) {
+      assert.ok(!Object.hasOwn(owner.env ?? {}, selector), "protected executor cannot override " + selector);
+    }
+  }
+  const entries = navV2Executables.allWorkflowCommands(source).filter(
+    entry => entry.tokens.some(token => navV2SuitePaths.includes(token)),
+  );
+  assert.equal(entries.length, 1, "one complete executable Navigation suite command required");
+  const entry = entries[0];
+  const actualStep = yaml.load("      - " + entry.step)[0];
+  assert.equal(entry.job, "backend");
+  assert.deepEqual(actualStep, preview[0], "the actual executor must be the protected step");
+  assert.equal(entry.gating, true, "Navigation failures must gate the job");
+  assert.equal(entry.controlFlow, false, "Navigation failures cannot be swallowed");
+  assert.equal(entry.malformed, false);
+  assert.equal(entry.shell, null, "retain the runner's fail-fast default shell");
+  const direct = navV2Executables.directExecutable(entry.tokens);
+  assert.equal(direct.malformed, false);
+  assert.deepEqual(direct.tokens, ["node", "--test", ...navV2SuitePaths], "all three complete suites must execute under Node");
+}
+
+function navV2ScheduledWorkflow() {
+  const step = yaml.load(workflow).jobs.backend.steps.find(entry => entry.name === navV2PreviewName);
+  if (step.run === navV2ExpectedRun) return workflow;
+  assert.equal(step.run, navV2OriginalPreviewRun, "source fixture must be the exact admitted preimage or intended repair");
+  return mutateNamedStep(workflow, "backend", navV2PreviewName, source => source.replace(
+    "          node --test tools/browser/company-preview.test.cjs\n",
+    "          node --test tools/browser/company-preview.test.cjs\n          " + navV2MachineryCommand + "\n",
+  ));
+}
+
+function navV2SchedulingCorruptions(scheduled) {
+  const line = "          " + navV2MachineryCommand + "\n";
+  const changePreview = mutate => mutateNamedStep(scheduled, "backend", navV2PreviewName, mutate);
+  const changePrerequisite = mutate => mutateNamedStep(scheduled, "backend", navV2PrerequisiteName, mutate);
+  const cases = [
+    ["omitted command", changePreview(s => s.replace(line, ""))],
+    ["commented command", changePreview(s => s.replace(line, "          # " + navV2MachineryCommand + "\n"))],
+    ["echoed command", changePreview(s => s.replace(line, "          echo " + navV2MachineryCommand + "\n"))],
+    ["quoted inert command", changePreview(s => s.replace(line, "          printf '%s\\n' '" + navV2MachineryCommand + "'\n"))],
+    ["swallowed failure", changePreview(s => s.replace(line, line.trimEnd() + " || true\n"))],
+    ["listed suites", changePreview(s => s.replace(line, line.replace("node --test ", "node --test --list ")))],
+    ["wrong executor", changePreview(s => s.replace(line, line.replace("node --test ", "npm exec --test ")))],
+    ["duplicated command", changePreview(s => s.replace(line, line + line))],
+    ["wrong suite", changePreview(s => s.replace(navV2SuitePaths[2], "tools/browser/account.test.cjs"))],
+    ["disabled executor", changePreview(addFalseCondition)],
+    ["continue on failure", changePreview(addContinueOnError)],
+    ["early successful exit", changePreview(addRetainedTextEarlyExit)],
+    ["disabled errexit", changePreview(s => s.replace(line, "          set +e\n" + line))],
+    ["missing runtime success guard", changePreview(s => s.replace(" && steps.browser-prerequisites.outcome == 'success'", ""))],
+    ["missing topology guard", changePreview(s => s.replace(" && steps.topology.outcome == 'success'", ""))],
+    ["wrong matrix leg", changePreview(s => s.replace("matrix.leg == 'buck-app'", "matrix.leg == 'cargo'"))],
+    ["wrong directory", changePreview(s => s.replace('working-directory: "."', 'working-directory: "backend"'))],
+    ["non-failing shell", changePreview(s => s.replace('        working-directory: "."\n', '        working-directory: "."\n        shell: bash {0}\n'))],
+    ["driver override", changePreview(s => s.replace("        run: |\n", "        env:\n          CONSOLE_COMPANY_BROWSER_DRIVER: /tmp/unpinned.cjs\n        run: |\n"))],
+    ["wrong step ID", changePreview(s => s.replace('id: "company-preview-browser"', 'id: "unprotected-preview"'))],
+    ["disabled prerequisite", changePrerequisite(addFalseCondition)],
+    ["non-failing prerequisite", changePrerequisite(addContinueOnError)],
+    ["wrong installer", changePrerequisite(s => s.replace("tools/browser/prepare_native_browser.sh", "tools/browser/not-the-reviewed-installer.sh"))],
+    ["missing prerequisite", changePrerequisite(() => "")],
+    ["late prerequisite", swapNamedSteps(scheduled, "backend", navV2PrerequisiteName, navV2PreviewName)],
+    ["job driver override", replaceJob(scheduled, "backend", s => s.replace(/^    env:\n/m, "    env:\n      CONSOLE_NAVIGATION_DRIVER: /tmp/unpinned.cjs\n"))],
+    ["job failure ignored", replaceJob(scheduled, "backend", s => s.replace("    timeout-minutes: 90\n", "    timeout-minutes: 90\n    continue-on-error: true\n"))],
+    ["workflow Node preload", scheduled.replace("jobs:\n", "env:\n  NODE_OPTIONS: --require=/tmp/unpinned.cjs\njobs:\n")],
+  ];
+  for (const path of navV2SuitePaths) cases.push([
+    "omitted suite " + path, changePreview(s => s.replace(line, line.replace(" " + path, ""))),
+  ]);
+  assert.equal(cases.length, 31, "all calibrated workflow corruptions must remain present");
+  return cases;
+}
+
+// Execute only the actual publisher's Node source against isolated test-tool I/O.
+// This is not a bootstrap, browser, server, database, or business execution receipt.
+function navV2AssertPinnedRuntimePublisher(bootstrap, packageSource, lockSource) {
+  assert.equal(packageSource.dependencies.playwright, "1.63.0");
+  assert.equal(lockSource.packages[""].dependencies.playwright, "1.63.0");
+  for (const name of ["playwright", "playwright-core"]) {
+    assert.equal(lockSource.packages["node_modules/" + name].version, "1.63.0");
+  }
+  const publishers = [...bootstrap.matchAll(/^node - "\$\{stage\}" "\$\{GITHUB_ENV\}" "\$\(npm --version\)" "\$\(openssl version\)" <<'NODE'\n([\s\S]*?)^NODE$/gm)];
+  assert.equal(publishers.length, 1, "existing actual staged-runtime publisher required");
+  for (const [pkgVersion, coreVersion] of [["1.63.0", "1.63.0"], ["1.62.0", "1.63.0"], ["1.63.0", "1.62.0"]]) {
+    const writes = [], appends = [];
+    const stage = "/synthetic-test-tool-stage";
+    const envFile = "/synthetic-test-tool-env";
+    const fs = {
+      readFileSync(path) {
+        if (path === stage + "/runtime/node_modules/playwright/package.json") return JSON.stringify({version: pkgVersion});
+        if (path === stage + "/runtime/node_modules/playwright-core/package.json") return JSON.stringify({version: coreVersion});
+        return Buffer.from("synthetic test-tool bytes");
+      },
+      writeFileSync(...args) { writes.push(args); },
+      appendFileSync(...args) { appends.push(args); },
+    };
+    const invoke = () => navV2Vm.runInNewContext(publishers[0][1], {
+      require(name) {
+        if (name === "node:fs") return fs;
+        if (name === "node:path") return navV2Path;
+        if (name === "node:crypto") return {createHash};
+        throw Error("unexpected runtime publisher import " + name);
+      },
+      process: {argv: ["node", "-", stage, envFile, "synthetic-npm", "synthetic-openssl"], version: "synthetic-node"},
+    }, {timeout: 1000});
+    if (pkgVersion === "1.63.0" && coreVersion === "1.63.0") {
+      invoke();
+      assert.equal(writes.length, 1);
+      assert.equal(appends.length, 1);
+      assert.equal(appends[0][0], envFile);
+      assert.ok(appends[0][1].split("\n").includes("CONSOLE_COMPANY_BROWSER_DRIVER=" + stage + "/company.cjs"));
+    } else {
+      assert.throws(invoke, /pinned package version mismatch/);
+      assert.equal(writes.length, 0, "wrong version cannot publish prerequisite receipt");
+      assert.equal(appends.length, 0, "wrong version cannot publish runtime environment");
+    }
+  }
+}
+
+it("Navigation V2 CI scheduling oracle accepts only the complete live protected command", () => {
+  const scheduled = navV2ScheduledWorkflow();
+  navV2AssertProtectedScheduling(scheduled);
+  for (const [label, changed] of navV2SchedulingCorruptions(scheduled)) {
+    assert.notEqual(changed, scheduled, label + " must mutate source");
+    assert.doesNotThrow(() => yaml.load(changed), label + " must remain valid YAML");
+    assert.throws(() => navV2AssertProtectedScheduling(changed), undefined, label + " must be refused");
+  }
+});
+
+it("Navigation V2 CI scheduling oracle requires the existing pinned staged runtime", () => {
+  navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, navV2PackageSource, navV2LockSource);
+  const runtimeCorruptions = [
+    ["commented publisher", navV2BootstrapSource.replace('node - "${stage}"', '# node - "${stage}"')],
+    ["removed version check", navV2BootstrapSource.replace(/^if \(pkg.version !== '1\.63\.0'.*\n/m, "")],
+    ["removed Company driver", navV2BootstrapSource.replace("  CONSOLE_COMPANY_BROWSER: 'company',\n", "")],
+    ["unpublished environment", navV2BootstrapSource.replace("fs.appendFileSync(envFile, settings.join('\\n') + '\\n');", "// withheld runtime environment")],
+  ];
+  assert.equal(runtimeCorruptions.length, 4);
+  for (const [label, changed] of runtimeCorruptions) {
+    assert.notEqual(changed, navV2BootstrapSource);
+    assert.throws(() => navV2AssertPinnedRuntimePublisher(changed, navV2PackageSource, navV2LockSource), undefined, label + " must be refused");
+  }
+  const changedPackage = structuredClone(navV2PackageSource);
+  changedPackage.dependencies.playwright = "1.62.0";
+  assert.throws(() => navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, changedPackage, navV2LockSource));
+  const changedLock = structuredClone(navV2LockSource);
+  changedLock.packages["node_modules/playwright-core"].version = "1.62.0";
+  assert.throws(() => navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, navV2PackageSource, changedLock));
+});
+
+it("Navigation V2 machinery executes in CI with the existing pinned browser prerequisite", () => {
+  navV2AssertProtectedScheduling(workflow);
+  navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, navV2PackageSource, navV2LockSource);
+  assert.deepEqual(evaluateCiPreflight(workflow).failures, [], "the repaired exact proof body must pass");
+  const proofLabels = new Set(["omitted command", "commented command", "echoed command",
+    "swallowed failure", "wrong executor", "missing runtime success guard", "wrong suite", "listed suites",
+    ...navV2SuitePaths.map(path => "omitted suite " + path)]);
+  const proofCorruptions = navV2SchedulingCorruptions(workflow).filter(([label]) => proofLabels.has(label));
+  assert.equal(proofCorruptions.length, 11, "exact existing proof-body/condition corruptions must remain present");
+  for (const [label, changed] of proofCorruptions) {
+    const {failures} = evaluateCiPreflight(changed);
+    assert.ok(failures.length > 0, "preflight must reject " + label);
+  }
+});
