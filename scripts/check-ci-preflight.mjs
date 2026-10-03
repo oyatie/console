@@ -524,7 +524,6 @@ const domainUnitPackages = [
   "console-gate-layer-boundary",
   "console-gate-tenant-isolation",
   "console-gate-vendor-lockin",
-  "console-identity-rest",
   "console-inventory-adapter-postgres",
   "console-inventory-rest",
   "console-leave-adapter-postgres",
@@ -1069,7 +1068,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "4b465de72a80f0cc1a7d3135ace4c0e979e9a46d2d4e806ff4c3ed0666eb8324", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "75cae15b60fad2f76733ad13fc18e32223d08d97934e26275d5379930268f472", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
@@ -1095,7 +1094,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test \\\n  //backend/crates/platform/authz:console-platform-authz-unit \\\n  //backend/crates/platform/provisioning:console-platform-provisioning-unit \\\n  //backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity\n", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
-    proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
+    proofDigest("Buck2 console-app inline PostgreSQL suites", "f60c5dd8a2332e846df168408415e8a361ba9da6e44b2c15fdd259884cbf03ab", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
     setupRun("Install pinned native browser prerequisites", "tools/browser/prepare_native_browser.sh", { if: "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}", workingDirectory: "." }),
     proofRun("Native Account browser", "for leaf in \\\n  account_browser::browser_business_oracle_requires_complete_lossless_unchanged_rows \\\n  account_browser::browser_login_history_oracle_requires_exact_key_and_retained_effects \\\n  account_browser::browser_global_oracle_requires_complete_owned_effects_and_immutable_tables; do\n  expected=\"${leaf}: test\"$'\\n\\n1 test, 0 benchmarks'\n  if ! listing=\"$(tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact \"${leaf}\" 2>/dev/null)\" || [[ \"${listing}\" != \"${expected}\" ]]; then\n    echo \"native browser: exact oracle discovery failed\" >&2\n    exit 1\n  fi\n  tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact \"${leaf}\"\ndone\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-sign-in.png 05-account-returned.png; do\n  evidence_path=\"${CONSOLE_BROWSER_JOURNEY_OUTPUT:?}/${evidence_file}\"\n  if [[ ! -f \"${evidence_path}\" || ! -s \"${evidence_path}\" || -L \"${evidence_path}\" ]]; then\n    echo \"native browser: required retained evidence missing or invalid\" >&2\n    exit 1\n  fi\ndone\n", { if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", workingDirectory: "." }),
     proofRun("Native Company creation browser", "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png 05-company-workspace.png; do\n  evidence_path=\"${CONSOLE_COMPANY_BROWSER_OUTPUT:?}/${evidence_file}\"\n  if [[ ! -f \"${evidence_path}\" || ! -s \"${evidence_path}\" || -L \"${evidence_path}\" ]]; then\n    echo \"native browser: required retained evidence missing or invalid\" >&2\n    exit 1\n  fi\ndone\n", { if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", workingDirectory: "." }),
@@ -2855,7 +2854,8 @@ export function evaluateCiPreflight(
           run: [
             "tools/buck/test_needs_postgres.sh --num-threads=1 \\",
             "//tools/buck:app-inline-postgres \\",
-            "//tools/buck:app-dev-auth-persona-guard-postgres",
+            "//tools/buck:app-dev-auth-persona-guard-postgres \\",
+            "//tools/buck:identity-rest-unit-pg",
           ].join("\n"),
           workingDirectory: ".",
           if: backendLegTopologyCondition("buck-app"),

@@ -387,7 +387,7 @@ jobs:
             -p console-dispatch-rest -p console-docs-adapter-postgres -p console-docs-rest \
             -p console-evaluation-adapter-postgres -p console-facilities-rest -p console-financial-rest \
             -p console-gate-dev-auth-absence -p console-gate-iac-tier -p console-gate-layer-boundary \
-            -p console-gate-tenant-isolation -p console-gate-vendor-lockin -p console-identity-rest \
+            -p console-gate-tenant-isolation -p console-gate-vendor-lockin \
             -p console-inventory-adapter-postgres -p console-inventory-rest -p console-leave-adapter-postgres \
             -p console-leave-rest -p console-ontology-adapter-postgres -p console-ontology-rest \
             -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
@@ -1479,7 +1479,8 @@ jobs:
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
             //tools/buck:app-inline-postgres \
-            //tools/buck:app-dev-auth-persona-guard-postgres
+            //tools/buck:app-dev-auth-persona-guard-postgres \
+            //tools/buck:identity-rest-unit-pg
 
       - name: Install pinned native browser prerequisites
         id: "browser-prerequisites"
