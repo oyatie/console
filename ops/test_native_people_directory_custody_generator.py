@@ -371,6 +371,17 @@ def _org_closed_final_select(sql):
     return tokens[starts[0]:]
 
 
+def _org_closed_ledger_check_sql(expected):
+    return """IF (WITH expected_migrations(version,checksum) AS (
+        """ + ' '.join(_org_closed_values(expected)) + """
+        ) SELECT count(*)=231 AND bool_and(e.version IS NOT NULL AND m.version IS NOT NULL
+            AND m.success IS TRUE AND (encode(m.checksum,'hex')=e.checksum) IS TRUE) IS TRUE
+          FROM expected_migrations e FULL JOIN public._sqlx_migrations m ON m.version=e.version)
+          IS NOT TRUE THEN
+            RAISE EXCEPTION 'native_org_unit.migration_ledger_mismatch';
+        END IF;"""
+
+
 class NativeOrgUnitClosedPerimeterCustodyGeneration(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix='native-org-closed-custody-generator-')
@@ -601,6 +612,30 @@ class NativeOrgUnitClosedPerimeterCustodyGeneration(unittest.TestCase):
         self.assertEqual(_org_closed_cte(body, 'expected_migrations', repeated_identically=True),
                          _org_closed_values(expected))
         words = _org_closed_sql_tokens(body)
+        # The actual initial, closed-replay and installed-success branches
+        # each revalidate the complete ledger. Comments and dollar-quoted SQL
+        # are inert lexer tokens and cannot stand in for executable checks.
+        ledger_check = _org_closed_sql_tokens(_org_closed_ledger_check_sql(expected))
+        ledger_prefix = _org_closed_sql_tokens('IF (WITH expected_migrations(version,checksum) AS (')
+        ledger_positions = [i for i in range(len(words))
+                            if words[i:i + len(ledger_prefix)] == ledger_prefix]
+        self.assertEqual(len(ledger_positions), 3,
+                         'ORG_CLOSED_LEDGER_RECHECK_COUNT: initial, replay and success each require a check')
+        for position in ledger_positions:
+            self.assertEqual(words[position:position + len(ledger_check)], ledger_check,
+                             'ORG_CLOSED_LEDGER_STRICT_ROWS: every checksum comparison must be IS TRUE')
+        replay_prefix = _org_closed_sql_tokens(
+            "IF phase='native_org_unit.closed_perimeter_compatible' THEN")
+        replay_positions = [i for i in range(len(words))
+                            if words[i:i + len(replay_prefix)] == replay_prefix]
+        self.assertEqual(len(replay_positions), 1, 'one actual compatible replay branch required')
+        replay_check = replay_positions[0] + len(replay_prefix)
+        self.assertEqual(words[replay_check:replay_check + len(ledger_check)], ledger_check,
+                         'ORG_CLOSED_REPLAY_LEDGER_RECHECK: actual replay must revalidate before RETURN')
+        replay_return = replay_check + len(ledger_check)
+        self.assertEqual(words[replay_return:replay_return + 5],
+                         _org_closed_sql_tokens('RETURN; END IF;'),
+                         'replay ledger revalidation must precede its actual RETURN')
         embedded = []
         for position, token in enumerate(words):
             opening = _org_closed_re.match(r'\$(?:[A-Za-z_][A-Za-z_0-9]*)?\$', token)
@@ -873,3 +908,64 @@ class NativeOrgUnitClosedPerimeterCustodyGeneration(unittest.TestCase):
                 self.assertIn(original, finalizer)
                 with self.assertRaises(AssertionError):
                     self.assert_finalizer(finalizer.replace(original, changed, 1))
+
+        # Calibrate against real exported bytes while keeping both captures,
+        # original guard source and the other complete ledger checks intact.
+        finalizer_text = finalizer.decode('utf-8')
+        envelope = _org_closed_sql_tokens(finalizer_text, with_spans=True)
+        delimiter = _org_closed_re.match(r'\$(?:[A-Za-z_][A-Za-z_0-9]*)?\$', envelope[1][0]).group()
+        body_offset = envelope[1][1] + len(delimiter)
+        finalizer_body = envelope[1][0][len(delimiter):-len(delimiter)]
+        entries = _org_closed_sql_tokens(finalizer_body, with_spans=True)
+        words = [entry[0] for entry in entries]
+        ledger_rows = [line.split('\t') for line in
+                       (self.root / 'ops/account-custody-migrations.sha384').read_text().splitlines()]
+        expected = [(int(version), checksum) for version, checksum in ledger_rows]
+        ledger_check = _org_closed_sql_tokens(_org_closed_ledger_check_sql(expected))
+        ledger_prefix = _org_closed_sql_tokens('IF (WITH expected_migrations(version,checksum) AS (')
+        positions = [i for i in range(len(words))
+                     if words[i:i + len(ledger_prefix)] == ledger_prefix]
+        self.assertEqual(len(positions), 3, 'three actual checks required before calibration')
+        spans = [(body_offset + entries[i][1],
+                  body_offset + entries[i + len(ledger_check) - 1][2]) for i in positions]
+        checks = [finalizer_text[start:end] for start, end in spans]
+        for check in checks:
+            self.assertEqual(_org_closed_sql_tokens(check), ledger_check)
+        replay_prefix = _org_closed_sql_tokens(
+            "IF phase='native_org_unit.closed_perimeter_compatible' THEN")
+        replay_positions = [i for i in range(len(words))
+                            if words[i:i + len(replay_prefix)] == replay_prefix]
+        self.assertEqual(len(replay_positions), 1)
+        replay_index = replay_positions[0] + len(replay_prefix)
+        self.assertEqual(positions[1], replay_index, 'middle actual check belongs to closed replay')
+        start, end = spans[1]
+        source_text = source.decode('utf-8')
+        def retained_inputs(corrupt):
+            self.assertEqual(corrupt.count(source_text), finalizer_text.count(source_text))
+            for _, capture in captures:
+                self.assertEqual(corrupt.count(capture), finalizer_text.count(capture))
+        for inert in ('removed', 'comment', 'quoted'):
+            with self.subTest(replay_ledger_fault=inert):
+                replacement = '' if inert == 'removed' else (
+                    '/*' + checks[1] + '*/' if inert == 'comment' else
+                    'PERFORM $org_unused_ledger$' + checks[1] + '$org_unused_ledger$;')
+                self.assertNotIn('$org_unused_ledger$', checks[1])
+                corrupt = finalizer_text[:start] + replacement + finalizer_text[end:]
+                self.assertEqual(corrupt[:start], finalizer_text[:start])
+                self.assertEqual(corrupt[start + len(replacement):], finalizer_text[end:])
+                retained_inputs(corrupt)
+                with self.assertRaises(AssertionError):
+                    self.assert_finalizer(corrupt.encode('utf-8'))
+        for index, ((start, end), check) in enumerate(zip(spans, checks)):
+            with self.subTest(nullable_checksum_branch=index):
+                changed, count = _org_closed_re.subn(
+                    r"\(\s*encode\s*\(\s*m\.checksum\s*,\s*'hex'\s*\)\s*=\s*e\.checksum\s*\)\s+IS\s+TRUE",
+                    "encode(m.checksum,'hex')=e.checksum", check, count=1,
+                    flags=_org_closed_re.IGNORECASE)
+                self.assertEqual(count, 1, 'one actual strict checksum must be removed')
+                corrupt = finalizer_text[:start] + changed + finalizer_text[end:]
+                self.assertEqual(corrupt[:start], finalizer_text[:start])
+                self.assertEqual(corrupt[start + len(changed):], finalizer_text[end:])
+                retained_inputs(corrupt)
+                with self.assertRaises(AssertionError):
+                    self.assert_finalizer(corrupt.encode('utf-8'))

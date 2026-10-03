@@ -7193,13 +7193,339 @@ def native_org_unit_closed_perimeter_capture_files():
     }
 
 
+NATIVE_ORG_UNIT_CLOSED_PHASE_PAIRS = (
+    ('plain',
+     'de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a',
+     'efc7f14dee39011c6ed5e68b97bd8374543b1307afe3d936b828ef5a52af51e7',
+     'fe0f65aebe362a969202e13d79c21d4e49f75834fd7b254a16a85a270e4e3c98',
+     'be4e86175dcd561150beb68db36de84fd3f224ca39d3128b1dcc958fa319a46d'),
+    ('observer',
+     '8011bd8141ec1a0497319773d73bc1df97a924f99e8aa84b8ef7c9cb4c821b37',
+     'a47330ee0efb705f72744a93263e65d400fbe525d70b829d2c7eedf5bfa75bdf',
+     'be18fc18f7bc6df0b5371ff01140d6a06c0a6a0438e7323d3eddaa7b070851e1',
+     '7bf64f46c07608b2fba7a39be765a80e45db727b424caa55342103dc180dfcc9'),
+)
+NATIVE_ORG_UNIT_CLOSED_CAPTURE_SHA256 = {
+    'ops/postgres-capture-company-provenance-v1-custody.sql':
+        '0fc02c2bd70375acb0b6ddc86b66892af4069003c88dc58455347887cdf28ab2',
+    'ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql':
+        '6be2e3d095d59bbdb9e1b932dac8da48bde261601455cdcd166c6f2a649e6010',
+}
+
+
+def native_org_unit_closed_custody_inputs():
+    # Only independently measured phase pairs are accepted. Neither half may
+    # be borrowed from another variant or inferred from checkout metadata.
+    pairs = NATIVE_ORG_UNIT_CLOSED_PHASE_PAIRS
+    values = [value for row in pairs for value in row[1:]]
+    if (len(pairs) != 2 or [row[0] for row in pairs] != ['plain', 'observer']
+            or any(len(row) != 5 for row in pairs) or len(set(values)) != 8
+            or any(not isinstance(value, str) or len(value) != 64
+                   or any(c not in '0123456789abcdef' for c in value) for value in values)):
+        raise SystemExit('Native OrgUnit custody requires independently reviewed paired captures')
+    computed = {
+        **company_provenance_capture_files(),
+        **native_org_unit_closed_perimeter_capture_files(),
+    }
+    captures = []
+    for name, digest in NATIVE_ORG_UNIT_CLOSED_CAPTURE_SHA256.items():
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if (hashlib.sha256(raw).hexdigest() != digest
+                or computed[name].encode('utf-8') != raw):
+            raise SystemExit('Native OrgUnit capture differs from reviewed bytes: ' + name)
+        captures.append(raw.decode('utf-8').removesuffix(';\n'))
+    name, digest = next(iter(NATIVE_ORG_UNIT_CLOSED_PERIMETER_SOURCE_SHA256.items()))
+    raw = company_provenance_regular_path(name, required=True).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != digest:
+        raise SystemExit('Native OrgUnit source differs from reviewed bytes: ' + name)
+    source = raw.decode('utf-8')
+    if '$native_org_unit_closed_source$' in source or '$native_org_unit_closed_custody$' in source:
+        raise SystemExit('Native OrgUnit source embedding delimiter collision')
+    ledger_name = 'ops/account-custody-migrations.sha384'
+    ledger = company_provenance_regular_path(ledger_name, required=True).read_bytes()
+    records = ledger.splitlines(keepends=True)
+    if (len(records) != 231
+            or hashlib.sha256(ledger).hexdigest() !=
+                '42079d3f1b8077e163960adc65f35f1959c22a67bf42acf43d6b816721ba1357'
+            or hashlib.sha256(b''.join(records[:230])).hexdigest() !=
+                '25e02488cdaf864f6d15ee21d62df98eb263bb82de1e2a283470ca659d160325'):
+        raise SystemExit('Native OrgUnit migration ledger differs from reviewed bytes')
+    migrations = sorted((ROOT / 'backend/crates/platform/db/migrations').glob('*.sql'))
+    actual = ''.join(str(int(path.name.split('_', 1)[0])) + '\t'
+                     + hashlib.sha384(company_provenance_regular_path(
+                         str(path.relative_to(ROOT)), required=True).read_bytes()).hexdigest() + '\n'
+                     for path in migrations)
+    if actual.encode('utf-8') != ledger:
+        raise SystemExit('Native OrgUnit migration sources differ from reviewed bytes')
+    expected_migrations = [(int(version), checksum)
+                           for version, checksum in
+                           (line.decode('utf-8').strip().split('\t') for line in records)]
+    if [version for version, _ in expected_migrations] != list(range(1, 232)):
+        raise SystemExit('Native OrgUnit migration ledger roster differs from reviewed bytes')
+    return pairs, captures, source, expected_migrations
+
+
+def native_org_unit_closed_values(rows):
+    return 'VALUES\n ' + ',\n '.join(
+        '(' + ','.join(str(value) if isinstance(value, int)
+                        else "'" + value.replace("'", "''") + "'" for value in row) + ')'
+        for row in rows)
+
+
+def native_org_unit_closed_state_query(pairs, captures):
+    columns = [
+        (relation, number, name)
+        for relation, names in (
+            ('org_unit_revisions', ('org_id', 'id', 'org_unit_id', 'version', 'command_id',
+                'actor_id', 'payload_digest', 'attributes', 'receipt', 'created_at')),
+            ('org_unit_source_bindings', ('org_id', 'source_kind', 'source_id', 'org_unit_id',
+                'actor_id', 'payload_digest', 'created_at')),
+            ('org_units', ('org_id', 'id', 'created_at')))
+        for number, name in enumerate(names, 1)]
+    return f"""-- Generated read-only closed OrgUnit custody. No native writer is admitted.
+-- Original73 TRUE remains authoritative; wider76 raw FALSE is diagnostic only.
+WITH original73 AS (
+{captures[0]}
+), wider76 AS (
+{captures[1]}
+), phase_pairs(variant,predecessor73,predecessor76,closed73,closed76) AS (
+{native_org_unit_closed_values(pairs)}
+), matching_phase AS (
+ SELECT p.variant,'closed'::text AS phase
+ FROM phase_pairs p CROSS JOIN original73 o CROSS JOIN wider76 w
+ WHERE o.snapshot_sha256=p.closed73 AND w.snapshot_sha256=p.closed76
+ UNION ALL
+ SELECT p.variant,'predecessor'::text AS phase
+ FROM phase_pairs p CROSS JOIN original73 o CROSS JOIN wider76 w
+ WHERE o.snapshot_sha256=p.predecessor73 AND w.snapshot_sha256=p.predecessor76
+), required_org_relations(name) AS (
+{native_org_unit_closed_values([(name,) for name in ('org_unit_revisions', 'org_unit_source_bindings', 'org_units')])}
+), required_org_columns(name,attnum,attname) AS (
+{native_org_unit_closed_values(columns)}
+), startup_role AS (
+ SELECT oid,rolname FROM pg_catalog.pg_roles WHERE rolname='console_auth_startup'
+), org_relations AS (
+ SELECT required.name,c.oid,c.relkind,c.relispartition,n.nspname,r.rolname AS owner_name
+ FROM required_org_relations required
+ LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+ LEFT JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+ LEFT JOIN pg_catalog.pg_roles r ON r.oid=c.relowner
+), org_columns AS (
+ SELECT r.name,r.oid,a.attnum,a.attname,a.atttypid,a.atttypmod,a.attnotnull
+ FROM org_relations r JOIN pg_catalog.pg_attribute a ON a.attrelid=r.oid
+ WHERE a.attnum>0 AND NOT a.attisdropped
+), table_privileges(privilege) AS (
+{native_org_unit_closed_values([(v,) for v in ('SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER', 'MAINTAIN')])}
+), column_privileges(privilege) AS (
+{native_org_unit_closed_values([(v,) for v in ('SELECT', 'INSERT', 'UPDATE', 'REFERENCES')])}
+), table_checks AS (
+ SELECT r.name,r.oid,p.privilege,
+  pg_catalog.has_table_privilege(s.oid,r.oid,p.privilege) AS allowed
+ FROM startup_role s CROSS JOIN org_relations r CROSS JOIN table_privileges p
+), column_checks AS (
+ SELECT c.name,c.oid,c.attnum,c.attname,p.privilege,
+  pg_catalog.has_column_privilege(s.oid,c.oid,c.attnum,p.privilege) AS allowed
+ FROM startup_role s CROSS JOIN org_columns c CROSS JOIN column_privileges p
+), added3_valid AS (
+ SELECT (SELECT count(*) FROM startup_role)=1
+  AND (SELECT bool_and(oid IS NOT NULL AND oid>0 AND rolname='console_auth_startup')
+       FROM startup_role) IS TRUE
+  AND (SELECT count(*) FROM org_relations)=3
+  AND (SELECT count(DISTINCT oid) FROM org_relations)=3
+  AND (SELECT bool_and(oid IS NOT NULL AND oid>0 AND relkind='r'
+       AND NOT relispartition AND nspname='public' AND owner_name='console_app')
+       FROM org_relations) IS TRUE
+  AND (SELECT count(*) FROM org_columns)=20
+  AND (SELECT count(DISTINCT (oid,attnum)) FROM org_columns)=20
+  AND (SELECT bool_and(oid IS NOT NULL AND oid>0 AND attnum>0 AND attname IS NOT NULL
+       AND atttypid>0 AND attnotnull IS NOT NULL) FROM org_columns) IS TRUE
+  AND (SELECT count(*) FROM org_columns c JOIN required_org_columns e
+       ON e.name=c.name AND e.attnum=c.attnum AND e.attname=c.attname)=20
+  AND (SELECT count(*) FROM table_checks)=24
+  AND (SELECT count(DISTINCT (oid,privilege)) FROM table_checks)=24
+  AND (SELECT count(*) FROM column_checks)=80
+  AND (SELECT count(DISTINCT (oid,attnum,privilege)) FROM column_checks)=80
+  AND (SELECT bool_and(allowed IS FALSE) FROM table_checks) IS TRUE
+  AND (SELECT bool_and(allowed IS FALSE) FROM column_checks) IS TRUE AS valid
+), reserved_relations AS (
+ SELECT count(*)=0 AS valid FROM pg_catalog.pg_class c
+ JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+ WHERE c.relname='native_org_unit' OR starts_with(c.relname,'native_org_unit_')
+), reserved_schemas AS (
+ SELECT count(*)=0 AS valid FROM pg_catalog.pg_namespace n
+ WHERE n.nspname='native_org_unit' OR starts_with(n.nspname,'native_org_unit_')
+), required_guarded_relations(name) AS (
+{native_org_unit_closed_values([(name,) for name in ('ont_action_command_receipts', 'org_unit_revisions', 'org_unit_source_bindings', 'org_units')])}
+), guarded_relations_valid AS (
+ SELECT count(*)=4 AND count(DISTINCT c.oid)=4
+  AND count(DISTINCT n.oid)=1 AND count(DISTINCT r.oid)=1
+  AND bool_and(c.oid IS NOT NULL AND c.oid>0 AND c.relkind='r'
+       AND NOT c.relispartition AND n.nspname='public' AND r.rolname='console_app')
+       IS TRUE AS valid
+ FROM required_guarded_relations required
+ LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+ LEFT JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+ LEFT JOIN pg_catalog.pg_roles r ON r.oid=c.relowner
+), native_org_routine_namespace AS (
+ -- Inspect every schema/kind/owner, supplementing the frozen complete captures.
+ SELECT ((SELECT count(*)=0 OR (count(*)=1 AND bool_and(
+    n.nspname='public' AND p.proname='native_org_unit_closed_guard_v1'
+    AND p.prokind='f' AND p.pronargs=0 AND p.prorettype='pg_catalog.trigger'::regtype)) IS TRUE
+   FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+   WHERE starts_with(p.proname,'native_org_unit_')) IS TRUE
+  AND (SELECT count(*)=2 AND bool_and(n.nspname='public' AND p.prokind='f' AND (
+    (p.proname='account_company_provenance_v1'
+     AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid]::oidvector)
+    OR (p.proname='account_company_provenance_lock_v1'
+     AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid,'pg_catalog.uuid'::regtype::oid]::oidvector)
+   )) IS TRUE
+   FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+   WHERE starts_with(p.proname,'account_company_provenance')) IS TRUE) AS valid
+)
+SELECT CASE
+ WHEN (SELECT native_directory_startup_rights_valid FROM original73) IS TRUE
+  AND (SELECT valid FROM added3_valid) IS TRUE
+  AND (SELECT valid FROM guarded_relations_valid) IS TRUE
+  AND (SELECT valid FROM reserved_relations) IS TRUE
+  AND (SELECT valid FROM reserved_schemas) IS TRUE
+  AND (SELECT valid FROM native_org_routine_namespace) IS TRUE
+  AND (SELECT count(*) FROM matching_phase)=1
+ THEN CASE (SELECT phase FROM matching_phase)
+  WHEN 'closed' THEN 'native_org_unit.closed_perimeter_compatible'
+  WHEN 'predecessor' THEN 'native_org_unit.closed_perimeter_required'
+  ELSE 'native_org_unit.profile_mismatch' END
+ ELSE 'native_org_unit.profile_mismatch' END AS state;\n"""
+
+
+def native_org_unit_closed_finalizer_sql(query, source, expected_migrations):
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS,
+        *NATIVE_DIRECTORY_ADDED_RELATIONS, 'org_unit_revisions', 'org_unit_source_bindings', 'org_units'))
+    if len(names) != 76 or len(set(names)) != 76:
+        raise SystemExit('Native OrgUnit custody relation roster differs from reviewed bytes')
+    required = native_org_unit_closed_values([(name,) for name in names])
+    ledger = f"""IF (WITH expected_migrations(version,checksum) AS (
+{native_org_unit_closed_values(expected_migrations)}
+ ) SELECT count(*)=231 AND bool_and(e.version IS NOT NULL AND m.version IS NOT NULL
+    AND m.success IS TRUE AND (encode(m.checksum,'hex')=e.checksum) IS TRUE) IS TRUE
+   FROM expected_migrations e FULL JOIN public._sqlx_migrations m ON m.version=e.version) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_org_unit.migration_ledger_mismatch'; END IF;"""
+    inspect = ('SELECT classified.state,classified.variant INTO phase,variant_name FROM (\n'
+               + query.removesuffix(' AS state;\n')
+               + ' AS state,(SELECT variant FROM matching_phase) AS variant\n) classified;')
+    bounds = '\n'.join(f""" IF (pg_catalog.current_setting('{name}') IS NOT NULL
+  AND (SELECT setting::bigint FROM pg_catalog.pg_settings WHERE name='{name}')
+      BETWEEN 1 AND {limit}) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_org_unit.entry_bounds_mismatch'; END IF;"""
+        for name, limit in (('lock_timeout', 1000), ('statement_timeout', 60000),
+                           ('idle_in_transaction_session_timeout', 30000), ('transaction_timeout', 120000)))
+    return f"""-- Generated isolated-fixture-only atomic closed OrgUnit finalizer.
+-- Caller freezes and verifies the actual database name/OID/system_identifier;
+-- owns the cluster schema/role maintenance lease; BEGINs READ COMMITTED; sets
+-- LOCAL search_path=pg_catalog,pg_temp, jit=off and positive reviewed bounds in
+-- a separate statement; locks the exact ledger SHARE then the actual
+-- console_account_owner pg_authid row FOR UPDATE. Retain every lock on this
+-- direct connection through verification and COMMIT/ROLLBACK. Role-row custody
+-- is a trusted caller obligation, not a fabricated pg_locks tuple assertion.
+-- Arbitrary administrator schema/role writers must be operationally absent.
+-- No production transport, packaging, exposure or native writer is qualified.
+DO $native_org_unit_closed_custody$
+DECLARE phase text; variant_name text; expected_variant text;
+ relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user IS DISTINCT FROM current_user OR current_user<>'console_buck_admin'
+  OR (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) IS NOT TRUE
+  OR starts_with(current_database(),'_sqlx_test_') IS NOT TRUE
+  OR pg_catalog.current_setting('console.sqlx_test_bootstrap',true)
+      IS DISTINCT FROM 'buck-sqlx-superuser-v1' THEN
+  RAISE EXCEPTION 'native_org_unit.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'
+  OR pg_catalog.current_setting('search_path') IS DISTINCT FROM 'pg_catalog, pg_temp'
+  OR pg_catalog.current_setting('jit') IS DISTINCT FROM 'off' THEN
+  RAISE EXCEPTION 'native_org_unit.entry_settings_mismatch'; END IF;
+{bounds}
+ IF (SELECT count(*)=1 AND bool_and(c.oid IS NOT NULL AND c.oid>0
+      AND c.relkind='r' AND NOT c.relispartition AND r.rolname='console_app') IS TRUE
+     FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+     JOIN pg_catalog.pg_roles r ON r.oid=c.relowner
+     WHERE n.nspname='public' AND c.relname='_sqlx_migrations') IS NOT TRUE
+  OR (SELECT count(*)=1 FROM pg_catalog.pg_locks
+      WHERE pid=pg_backend_pid() AND locktype='relation'
+       AND relation=pg_catalog.to_regclass('public._sqlx_migrations')
+       AND mode='ShareLock' AND granted) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_org_unit.migration_ledger_lock_missing'; END IF;
+ {ledger}
+ IF (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)=76 AND count(DISTINCT c.oid)=76 AND count(DISTINCT n.oid)=1
+    AND bool_and(c.oid IS NOT NULL AND c.oid>0 AND c.relkind='r'
+        AND NOT c.relispartition AND n.nspname='public') IS TRUE
+   FROM required_relations required
+   LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   LEFT JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_org_unit.profile_mismatch'; END IF;
+ FOR relation_name IN WITH required_relations(name) AS (
+{required}
+ ) SELECT c.relname::text FROM required_relations required
+   JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+   ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ IF locked_relations<>76 OR (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)=76 AND count(DISTINCT l.relation)=76
+   FROM required_relations required
+   JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+   JOIN pg_catalog.pg_locks l ON l.relation=c.oid
+   WHERE l.pid=pg_backend_pid() AND l.locktype='relation'
+    AND l.mode='AccessExclusiveLock' AND l.granted) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_org_unit.relation_locks_missing'; END IF;
+ {inspect}
+ IF phase='native_org_unit.closed_perimeter_compatible' THEN
+  {ledger}
+  RETURN; END IF;
+ IF phase IS DISTINCT FROM 'native_org_unit.closed_perimeter_required'
+  OR variant_name IS NULL THEN RAISE EXCEPTION 'native_org_unit.profile_mismatch'; END IF;
+ expected_variant:=variant_name;
+ EXECUTE $native_org_unit_closed_source${source}$native_org_unit_closed_source$;
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF phase IS DISTINCT FROM 'native_org_unit.closed_perimeter_compatible'
+  OR variant_name IS DISTINCT FROM expected_variant THEN
+  RAISE EXCEPTION 'native_org_unit.profile_mismatch'; END IF;
+ {ledger}
+END
+$native_org_unit_closed_custody$;
+"""
+
+
+def native_org_unit_closed_perimeter_custody_files():
+    pairs, captures, source, migrations = native_org_unit_closed_custody_inputs()
+    query = native_org_unit_closed_state_query(pairs, captures)
+    return {
+        'ops/postgres-native-org-unit-closed-perimeter-v1-custody-state.sql': query,
+        'backend/app/src/native_org_unit_closed_perimeter_v1_custody_state.sql': query,
+        'ops/postgres-finalize-native-org-unit-closed-perimeter-v1.sql':
+            native_org_unit_closed_finalizer_sql(query, source, migrations),
+    }
+
+
 def main():
     arguments = sys.argv[1:]
     if arguments in (['--company-provenance-capture'], ['--company-provenance-capture', '--check'],
                      ['--company-provenance-custody'], ['--company-provenance-custody', '--check'],
                      ['--native-org-unit-closed-perimeter-capture'],
-                     ['--native-org-unit-closed-perimeter-capture', '--check']):
-        if arguments[0] == '--native-org-unit-closed-perimeter-capture':
+                     ['--native-org-unit-closed-perimeter-capture', '--check'],
+                     ['--native-org-unit-closed-perimeter-custody'],
+                     ['--native-org-unit-closed-perimeter-custody', '--check']):
+        if arguments[0] == '--native-org-unit-closed-perimeter-custody':
+            files = native_org_unit_closed_perimeter_custody_files()
+        elif arguments[0] == '--native-org-unit-closed-perimeter-capture':
             files = native_org_unit_closed_perimeter_capture_files()
         else:
             files = (company_provenance_custody_files() if arguments[0] == '--company-provenance-custody'
@@ -7214,7 +7540,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
