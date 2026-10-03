@@ -227,6 +227,11 @@ pub enum RequestContextError {
     #[error("session verification unavailable")]
     SessionVerificationUnavailable,
 
+    /// Verified legacy credentials cannot yet be classified by the current
+    /// Company provenance owner. No tenant projection may precede this check.
+    #[error("legacy Company provenance is unavailable")]
+    LegacyProvenanceUnavailable,
+
     /// Resolving the live branch scope from the database failed.
     #[error("failed to resolve branch scope: {0}")]
     BranchScope(String),
@@ -350,6 +355,7 @@ pub async fn resolve_principal_from_bearer_token(
     // JWT validation already checked the GroupAdmin claim constraints. Fence
     // before either principal path can perform a live Business lookup.
     ensure_session_subject(verifier, user_id).await?;
+    ensure_legacy_company_provenance(verifier, pool).await?;
 
     // Subject authorization freshness snapshot carried by the verified token
     // (Cedar/PBAC activation, ADR-0021). Absent claims default to 0 (the
@@ -426,6 +432,83 @@ pub async fn resolve_principal_from_bearer_token(
         .with_access_scope(access_scope)
         .with_effective_feature_grants(effective_feature_grants)
         .with_authz_freshness(authz_freshness))
+}
+
+enum CompanyProvenanceSourceObservation {
+    Absent,
+    Malformed,
+    PresentUnqualified,
+}
+
+/// Observe the exact declared ABI through the explicitly admitted Business
+/// transport. No owner function is executed. Presence and header compatibility
+/// cannot attest the body, custody ledger, or its dependent source identities.
+async fn observe_company_provenance_source(
+    business_pool: &PgPool,
+) -> Result<CompanyProvenanceSourceObservation, sqlx::Error> {
+    let compatible_header: Option<bool> = sqlx::query_scalar(
+        r#"
+        SELECT p.prokind = 'f'
+           AND p.pronargs = 1
+           AND p.pronargdefaults = 0
+           AND p.proargnames = ARRAY['p_company']::text[]
+           AND p.proargmodes IS NULL
+           AND p.prorettype = 'pg_catalog.text'::pg_catalog.regtype
+           AND NOT p.proretset
+           AND NOT p.proisstrict
+           AND language.lanname = 'plpgsql'
+           AND owner.rolname = 'console_account_owner'
+           AND p.prosecdef
+           AND p.provolatile = 'v'
+           AND p.proparallel = 'u'
+           AND p.proconfig @> ARRAY[
+               'search_path=pg_catalog, pg_temp',
+               'row_security=on'
+           ]::text[]
+           AND pg_catalog.cardinality(p.proconfig) = 2
+           AND p.proacl IS NOT NULL
+        FROM pg_catalog.pg_proc AS p
+        JOIN pg_catalog.pg_language AS language ON language.oid = p.prolang
+        JOIN pg_catalog.pg_roles AS owner ON owner.oid = p.proowner
+        WHERE p.oid = pg_catalog.to_regprocedure(
+            'public.account_company_provenance_v1(pg_catalog.uuid)'
+        )
+        "#,
+    )
+    // rls-arming: ok source ABI catalog metadata contains no Company rows
+    .fetch_optional(business_pool)
+    .await?;
+    Ok(match compatible_header {
+        None => CompanyProvenanceSourceObservation::Absent,
+        Some(false) => CompanyProvenanceSourceObservation::Malformed,
+        Some(true) => CompanyProvenanceSourceObservation::PresentUnqualified,
+    })
+}
+
+/// Shared negative admission for the verified People predecessor bridge.
+/// Call only after credential/tier/claims/current-subject validation and before
+/// Company projections or Group member enumeration. Historical constructors
+/// retain their existing behavior; they are not qualified bridge admission.
+pub async fn ensure_legacy_company_provenance(
+    verifier: &SessionVerification,
+    business_pool: &PgPool,
+) -> Result<(), RequestContextError> {
+    if !verifier.requires_current_company_provenance() {
+        return Ok(());
+    }
+    let observation = observe_company_provenance_source(business_pool)
+        .await
+        .map_err(|_| RequestContextError::LegacyProvenanceUnavailable)?;
+    // This binary has no independently qualified owner-body/custody contract.
+    // Even a matching header stays closed; a successor source and reader must
+    // be separately admitted before any positive classification is executable.
+    match observation {
+        CompanyProvenanceSourceObservation::Absent
+        | CompanyProvenanceSourceObservation::Malformed
+        | CompanyProvenanceSourceObservation::PresentUnqualified => {
+            Err(RequestContextError::LegacyProvenanceUnavailable)
+        }
+    }
 }
 
 fn parse_current_roles(values: &[String]) -> Result<BTreeSet<Role>, RequestContextError> {
@@ -678,61 +761,79 @@ fn error_response(status: StatusCode, code: &'static str, message: &str) -> Resp
         .into_response()
 }
 
-fn error_response_for(err: &RequestContextError) -> Response {
-    let (status, code, message) = match err {
-        RequestContextError::SessionVerificationUnavailable => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "service_unavailable",
-            "session verification is unavailable",
-        ),
-        RequestContextError::VerifierUnavailable => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "service_unavailable",
-            "JWT verification is not configured",
-        ),
-        RequestContextError::BranchScope(_) | RequestContextError::EffectivePolicy(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "internal",
-            "internal server error",
-        ),
-        RequestContextError::AccessScope(error) if error.kind == ErrorKind::Forbidden => {
-            (StatusCode::FORBIDDEN, "forbidden", "forbidden")
+impl RequestContextError {
+    /// Stable, sanitized transport diagnostics; dependency details stay private.
+    pub fn http_error_parts(&self) -> (StatusCode, &'static str, &'static str) {
+        match self {
+            RequestContextError::LegacyProvenanceUnavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "legacy_provenance_unavailable",
+                "legacy Company provenance is unavailable",
+            ),
+            RequestContextError::SessionVerificationUnavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "service_unavailable",
+                "session verification is unavailable",
+            ),
+            RequestContextError::VerifierUnavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "service_unavailable",
+                "JWT verification is not configured",
+            ),
+            RequestContextError::BranchScope(_) | RequestContextError::EffectivePolicy(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "internal",
+                "internal server error",
+            ),
+            RequestContextError::AccessScope(error) if error.kind == ErrorKind::Forbidden => {
+                (StatusCode::FORBIDDEN, "forbidden", "forbidden")
+            }
+            RequestContextError::AccessScope(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "internal",
+                "internal server error",
+            ),
+            // A valid token presented to the wrong tier is an authorization failure,
+            // not an authentication one: the caller IS authenticated, just not for
+            // this route. 403 keeps it distinct from "no/invalid token" (401).
+            RequestContextError::WrongTokenTier => (
+                StatusCode::FORBIDDEN,
+                "forbidden",
+                "token tier is not valid for this route",
+            ),
+            RequestContextError::MissingBearer => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "missing or malformed bearer token",
+            ),
+            RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "invalid bearer token",
+            ),
+            RequestContextError::InvalidClaim(_) => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "token claim is invalid",
+            ),
+            RequestContextError::MissingOrg => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "no tenant context is bound to the current request",
+            ),
         }
-        RequestContextError::AccessScope(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "internal",
-            "internal server error",
-        ),
-        // A valid token presented to the wrong tier is an authorization failure,
-        // not an authentication one: the caller IS authenticated, just not for
-        // this route. 403 keeps it distinct from "no/invalid token" (401).
-        RequestContextError::WrongTokenTier => (
-            StatusCode::FORBIDDEN,
-            "forbidden",
-            "token tier is not valid for this route",
-        ),
-        RequestContextError::MissingBearer => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "missing or malformed bearer token",
-        ),
-        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "invalid bearer token",
-        ),
-        RequestContextError::InvalidClaim(_) => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "token claim is invalid",
-        ),
-        RequestContextError::MissingOrg => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "no tenant context is bound to the current request",
-        ),
-    };
+    }
+}
+
+fn error_response_for(err: &RequestContextError) -> Response {
+    let (status, code, message) = err.http_error_parts();
     error_response(status, code, message)
+}
+
+impl IntoResponse for RequestContextError {
+    fn into_response(self) -> Response {
+        error_response_for(&self)
+    }
 }
 
 #[derive(Clone)]

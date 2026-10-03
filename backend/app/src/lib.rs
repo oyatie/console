@@ -1685,10 +1685,19 @@ impl AppState {
     }
 
     fn session_verification(&self) -> Option<SessionVerification> {
-        Some(SessionVerification::new(
+        let verification = SessionVerification::new(
             self.jwt_verifier.clone()?,
             self.auth_rest.as_ref()?.auth_database()?.clone(),
-        ))
+        );
+        Some(
+            if self.serving_custody_profile
+                == Some(account_custody::VerifiedCustodyProfile::NativePeopleDirectoryRowLock)
+            {
+                verification.require_current_company_provenance()
+            } else {
+                verification
+            },
+        )
     }
 
     #[must_use]
@@ -1824,6 +1833,13 @@ impl AppState {
 
         let mut state = Self::new(config.clone(), database)?;
         state.serving_custody_profile = serving_custody_profile;
+        if serving_custody_profile
+            == Some(account_custody::VerifiedCustodyProfile::NativePeopleDirectoryRowLock)
+        {
+            state.auth_rest = state
+                .auth_rest
+                .map(AuthRestState::require_current_company_provenance);
+        }
         if serving_custody_profile
             .is_some_and(account_custody::VerifiedCustodyProfile::supports_policy)
         {
@@ -4381,18 +4397,24 @@ async fn ui_screens(
     state: AppState,
     headers: HeaderMap,
     focus: console_payroll_ui::UiScreen,
-) -> impl IntoResponse {
-    console_payroll_ui::html_shell_with_screens(&compose_ui_screens(&state, &headers).await, focus)
+) -> axum::response::Response {
+    match compose_ui_screens(&state, &headers).await {
+        Ok(screens) => console_payroll_ui::html_shell_with_screens(&screens, focus).into_response(),
+        Err(error) => error.into_response(),
+    }
 }
 
 async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
-) -> console_payroll_ui::ShippingScreens {
+) -> Result<
+    console_payroll_ui::ShippingScreens,
+    console_platform_request_context::RequestContextError,
+> {
     let (companies, org_units, people, employments, runs) =
         match (&state.database, &state.session_verification()) {
             (DatabaseDependency::Postgres(pool), Some(verifier)) => {
-                let floors = ui_listing_floors(verifier, pool, headers).await;
+                let floors = ui_listing_floors(verifier, pool, headers).await?;
                 let heads = match (floors.heads, floors.org_id) {
                     (true, Some(org)) => {
                         let handle = tokio::runtime::Handle::current();
@@ -4449,7 +4471,7 @@ async fn compose_ui_screens(
                 console_payroll_rest::VisiblePayrollRuns::Omitted,
             ),
         };
-    console_payroll_ui::ShippingScreens {
+    Ok(console_payroll_ui::ShippingScreens {
         companies,
         org_units,
         people,
@@ -4468,7 +4490,7 @@ async fn compose_ui_screens(
                 )
             }
         },
-    }
+    })
 }
 
 fn payroll_runs_reader(pool: &PgPool) -> console_payroll_rest::PayrollRunsReaderFactory {
@@ -4501,16 +4523,21 @@ async fn ui_listing_floors(
     verifier: &SessionVerification,
     pool: &PgPool,
     headers: &HeaderMap,
-) -> UiListingFloors {
+) -> Result<UiListingFloors, console_platform_request_context::RequestContextError> {
     let principal =
         match console_platform_request_context::resolve_principal(verifier, pool, headers).await {
             Ok(principal) => principal,
-            Err(_) => return UiListingFloors::denied(),
+            Err(
+                error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable,
+            ) => {
+                return Err(error);
+            }
+            Err(_) => return Ok(UiListingFloors::denied()),
         };
-    UiListingFloors {
+    Ok(UiListingFloors {
         heads: authorize_org_wide(&principal, Action::new(Feature::EmployeeDirectoryRead)).is_ok(),
         org_id: Some(principal.org_id),
-    }
+    })
 }
 
 fn ui_head_section<T, V, E>(

@@ -1331,6 +1331,10 @@ fn websocket_protocol_bearer_token(headers: &HeaderMap) -> Result<Option<&str>, 
 
 fn realtime_error_from_request_context(err: RequestContextError) -> RealtimeApiError {
     match err {
+        error @ RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RealtimeApiError::new(status, code, message)
+        }
         RequestContextError::SessionVerificationUnavailable => RealtimeApiError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",

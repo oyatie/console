@@ -656,6 +656,10 @@ async fn principal_from_headers(
             console_platform_request_context::RequestContextError::AccessScope(error) => {
                 RestError::from_kernel(error)
             }
+            error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable => {
+                let (status, code, message) = error.http_error_parts();
+                RestError::new(status, code, message)
+            }
             console_platform_request_context::RequestContextError::SessionVerificationUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "service_unavailable",

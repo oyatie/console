@@ -781,6 +781,14 @@ fn rest_error_from_request_context(
 ) -> RestError {
     use console_platform_request_context::RequestContextError as E;
     match err {
+        error @ E::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError {
+                status,
+                code,
+                ..RestError::unavailable(message)
+            }
+        }
         E::SessionVerificationUnavailable => {
             RestError::unavailable("session verification unavailable")
         }

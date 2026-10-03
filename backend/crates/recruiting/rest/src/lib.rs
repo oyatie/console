@@ -710,6 +710,10 @@ async fn principal(
                     "token is not authorized for recruiting",
                 ))
             }
+            error @ RequestContextError::LegacyProvenanceUnavailable => {
+                let (status, code, message) = error.http_error_parts();
+                RestError::new(status, code, message)
+            }
             RequestContextError::SessionVerificationUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

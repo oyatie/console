@@ -919,6 +919,10 @@ fn rest_error_from_request_context(error: RequestContextError) -> RestError {
             "token is not authorized for consulting",
         )),
         RequestContextError::AccessScope(error) => RestError::kernel(error),
+        error @ RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError::new(status, code, message)
+        }
         RequestContextError::SessionVerificationUnavailable => RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",

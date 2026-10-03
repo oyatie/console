@@ -197,6 +197,10 @@ async fn principal(s: &FacilitiesRestState, h: &HeaderMap) -> Result<Principal, 
         )
     })?;
     resolve_principal(v, &s.pool, h).await.map_err(|e| match e {
+        error @ RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError::new(status, code, message)
+        }
         RequestContextError::SessionVerificationUnavailable => RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -704,6 +708,10 @@ impl From<DbError> for RestError {
 }
 impl IntoResponse for RestError {
     fn into_response(self) -> Response {
+        let provenance_error = RequestContextError::LegacyProvenanceUnavailable;
+        if self.code == provenance_error.http_error_parts().1 {
+            return provenance_error.into_response();
+        }
         (
             self.status,
             Json(serde_json::json!({"code":self.code,"message":self.message})),

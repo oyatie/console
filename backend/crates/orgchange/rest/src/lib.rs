@@ -800,6 +800,10 @@ async fn principal(s: &OrgChangeRestState, h: &HeaderMap) -> Result<Principal, R
                     "token is not authorized for org changes",
                 ))
             }
+            error @ RequestContextError::LegacyProvenanceUnavailable => {
+                let (status, code, message) = error.http_error_parts();
+                RestError::new(status, code, message)
+            }
             RequestContextError::SessionVerificationUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

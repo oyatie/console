@@ -827,6 +827,10 @@ async fn principal_from_headers(
                     "token is not authorized for this inventory route",
                 ))
             }
+            error @ RequestContextError::LegacyProvenanceUnavailable => {
+                let (status, code, message) = error.http_error_parts();
+                RestError::new(status, code, message)
+            }
             RequestContextError::SessionVerificationUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

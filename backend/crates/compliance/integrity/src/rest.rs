@@ -178,6 +178,14 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError {
+                status,
+                code_override: Some(code),
+                ..RestError::unavailable(message)
+            }
+        }
         console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
             RestError::unavailable("session verification unavailable")
         }
@@ -233,6 +241,7 @@ struct ErrorPayload {
 struct RestError {
     status: StatusCode,
     kind: ErrorKind,
+    code_override: Option<&'static str>,
     message: String,
 }
 
@@ -241,6 +250,7 @@ impl RestError {
         Self {
             status: StatusCode::UNAUTHORIZED,
             kind: ErrorKind::Forbidden,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -249,6 +259,7 @@ impl RestError {
         Self {
             status: StatusCode::SERVICE_UNAVAILABLE,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -257,6 +268,7 @@ impl RestError {
         Self {
             status: status_for_kind(error.kind),
             kind: error.kind,
+            code_override: None,
             message: error.message,
         }
     }
@@ -279,6 +291,7 @@ impl RestError {
                 Self {
                     status: StatusCode::INTERNAL_SERVER_ERROR,
                     kind: ErrorKind::Internal,
+                    code_override: None,
                     message: "internal server error".into(),
                 }
             }
@@ -287,6 +300,7 @@ impl RestError {
                 Self {
                     status: StatusCode::INTERNAL_SERVER_ERROR,
                     kind: ErrorKind::Internal,
+                    code_override: None,
                     message: "internal server error".into(),
                 }
             }
@@ -295,6 +309,7 @@ impl RestError {
                 Self {
                     status: StatusCode::INTERNAL_SERVER_ERROR,
                     kind: ErrorKind::Internal,
+                    code_override: None,
                     message: "internal server error".into(),
                 }
             }
@@ -302,6 +317,9 @@ impl RestError {
     }
 
     fn code(&self) -> &'static str {
+        if let Some(code) = self.code_override {
+            return code;
+        }
         match self.kind {
             ErrorKind::Validation => "validation",
             ErrorKind::NotFound => "not_found",

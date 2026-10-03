@@ -22,6 +22,15 @@ use console_kernel_core::OrgId;
 pub struct SessionVerification {
     verifier: JwtVerifier,
     auth_database: PgPool,
+    legacy_business_admission: LegacyBusinessAdmission,
+}
+
+/// A trusted serving profile may impose this additional requirement, but it
+/// cannot turn a current source observation into a startup-cached verdict.
+#[derive(Clone, Copy)]
+enum LegacyBusinessAdmission {
+    Historical,
+    CurrentCompanyProvenanceRequired,
 }
 
 impl SessionVerification {
@@ -30,7 +39,25 @@ impl SessionVerification {
         Self {
             verifier,
             auth_database,
+            legacy_business_admission: LegacyBusinessAdmission::Historical,
         }
+    }
+
+    /// Bind the verified bridge profile's one-way admission requirement.
+    /// This does not attest that a Company is legacy or that a source exists;
+    /// the Business boundary must observe current source custody every request.
+    #[must_use]
+    pub fn require_current_company_provenance(mut self) -> Self {
+        self.legacy_business_admission = LegacyBusinessAdmission::CurrentCompanyProvenanceRequired;
+        self
+    }
+
+    #[must_use]
+    pub fn requires_current_company_provenance(&self) -> bool {
+        matches!(
+            self.legacy_business_admission,
+            LegacyBusinessAdmission::CurrentCompanyProvenanceRequired
+        )
     }
 
     /// Cryptographic and claim validation only. This does not authenticate a

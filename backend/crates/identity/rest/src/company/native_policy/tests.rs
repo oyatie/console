@@ -735,6 +735,7 @@ mod read_routing {
         let window = started.unix_timestamp().div_euclid(60) * 60;
         for epoch in [window, window + 60] {
             sqlx::query("INSERT INTO auth_rate_limit(client_key,endpoint,window_start,attempts) VALUES ('ip:203.0.113.50','account_csrf',$1,60)")
+                // rls-arming: ok auth_rate_limit is a global table (no org_id, no RLS)
                 .bind(OffsetDateTime::from_unix_timestamp(epoch).unwrap()).execute(&pool).await.unwrap();
         }
         let mut invalid = headers();
@@ -747,6 +748,7 @@ mod read_routing {
         ));
         let counts: Vec<i32> =
             sqlx::query_scalar("SELECT attempts FROM auth_rate_limit ORDER BY window_start")
+                // rls-arming: ok auth_rate_limit is a global table (no org_id, no RLS)
                 .fetch_all(&pool)
                 .await
                 .unwrap();
@@ -765,6 +767,7 @@ mod read_routing {
             "quota fixture interval invalid"
         );
         let rows: Vec<(String,String,OffsetDateTime,i32)> = sqlx::query_as("SELECT client_key,endpoint,window_start,attempts FROM auth_rate_limit ORDER BY window_start")
+            // rls-arming: ok auth_rate_limit is a global table (no org_id, no RLS)
             .fetch_all(&pool).await.unwrap();
         assert_eq!(rows.len(), 2);
         assert_eq!(rows.iter().map(|row| row.3).sum::<i32>(), 121);

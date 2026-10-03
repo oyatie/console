@@ -1472,9 +1472,18 @@ async fn principal(
     console_platform_request_context::resolve_principal(verifier, &state.pool, headers)
         .await
         .map_err(|err| match err {
+            error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable => {
+                let (status, code, message) = error.http_error_parts();
+                RestError {
+                    status,
+                    code_override: Some(code),
+                    ..RestError::unavailable(message)
+                }
+            }
             console_platform_request_context::RequestContextError::SessionVerificationUnavailable => RestError {
                 status: StatusCode::SERVICE_UNAVAILABLE,
                 kind: ErrorKind::Internal,
+                code_override: None,
                 message: "session verification unavailable".to_owned(),
             },
             _ => RestError::unauthorized("missing, invalid, or unauthorized bearer token"),
@@ -1499,6 +1508,7 @@ fn authorize_daily_plan_read(principal: &Principal, branch_id: BranchId) -> Resu
 struct RestError {
     status: StatusCode,
     kind: ErrorKind,
+    code_override: Option<&'static str>,
     message: String,
 }
 impl RestError {
@@ -1506,6 +1516,7 @@ impl RestError {
         Self {
             status: StatusCode::UNPROCESSABLE_ENTITY,
             kind: ErrorKind::Validation,
+            code_override: None,
             message: m.into(),
         }
     }
@@ -1513,6 +1524,7 @@ impl RestError {
         Self {
             status: StatusCode::UNAUTHORIZED,
             kind: ErrorKind::Forbidden,
+            code_override: None,
             message: m.into(),
         }
     }
@@ -1520,6 +1532,7 @@ impl RestError {
         Self {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: m.into(),
         }
     }
@@ -1527,6 +1540,7 @@ impl RestError {
         Self {
             status: StatusCode::SERVICE_UNAVAILABLE,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: m.into(),
         }
     }
@@ -1534,6 +1548,7 @@ impl RestError {
         Self {
             status: StatusCode::NOT_FOUND,
             kind: ErrorKind::NotFound,
+            code_override: None,
             message: m.into(),
         }
     }
@@ -1541,6 +1556,7 @@ impl RestError {
         Self {
             status: StatusCode::CONFLICT,
             kind: ErrorKind::Conflict,
+            code_override: None,
             message: m.into(),
         }
     }
@@ -1554,6 +1570,7 @@ impl RestError {
                 _ => StatusCode::INTERNAL_SERVER_ERROR,
             },
             kind: e.kind,
+            code_override: None,
             message: e.message,
         }
     }
@@ -1573,6 +1590,13 @@ impl From<DbError> for RestError {
 
 impl IntoResponse for RestError {
     fn into_response(self) -> Response {
-        (self.status,Json(serde_json::json!({"error":{"code":format!("{:?}",self.kind).to_lowercase(),"message":self.message}}))).into_response()
+        let code = self
+            .code_override
+            .map_or_else(|| format!("{:?}", self.kind).to_lowercase(), str::to_owned);
+        (
+            self.status,
+            Json(serde_json::json!({"error":{"code":code,"message":self.message}})),
+        )
+            .into_response()
     }
 }

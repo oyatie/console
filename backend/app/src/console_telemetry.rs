@@ -281,6 +281,13 @@ impl From<console_platform_request_context::RequestContextError> for TelemetryEr
         tracing::error!("console route telemetry request context error");
         if matches!(
             err,
+            console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable
+        ) {
+            let (status, code, message) = err.http_error_parts();
+            return Self::new(status, code, message);
+        }
+        if matches!(
+            err,
             console_platform_request_context::RequestContextError::LegacySessionRejected
         ) {
             return Self::new(

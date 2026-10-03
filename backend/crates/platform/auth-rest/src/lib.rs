@@ -215,6 +215,9 @@ pub struct AuthRestConfig {
 pub struct AuthRestState {
     pool: PgPool,
     auth_database: Option<PgPool>,
+    /// A one-way requirement bound only by trusted serving composition, never
+    /// a cached Company/source verdict or a request-controlled configuration.
+    current_company_provenance_required: bool,
     terms_artifacts: Option<Arc<terms::TermsArtifacts>>,
     services: Option<AuthServices>,
 }
@@ -255,6 +258,7 @@ impl AuthRestState {
         Self {
             pool,
             auth_database: None,
+            current_company_provenance_required: false,
             terms_artifacts: None,
             services: None,
         }
@@ -288,6 +292,7 @@ impl AuthRestState {
         Ok(Self {
             pool,
             auth_database: None,
+            current_company_provenance_required: false,
             terms_artifacts: None,
             services: Some(AuthServices {
                 passkeys,
@@ -311,6 +316,14 @@ impl AuthRestState {
     #[must_use]
     pub fn with_auth_database(mut self, pool: PgPool) -> Self {
         self.auth_database = Some(pool);
+        self
+    }
+
+    /// Retain the exact verified bridge's requirement for every verifier this
+    /// state constructs, including direct Group-admin endpoints.
+    #[must_use]
+    pub fn require_current_company_provenance(mut self) -> Self {
+        self.current_company_provenance_required = true;
         self
     }
 
@@ -2538,10 +2551,12 @@ impl AuthRestState {
             .auth_database
             .as_ref()
             .ok_or_else(|| RestError::unavailable("session verification unavailable"))?;
-        Ok(SessionVerification::new(
-            services.jwt_verifier.clone(),
-            auth.clone(),
-        ))
+        let verification = SessionVerification::new(services.jwt_verifier.clone(), auth.clone());
+        Ok(if self.current_company_provenance_required {
+            verification.require_current_company_provenance()
+        } else {
+            verification
+        })
     }
 
     async fn ensure_session_subject(
@@ -3226,6 +3241,14 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError {
+                status,
+                code,
+                ..RestError::unavailable(message)
+            }
+        }
         console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
             RestError::unavailable("session verification unavailable")
         }
@@ -3304,6 +3327,10 @@ async fn authenticated_group_actor(
         .map_err(|_| RestError::unauthorized("invalid bearer token"))?;
     let subject = user_id_from_claims(claims)?;
     state.ensure_session_subject(services, subject).await?;
+    let verification = state.session_verification(services)?;
+    console_platform_request_context::ensure_legacy_company_provenance(&verification, &state.pool)
+        .await
+        .map_err(rest_error_from_request_context)?;
     Ok(AuthenticatedGroupAdminActor {
         id: UserId::from_uuid(subject),
         home_org,
@@ -3909,20 +3936,38 @@ mod tests {
         let at = OffsetDateTime::from_unix_timestamp(1_700_000_000).unwrap();
         assert_eq!(RateLimitEndpoint::AccountCsrf.limits(), (60, 60, 1000));
         for _ in 0..60 {
-            rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at).await.unwrap();
+            rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at)
+                .await
+                .unwrap();
         }
-        let denied = rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at).await.unwrap_err();
+        let denied = rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at)
+            .await
+            .unwrap_err();
         assert_eq!(denied.status, StatusCode::TOO_MANY_REQUESTS);
         let rows: Vec<(String, i32)> = sqlx::query_as(
             "SELECT client_key,attempts FROM auth_rate_limit WHERE endpoint='account_csrf' ORDER BY client_key")
             .fetch_all(&pool).await.unwrap();
         // IP increments first; refusal does not charge the unvisited global bucket.
-        assert_eq!(rows, vec![("global".into(),60),("ip:203.0.113.50".into(),61)]);
-        rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at + RATE_LIMIT_WINDOW).await.unwrap();
+        assert_eq!(
+            rows,
+            vec![("global".into(), 60), ("ip:203.0.113.50".into(), 61)]
+        );
+        rate_limit(
+            &pool,
+            &headers,
+            client,
+            RateLimitEndpoint::AccountCsrf,
+            at + RATE_LIMIT_WINDOW,
+        )
+        .await
+        .unwrap();
         let rows: Vec<(String, i32)> = sqlx::query_as(
             "SELECT client_key,attempts FROM auth_rate_limit WHERE endpoint='account_csrf' AND window_start=$1 ORDER BY client_key")
             .bind(super::floor_to_window(at + RATE_LIMIT_WINDOW)).fetch_all(&pool).await.unwrap();
-        assert_eq!(rows, vec![("global".into(),1),("ip:203.0.113.50".into(),1)]);
+        assert_eq!(
+            rows,
+            vec![("global".into(), 1), ("ip:203.0.113.50".into(), 1)]
+        );
     }
 
     const ORG_A: Uuid = Uuid::from_u128(0xA013_A013_A013_A013_A013_A013_A013_A013);

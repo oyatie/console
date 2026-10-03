@@ -412,6 +412,10 @@ async fn principal(s: &LogisticsRestState, h: &HeaderMap) -> Result<Principal, R
                     "token is not authorized for logistics",
                 ))
             }
+            error @ RequestContextError::LegacyProvenanceUnavailable => {
+                let (status, code, message) = error.http_error_parts();
+                RestError::new(status, code, message)
+            }
             RequestContextError::SessionVerificationUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

@@ -276,6 +276,10 @@ async fn principal_from_headers(
 
 fn rest_error_from_request_context(err: RequestContextError) -> RestError {
     match err {
+        error @ RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError::new(status, code, message)
+        }
         RequestContextError::SessionVerificationUnavailable => {
             RestError::unavailable("session verification unavailable")
         }
