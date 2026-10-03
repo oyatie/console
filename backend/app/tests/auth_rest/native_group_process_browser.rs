@@ -2,6 +2,7 @@
 // Seven-relation reads begin only after the authenticated Group entry exists;
 // no missing routine/schema/compile failure is asserted to be a product RED.
 use super::*;
+use std::path::Path;
 
 const TABLES: [&str; 7] = [
     "native_group_identity_policy_heads_v1",
