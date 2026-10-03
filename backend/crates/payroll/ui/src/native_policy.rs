@@ -522,11 +522,19 @@ pub fn render(page: Page) -> String {
     let header = native_workspace_header::render(
         |mode| {
             company.as_ref().map(|(id, company_link, policy_link, payroll_link, (people_read, people_create))| view! {
-        <p class="nav-group">"관리"</p><nav aria-label="회사 업무 탐색">
-            {company_link.then(||view! {<a href=format!("/companies/{id}")>"회사 업무 공간"</a>})}
-            {policy_link.then(||view! {<a href=format!("/companies/{id}/policy")>"권한 관리"</a>})}
-        </nav>
-        {(*payroll_link || *people_read || *people_create).then(||view! {<p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}{(*payroll_link && mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}</nav>})}
+        {(*people_read || *people_create || (*payroll_link && mode == NavigationMode::Desktop)).then(||view! {
+            <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">
+                {people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}
+                {people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}
+                {(*payroll_link && mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}
+            </nav>
+        })}
+        {(*company_link || *policy_link).then(||view! {
+            <p class="nav-group">"관리"</p><nav aria-label="회사 업무 탐색">
+                {company_link.then(||view! {<a href=format!("/companies/{id}")>"회사 업무 공간"</a>})}
+                {policy_link.then(||view! {<a href=format!("/companies/{id}/policy") aria-current="location">"권한 관리"</a>})}
+            </nav>
+        })}
     }.into_any()).unwrap_or_else(|| ().into_any())
         },
         payroll_shortcut,

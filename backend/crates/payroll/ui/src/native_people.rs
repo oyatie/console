@@ -340,8 +340,16 @@ fn detail_body(record: Record) -> AnyView {
 }
 
 pub fn render(page: Page) -> String {
-    let directory_current = matches!(&page, Page::Directory { .. });
-    let registration_current = matches!(&page, Page::Registration { .. });
+    let directory_current = match &page {
+        Page::Directory { .. } => Some("page"),
+        Page::Detail { .. } => Some("location"),
+        _ => None,
+    };
+    let registration_current = match &page {
+        Page::Registration { .. } => Some("page"),
+        Page::RegistrationConflict { .. } | Page::Request { .. } => Some("location"),
+        _ => None,
+    };
     let scope = match &page {
         Page::Directory { scope, .. }
         | Page::Registration { scope, .. }
@@ -375,11 +383,13 @@ pub fn render(page: Page) -> String {
             scope.map(|s| {
         let id = &s.company;
         view! {
-            <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">
-                {s.directory_link.then(||view! {<a href=directory(id) aria-current=directory_current.then_some("page")>"사람"</a>})}
-                {s.can_create.then(||view! {<a href=format!("{}/new",directory(id)) aria-current=registration_current.then_some("page")>"사람 등록"</a>})}
-                {(s.payroll_link && mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}
-            </nav>
+            {(s.directory_link || s.can_create || (s.payroll_link && mode == NavigationMode::Desktop)).then(||view! {
+                <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">
+                    {s.directory_link.then(||view! {<a href=directory(id) aria-current=directory_current>"사람"</a>})}
+                    {s.can_create.then(||view! {<a href=format!("{}/new",directory(id)) aria-current=registration_current>"사람 등록"</a>})}
+                    {(s.payroll_link && mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}
+                </nav>
+            })}
             {(s.company_link || s.policy_link).then(||view! {
                 <p class="nav-group">"관리"</p><nav aria-label="회사 관리">
                     {s.company_link.then(||view! {<a href=format!("/companies/{id}")>"회사 업무 공간"</a>})}
