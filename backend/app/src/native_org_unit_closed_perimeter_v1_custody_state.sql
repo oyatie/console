@@ -2143,7 +2143,7 @@ SELECT CASE
   AND (SELECT valid FROM reserved_schemas) IS TRUE
   AND (SELECT valid FROM native_org_routine_namespace) IS TRUE
   AND (SELECT count(*) FROM matching_phase)=1
- THEN CASE (SELECT phase FROM matching_phase)
+ THEN CASE (SELECT matching_phase.phase FROM matching_phase)
   WHEN 'closed' THEN 'native_org_unit.closed_perimeter_compatible'
   WHEN 'predecessor' THEN 'native_org_unit.closed_perimeter_required'
   ELSE 'native_org_unit.profile_mismatch' END
