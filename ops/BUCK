@@ -156,3 +156,15 @@ export_file(
     name = "postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql",
     visibility = ["PUBLIC"],
 )
+
+# Reviewed native Organization finalizer inputs for isolated transaction tests.
+
+export_file(
+    name = "postgres-finalize-native-org-unit-closed-perimeter-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-org-unit-closed-perimeter-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
