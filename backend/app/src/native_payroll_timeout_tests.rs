@@ -41,6 +41,7 @@ fn subject(counter: Arc<AtomicUsize>, immediate: bool) -> Router {
         console_platform_request_context::with_http_error_envelope(router),
     ))
 }
+#[cfg(not(feature = "test-postgres"))]
 #[tokio::test]
 async fn native_timeout_keeps_private_representation_cancels_and_preserves_other_responses() {
     let counter = Arc::new(AtomicUsize::new(0));

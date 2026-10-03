@@ -49,6 +49,7 @@ fn fixture(captured: bool, count: Arc<AtomicUsize>) -> Router {
     ))
 }
 
+#[cfg(not(feature = "test-postgres"))]
 #[tokio::test]
 async fn queried_people_reads_keep_no_referrer_on_all_transport_outcomes() {
     let path = format!("/companies/{COMPANY}/people?employee_number=%FF");
@@ -106,6 +107,7 @@ async fn queried_people_reads_keep_no_referrer_on_all_transport_outcomes() {
         }
     }
 }
+#[cfg(not(feature = "test-postgres"))]
 #[tokio::test]
 async fn people_timeout_retains_only_requested_locator_after_capture_and_cancels_handler() {
     let count = Arc::new(AtomicUsize::new(0));
@@ -151,6 +153,7 @@ async fn people_timeout_retains_only_requested_locator_after_capture_and_cancels
         assert!(!text.contains("csrf_proof"));
     }
 }
+#[cfg(not(feature = "test-postgres"))]
 #[tokio::test]
 async fn people_timeout_does_not_rewrite_unrelated_routes_or_known_response() {
     let count = Arc::new(AtomicUsize::new(0));
