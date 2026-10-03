@@ -123,6 +123,38 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             "auth_rest has undeclared compile-time fixture inputs",
         )
 
+    def test_native_org_finalizer_maps_owning_sql_inputs_to_public_exports(self) -> None:
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/app/tests/auth_rest/native_org_unit_closed_phase_capture.rs"
+        parent = root / "backend/app/tests/auth_rest/native_company_provenance_pair_capture.rs"
+        self.assertIn('include!("native_org_unit_closed_phase_capture.rs");', parent.read_text())
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        required = set()
+        for source in [source]:
+            for literal in re.findall(r'include_(?:str|bytes)!\(\s*"([^"]+)"', source.read_text()):
+                resource = (source.parent / literal).resolve()
+                if resource.is_relative_to(root / "ops"):
+                    self.assertTrue(resource.is_file(), f"missing owning SQL input: {resource}")
+                    required.add(resource)
+        self.assertTrue(required, "must examine actual owning SQL inputs")
+        external = config["external"]
+        mapped = {(root / destination).resolve() for destination in external.values()}
+        self.assertEqual([], sorted(str(path.relative_to(root)) for path in required - mapped),
+                         "auth_rest has undeclared owning SQL inputs")
+        public_exports = set()
+        for statement in ast.parse((root / "ops/BUCK").read_text()).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id != "export_file":
+                continue
+            fields = {field.arg: ast.literal_eval(field.value) for field in call.keywords}
+            if fields.get("visibility") == ["PUBLIC"]:
+                public_exports.add("//ops:" + fields["name"])
+        for label, destination in external.items():
+            if (root / destination).resolve() in required:
+                self.assertIn(label, public_exports, f"owning SQL input is not publicly exported: {label}")
+
     def test_layer_ratchet_receives_current_workspace_manifests_and_sources(self) -> None:
         """The real-workspace ratchet must not run against an empty Buck input tree."""
         external = GENERATOR.integration_external_resources(
