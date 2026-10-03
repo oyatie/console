@@ -50,6 +50,16 @@
     "archive_tag": null
   },
   {
+    "path": "HUMAN.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "active",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "f4f1b9a084543e7cbaf9fa1928203fb239d458f7",
+    "archive_tag": null
+  },
+  {
     "path": "README.md",
     "class": "current",
     "owner": "repository maintainers",
