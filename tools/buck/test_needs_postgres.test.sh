@@ -58,6 +58,13 @@ PY_CIDFILE
       touch "${HARNESS_LOG}.run-ready"
       exec /bin/sleep 30
     fi
+    case "${FAKE_DOCKER_CIDFILE_FAULT:-}" in
+      missing) rm -f "${cidfile}" ;;
+      empty) : >"${cidfile}" ;;
+      unreadable) chmod 000 "${cidfile}" ;;
+      "") ;;
+      *) exit 2 ;;
+    esac
     printf '%s\n' "${cid}" ;;
   cp)
     if [[ "$3" == *:/topology.env ]]; then
@@ -431,7 +438,7 @@ for case, target, supplied in [
 PY_BROWSER_ENV
 
 # Preserve every preceding contract; add ownership assertions at the end so the
-# baseline reports all eight new histories instead of stopping at the first RED.
+# baseline reports all eleven ownership histories instead of stopping at the first RED.
 lifecycle_failures=0; lifecycle_executed=0
 lifecycle_case() {
   local name="$1"; shift
@@ -523,7 +530,34 @@ creation_signal_status=0
 wait "${creation_harness_pid}" || creation_signal_status="$?"
 ! kill -0 "${creation_docker_pid}" 2>/dev/null
 lifecycle_case term-during-creation assert_owned_cleanup "${creation_signal_log}" "${creation_signal_status}" 143
-printf 'owned-lifecycle: discovered=8 executed=%s failures=%s\n' "${lifecycle_executed}" "${lifecycle_failures}"
-[[ "${lifecycle_executed}" == 8 && "${lifecycle_failures}" == 0 ]]
+# Successful creation without readable native custody cannot claim cleanup.
+# Keep its unknown owned residue; never guess a deletion target from the name.
+for cid_fault in missing empty unreadable; do
+  cid_fault_log="${scratch}/cid-fault-${cid_fault}.log"; cid_fault_status=0
+  PATH="${fake_bin}:${PATH}" HARNESS_LOG="${cid_fault_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_DOCKER_CIDFILE_FAULT="${cid_fault}" "${harness}" //tools/buck:pr473-ontology-key-revision-postgres >"${cid_fault_log}.output" 2>&1 || cid_fault_status="$?"
+  lifecycle_case "cid-${cid_fault}" python3 - "${cid_fault_log}" "${cid_fault_status}" <<'PY_CID_FAULT'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1])
+assert int(sys.argv[2]) != 0, "missing or unreadable custody claimed success"
+output = pathlib.Path(str(p) + ".output").read_text()
+assert "buck-postgres: owned disposable PostgreSQL cleanup failed" in output
+assert "postgres://" not in output and "secret-" not in output
+rows = p.read_text().splitlines()
+assert sum(line.startswith("docker run ") for line in rows) == 1
+assert any(line.startswith("buck test ") for line in rows), "must reach completed useful work"
+assert not any(line.startswith("docker rm ") for line in rows), "unknown custody authorized removal"
+assert pathlib.Path(str(p) + ".owned-container-present").exists()
+assert pathlib.Path(str(p) + ".owned-volume-present").exists()
+assert not list(p.parent.glob("console-buck-postgres-container.*")), "container credentials survived"
+assert not list(p.parent.glob("console-buck-postgres-env.*")), "test credentials survived"
+record = pathlib.Path(str(p) + ".cidfile")
+assert record.exists(), "native CID path must be recorded before injecting corruption"
+cidfile = pathlib.Path(record.read_text().strip())
+assert not cidfile.exists() and not cidfile.is_symlink(), "CID file survived"
+assert not cidfile.parent.exists(), "private CID directory survived"
+PY_CID_FAULT
+done
+printf 'owned-lifecycle: discovered=11 executed=%s failures=%s\n' "${lifecycle_executed}" "${lifecycle_failures}"
+[[ "${lifecycle_executed}" == 11 && "${lifecycle_failures}" == 0 ]]
 
 echo 'test_needs_postgres: PASS'
