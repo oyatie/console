@@ -800,7 +800,7 @@ mod native_org_unit_closed_finalizer_tests {
             "caller target mismatch before BEGIN"
         );
         no_prior_user_locks(connection).await;
-        let mut tx = connection.begin().await.unwrap();
+        let mut tx = sqlx::Connection::begin(&mut *connection).await.unwrap();
         sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
             .execute(tx.as_mut())
             .await
@@ -945,7 +945,7 @@ mod native_org_unit_closed_finalizer_tests {
         // rows remain; no new synthetic persons, Companies or business workflow.
         prepare_http_database_staging(pool).await;
         let mut setup = direct(pool).await;
-        let mut tx = setup.begin().await.unwrap();
+        let mut tx = sqlx::Connection::begin(&mut setup).await.unwrap();
         let absent: bool = sqlx::query_scalar(
             "SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_durability_observer') \
              AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc WHERE proname='console_durability_observation_v1')")
@@ -1011,7 +1011,7 @@ mod native_org_unit_closed_finalizer_tests {
         setup.close().await.unwrap();
         let mut fresh = direct(pool).await;
         let frozen_target = target(&mut fresh).await; // before BEGIN
-        let mut readback = fresh.begin().await.unwrap();
+        let mut readback = sqlx::Connection::begin(&mut fresh).await.unwrap();
         assert_eq!(
             capture(readback.as_mut(), CAPTURE).await.sha256,
             PREDECESSOR73[variant]
@@ -1037,7 +1037,7 @@ mod native_org_unit_closed_finalizer_tests {
     async fn restored(pool: &PgPool, baseline: &Baseline, variant: usize) {
         let mut fresh = direct(pool).await;
         assert_eq!(target(&mut fresh).await, baseline.target);
-        let mut tx = fresh.begin().await.unwrap();
+        let mut tx = sqlx::Connection::begin(&mut fresh).await.unwrap();
         assert_eq!(
             rows(tx.as_mut()).await,
             baseline.rows,
@@ -1528,7 +1528,7 @@ mod native_org_unit_closed_finalizer_tests {
         for isolation in ["REPEATABLE READ", "SERIALIZABLE"] {
             let mut connection = direct(&pool).await;
             assert_eq!(target(&mut connection).await, baseline.target);
-            let mut tx = connection.begin().await.unwrap();
+            let mut tx = sqlx::Connection::begin(&mut connection).await.unwrap();
             let outcome = AssertUnwindSafe(async {
                 let statement = format!("SET TRANSACTION ISOLATION LEVEL {isolation}");
                 sqlx::raw_sql(sqlx::AssertSqlSafe(statement))
@@ -1569,7 +1569,7 @@ mod native_org_unit_closed_finalizer_tests {
             .fetch_one(&mut blocker)
             .await
             .unwrap();
-        let mut blocking = blocker.begin().await.unwrap();
+        let mut blocking = sqlx::Connection::begin(&mut blocker).await.unwrap();
         bounds(blocking.as_mut()).await;
         sqlx::raw_sql("LOCK TABLE ONLY public.account_security IN ACCESS SHARE MODE")
             .execute(blocking.as_mut())
@@ -1670,7 +1670,7 @@ mod native_org_unit_closed_finalizer_tests {
         run_finalizer(tx.as_mut()).await;
         assert_eq!(retained_locks(tx.as_mut()).await, locks_before);
         let task = tokio::spawn(async move {
-            let mut waiter = other.begin().await.unwrap();
+            let mut waiter = sqlx::Connection::begin(&mut other).await.unwrap();
             sqlx::raw_sql(ENTRY_BOUNDS)
                 .execute(waiter.as_mut())
                 .await
