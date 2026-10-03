@@ -151,7 +151,7 @@ mod native_company_provenance_pair_capture {
             assert_eq!(migration.version, index as i64 + 1);
             assert_eq!(hex::encode(migration.checksum.as_ref()), checksum);
             assert_eq!(
-                hex::encode(sha2::Sha384::digest(migration.sql.as_bytes())),
+                hex::encode(sha2::Sha384::digest(migration.sql.as_str().as_bytes())),
                 checksum
             );
         }
