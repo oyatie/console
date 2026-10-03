@@ -32,7 +32,7 @@ verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d19
 verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
 for entry in \
   account:3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d \
-  company:3e66484ed5ff9d5befda5725f21a1c53d146c131e8f121a1235aa24f96261917 \
+  company:eb01cc0cf4eba45ae45b06c86d743a54a0c744a77b54adf3cd6e6f51551fb7bd \
   company-preview:a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90 \
   hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c \
   native_header:daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d \

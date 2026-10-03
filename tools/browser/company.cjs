@@ -198,9 +198,9 @@ async function main(backendPort,out,mode){
   for(const file of files)fs.unlinkSync(file); // Private test key stays memory-only after TLS initialization.
   reader=readline.createInterface({input:process.stdin,crlfDelay:Infinity});const input=reader[Symbol.asyncIterator]();
   watchOwner(reader,requestCancel);
-  async function receive(){const line=await delayLimit(input.next(),20000);requireFact(!line.done,'OWNER_EOF');let value;try{value=JSON.parse(line.value);}catch{requireFact(false,'OWNER_PROTOCOL');}requireFact(value?.kind!=='ABORT','OWNER_REFUSED');return value;}
+  async function receive(initialStart=false){const line=await (initialStart?input.next():delayLimit(input.next(),20000));requireFact(!line.done,'OWNER_EOF');let value;try{value=JSON.parse(line.value);}catch{requireFact(false,'OWNER_PROTOCOL');}requireFact(value?.kind!=='ABORT','OWNER_REFUSED');return value;}
   emit({kind:'READY',origin,rp_id:'localhost',tls_spki_sha256:spki,upstream_port:Number(backendPort)});
-  stage='owner_start';const start=await receive();requireFact(start.kind==='START'&&Object.keys(start).length===1,'OWNER_PROTOCOL');
+  stage='owner_start';const start=await receive(true);requireFact(start.kind==='START'&&Object.keys(start).length===1,'OWNER_PROTOCOL');
   stage='browser_launch';requireFact(!cancelled,'OWNER_REFUSED');launchPromise=chromium.launchServer({headless:true,executablePath:EXECUTABLE,timeout:10000,env,args:['--disable-background-networking','--disable-component-update','--no-proxy-server',`--ignore-certificate-errors-spki-list=${spki}`]});server=await launchPromise;
   browserProcess=server.process();result.browser_pid=browserProcess.pid;emit({kind:'BROWSER_OWNED',pid:browserProcess.pid,executable_sha256:EXECUTABLE_SHA});requireFact(!cancelled,'OWNER_REFUSED');
   const browser=await chromium.connect(server.wsEndpoint(),{timeout:10000});result.browser_version=browser.version();requireFact(result.browser_version==='153.0.8010.12','PREREQUISITE');
