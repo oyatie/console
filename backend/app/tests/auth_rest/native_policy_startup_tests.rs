@@ -467,3 +467,219 @@ async fn native_policy_old_adapter_rejects_command_new_atomic_builder_is_real_co
     close_states(&[state], outcome).await;
     runtime.close().await;
 }
+
+mod native_org_bridge_bootstrap_red {
+    use super::*;
+
+    #[sqlx::test(migrations = false)]
+    async fn predecessor_profile_fences_legacy_tenant_read_before_org_ddl(pool: PgPool) {
+        let (app, _, state) = native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
+        let outcome = AssertUnwindSafe(async {
+            assert_eq!(ready_status(&state).await, StatusCode::OK);
+            let (app, _, created) = create_owned_company(&pool, app).await;
+            let native_origins: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM public.company_enrollment_receipts WHERE org_id=$1",
+            )
+            .bind(created.company)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(native_origins, 1, "real native Company prerequisite");
+
+            let branch = seed_branch(&pool, "Bridge legacy region", "Bridge legacy branch").await;
+            let actor = seed_user_with_branch(
+                &pool,
+                "Bridge legacy reader",
+                "010-8900-0119",
+                "SUPER_ADMIN",
+                branch,
+            )
+            .await;
+            let legacy_origin: (Uuid, i64) = sqlx::query_as(
+                "SELECT u.org_id, (SELECT count(*) FROM public.company_enrollment_receipts r WHERE r.org_id=u.org_id) FROM public.users u WHERE u.id=$1",
+            )
+            .bind(actor.as_uuid())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(legacy_origin, (*OrgId::knl().as_uuid(), 0));
+            let legacy_topology: bool = sqlx::query_scalar(
+                "SELECT o.slug='knl' AND o.origin_account_id IS NULL \
+                        AND o.origin_command_id IS NULL AND o.origin_receipt_id IS NULL \
+                        AND g.origin_account_id IS NULL AND g.origin_command_id IS NULL \
+                        AND g.origin_receipt_id IS NULL \
+                        AND EXISTS(SELECT 1 FROM public.group_memberships m \
+                                   WHERE m.group_id=o.group_id AND m.org_id=o.id) \
+                 FROM public.organizations o JOIN public.groups g ON g.id=o.group_id \
+                 WHERE o.id=$1",
+            )
+            .bind(*OrgId::knl().as_uuid())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert!(legacy_topology, "legacy Group and Company prerequisite");
+            let token = admin_session_via_otp(&app.service, &pool, actor).await;
+            let auth_read = get_legacy_raw(&app.service, "/api/v1/auth/passkeys", &token).await;
+            assert_eq!(auth_read.status(), StatusCode::OK, "real legacy session prerequisite");
+
+            let before = all_rows(&pool).await;
+            let response = get_legacy_raw(&app.service, "/api/v1/users/me", &token).await;
+            assert_eq!(
+                response.status(),
+                StatusCode::SERVICE_UNAVAILABLE,
+                "ORG_BRIDGE_BOOTSTRAP: legacy bearer tenant read escaped before positive provenance DDL",
+            );
+            let bytes = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+            let problem: Value = serde_json::from_slice(&bytes).unwrap();
+            assert_eq!(problem["error"]["code"], "legacy_provenance_unavailable");
+            assert_eq!(all_rows(&pool).await, before, "fenced read changed durable state");
+            drop(app);
+        })
+        .catch_unwind()
+        .await;
+        close_states(&[state], outcome).await;
+    }
+}
+
+mod native_org_bridge_transport_red {
+    use super::*;
+
+    struct LoopbackServer(tokio::task::JoinHandle<std::io::Result<()>>);
+
+    impl Drop for LoopbackServer {
+        fn drop(&mut self) {
+            self.0.abort();
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn predecessor_profile_fences_legacy_ssr_and_websocket_before_org_ddl(pool: PgPool) {
+        let (app, _, state) = native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
+        let outcome = AssertUnwindSafe(async {
+            assert_eq!(ready_status(&state).await, StatusCode::OK);
+            let branch =
+                seed_branch(&pool, "Bridge transport region", "Bridge transport branch").await;
+            let actor = seed_user_with_branch(
+                &pool,
+                "Bridge transport reader",
+                "010-8900-0120",
+                "SUPER_ADMIN",
+                branch,
+            )
+            .await;
+            let token = admin_session_via_otp(&app.service, &pool, actor).await;
+            assert_eq!(
+                get_legacy_raw(&app.service, "/api/v1/users/me", "invalid-token")
+                    .await
+                    .status(),
+                StatusCode::UNAUTHORIZED,
+                "invalid credentials must retain the authentication boundary",
+            );
+            let invalid_ssr = get_legacy_raw(&app.service, "/organization", "invalid-token").await;
+            assert_eq!(invalid_ssr.status(), StatusCode::OK);
+            assert_eq!(
+                String::from_utf8(
+                    to_bytes(invalid_ssr.into_body(), 256 * 1024)
+                        .await
+                        .unwrap()
+                        .to_vec()
+                )
+                .unwrap(),
+                console_payroll_ui::render_shell(),
+                "invalid credentials must retain the omitted Organization shell",
+            );
+            assert_eq!(
+                get_legacy_raw(&app.service, "/api/v1/auth/passkeys", &token)
+                    .await
+                    .status(),
+                StatusCode::OK,
+                "self-auth must remain usable during bridge bootstrap",
+            );
+            let before = all_rows(&pool).await;
+            let ssr = get_legacy_raw(&app.service, "/organization", &token).await;
+
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let address = listener.local_addr().unwrap();
+            let router = app.service.clone();
+            let mut server =
+                LoopbackServer(tokio::spawn(
+                    async move { axum::serve(listener, router).await },
+                ));
+            let client = reqwest::Client::builder()
+                .no_proxy()
+                .timeout(std::time::Duration::from_secs(40))
+                .build()
+                .unwrap();
+            let mut handshakes = Vec::new();
+            for (credential, protocol) in [
+                (None, false),
+                (Some("invalid-token"), false),
+                (Some("invalid-token"), true),
+                (Some(token.as_str()), false),
+                (Some(token.as_str()), true),
+            ] {
+                let mut request = client
+                    .get(format!("http://{address}/api/v1/ws"))
+                    .header(axum::http::header::CONNECTION, "Upgrade")
+                    .header(axum::http::header::UPGRADE, "websocket")
+                    .header(axum::http::header::SEC_WEBSOCKET_VERSION, "13")
+                    .header(
+                        axum::http::header::SEC_WEBSOCKET_KEY,
+                        "dGhlIHNhbXBsZSBub25jZQ==",
+                    );
+                request = match credential {
+                    None => request,
+                    Some(value) if protocol => request.header(
+                        axum::http::header::SEC_WEBSOCKET_PROTOCOL,
+                        format!("bearer, {value}"),
+                    ),
+                    Some(value) => {
+                        request.header(axum::http::header::AUTHORIZATION, format!("Bearer {value}"))
+                    }
+                };
+                let response = request.send().await.expect("real loopback handshake");
+                let status = response.status();
+                let body = if status == StatusCode::SWITCHING_PROTOCOLS {
+                    Vec::new()
+                } else {
+                    response.bytes().await.unwrap().to_vec()
+                };
+                handshakes.push((status, body));
+            }
+            server.0.abort();
+            tokio::time::timeout(std::time::Duration::from_secs(5), &mut server.0)
+                .await
+                .expect("owned loopback server must stop")
+                .ok();
+
+            for (status, body) in handshakes.iter().take(3) {
+                assert_eq!(*status, StatusCode::UNAUTHORIZED);
+                let problem: Value = serde_json::from_slice(body).unwrap();
+                assert_eq!(problem["error"]["code"], "unauthorized");
+            }
+            assert_eq!(
+                [ssr.status(), handshakes[3].0, handshakes[4].0],
+                [StatusCode::SERVICE_UNAVAILABLE; 3],
+                "SSR and both real WebSocket credential forms must all be fenced",
+            );
+            let ssr_body = to_bytes(ssr.into_body(), 256 * 1024).await.unwrap();
+            assert!(
+                String::from_utf8_lossy(&ssr_body).contains("legacy_provenance_unavailable"),
+                "SSR must show an accountable bridge interruption",
+            );
+            for (status, body) in handshakes.into_iter().skip(3) {
+                assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+                let problem: Value = serde_json::from_slice(&body).unwrap();
+                assert_eq!(problem["error"]["code"], "legacy_provenance_unavailable");
+            }
+            assert_eq!(
+                all_rows(&pool).await,
+                before,
+                "fenced transport changed durable state"
+            );
+        })
+        .catch_unwind()
+        .await;
+        close_states(&[state], outcome).await;
+    }
+}
