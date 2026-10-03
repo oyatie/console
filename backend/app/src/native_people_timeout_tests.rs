@@ -22,16 +22,14 @@ fn fixture(captured: bool, count: Arc<AtomicUsize>) -> Router {
         let count = count.clone();
         async move {
             let _dropped = Dropped(count);
-            if captured {
-                if let Some(Extension(marker)) = marker {
-                    marker.retain_requested(
-                        DirectoryRequestRef::new(
-                            OrgId::from_uuid(Uuid::parse_str(COMPANY).unwrap()),
-                            Uuid::parse_str(COMMAND).unwrap(),
-                        )
-                        .unwrap(),
-                    );
-                }
+            if captured && let Some(Extension(marker)) = marker {
+                marker.retain_requested(
+                    DirectoryRequestRef::new(
+                        OrgId::from_uuid(Uuid::parse_str(COMPANY).unwrap()),
+                        Uuid::parse_str(COMMAND).unwrap(),
+                    )
+                    .unwrap(),
+                );
             }
             std::future::pending::<()>().await;
             "unreachable private payload"

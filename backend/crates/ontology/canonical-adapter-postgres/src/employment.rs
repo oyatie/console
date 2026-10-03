@@ -1361,6 +1361,27 @@ fn head_from_row(row: sqlx::postgres::PgRow) -> EmploymentHead {
     }
 }
 
+/// Native directory registration creates an identity record, not Employment.
+/// Protected native terminal and deferred closure must exist in this SAME tx.
+pub(crate) async fn insert_native_directory_employee_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    terminal: &console_ontology_application::people::DirectoryTerminalV1,
+) -> Result<(), sqlx::Error> {
+    use console_ontology_application::people::DirectoryTerminalOutcomeV1;
+    if terminal.outcome() != DirectoryTerminalOutcomeV1::Committed {
+        return Err(sqlx::Error::Protocol(
+            "native directory writer requires committed terminal".into(),
+        ));
+    }
+    let command = terminal.accepted().command();
+    let result=sqlx::query("INSERT INTO public.employees (id,org_id,company,name,employee_number,source_filename,source_sheet,source_row,source_key,source_kind,native_command_id,raw_row,source_metadata,employment_status,identity_resolution_strategy,identity_resolution_confidence,identity_review_required,identity_name_only_merge,created_at,updated_at) SELECT $1,$2,o.name,$3,$4,NULL,NULL,NULL,$5,'NATIVE_DIRECTORY',$6,'{}'::jsonb,'{}'::jsonb,'UNKNOWN','employee_number','low',true,false,$7,$7 FROM public.organizations o WHERE o.id=$2")
+      .bind(command.employee_id()).bind(*command.company().as_uuid()).bind(command.input().legal_name()).bind(command.input().employee_number()).bind(format!("native-directory:{}",command.command_id())).bind(command.command_id()).bind(terminal.terminal_at()).execute(tx.as_mut()).await?;
+    if result.rows_affected() != 1 {
+        return Err(sqlx::Error::RowNotFound);
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod port_error_kind_tests {
     use super::*;
@@ -1417,25 +1438,4 @@ mod port_error_kind_tests {
             ErrorKind::Validation
         );
     }
-}
-
-/// Native directory registration creates an identity record, not Employment.
-/// Protected native terminal and deferred closure must exist in this SAME tx.
-pub(crate) async fn insert_native_directory_employee_in_tx(
-    tx: &mut Transaction<'_, Postgres>,
-    terminal: &console_ontology_application::people::DirectoryTerminalV1,
-) -> Result<(), sqlx::Error> {
-    use console_ontology_application::people::DirectoryTerminalOutcomeV1;
-    if terminal.outcome() != DirectoryTerminalOutcomeV1::Committed {
-        return Err(sqlx::Error::Protocol(
-            "native directory writer requires committed terminal".into(),
-        ));
-    }
-    let command = terminal.accepted().command();
-    let result=sqlx::query("INSERT INTO public.employees (id,org_id,company,name,employee_number,source_filename,source_sheet,source_row,source_key,source_kind,native_command_id,raw_row,source_metadata,employment_status,identity_resolution_strategy,identity_resolution_confidence,identity_review_required,identity_name_only_merge,created_at,updated_at) SELECT $1,$2,o.name,$3,$4,NULL,NULL,NULL,$5,'NATIVE_DIRECTORY',$6,'{}'::jsonb,'{}'::jsonb,'UNKNOWN','employee_number','low',true,false,$7,$7 FROM public.organizations o WHERE o.id=$2")
-      .bind(command.employee_id()).bind(*command.company().as_uuid()).bind(command.input().legal_name()).bind(command.input().employee_number()).bind(format!("native-directory:{}",command.command_id())).bind(command.command_id()).bind(terminal.terminal_at()).execute(tx.as_mut()).await?;
-    if result.rows_affected() != 1 {
-        return Err(sqlx::Error::RowNotFound);
-    }
-    Ok(())
 }

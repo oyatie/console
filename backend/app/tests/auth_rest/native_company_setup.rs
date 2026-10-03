@@ -240,7 +240,7 @@ pub(crate) mod company_setup {
             CREATE,
             cookies,
             Some(input.clone()),
-            &[("X-Console-CSRF", &csrf)],
+            &[("X-Console-CSRF", csrf)],
         )
         .await
     }

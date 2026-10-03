@@ -288,7 +288,7 @@ fn production_payroll_sdk_requires_all18_fields_and_finite_non_delegable_source(
         Ok(CompanyPolicyDecision::Allow)
     );
     assert_eq!(policy.sdk_calls.load(Ordering::SeqCst), 1);
-    for missing in 0..18 {
+    for (missing, key) in KEYS.iter().enumerate() {
         let mut row = payroll_row();
         row.properties.remove(missing);
         assert!(
@@ -297,7 +297,7 @@ fn production_payroll_sdk_requires_all18_fields_and_finite_non_delegable_source(
                 Err(CompanyPolicyError::MaterialUnavailable)
             ),
             "missing {} admitted",
-            KEYS[missing]
+            key
         );
     }
     for changed in 0..9 {
@@ -547,7 +547,7 @@ fn literal_collection_requires_exact18field_set_and_denies_unsupported_actions()
         )
     };
     assert_eq!(run(read_entities(), read_context()), Ok(Decision::Allow));
-    for missing in 0..18 {
+    for (missing, key) in KEYS.iter().enumerate() {
         let mut context = read_context();
         context["requested_fields"]
             .as_array_mut()
@@ -557,7 +557,7 @@ fn literal_collection_requires_exact18field_set_and_denies_unsupported_actions()
             run(read_entities(), context),
             Ok(Decision::Deny),
             "request missing {}",
-            KEYS[missing]
+            key
         );
         let mut entities = read_entities();
         entities[1]["attrs"]["allowed_fields"]
@@ -568,7 +568,7 @@ fn literal_collection_requires_exact18field_set_and_denies_unsupported_actions()
             run(entities, read_context()),
             Ok(Decision::Deny),
             "grant missing {}",
-            KEYS[missing]
+            key
         );
     }
     for action in [

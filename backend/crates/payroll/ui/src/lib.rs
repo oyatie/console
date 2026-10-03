@@ -1777,12 +1777,15 @@ mod workspace_tests;
 mod workflow_presentation_tests;
 
 #[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod native_policy_validation_tests;
 
 #[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod native_payroll_tests;
 
 #[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod native_people_tests;
 
 mod native_workspace_header;

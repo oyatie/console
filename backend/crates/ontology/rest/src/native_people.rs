@@ -72,7 +72,7 @@ impl DirectoryProofAdmission for FormProofAdmission<'_> {
 pub enum Submission {
     Validation {
         current: DirectoryForm<AccountFormProof>,
-        draft: Draft,
+        draft: Box<Draft>,
         problem: Option<DirectoryWorkflowError>,
     },
     Confirmed(DirectoryRequestRef),
@@ -312,7 +312,7 @@ where
     async fn validation(
         &self,
         credentials: &AccountEnrollmentCredentials,
-        draft: Draft,
+        draft: Box<Draft>,
         problem: Option<DirectoryWorkflowError>,
         admission: &mut FormProofAdmission<'_>,
     ) -> Result<Submission, StatusCode> {

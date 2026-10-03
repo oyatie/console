@@ -191,8 +191,7 @@ async fn read(
     path: Result<Path<Route>, PathRejection>,
     matched: MatchedPath,
     RawQuery(query): RawQuery,
-    headers: HeaderMap,
-    method: Method,
+    (headers, method): (HeaderMap, Method),
     client: Option<Extension<TrustedClientIp>>,
     recovery: Option<Extension<RecoveryLocator>>,
 ) -> Response {
@@ -219,16 +218,11 @@ async fn read(
         Ok(scope) => scope,
         Err(status) => return error(status),
     };
-    let result: Result<ui::Page, StatusCode> = match matched.as_str() {
-        LIST => owner
-            .list(
-                &headers,
-                &route.org_id,
-                list_query.clone().expect("list query parsed"),
-            )
+    let result: Result<ui::Page, StatusCode> = match (matched.as_str(), list_query) {
+        (LIST, Some(query)) => owner
+            .list(&headers, &route.org_id, query.clone())
             .await
             .map(|page| {
-                let query = list_query.expect("list query parsed");
                 let search_number = query.employee_number().map(str::to_owned);
                 let next_href = page.next_after.map(|after| {
                     let mut params = url::form_urlencoded::Serializer::new(String::new());
@@ -246,7 +240,7 @@ async fn read(
                     after_cursor: query.after().is_some(),
                 }
             }),
-        NEW => owner
+        (NEW, _) => owner
             .registration(
                 &headers,
                 client.map(|Extension(ip)| ip),
@@ -258,7 +252,7 @@ async fn read(
                 scope,
                 form: registration(form, String::new(), String::new(), None, None, None),
             }),
-        DETAIL => match route.employee.as_deref() {
+        (DETAIL, _) => match route.employee.as_deref() {
             Some(employee) => match owner
                 .detail(&headers, &route.org_id, employee, query.as_deref())
                 .await
@@ -272,7 +266,7 @@ async fn read(
             },
             None => Err(StatusCode::NOT_FOUND),
         },
-        REQUEST => match route.command.as_deref() {
+        (REQUEST, _) => match route.command.as_deref() {
             Some(command) => match owner
                 .request(
                     &headers,

@@ -144,3 +144,15 @@ export_file(
     name = "postgres-capture-company-provenance-v1-custody.sql",
     visibility = ["PUBLIC"],
 )
+
+# Declared UNINSTALLED inputs for rolled-back OrgUnit metadata qualification.
+
+export_file(
+    name = "postgres-native-org-unit-closed-perimeter-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)

@@ -3109,7 +3109,9 @@ fn source_directory_cycle_is_an_error() -> Result<(), Box<dyn std::error::Error>
         CANARY,
     )?;
     std::os::unix::fs::symlink(&root, root.join("intruder/src/ancestor"))?;
-    let error = scan(&root).expect_err("a directory cycle must not become a clean partial scan");
+    let error = scan(&root)
+        .err()
+        .ok_or("a directory cycle must not become a clean partial scan")?;
     assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
     assert!(error.to_string().contains("source directory cycle"));
     Ok(())
@@ -3130,7 +3132,9 @@ fn broken_source_symlink_is_an_error() -> Result<(), Box<dyn std::error::Error>>
         root.join("missing.rs"),
         root.join("intruder/src/missing.rs"),
     )?;
-    let error = scan(&root).expect_err("an unreadable source must not disappear from coverage");
+    let error = scan(&root)
+        .err()
+        .ok_or("an unreadable source must not disappear from coverage")?;
     assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
     Ok(())
 }

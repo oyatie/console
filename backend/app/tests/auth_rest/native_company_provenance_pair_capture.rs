@@ -472,9 +472,9 @@ mod native_company_provenance_pair_capture {
                     )
                 })
                 .collect();
-            assert_eq!(rights["console_account_owner"].0, true);
+            assert!(rights["console_account_owner"].0);
             if owner != "console_account_owner" {
-                assert_eq!(rights["console_account_owner"].1, false);
+                assert!(!rights["console_account_owner"].1);
             }
             assert_eq!(rights["console_auth_rt"], (false, false));
             assert_eq!(rights["console_auth_startup"], (false, false));
@@ -653,7 +653,7 @@ mod native_company_provenance_pair_capture {
         );
         initial.rollback().await.unwrap();
         let mut packets = Vec::new();
-        for variant in 0..2 {
+        for (variant, &corrected) in CORRECTED.iter().enumerate() {
             let mut tx = pool.begin().await.unwrap();
             let outcome = AssertUnwindSafe(async {
                 sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='120s'; SET LOCAL search_path=pg_catalog,pg_temp")
@@ -665,7 +665,7 @@ mod native_company_provenance_pair_capture {
                 if variant == 1 { execute(&mut tx, OBSERVER).await; }
                 for source in [ACCOUNT, CREDENTIALS, COMPANY, POLICY_INSTALLER, POLICY_V2, ROW_LOCK] { execute(&mut tx, source).await; }
                 let old = capture(tx.as_mut(), PREDECESSOR_CAPTURE).await;
-                assert_eq!(old.sha256, CORRECTED[variant], "canonical corrected predecessor differs; never normalize/reseal");
+                assert_eq!(old.sha256, corrected, "canonical corrected predecessor differs; never normalize/reseal");
                 assert_eq!(row_lock_state(tx.as_mut()).await, "native_people_directory.finalized");
                 assert!(namespace(tx.as_mut()).await.is_empty());
                 assert!(capture(tx.as_mut(), CAPTURE).await == old, "extended capture changed absent-source predecessor bytes");
@@ -737,4 +737,5 @@ mod native_company_provenance_pair_capture {
             .flush()
             .expect("paired capture evidence flush failed");
     }
+    include!("native_org_unit_closed_phase_capture.rs");
 }

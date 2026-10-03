@@ -603,8 +603,8 @@ company_header_case!(company_shared_header_flags_1111, 15);
 fn company_policy_root_clauses_are_truthful_static_rows() {
     let html = native_account::render(Page::CompanyPolicy {
         org_id: COMPANY.into(),
-        action_keys: vec!["company.identity.read".into()],
-        delegable_action_keys: vec!["company.identity.read".into()],
+        action_keys: vec!["company.identity.read"],
+        delegable_action_keys: vec!["company.identity.read"],
     });
     let main = company_main_region(&html);
     let (desktop, mobile) = company_header_presentations(&html);

@@ -114,8 +114,7 @@ pub(super) mod native_people_codec2_install_probe {
 
     async fn install(
         pool: &PgPool,
-        store: &PgOrgStore,
-        policy: &CompanyPolicy,
+        (store, policy): (&PgOrgStore, &CompanyPolicy),
         mutation: &AccountEnrollmentCredentials,
         actor: AccountId,
         input: NativePolicyCommand,
@@ -272,11 +271,11 @@ pub(super) mod native_people_codec2_install_probe {
             let mutation = AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], &csrf).unwrap();
             let payroll = NativePolicyCommand::Payroll(
                 NativeCompanyBusinessCommandV1::install(Uuid::new_v4(), company, 1).unwrap());
-            let payroll = install(&pool, &store, &policy, &mutation, actor, payroll, 1, None).await;
+            let payroll = install(&pool, (&store, &policy), &mutation, actor, payroll, 1, None).await;
             eprintln!("PEOPLE_CODEC2_PAYROLL_CONTROL_OK: real Payroll install committed and replayed with same HTTP proof");
             let people = NativePolicyCommand::People(
                 NativePeoplePolicyCommandV1::install(Uuid::new_v4(), company, 2).unwrap());
-            let people = install(&pool, &store, &policy, &mutation, actor, people, 2, Some(payroll.receipt_id)).await;
+            let people = install(&pool, (&store, &policy), &mutation, actor, people, 2, Some(payroll.receipt_id)).await;
             assert_ne!(people.receipt_id, payroll.receipt_id);
         }).catch_unwind().await;
         runtime.close().await;

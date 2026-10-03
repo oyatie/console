@@ -79,8 +79,7 @@ mod native_people_policy_mixed_owner_proposal {
 
     async fn transition(
         pool: &PgPool,
-        store: &PgOrgStore,
-        policy: &CompanyPolicy,
+        (store, policy): (&PgOrgStore, &CompanyPolicy),
         cookies: &Cookies,
         actor: AccountId,
         input: NativePolicyCommand,
@@ -416,7 +415,7 @@ mod native_people_policy_mixed_owner_proposal {
                         PeopleCreateRevoke => NativePolicyCommand::People(NativePeoplePolicyCommandV1::revoke(id, company, epoch, DirectoryActionV1::Create, people_create_assignment.unwrap()).unwrap()),
                     };
                     let request = selector(&input);
-                    let terminal = transition(&pool, &store, policy.as_ref(), &operator_cookies,
+                    let terminal = transition(&pool, (&store, policy.as_ref()), &operator_cookies,
                         actor, input, epoch, predecessor).await;
                     if let NativePolicyOutcome::Committed(NativePolicyEffect::Granted { assignment, .. }
                         | NativePolicyEffect::Revoked { assignment, .. }) = &terminal.outcome {

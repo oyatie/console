@@ -11,7 +11,7 @@ use uuid::Uuid;
 pub(super) const MAX_BODY: usize = 8 * 1024;
 pub(super) enum Input {
     Prepare {
-        draft: Draft,
+        draft: Box<Draft>,
         submission: Option<DirectorySubmission>,
     },
     Execute(DirectoryRequestRef),
@@ -182,14 +182,14 @@ pub(super) fn parse(
                 .transpose()
                 .map_err(|_| StatusCode::BAD_REQUEST)?;
             Input::Prepare {
-                draft: Draft {
+                draft: Box::new(Draft {
                     locator,
                     expected,
                     legal_name,
                     employee_number,
                     name_error,
                     number_error,
-                },
+                }),
                 submission,
             }
         }

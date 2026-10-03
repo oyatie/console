@@ -455,13 +455,12 @@ pub(super) fn terminal(
                                     .map(|v| v.assignment_revision)
                                     == revision_before =>
                         {
-                            if let Some(expected) = input.assignment_expectation() {
-                                if expected.assignment_id != assignment.expectation.assignment_id
+                            if let Some(expected) = input.assignment_expectation()
+                                && (expected.assignment_id != assignment.expectation.assignment_id
                                     || expected.role_revision
-                                        != assignment.expectation.role_revision
-                                {
-                                    return Err(Error::Unavailable);
-                                }
+                                        != assignment.expectation.role_revision)
+                            {
+                                return Err(Error::Unavailable);
                             }
                             NativePolicyEffect::Granted {
                                 recipient,

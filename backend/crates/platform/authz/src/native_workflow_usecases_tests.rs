@@ -42,7 +42,7 @@ fn input() -> NativeCompanyBusinessCommandV1 {
     NativeCompanyBusinessCommandV1::install(id(1000), OrgId::from_uuid(id(11)), 1).unwrap()
 }
 fn selector() -> NativePolicyCommandRef {
-    NativePolicyCommandRef::from_command(&input())
+    NativePolicyCommandRef::from_command(input())
 }
 fn accepted() -> NativePolicyAcceptedView {
     NativePolicyAcceptedView {

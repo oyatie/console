@@ -329,8 +329,7 @@ async fn preflight(
     Extension(people): Extension<crate::native_people::PeopleState>,
     Extension(family): Extension<Family>,
     Path(path): Path<PolicyPath>,
-    headers: HeaderMap,
-    method: Method,
+    (headers, method): (HeaderMap, Method),
     client: Option<Extension<TrustedClientIp>>,
 ) -> Response {
     if method != Method::GET {
@@ -396,8 +395,7 @@ async fn request_document(
     Extension(people): Extension<crate::native_people::PeopleState>,
     Extension(family): Extension<Family>,
     Path(path): Path<PolicyPath>,
-    headers: HeaderMap,
-    method: Method,
+    (headers, method): (HeaderMap, Method),
     client: Option<Extension<TrustedClientIp>>,
 ) -> Response {
     if method != Method::GET {
@@ -450,7 +448,7 @@ async fn request_document(
         Err(status) => return error(status),
     };
     let selector = current.selector;
-    let (outcome, original) = match status {
+    let (outcome, original) = match *status {
         NativePolicyStatus::NotVisible => {
             return ui::document(ui::Page::NotVisible, StatusCode::NOT_FOUND);
         }
@@ -548,7 +546,7 @@ async fn request_document(
     };
     ui::document(
         ui::Page::Result {
-            scope: scope(current, identity, payroll_link, actions, people_navigation),
+            scope: scope(*current, identity, payroll_link, actions, people_navigation),
             operation: operation(selector.operation()),
             command: selector.command_id().to_string(),
             outcome,

@@ -29,12 +29,12 @@ mod recovery_and_validation {
                 let epoch=index as u64+2;
                 let page=preflight(&pool,&app,&format!("{root}/{action_path}/grant"),&cookies,StatusCode::OK).await;
                 let html=native_entry_html(&page,StatusCode::OK);
-                let command:Uuid=field(&html,"command_id").parse().unwrap();
-                let proof=field(&html,"csrf_proof");
+                let command:Uuid=field(html,"command_id").parse().unwrap();
+                let proof=field(html,"csrf_proof");
                 let mut fields=vec![("command_id".into(),command.to_string()),("expected_company_epoch".into(),epoch.to_string()),
                     ("csrf_proof".into(),proof.clone())];
                 for key in ["recipient_account_id","expected_role_revision","assignment_id","expected_assignment_revision"]{
-                    fields.push((key.into(),field(&html,key)));
+                    fields.push((key.into(),field(html,key)));
                 }
                 fields.push(("expires_at_local".into(),"not-a-date".into()));
                 let before_validation=all_rows(&pool).await;
@@ -48,7 +48,7 @@ mod recovery_and_validation {
                 let invalid_html=native_entry_html(&invalid,StatusCode::UNPROCESSABLE_ENTITY);
                 assert!(invalid_html.contains(title));
                 assert!(invalid_html.contains(&format!("action=\"{root}/{action_path}/grants\"")));
-                for (key,value) in &fields {assert_eq!(field(&invalid_html,key),*value,"validation replaced {key}");}
+                for (key,value) in &fields {assert_eq!(field(invalid_html,key),*value,"validation replaced {key}");}
                 assert!(invalid_html.contains("aria-invalid=\"true\""));
                 assert!(before_validation==all_rows(&pool).await,"expiry validation persisted or minted proof");
                 let until=time::OffsetDateTime::from_unix_timestamp((clock(&pool).await.unix_timestamp()/60+1440)*60).unwrap();
@@ -70,7 +70,7 @@ mod recovery_and_validation {
                 assert!(pending_html.contains(title)&&pending_html.contains("data-policy-outcome=\"pending\""));
                 assert!(pending_html.contains(&format!("action=\"{recovery}/retry\"")));
                 assert!(!pending_html.contains("name=\"command_id\"")&&!pending_html.contains("name=\"expected_company_epoch\""));
-                let retry=vec![("csrf_proof".into(),field(&pending_html,"csrf_proof"))];
+                let retry=vec![("csrf_proof".into(),field(pending_html,"csrf_proof"))];
                 let before_retry=all_rows(&pool).await;
                 // Exact limiter increments were already independently proved.
                 // Compose ONLY those verified increments into the pre-accept

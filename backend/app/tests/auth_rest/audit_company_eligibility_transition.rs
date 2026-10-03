@@ -313,7 +313,7 @@ mod eligibility_transition {
             let actual = AppState::from_config(config.clone()).await.unwrap();
             let service = build_router(actual.clone());
             let me = request(&service, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-            projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
+            projection(&me.json(StatusCode::OK), attempt.account, pool).await;
             me.private();
             let auth_read = login_test_pool(pool, TestDatabaseLogin::Auth).await;
             let eligible: bool =
@@ -499,7 +499,7 @@ mod eligibility_transition {
                 &[],
             )
             .await;
-            projection(&restored_me.json(StatusCode::OK), attempt.account, &pool).await;
+            projection(&restored_me.json(StatusCode::OK), attempt.account, pool).await;
             restored_me.private();
             let restored_runtime = login_test_pool(pool, TestDatabaseLogin::Business).await;
             let mut restored_read = restored_runtime.begin().await.unwrap();

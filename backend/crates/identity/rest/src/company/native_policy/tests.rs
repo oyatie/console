@@ -500,6 +500,7 @@ include!("expiry_validation_capture_tests.rs");
 
 // Scripted material tests production REST routing only, not live Auth or SQL
 // custody. The real Account/Company owner test covers those independently.
+#[cfg(test)]
 mod read_routing {
     use super::*;
     use crate::company::CompanyRestState;
@@ -700,7 +701,7 @@ mod read_routing {
                 current,
                 proof,
             } => {
-                assert!(matches!(status, NativePolicyStatus::AcceptedExpired(_)));
+                assert!(matches!(*status, NativePolicyStatus::AcceptedExpired(_)));
                 assert_eq!(
                     current.selector,
                     selector(NativeBusinessOperationV1::Install)

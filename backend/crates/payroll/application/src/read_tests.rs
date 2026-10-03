@@ -122,7 +122,7 @@ fn authorization_is_awaited_before_read_and_failure_never_reads() {
         port.authorize = Some(Err(failure(kind)));
         let result = ready(list_payroll_runs(&mut port, query()));
         assert_failure(
-            result.err().expect("failed authorization released data"),
+            result.expect_err("failed authorization released data"),
             kind,
         );
         assert_eq!(port.events, ["authorize"]);

@@ -73,7 +73,7 @@ impl NativePolicySubject {
 
 pub enum NativePolicySubmission {
     Validation {
-        current: NativePolicyForm<AccountFormProof>,
+        current: Box<NativePolicyForm<AccountFormProof>>,
         draft: NativePolicyGrantDraft,
     },
     Confirmed {
@@ -89,8 +89,8 @@ pub enum NativePolicySubmission {
 pub enum NativePolicyRequestDocument {
     NotVisible,
     Visible {
-        status: NativePolicyStatus,
-        current: NativePolicyFormView,
+        status: Box<NativePolicyStatus>,
+        current: Box<NativePolicyFormView>,
         proof: Option<AccountFormProof>,
     },
 }
@@ -264,8 +264,8 @@ where
             )
         };
         Ok(NativePolicyRequestDocument::Visible {
-            status,
-            current,
+            status: Box::new(status),
+            current: Box::new(current),
             proof,
         })
     }
@@ -319,7 +319,10 @@ where
                 )
                 .await
                 .map_err(workflow_status)?;
-                return Ok(NativePolicySubmission::Validation { current, draft });
+                return Ok(NativePolicySubmission::Validation {
+                    current: Box::new(current),
+                    draft,
+                });
             }
             form::DocumentInput::Ready(form::Input::Command(command)) => {
                 let selector = NativePolicyCommandRef::from_command(&command);

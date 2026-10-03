@@ -142,8 +142,7 @@ mod native_policy_projection_corruption {
     // return anchor, one fixed test-supplied composite mutation, one restore.
     async fn projected_case(
         pool: &PgPool,
-        store: &PgOrgStore,
-        policy: &CompanyPolicy,
+        (store, policy): (&PgOrgStore, &CompanyPolicy),
         read: &AccountEnrollmentCredentials,
         terminal: &NativePolicyTerminalView,
         label: &str,
@@ -372,17 +371,17 @@ mod native_policy_projection_corruption {
         assert!(baseline==all_rows(&pool).await,"positive status controls wrote state");
         // No-op injected projections prove metadata alteration alone is not the
         // refusal oracle; the actual typed row must reach the decoder.
-        projected_case(&pool,&store,&policy,&read,&rejected_install,"unchanged rejection","NULL;",true).await;
-        projected_case(&pool,&store,&policy,&read,&revoked,"unchanged revoke","NULL;",true).await;
+        projected_case(&pool,(&store,&policy),&read,&rejected_install,"unchanged rejection","NULL;",true).await;
+        projected_case(&pool,(&store,&policy),&read,&revoked,"unchanged revoke","NULL;",true).await;
         for (label,code) in [("install cannot have grant expiry rejection","grant_expiry_invalid"),("install cannot have recipient rejection","recipient_ineligible"),("intake expiry before deadline","intake_expired")] {
-            projected_case(&pool,&store,&policy,&read,&rejected_install,label,&format!("terminal.result_code:='{code}';"),false).await;
+            projected_case(&pool,(&store,&policy),&read,&rejected_install,label,&format!("terminal.result_code:='{code}';"),false).await;
         }
-        projected_case(&pool,&store,&policy,&read,&rejected_grant,"grant-specific reason cannot skip epoch conflict","terminal.result_code:='recipient_ineligible';",false).await;
+        projected_case(&pool,(&store,&policy),&read,&rejected_grant,"grant-specific reason cannot skip epoch conflict","terminal.result_code:='recipient_ineligible';",false).await;
         let invalid_expiry=format!("terminal.result_code:='grant_expiry_invalid'; terminal.epoch_before:=2; terminal.epoch_after:=2; terminal.predecessor_receipt_id:='{}'::uuid;",installed.receipt_id);
-        projected_case(&pool,&store,&policy,&read,&rejected_grant,"valid future grant expiry cannot be expiry-invalid",&invalid_expiry,false).await;
+        projected_case(&pool,(&store,&policy),&read,&rejected_grant,"valid future grant expiry cannot be expiry-invalid",&invalid_expiry,false).await;
         let wrong_recipient=format!("terminal.recipient_account_id:='{}'::uuid;",operator.account);
-        projected_case(&pool,&store,&policy,&read,&revoked,"revoke recipient must be original administrative Account",&wrong_recipient,false).await;
-        projected_case(&pool,&store,&policy,&read,&revoked,"revoke cannot inherit future interval","terminal.assignment_valid_from:=terminal.executed_at+interval '1 microsecond';",false).await;
+        projected_case(&pool,(&store,&policy),&read,&revoked,"revoke recipient must be original administrative Account",&wrong_recipient,false).await;
+        projected_case(&pool,(&store,&policy),&read,&revoked,"revoke cannot inherit future interval","terminal.assignment_valid_from:=terminal.executed_at+interval '1 microsecond';",false).await;
         assert!(baseline==all_rows(&pool).await,"corruption/recovery series changed acknowledged history");
         runtime.close().await;startup.close().await;
         }).catch_unwind().await;

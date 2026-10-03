@@ -719,14 +719,16 @@ mod native_payroll_read_owner_tests {
                     }
                 }
                 drop(reader); released_company_lock(&pool, f.created.company).await;
-                let t = policy.trace.lock().unwrap();
-                assert_eq!(t.faults, 1, "targeted fault never fired or fired repeatedly");
-                let expected: &[&str] = match fault {
-                    Fault::InitialIdentityFailure => &["payroll", "identity"],
-                    Fault::FinalPayrollDeny => &["payroll", "identity", "payroll"],
-                    _ => &["payroll", "identity", "payroll", "identity"],
-                };
-                assert_eq!(t.events, expected); drop(t);
+                {
+                    let t = policy.trace.lock().unwrap();
+                    assert_eq!(t.faults, 1, "targeted fault never fired or fired repeatedly");
+                    let expected: &[&str] = match fault {
+                        Fault::InitialIdentityFailure => &["payroll", "identity"],
+                        Fault::FinalPayrollDeny => &["payroll", "identity", "payroll"],
+                        _ => &["payroll", "identity", "payroll", "identity"],
+                    };
+                    assert_eq!(t.events, expected);
+                }
                 let fired_after: i64 = sqlx::query_scalar("SELECT CASE WHEN is_called THEN last_value ELSE 0 END FROM public.test_native_read_final_witness").fetch_one(&pool).await.unwrap();
                 assert_eq!(fired_after - fired_before, if fault == Fault::InitialIdentityFailure { 0 } else { 1 });
                 let after = all_rows(&pool).await;

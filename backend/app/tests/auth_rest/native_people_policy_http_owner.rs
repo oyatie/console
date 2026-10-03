@@ -228,6 +228,8 @@ mod native_people_policy_http_owner {
             assert_eq!(updated, rows(&before["user_role_assignments"]));
         }
     }
+    // Keep the explicit owner/oracle inputs shared by all 15 test callers.
+    #[allow(clippy::too_many_arguments)]
     async fn transition(
         pool: &PgPool,
         app: &Fixture,
@@ -274,13 +276,13 @@ mod native_people_policy_http_owner {
             "preflight changed more than exact limiter effects"
         );
         let before = all_rows(pool).await; // actual command baseline, after validated limiter writes
-        let command: Uuid = field(&html, "command_id").parse().unwrap();
+        let command: Uuid = field(html, "command_id").parse().unwrap();
         assert!(!command.is_nil());
-        assert_eq!(field(&html, "expected_company_epoch"), epoch.to_string());
+        assert_eq!(field(html, "expected_company_epoch"), epoch.to_string());
         let mut pairs = vec![
             ("command_id".into(), command.to_string()),
             ("expected_company_epoch".into(), epoch.to_string()),
-            ("csrf_proof".into(), field(&html, "csrf_proof")),
+            ("csrf_proof".into(), field(html, "csrf_proof")),
         ];
         let now: time::OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
             .fetch_one(pool)
@@ -296,7 +298,7 @@ mod native_people_policy_http_owner {
             }
             NativeBusinessOperationV1::Grant => {
                 assert_eq!(
-                    field(&html, "recipient_account_id"),
+                    field(html, "recipient_account_id"),
                     actor.as_uuid().to_string()
                 );
                 for key in [
@@ -305,14 +307,14 @@ mod native_people_policy_http_owner {
                     "assignment_id",
                     "expected_assignment_revision",
                 ] {
-                    pairs.push((key.into(), field(&html, key)));
+                    pairs.push((key.into(), field(html, key)));
                 }
                 for key in [
                     "expected_role_revision",
                     "assignment_id",
                     "expected_assignment_revision",
                 ] {
-                    assert!(field(&html, key).is_empty());
+                    assert!(field(html, key).is_empty());
                 }
                 pairs.push((
                     "expires_at_local".into(),
@@ -339,11 +341,11 @@ mod native_people_policy_http_owner {
             NativeBusinessOperationV1::Revoke => {
                 let a = assignment.unwrap();
                 assert_eq!(
-                    field(&html, "expected_role_revision"),
+                    field(html, "expected_role_revision"),
                     a.role_revision.to_string()
                 );
                 assert_eq!(
-                    field(&html, "expected_assignment_revision"),
+                    field(html, "expected_assignment_revision"),
                     a.assignment_revision.to_string()
                 );
                 pairs.extend([

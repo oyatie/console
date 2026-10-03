@@ -167,6 +167,15 @@ async fn assert_guard_coverage(pool: &PgPool, table: &str, immutable: bool) {
 }
 
 async fn assert_physical_contract(pool: &PgPool) {
+    type PolicyRow = (
+        String,
+        String,
+        bool,
+        Vec<i64>,
+        Option<String>,
+        Option<String>,
+    );
+
     assert_policy_tables(pool).await;
     let input_required = [
         ("actor_account_id", "uuid"),
@@ -245,14 +254,7 @@ async fn assert_physical_contract(pool: &PgPool) {
             "SELECT pg_get_userbyid(c.relowner)::text,c.relrowsecurity,c.relforcerowsecurity FROM pg_class c WHERE c.oid=to_regclass('public.'||$1)",
         ).bind(table).fetch_one(pool).await.unwrap();
         assert_eq!(metadata, ("console_account_owner".into(), true, true));
-        let policies: Vec<(
-            String,
-            String,
-            bool,
-            Vec<i64>,
-            Option<String>,
-            Option<String>,
-        )> = sqlx::query_as(
+        let policies: Vec<PolicyRow> = sqlx::query_as(
             r#"
             SELECT p.polname::text,p.polcmd::text,p.polpermissive,
               ARRAY(SELECT x::bigint FROM unnest(p.polroles) x),

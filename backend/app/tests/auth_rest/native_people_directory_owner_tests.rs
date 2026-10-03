@@ -34,7 +34,7 @@ mod native_people_directory_owner {
         }
     }
     struct DirectoryFixture {
-        app: Fixture,
+        _app: Fixture,
         state: AppState,
         runtime: PgPool,
         policy_store: PgOrgStore,
@@ -67,7 +67,7 @@ mod native_people_directory_owner {
             let policy = Arc::new(CompanyPolicy::new().unwrap());
             let decision = DirectoryCedarDecision::new(policy.clone());
             Self {
-                app,
+                _app: app,
                 state,
                 runtime,
                 policy_store,

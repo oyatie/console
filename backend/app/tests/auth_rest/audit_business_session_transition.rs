@@ -341,7 +341,7 @@ mod business_session_transition {
             let actual = AppState::from_config(config.clone()).await.unwrap();
             let service = build_router(actual.clone());
             let me = request(&service, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-            projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
+            projection(&me.json(StatusCode::OK), attempt.account, pool).await;
             me.private();
             let jwt = config.jwt.unwrap();
             let verifier = JwtVerifier::from_es256_public_pem(
@@ -459,7 +459,7 @@ mod business_session_transition {
                 &[],
             )
             .await;
-            projection(&restored_me.json(StatusCode::OK), attempt.account, &pool).await;
+            projection(&restored_me.json(StatusCode::OK), attempt.account, pool).await;
             restored_me.private();
             let restored_runtime = login_test_pool(pool, TestDatabaseLogin::Business).await;
             let mut restored_read = restored_runtime.begin().await.unwrap();

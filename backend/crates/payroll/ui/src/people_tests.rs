@@ -46,12 +46,12 @@ fn inspector<'a>(html: &'a str, id: &str) -> &'a str {
     let mut depth = 1;
     loop {
         let close = tail.find("</details>").expect("balanced disclosure");
-        if let Some(open) = tail.find("<details") {
-            if open < close {
-                depth += 1;
-                tail = &tail[open + "<details".len()..];
-                continue;
-            }
+        if let Some(open) = tail.find("<details")
+            && open < close
+        {
+            depth += 1;
+            tail = &tail[open + "<details".len()..];
+            continue;
         }
         depth -= 1;
         let end = html.len() - tail.len() + close + "</details>".len();
