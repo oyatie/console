@@ -16,6 +16,7 @@ container_env_file=""
 test_env_file=""
 container_cid_dir=""
 container_cid_file=""
+container_created=0
 active_buck_pid=""
 exact_test="${CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT:-}"
 if [[ -n "${exact_test}" && ! "${exact_test}" =~ ^[[:alnum:]_:]+$ ]]; then
@@ -36,13 +37,18 @@ cleanup() {
   trap - EXIT
   if [[ -n "${container_cid_file}" && -s "${container_cid_file}" ]]; then
     if [[ -f "${container_cid_file}" && ! -L "${container_cid_file}" ]]; then
-      cid="$(<"${container_cid_file}")"
+      if ! cid="$(cat "${container_cid_file}" 2>/dev/null)"; then
+        cid=""
+        failed=1
+      fi
     fi
     if [[ "${cid}" =~ ^[0-9a-f]{64}$ ]]; then
       docker rm -f -v "${cid}" >/dev/null 2>&1 || failed=1
     else
       failed=1
     fi
+  elif ((container_created)); then
+    failed=1
   fi
   [[ -z "${container_env_file}" ]] || rm -f "${container_env_file}" 2>/dev/null || failed=1
   [[ -z "${test_env_file}" ]] || rm -f "${test_env_file}" 2>/dev/null || failed=1
@@ -136,6 +142,7 @@ fi
 docker run -d --rm --name "${container_name}" -p 127.0.0.1::5432 \
   --cidfile "${container_cid_file}" --env-file "${container_env_file}" "${postgres_image}" \
   -c fsync=off -c synchronous_commit=off -c full_page_writes=off >/dev/null
+container_created=1
 docker cp "${repo_root}/ops/postgres-reconcile-topology.sh" "${container_name}:/topology.sh"
 docker cp "${container_env_file}" "${container_name}:/topology.env"
 
