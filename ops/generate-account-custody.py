@@ -7162,12 +7162,48 @@ SELECT CASE
     }
 
 
+NATIVE_ORG_UNIT_CLOSED_PERIMETER_SOURCE_SHA256 = {
+    'ops/native-org-unit/closed-perimeter-v1.sql': 'd57ec1df27184c7c0f8b6359a4ea72c08b7ce89e88c4d6054ca335d7e744cbcb',
+}
+
+
+def native_org_unit_closed_perimeter_capture_files():
+    name, digest = next(iter(NATIVE_ORG_UNIT_CLOSED_PERIMETER_SOURCE_SHA256.items()))
+    raw = company_provenance_regular_path(name, required=True).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != digest:
+        raise SystemExit('Native OrgUnit source differs from reviewed bytes: ' + name)
+    query = company_provenance_capture_files()[
+        'ops/postgres-capture-company-provenance-v1-custody.sql']
+    relation_anchor = " ('users')\n), relations AS ("
+    routine_anchor = '), owner_roles AS ('
+    if query.count(relation_anchor) != 1 or query.count(routine_anchor) != 1:
+        raise ValueError('Native OrgUnit capture boundary drift')
+    query = query.replace(relation_anchor,
+        " ('users'),\n ('org_units'),\n ('org_unit_revisions'),\n"
+        " ('org_unit_source_bindings')\n), relations AS (").replace(routine_anchor,
+        " OR (starts_with(p.proname,'native_org_unit_') OR p.proname IN "
+        "('canonical_org_structure_row_immutable','ont_action_command_receipts_immutable'))\n"
+        + routine_anchor)
+    return {
+        'ops/postgres-native-org-unit-closed-perimeter-v1-owner.sql':
+            '-- Generated UNINSTALLED native OrgUnit closed-perimeter source; not a custody finalizer.\n'
+            '-- No finalized profile or installation is authorized by this artifact.\n'
+            + '-- source: ' + name + '\n' + raw.decode('utf-8'),
+        'ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql': query,
+    }
+
+
 def main():
     arguments = sys.argv[1:]
     if arguments in (['--company-provenance-capture'], ['--company-provenance-capture', '--check'],
-                     ['--company-provenance-custody'], ['--company-provenance-custody', '--check']):
-        files = (company_provenance_custody_files() if arguments[0] == '--company-provenance-custody'
-                 else company_provenance_capture_files())
+                     ['--company-provenance-custody'], ['--company-provenance-custody', '--check'],
+                     ['--native-org-unit-closed-perimeter-capture'],
+                     ['--native-org-unit-closed-perimeter-capture', '--check']):
+        if arguments[0] == '--native-org-unit-closed-perimeter-capture':
+            files = native_org_unit_closed_perimeter_capture_files()
+        else:
+            files = (company_provenance_custody_files() if arguments[0] == '--company-provenance-custody'
+                     else company_provenance_capture_files())
         paths = {name: company_provenance_regular_path(name, required=False) for name in files}
         if '--check' in arguments:
             for name, expected in files.items():
@@ -7178,7 +7214,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture | --company-provenance-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
