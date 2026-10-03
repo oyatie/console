@@ -316,3 +316,131 @@ for (let i = 0; i < expectedNativeHeaders(headerEvidence()).length; i++) {
     });
   }
 }
+
+
+// Owner startup protocol controls only. These execute the retained driver body,
+// its actual START/checkpoint calls, and its existing watchdog/cleanup using
+// Node's virtual clock and a real Readline input stream. No browser, database,
+// business request, or workflow acceptance is fabricated by these controls.
+const ownerStartupFs = require('node:fs');
+const ownerStartupVm = require('node:vm');
+const ownerStartupReadline = require('node:readline');
+const {PassThrough: OwnerStartupStream} = require('node:stream');
+const ownerStartupDriverPath = require.resolve(process.env.CONSOLE_NAVIGATION_DRIVER || './company.cjs');
+const ownerStartupDriver = require(ownerStartupDriverPath);
+const ownerStartupSource = ownerStartupFs.readFileSync(ownerStartupDriverPath, 'utf8');
+const ownerStartupLines = ownerStartupSource.split('\n');
+function ownerStartupLine(prefix) {
+  const matches = ownerStartupLines.filter(line => line.startsWith(prefix));
+  assert.equal(matches.length, 1, 'actual driver statement must be uniquely located: ' + prefix);
+  return matches[0];
+}
+function ownerStartupControl(t, mode) {
+  t.mock.timers.enable({apis: ['setTimeout']});
+  const stream = new OwnerStartupStream();
+  const reader = ownerStartupReadline.createInterface({input: stream, crlfDelay: Infinity});
+  const input = reader[Symbol.asyncIterator]();
+  const writes = [], unlinks = [], wire = [], exits = [];
+  const result = {checkpoints: [], cleanup: {confirmed: false}};
+  const from = ownerStartupLines.indexOf(ownerStartupLine(' let relay,server,browserProcess,reader,'));
+  const through = ownerStartupLines.indexOf(ownerStartupLine(' const watchdog=setTimeout('));
+  assert.ok(from >= 0 && through > from);
+  // Compile exact local helpers, not an imitation of the timeout or teardown.
+  const context = ownerStartupVm.createContext({
+    result, mode, out: '/machinery-owner-start-control', path: require('node:path'),
+    input, ownerReader: reader, setTimeout, clearTimeout,
+    closeOwnedBrowser: ownerStartupDriver.closeOwnedBrowser,
+    watchOwner: ownerStartupDriver.watchOwner,
+    validCheckpointCommand: ownerStartupDriver.validCheckpointCommand,
+    leafStatus: ownerStartupDriver.leafStatus,
+    fs: {unlinkSync: file => unlinks.push(file),
+      writeFileSync: (file, bytes, options) => writes.push({file, value: JSON.parse(bytes), options})},
+    process: {stdout: {write: bytes => wire.push(JSON.parse(bytes))}, exit: code => exits.push(code)},
+  });
+  const helpers = ownerStartupLines.slice(from, through + 1).join('\n');
+  const probe = ownerStartupVm.runInContext("'use strict';\n" +
+    ownerStartupLine('function requireFact(') + '\n' +
+    ownerStartupLine('function delayLimit(') + '\n' + helpers + '\n' +
+    ownerStartupLine('  async function receive(') + '\n' +
+    ownerStartupLine('  async function checkpoint(') + '\n' +
+    "let stage='owner_start';reader=ownerReader;watchOwner(reader,requestCancel);\n" +
+    '({start:async()=>{' + ownerStartupLine("  stage='owner_start';") + 'return start;},\n' +
+    'checkpoint, finish, cleanup, stop:()=>clearTimeout(watchdog)})', context);
+  t.after(async () => {probe.stop(); stream.end(); reader.close(); await probe.cleanup();});
+  return {probe, stream, result, writes, unlinks, wire, exits,
+    send: value => stream.write(JSON.stringify(value) + '\n')};
+}
+function ownerStartupObserve(promise) {
+  const observed = {status: 'pending'};
+  observed.done = promise.then(value => {observed.status = 'fulfilled'; observed.value = value;},
+    error => {observed.status = 'rejected'; observed.code = error.code;});
+  return observed;
+}
+async function ownerStartupDrain() {for (let n = 0; n < 12; n++) await Promise.resolve(); await new Promise(resolve => setImmediate(resolve));}
+const ownerStartupModes = [[undefined, 90000], ['policy-entry', 180000],
+  ['people-entry', 300000], ['group-process-entry', 300000]];
+for (const [mode, budget] of ownerStartupModes) {
+  test(`owner startup protocol ${mode || 'company'} accepts START after checkpoint deadline`, {timeout: 5000}, async t => {
+    const h = ownerStartupControl(t, mode), waiting = ownerStartupObserve(h.probe.start());
+    t.mock.timers.tick(20001); await ownerStartupDrain();
+    assert.equal(waiting.status, 'pending', 'START preparation is bounded by the existing journey watchdog');
+    assert.equal(h.result.failure, undefined); assert.equal(h.writes.length, 0);
+    h.send({kind: 'START'}); await ownerStartupDrain(); assert.equal(waiting.status, 'fulfilled'); await waiting.done;
+    assert.equal(waiting.status, 'fulfilled'); assert.equal(waiting.value.kind, 'START');
+    assert.equal(h.exits.length, 0); assert.equal(h.result.failure, undefined);
+  });
+  test(`owner startup protocol ${mode || 'company'} stalled START keeps exact watchdog and cleanup`, {timeout: 5000}, async t => {
+    const h = ownerStartupControl(t, mode), waiting = ownerStartupObserve(h.probe.start());
+    t.mock.timers.tick(budget - 1); await ownerStartupDrain();
+    assert.equal(waiting.status, 'pending'); assert.equal(h.result.failure, undefined);
+    assert.equal(h.writes.length, 0); assert.equal(h.exits.length, 0);
+    t.mock.timers.tick(1); await ownerStartupDrain(); await h.probe.finish(); await ownerStartupDrain(); assert.equal(waiting.status, 'rejected'); await waiting.done;
+    assert.equal(h.result.failure.stage, 'owner_cancel'); assert.equal(h.result.failure.code, 'TIMEOUT');
+    assert.equal(h.result.status, 'BROWSER_LEAF_FAILED'); assert.equal(h.result.cleanup.confirmed, true);
+    assert.deepEqual(h.exits, [2]); assert.equal(h.writes.length, 1); assert.equal(h.unlinks.length, 3);
+    assert.equal(h.writes[0].options.flag, 'wx'); assert.equal(h.writes[0].options.mode, 0o600);
+    assert.deepEqual(h.wire.map(row => row.kind), ['RESULT']);
+    await h.probe.cleanup(); await h.probe.finish();
+    assert.equal(h.writes.length, 1); assert.equal(h.unlinks.length, 3);
+  });
+}
+test('owner startup protocol ordinary checkpoint still expires at exact20seconds', {timeout: 5000}, async t => {
+  const h = ownerStartupControl(t, 'group-process-entry');
+  const started = ownerStartupObserve(h.probe.start()); h.send({kind: 'START'}); await ownerStartupDrain(); assert.equal(started.status, 'fulfilled'); await started.done;
+  assert.equal(started.status, 'fulfilled');
+  const waiting = ownerStartupObserve(h.probe.checkpoint('COMPANY_COMMITTED', 'machinery-account'));
+  t.mock.timers.tick(19999); await ownerStartupDrain(); assert.equal(waiting.status, 'pending');
+  t.mock.timers.tick(1); await ownerStartupDrain(); assert.equal(waiting.status, 'rejected'); await waiting.done;
+  assert.equal(waiting.status, 'rejected'); assert.equal(waiting.code, 'TIMEOUT');
+  assert.equal(h.exits.length, 0); assert.equal(h.writes.length, 0);
+});
+test('owner startup protocol exact checkpoint acknowledgement remains accepted', {timeout: 5000}, async t => {
+  const h = ownerStartupControl(t, 'group-process-entry');
+  const started = ownerStartupObserve(h.probe.start()); h.send({kind: 'START'}); await ownerStartupDrain(); assert.equal(started.status, 'fulfilled'); await started.done;
+  assert.equal(started.status, 'fulfilled');
+  const waiting = ownerStartupObserve(h.probe.checkpoint('COMPANY_COMMITTED', 'machinery-account'));
+  h.send({kind: 'CONTINUE', phase: 'COMPANY_COMMITTED'}); await ownerStartupDrain(); assert.equal(waiting.status, 'fulfilled'); await waiting.done;
+  assert.equal(waiting.status, 'fulfilled'); assert.deepEqual(h.result.checkpoints, ['COMPANY_COMMITTED']);
+  assert.equal(h.wire[0].kind, 'CHECKPOINT'); assert.equal(h.writes.length, 0);
+});
+for (const [label, line, code] of [
+  ['wrong command', '{"kind":"CONTINUE"}', 'OWNER_PROTOCOL'],
+  ['extra START field', '{"kind":"START","ignored":true}', 'OWNER_PROTOCOL'],
+  ['malformed JSON', '{', 'OWNER_PROTOCOL'],
+  ['owner ABORT', '{"kind":"ABORT"}', 'OWNER_REFUSED'],
+]) test(`owner startup protocol refuses ${label}`, {timeout: 5000}, async t => {
+  const h = ownerStartupControl(t, 'group-process-entry'), waiting = ownerStartupObserve(h.probe.start());
+  h.stream.write(line + '\n'); await ownerStartupDrain(); assert.equal(waiting.status, 'rejected'); await waiting.done;
+  assert.equal(waiting.status, 'rejected'); assert.equal(waiting.code, code);
+  if (label === 'owner ABORT' || label === 'malformed JSON') {
+    await h.probe.cleanup(); assert.equal(h.result.cleanup.confirmed, true);
+    assert.equal(h.result.failure.code, code); assert.equal(h.unlinks.length, 3);
+  }
+});
+test('owner startup protocol EOF remains refusing and cleans owned prerequisites', {timeout: 5000}, async t => {
+  const h = ownerStartupControl(t, 'group-process-entry'), waiting = ownerStartupObserve(h.probe.start());
+  h.stream.end(); await ownerStartupDrain(); assert.equal(waiting.status, 'rejected'); await waiting.done; await h.probe.cleanup();
+  assert.equal(waiting.status, 'rejected'); assert.equal(waiting.code, 'OWNER_EOF');
+  assert.equal(h.result.failure.code, 'OWNER_EOF'); assert.equal(h.result.cleanup.confirmed, true);
+  assert.equal(h.unlinks.length, 3); assert.equal(h.writes.length, 0);
+});
