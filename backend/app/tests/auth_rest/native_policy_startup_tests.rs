@@ -1017,3 +1017,243 @@ mod native_org_provenance_contract_red {
         close_states(&[state], outcome).await;
     }
 }
+
+// Organization V12 source-transition prerequisite. This exercises actual
+// owners and mounted HTTP documents, not the browser acceptance journey.
+mod native_org_bridge_readiness_red {
+    use super::*;
+    use console_identity_application::company_policy::{
+        AccountId,
+        people_business::{DirectoryActionV1, NativePeoplePolicyCommandV1},
+        workflow::{NativePolicyCommand, NativePolicyEffect},
+    };
+
+    fn company_document(page: &Response, company: Uuid, name: &str) {
+        assert_eq!(page.status, StatusCode::OK);
+        page.private();
+        let html = std::str::from_utf8(&page.bytes).unwrap();
+        assert!(html.contains(&format!("data-company-id=\"{company}\"")));
+        assert!(
+            html.contains(&format!("<h1>{name}</h1>")),
+            "owner-projected Company name absent"
+        );
+    }
+
+    async fn install_declared_source(pool: &PgPool) {
+        const SOURCE: &str =
+            include_str!("../../../../ops/postgres-company-provenance-v1-owner.sql");
+        assert_eq!(
+            hex::encode(Sha256::digest(SOURCE.as_bytes())),
+            "e813293ace00c46358a0c1c62093e0911aae4da1b93c4dd1577dcb351c5398c2"
+        );
+        let mut setup = pool.begin().await.unwrap();
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='30s'")
+            .execute(setup.as_mut()).await.unwrap();
+        let marked: bool = sqlx::query_scalar(
+            "SELECT session_user=current_user AND current_user='console_buck_admin' \
+               AND starts_with(current_database(),'_sqlx_test_') \
+               AND current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' \
+               AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user)",
+        )
+        .fetch_one(setup.as_mut())
+        .await
+        .unwrap();
+        assert!(
+            marked,
+            "source installation requires marked disposable admin"
+        );
+        sqlx::raw_sql(SOURCE).execute(setup.as_mut()).await.unwrap();
+        setup.commit().await.unwrap();
+    }
+
+    async fn provenance(runtime: &PgPool, company: Uuid) -> String {
+        let mut tx = runtime.begin().await.unwrap();
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='5s'")
+            .execute(tx.as_mut()).await.unwrap();
+        let result = sqlx::query_scalar("SELECT public.account_company_provenance_v1($1)")
+            .bind(company)
+            .fetch_one(tx.as_mut())
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        result
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn declared_provenance_keeps_held_fresh_readiness_and_native_company_policy_work(
+        pool: PgPool,
+    ) {
+        let (app, key, state) =
+            native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
+        let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+        let mut states = vec![state.clone()];
+        let outcome = AssertUnwindSafe(async {
+            assert_eq!(ready_status(&state).await, StatusCode::OK);
+            let (mut app, cookies, created) = create_owned_company(&pool, app).await;
+            let config = account_browser_config(&pool, app._artifacts.root.clone(), &key);
+            let company_path = format!("/companies/{}", created.company);
+            let company_name: String = sqlx::query_scalar("SELECT name FROM public.organizations WHERE id=$1")
+                .bind(created.company).fetch_one(&pool).await.unwrap();
+            let before_document = document(&app, &company_path, &cookies).await;
+            company_document(&before_document, created.company, &company_name);
+            let before = all_rows(&pool).await;
+            install_declared_source(&pool).await;
+            assert!(before == all_rows(&pool).await, "source DDL changed durable rows");
+            assert_eq!(provenance(&runtime, *OrgId::knl().as_uuid()).await, "LEGACY");
+            assert_eq!(provenance(&runtime, created.company).await, "NATIVE");
+            assert_eq!(provenance(&runtime, Uuid::nil()).await, "UNKNOWN");
+            assert_eq!(
+                classified(&runtime, include_str!("../../../../ops/postgres-native-people-directory-row-lock-custody-state.sql")).await,
+                "native_people_directory.profile_mismatch",
+                "historical classifier must not be resealed for added routines",
+            );
+            // Intended RED follows genuine source/fixture prerequisites.
+            assert_eq!(ready_status(&state).await, StatusCode::OK,
+                "ORG_BRIDGE_HELD_READINESS: exact declared source must preserve existing native work");
+            let fresh = AppState::from_config(config.clone()).await
+                .expect("exact source-installed bridge must compose fresh state");
+            states.push(fresh.clone());
+            assert_eq!(ready_status(&fresh).await, StatusCode::OK);
+            for selected in [&state, &fresh] {
+                app.service = build_router(selected.clone());
+                let page = document(&app, &company_path, &cookies).await;
+                company_document(&page, created.company, &company_name);
+                for path in [format!("/companies/{}/organization", created.company),
+                             format!("/companies/{}/organization/new", created.company)] {
+                    let closed = document(&app, &path, &cookies).await;
+                    assert!(matches!(closed.status, StatusCode::NOT_FOUND | StatusCode::SERVICE_UNAVAILABLE),
+                        "classifier-installed bridge cannot activate native OrgUnit work");
+                    assert!(!String::from_utf8(closed.bytes).unwrap().contains("name=\"csrf_proof\""));
+                }
+            }
+            assert!(before == all_rows(&pool).await, "readiness/documents changed durable rows");
+            let (verifier, issuer, ttl) = bindings(&config);
+            let store = PgOrgStore::new(runtime.clone()).with_native_account_policy(verifier, issuer, ttl);
+            let policy = CompanyPolicy::new().unwrap();
+            let company = OrgId::from_uuid(created.company);
+            let commands = [
+                (NativePolicyCommand::Payroll(NativeCompanyBusinessCommandV1::install(Uuid::new_v4(), company, 1).unwrap()),
+                 "native-payroll-collection-read-v1", 1_i16, 1_i64,
+                 "07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd"),
+                (NativePolicyCommand::People(NativePeoplePolicyCommandV1::install(Uuid::new_v4(), company, 2).unwrap()),
+                 "native-people-directory-v1", 2_i16, 2_i64,
+                 "591e8fe626a11ce724c81330f0358f6f4fb3df4fa1532fa329ee28d7c5b38e5e"),
+            ];
+            for (command, catalog, codec, epoch, manifest) in commands {
+                let locator = NativePolicyCommandRef::from_command(&command);
+                let command_id = locator.command_id();
+                let form = native_policy_form(&store, &policy, &read_credentials(&cookies),
+                    locator).await.unwrap();
+                let credentials = AccountEnrollmentCredentials::for_mutation(
+                    &cookies.0[ACCESS], form.proof.as_str()).unwrap();
+                let result = submit_native_policy_command(&store, &policy, &credentials,
+                    &command, &TraceContext::generate()).await.unwrap();
+                let object_type_id = match result.terminal.outcome {
+                    NativePolicyOutcome::Committed(NativePolicyEffect::Installed { object_type_id }) => object_type_id,
+                    _ => panic!("real policy install did not commit its object type"),
+                };
+                let witnesses: i64 = sqlx::query_scalar(
+                    "SELECT count(*) FROM public.native_company_catalog_installs n \
+                     JOIN public.native_company_policy_receipts_v1 r ON (r.org_id,r.receipt_id)=(n.org_id,n.policy_receipt_id) \
+                     JOIN public.native_company_policy_inputs_v1 i ON \
+                       (i.actor_account_id,i.command_id,i.org_id,i.operation,i.codec_version,i.intake_receipt_id,i.input_digest)= \
+                       (r.actor_account_id,r.command_id,r.org_id,r.operation,r.codec_version,r.intake_receipt_id,r.input_digest) \
+                     JOIN public.ont_builtin_catalog_installs b ON \
+                       (b.org_id,b.catalog_version,b.manifest_digest)=(n.org_id,n.catalog_version,n.manifest_digest) \
+                     JOIN public.native_company_object_refs o ON \
+                       (o.org_id,o.catalog_version,o.manifest_digest,o.object_type_id)= \
+                       (n.org_id,n.catalog_version,n.manifest_digest,r.installed_object_type_id) \
+                     WHERE n.org_id=$1 AND r.actor_account_id=$2 AND r.command_id=$3 \
+                       AND r.receipt_id=$4 AND r.installed_object_type_id=$5 AND r.operation=1 \
+                       AND r.outcome='COMMITTED' AND r.codec_version=$6 AND r.epoch_before=$7 \
+                       AND r.epoch_after=$7+1 AND n.catalog_version=$8 AND r.catalog_version=$8 \
+                       AND n.manifest_digest=decode($9,'hex') AND r.manifest_digest=n.manifest_digest \
+                       AND i.input_digest=sha256(i.input_bytes)",
+                ).bind(created.company).bind(created.administrator).bind(command_id)
+                    .bind(result.terminal.receipt_id).bind(object_type_id).bind(codec).bind(epoch)
+                    .bind(catalog).bind(manifest).fetch_one(&pool).await.unwrap();
+                assert_eq!(witnesses, 1, "missing exact catalog/input/receipt/object witness: {catalog}");
+            }
+            let epoch: i64 = sqlx::query_scalar("SELECT epoch FROM public.company_authority_heads WHERE org_id=$1")
+                .bind(created.company).fetch_one(&pool).await.unwrap();
+            assert_eq!(epoch, 3, "both real catalog owner effects are required");
+            let now: time::OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
+                .fetch_one(&runtime).await.unwrap();
+            let until = time::OffsetDateTime::from_unix_timestamp((now.unix_timestamp()/60+1440)*60).unwrap();
+            let recipient = AccountId::from_uuid(created.administrator).unwrap();
+            let grant = NativePolicyCommand::People(NativePeoplePolicyCommandV1::grant(
+                Uuid::new_v4(), company, 3, DirectoryActionV1::Read, recipient, None, until).unwrap());
+            let form = native_policy_form(&store, &policy, &read_credentials(&cookies),
+                NativePolicyCommandRef::from_command(&grant)).await.unwrap();
+            let credentials = AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], form.proof.as_str()).unwrap();
+            let granted = submit_native_policy_command(&store, &policy, &credentials, &grant,
+                &TraceContext::generate()).await.unwrap();
+            assert!(matches!(granted.terminal.outcome,
+                NativePolicyOutcome::Committed(NativePolicyEffect::Granted { recipient: actual, .. }) if actual==recipient));
+            for selected in [&state, &fresh] {
+                app.service = build_router(selected.clone());
+                company_document(&document(&app, &company_path, &cookies).await, created.company, &company_name);
+                let directory = document(&app, &format!("/companies/{}/people", created.company), &cookies).await;
+                assert_eq!(directory.status, StatusCode::OK);
+                directory.private();
+                let html = std::str::from_utf8(&directory.bytes).unwrap();
+                assert!(html.contains("native-people-workspace") && html.contains("id=\"people-directory-heading\"")
+                    && html.contains("표시할 사람이 없습니다") && html.contains(&company_name));
+                assert!(!html.contains("data-people-record="));
+                let policy_form = document(&app, &format!("/companies/{}/policy/people-directory/read/grant", created.company), &cookies).await;
+                assert_eq!(policy_form.status, StatusCode::OK);
+                policy_form.private();
+                let html = std::str::from_utf8(&policy_form.bytes).unwrap();
+                assert!(html.contains("name=\"csrf_proof\"") && html.contains("name=\"command_id\""));
+            }
+            let after_work = all_rows(&pool).await;
+            for table in ["org_units", "org_unit_revisions", "org_unit_source_bindings",
+                          "employment_heads", "employment_revisions", "payroll_draft_runs"] {
+                assert!(before.contains_key(table), "required fixture relation absent: {table}");
+                assert!(before.get(table) == after_work.get(table), "unrelated business fact changed: {table}");
+            }
+            assert_eq!(provenance(&runtime, created.company).await, "NATIVE");
+            for selected in [&state, &fresh] {
+                assert_eq!(ready_status(selected).await, StatusCode::OK);
+            }
+            // Committed ACL corruption must fence live and fresh serving. Restore
+            // the exact prior routine catalog without recreating either function.
+            let original_helper: String = sqlx::query_scalar(
+                "SELECT to_jsonb(p)::text FROM pg_catalog.pg_proc p WHERE p.oid= \
+                   'public.account_company_provenance_lock_v1(uuid,uuid)'::regprocedure",
+            ).fetch_one(&pool).await.unwrap();
+            sqlx::query("GRANT EXECUTE ON FUNCTION public.account_company_provenance_lock_v1(uuid,uuid) TO console_rt")
+                .execute(&pool).await.unwrap();
+            for selected in [&state, &fresh] {
+                assert_eq!(ready_status(selected).await, StatusCode::SERVICE_UNAVAILABLE,
+                    "unknown provenance helper ACL admitted live readiness");
+            }
+            match AppState::from_config(config.clone()).await {
+                Err(AppError::Config(code)) => assert_eq!(code, "company_provenance.profile_mismatch"),
+                Err(_) => panic!("unrelated startup error does not prove custody refusal"),
+                Ok(untrusted) => {
+                    states.push(untrusted);
+                    panic!("unknown provenance helper ACL admitted fresh startup");
+                }
+            }
+            sqlx::query("REVOKE EXECUTE ON FUNCTION public.account_company_provenance_lock_v1(uuid,uuid) FROM console_rt")
+                .execute(&pool).await.unwrap();
+            let restored_helper: String = sqlx::query_scalar(
+                "SELECT to_jsonb(p)::text FROM pg_catalog.pg_proc p WHERE p.oid= \
+                   'public.account_company_provenance_lock_v1(uuid,uuid)'::regprocedure",
+            ).fetch_one(&pool).await.unwrap();
+            assert_eq!(restored_helper, original_helper, "helper catalog restoration was inexact");
+            assert!(after_work == all_rows(&pool).await, "corruption/restore changed durable business rows");
+            for selected in [&state, &fresh] {
+                assert_eq!(ready_status(selected).await, StatusCode::OK,
+                    "exact restoration did not recover held serving");
+            }
+            let restored = AppState::from_config(config).await.unwrap();
+            states.push(restored.clone());
+            assert_eq!(ready_status(&restored).await, StatusCode::OK);
+            drop(app);
+        }).catch_unwind().await;
+        runtime.close().await;
+        close_states(&states, outcome).await;
+    }
+}
