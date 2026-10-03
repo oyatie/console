@@ -3022,7 +3022,8 @@ it("identity REST scheduling oracle binds executing step identity and Cargo alia
     const actual = structuredClone(canonical);
     actual.id = "identity-rest-filtered";
     if (selector) actual.env = { ...actual.env, [selector]: "one" };
-    canonical.run = original.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run;
+    canonical.run = original.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run
+      .replace("//tools/buck:identity-rest-unit-pg", "");
     changed.jobs.backend.steps.push(actual);
     assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
       /canonical app-inline-pg/, "same display name must not substitute for actual step identity");
