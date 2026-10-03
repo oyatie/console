@@ -570,3 +570,281 @@ fn native_policy_header_errors_do_not_disclose_company_navigation() {
         }
     }
 }
+
+fn section_policy_scope(subject: Subject, operation: Operation, bits: u8) -> Scope {
+    let mut projection = scope(matches!(operation, Operation::Revoke));
+    projection.subject = subject;
+    projection.installed = !matches!(operation, Operation::Install);
+    projection.people_navigation = (bits & 1 != 0, bits & 2 != 0);
+    projection.company_link = bits & 4 != 0;
+    projection.policy_link = bits & 8 != 0;
+    projection.payroll_link = bits & 16 != 0;
+    if let Some(assignment) = projection.assignment.as_mut() {
+        assignment.state = "ACTIVE";
+        assignment.label = "연결된 권한";
+        assignment.can_grant = false;
+        assignment.can_revoke = true;
+    }
+    projection
+}
+
+fn section_policy_original() -> OriginalRecord {
+    OriginalRecord {
+        accepted_at: "2026-09-23 09:00 KST".into(),
+        deadline: "2026-09-23 10:00 KST".into(),
+        intake_receipt: OTHER.into(),
+        expected_company_epoch: "9".into(),
+        expected_assignment: None,
+        requested_until: None,
+        effect_period: None,
+        effect_epochs: None,
+    }
+}
+
+fn section_policy_expected(bits: u8) -> Vec<String> {
+    let root = format!("/companies/{COMPANY}");
+    let mut expected = vec!["/account".into()];
+    for (mask, suffix) in [
+        (1, "/people"),
+        (2, "/people/new"),
+        (4, ""),
+        (8, "/policy"),
+        (16, "/payroll"),
+    ] {
+        if bits & mask != 0 {
+            expected.push(format!("{root}{suffix}"));
+        }
+    }
+    expected
+}
+
+#[test]
+pub(super) fn native_policy_sections_orient_every_supported_task_and_result() {
+    use super::workspace_tests::assert_native_section_header;
+    let policy_root = format!("/companies/{COMPANY}/policy");
+    // Existing supported combinations only: catalog install, action grant/revoke.
+    for (subject, operation) in [
+        (Subject::PayrollRead, Operation::Install),
+        (Subject::PayrollRead, Operation::Grant),
+        (Subject::PayrollRead, Operation::Revoke),
+        (Subject::PeopleCatalog, Operation::Install),
+        (Subject::PeopleRead, Operation::Grant),
+        (Subject::PeopleRead, Operation::Revoke),
+        (Subject::PeopleCreate, Operation::Grant),
+        (Subject::PeopleCreate, Operation::Revoke),
+    ] {
+        for bits in 0_u8..32 {
+            let flags = [1, 2, 4, 8, 16].map(|mask| bits & mask != 0);
+            let selected = flags[3].then_some((policy_root.as_str(), "location"));
+            let html = render(Page::Form(Form {
+                scope: section_policy_scope(subject, operation, bits),
+                operation,
+                command: COMMAND.into(),
+                proof: PROOF.into(),
+                validation: None,
+            }));
+            exact_policy_header(&html, section_policy_expected(bits), flags[4]);
+            assert_native_section_header(&html, COMPANY, flags, selected, false, "회사 업무 탐색");
+            assert_eq!(html.matches("<form").count(), 1);
+            assert_eq!(html.matches("type=\"submit\"").count(), 1);
+            for (name, value) in [
+                ("command_id", COMMAND),
+                ("expected_company_epoch", "9"),
+                ("csrf_proof", PROOF),
+            ] {
+                let tag = input(&html, name);
+                assert!(
+                    tag.contains("type=\"hidden\"") && tag.contains(&format!("value=\"{value}\"")),
+                    "original hidden input: {name}"
+                );
+            }
+            let action_root = match subject {
+                Subject::PeopleRead => format!("{}/read", subject.base(COMPANY)),
+                Subject::PeopleCreate => format!("{}/create", subject.base(COMPANY)),
+                _ => subject.base(COMPANY),
+            };
+            let action = match operation {
+                Operation::Install => format!("{action_root}/catalog"),
+                Operation::Grant => format!("{action_root}/grants"),
+                Operation::Revoke => format!("{action_root}/grants/{ASSIGNMENT}/revoke"),
+            };
+            assert!(html.contains(&format!("action=\"{action}\"")));
+            assert_eq!(
+                html.matches("<input").count(),
+                match operation {
+                    Operation::Install => 3,
+                    Operation::Grant => 8,
+                    Operation::Revoke => 5,
+                }
+            );
+            if !matches!(operation, Operation::Install) {
+                for (name, value) in [
+                    (
+                        "expected_role_revision",
+                        if matches!(operation, Operation::Revoke) {
+                            "1"
+                        } else {
+                            ""
+                        },
+                    ),
+                    (
+                        "expected_assignment_revision",
+                        if matches!(operation, Operation::Revoke) {
+                            "3"
+                        } else {
+                            ""
+                        },
+                    ),
+                ] {
+                    assert!(
+                        input(&html, name).contains(&format!("value=\"{value}\"")),
+                        "retained revision: {name}"
+                    );
+                }
+            }
+            if matches!(operation, Operation::Grant) {
+                assert!(input(&html, "assignment_id").contains("value=\"\""));
+                assert!(
+                    input(&html, "recipient_account_id")
+                        .contains(&format!("value=\"{RECIPIENT}\""))
+                );
+                assert!(input(&html, "expires_at_local").contains("type=\"datetime-local\""));
+            }
+            for kind in 0..4 {
+                let outcome = match kind {
+                    0 => Outcome::Committed {
+                        title: "권한 처리를 완료했습니다",
+                        description: "기록된 처리입니다",
+                        receipt: OTHER.into(),
+                        at: "2026-09-23 09:01 KST".into(),
+                    },
+                    1 => Outcome::Rejected {
+                        description: "기록된 거절입니다",
+                        receipt: OTHER.into(),
+                        at: "2026-09-23 09:01 KST".into(),
+                    },
+                    2 => Outcome::Pending {
+                        accepted_at: "2026-09-23 09:00 KST".into(),
+                        deadline: "2026-09-23 10:00 KST".into(),
+                        proof: PROOF.into(),
+                    },
+                    _ => Outcome::Expired {
+                        accepted_at: "2026-09-23 09:00 KST".into(),
+                    },
+                };
+                let mut projection = section_policy_scope(subject, operation, bits);
+                if kind == 0 {
+                    projection.installed = true;
+                }
+                let html = render(Page::Result {
+                    scope: projection,
+                    operation,
+                    command: COMMAND.into(),
+                    outcome,
+                    original: section_policy_original(),
+                });
+                exact_policy_header(&html, section_policy_expected(bits), flags[4]);
+                assert_native_section_header(
+                    &html,
+                    COMPANY,
+                    flags,
+                    selected,
+                    false,
+                    "회사 업무 탐색",
+                );
+                assert!(
+                    html.contains("이 요청의 처리 기록") && html.contains("2026-09-23 10:00 KST")
+                );
+                let receipt_path = format!(
+                    "{}/requests/{}/{COMMAND}",
+                    subject.base(COMPANY),
+                    operation.path()
+                );
+                assert!(html.contains(&format!("href=\"{receipt_path}\"")));
+                assert_eq!(html.matches("<form").count(), usize::from(kind == 2));
+                assert_eq!(html.matches("<input").count(), usize::from(kind == 2));
+                if kind == 2 {
+                    assert!(input(&html, "csrf_proof").contains(&format!("value=\"{PROOF}\"")));
+                    assert!(html.contains(&format!("action=\"{receipt_path}/retry\"")));
+                    assert!(
+                        !html.contains("name=\"command_id\"")
+                            && !html.contains("name=\"recipient_account_id\"")
+                    );
+                } else {
+                    assert!(!html.contains(PROOF));
+                }
+                assert_eq!(
+                    html.matches("data-policy-receipt=").count(),
+                    usize::from(kind < 2)
+                );
+                assert!(
+                    !html.contains("<script")
+                        && !html.contains("/employment")
+                        && !html.contains("/approval")
+                );
+            }
+        }
+    }
+}
+
+#[test]
+pub(super) fn native_policy_sections_leave_all_unscoped_errors_without_location() {
+    use super::workspace_tests::{assert_native_section_header, corrupt_native_section};
+    for page in [
+        Page::Problem {
+            state: "invalid",
+            title: "입력을 확인하세요",
+            description: "unit problem",
+        },
+        Page::NotVisible,
+        Page::Refused,
+        Page::Unavailable,
+        Page::Uncertain {
+            result_path: format!(
+                "/companies/{COMPANY}/policy/payroll-read/requests/grant/{COMMAND}"
+            ),
+        },
+    ] {
+        let html = render(page);
+        exact_policy_header(&html, vec!["/account".into()], false);
+        assert_native_section_header(&html, COMPANY, [false; 5], None, false, "회사 업무 탐색");
+        let (desktop, mobile) = policy_nav_regions(&html);
+        for region in [desktop, mobile] {
+            assert!(
+                !region.contains(COMPANY)
+                    && !region.contains(COMMAND)
+                    && !region.contains(RECIPIENT)
+            );
+        }
+        for hidden in [
+            PROOF,
+            "<form",
+            "<input",
+            "data-policy-company",
+            "data-policy-recipient",
+            "data-policy-operator",
+        ] {
+            assert!(!html.contains(hidden));
+        }
+        for mobile in [false, true] {
+            let bad = corrupt_native_section(
+                &html,
+                mobile,
+                "<a href=\"/account\"",
+                "<a aria-current=\"location\" href=\"/account\"",
+            );
+            exact_policy_header(&bad, vec!["/account".into()], false); // preserved page-only helper passes
+            assert!(
+                std::panic::catch_unwind(|| assert_native_section_header(
+                    &bad,
+                    COMPANY,
+                    [false; 5],
+                    None,
+                    false,
+                    "회사 업무 탐색"
+                ))
+                .is_err()
+            );
+        }
+    }
+}

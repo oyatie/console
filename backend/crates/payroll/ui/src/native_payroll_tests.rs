@@ -653,3 +653,120 @@ fn native_payroll_header_errors_keep_only_account_recovery() {
         }
     }
 }
+
+#[test]
+pub(super) fn native_payroll_sections_keep_exact_root_and_nonempty_mobile_groups() {
+    use super::workspace_tests::{assert_native_section_header, corrupt_native_section};
+    let root = format!("/companies/{COMPANY}");
+    let payroll = format!("{root}/payroll");
+    for read in [false, true] {
+        for create in [false, true] {
+            for identity in [false, true] {
+                let mut projection = collection();
+                projection.people_navigation = (read, create);
+                if !identity {
+                    projection.identity = None;
+                }
+                let html = render(Page::Runs(projection));
+                let flags = [read, create, false, false, true];
+                let selected = Some((payroll.as_str(), "page"));
+                let mut expected = vec!["/account".to_owned(), payroll.clone()];
+                if read {
+                    expected.push(format!("{root}/people"));
+                }
+                if create {
+                    expected.push(format!("{root}/people/new"));
+                }
+                expected.sort();
+                for region in [payroll_nav_regions(&html).0, payroll_nav_regions(&html).1] {
+                    let links = payroll_nav_links(region);
+                    let mut actual: Vec<_> =
+                        links.iter().map(|(href, _)| (*href).to_owned()).collect();
+                    actual.sort();
+                    assert_eq!(actual, expected);
+                    assert_eq!(
+                        links
+                            .iter()
+                            .filter_map(|(href, current)| current.then_some(*href))
+                            .collect::<Vec<_>>(),
+                        vec![payroll.as_str()]
+                    );
+                }
+                assert_native_section_header(
+                    &html,
+                    COMPANY,
+                    flags,
+                    selected,
+                    true,
+                    "회사 업무 탐색",
+                );
+                assert_eq!(html.matches("<form").count(), 1);
+                assert!(!html.contains("csrf_proof") && !html.contains("<script"));
+                for mobile in [false, true] {
+                    let bad = corrupt_native_section(
+                        &html,
+                        mobile,
+                        "<a href=\"/account\"",
+                        "<a aria-current=\"location\" href=\"/account\"",
+                    );
+                    for region in [payroll_nav_regions(&bad).0, payroll_nav_regions(&bad).1] {
+                        assert_eq!(
+                            payroll_nav_links(region)
+                                .iter()
+                                .filter_map(|(href, current)| current.then_some(*href))
+                                .collect::<Vec<_>>(),
+                            vec![payroll.as_str()]
+                        );
+                    }
+                    assert!(
+                        std::panic::catch_unwind(|| assert_native_section_header(
+                            &bad,
+                            COMPANY,
+                            flags,
+                            selected,
+                            true,
+                            "회사 업무 탐색"
+                        ))
+                        .is_err()
+                    );
+                }
+            }
+        }
+    }
+    for page in [
+        Page::NotVisible,
+        Page::AuthenticationRequired,
+        Page::Unavailable,
+        Page::InvalidRequest,
+    ] {
+        let html = render(page);
+        assert_native_section_header(&html, COMPANY, [false; 5], None, false, "회사 업무 탐색");
+        for region in [payroll_nav_regions(&html).0, payroll_nav_regions(&html).1] {
+            assert_eq!(payroll_nav_links(region), vec![("/account", false)]);
+            assert!(!region.contains(COMPANY));
+        }
+        assert!(!html.contains("<form") && !html.contains("csrf_proof"));
+        for mobile in [false, true] {
+            let bad = corrupt_native_section(
+                &html,
+                mobile,
+                "<a href=\"/account\"",
+                "<a aria-current=\"location\" href=\"/account\"",
+            );
+            for region in [payroll_nav_regions(&bad).0, payroll_nav_regions(&bad).1] {
+                assert_eq!(payroll_nav_links(region), vec![("/account", false)]);
+            }
+            assert!(
+                std::panic::catch_unwind(|| assert_native_section_header(
+                    &bad,
+                    COMPANY,
+                    [false; 5],
+                    None,
+                    false,
+                    "회사 업무 탐색"
+                ))
+                .is_err()
+            );
+        }
+    }
+}

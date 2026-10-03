@@ -786,3 +786,342 @@ fn native_people_conflict_header_keeps_scoped_routes_without_false_current_page(
         }
     }
 }
+
+// Additive section contract: real renderer fixtures, no owner/auth evidence.
+fn section_people_scope(bits: u8, named: bool) -> Scope {
+    let mut projection = scope(bits & 1 != 0, bits & 2 != 0);
+    projection.company_link = bits & 4 != 0;
+    projection.policy_link = bits & 8 != 0;
+    projection.payroll_link = bits & 16 != 0;
+    if !named {
+        projection.company_name = None;
+    }
+    projection
+}
+
+fn section_people_flags(bits: u8) -> [bool; 5] {
+    [1, 2, 4, 8, 16].map(|mask| bits & mask != 0)
+}
+
+fn section_people_existing_links(html: &str, bits: u8) {
+    let root = format!("/companies/{COMPANY}");
+    let mut expected = vec!["/account".to_owned()];
+    for (offered, suffix) in section_people_flags(bits).into_iter().zip([
+        "/people",
+        "/people/new",
+        "",
+        "/policy",
+        "/payroll",
+    ]) {
+        if offered {
+            expected.push(format!("{root}{suffix}"));
+        }
+    }
+    expected.sort();
+    let (desktop, mobile) = native_header_regions(html);
+    for region in [desktop, mobile] {
+        let mut actual: Vec<_> = native_header_links(region)
+            .iter()
+            .map(|(href, _)| (*href).to_owned())
+            .collect();
+        actual.sort();
+        assert_eq!(actual, expected, "preserved complete href oracle");
+    }
+}
+
+fn section_people_outcome(kind: u8) -> Outcome {
+    match kind {
+        0 => Outcome::Pending {
+            proof: PROOF.into(),
+        },
+        1 => committed(),
+        2 => Outcome::Rejected {
+            reason: "unit rejected",
+        },
+        3 => Outcome::Conflicting {
+            reason: "unit conflicting",
+        },
+        4 => Outcome::Cancelled,
+        5 => Outcome::Expired,
+        _ => unreachable!("closed renderer outcome fixture"),
+    }
+}
+
+#[test]
+pub(super) fn native_people_sections_orient_authorized_descendants() {
+    use super::workspace_tests::assert_native_section_header;
+    let root = format!("/companies/{COMPANY}/people");
+    let registration = format!("{root}/new");
+    // First case is an actual authorized Detail: intended clean-base RED is
+    // its missing location marker, not an unoffered or empty navigation group.
+    for bits in (0_u8..32).rev() {
+        let flags = section_people_flags(bits);
+        let html = render(Page::Detail {
+            scope: section_people_scope(bits, true),
+            record: Record {
+                employee_id: EMPLOYEE.into(),
+                person_id: PERSON.into(),
+                legal_name: Some(NAME.into()),
+                employee_number: Some("사번&<1>".into()),
+                person_version: "1".into(),
+                registered_at: "2026-09-23 10:01".into(),
+            },
+        });
+        exact_current_people_link(&html, None);
+        section_people_existing_links(&html, bits);
+        assert_native_section_header(
+            &html,
+            COMPANY,
+            flags,
+            flags[0].then_some((root.as_str(), "location")),
+            false,
+            "회사 관리",
+        );
+        for kind in 0..6 {
+            let html = render(Page::Request {
+                scope: section_people_scope(bits, true),
+                request: request(section_people_outcome(kind)),
+            });
+            exact_current_people_link(&html, None);
+            section_people_existing_links(&html, bits);
+            assert_native_section_header(
+                &html,
+                COMPANY,
+                flags,
+                flags[1].then_some((registration.as_str(), "location")),
+                false,
+                "회사 관리",
+            );
+            assert!(html.contains("이 요청의 처리 기록") && html.contains("unit-intake-receipt"));
+            assert_eq!(html.matches("<form").count(), if kind == 0 { 2 } else { 0 });
+            assert_eq!(
+                html.matches("name=\"csrf_proof\"").count(),
+                if kind == 0 { 2 } else { 0 }
+            );
+            if kind == 0 {
+                assert_eq!(html.matches(&format!("value=\"{PROOF}\"")).count(), 2);
+                assert_eq!(
+                    html.matches(&format!("name=\"command_id\" value=\"{COMMAND}\""))
+                        .count(),
+                    2
+                );
+                for operation in ["execute", "cancel"] {
+                    assert!(
+                        html.contains(&format!("action=\"{root}/requests/{COMMAND}/{operation}\""))
+                    );
+                }
+            }
+            if kind == 1 {
+                assert!(html.contains("unit-effect-receipt") && html.contains("2026-09-23 10:01"));
+            }
+            assert!(
+                !html.contains("<script")
+                    && !html.contains("/employment")
+                    && !html.contains("/approval")
+            );
+        }
+        let html = render(Page::RegistrationConflict {
+            scope: section_people_scope(bits, true),
+            command: COMMAND.into(),
+            legal_name: NAME.into(),
+            employee_number: "사번&<1>".into(),
+        });
+        exact_current_people_link(&html, None);
+        section_people_existing_links(&html, bits);
+        assert_native_section_header(
+            &html,
+            COMPANY,
+            flags,
+            flags[1].then_some((registration.as_str(), "location")),
+            false,
+            "회사 관리",
+        );
+        assert!(html.contains(&format!("href=\"{root}/requests/{COMMAND}\"")));
+        assert_eq!(html.matches("<form").count(), 0);
+    }
+}
+
+#[test]
+pub(super) fn native_people_sections_keep_roots_and_unknown_states_unselected() {
+    use super::workspace_tests::{assert_native_section_header, corrupt_native_section};
+    let root = format!("/companies/{COMPANY}/people");
+    let registration = format!("{root}/new");
+    for bits in 0_u8..32 {
+        let flags = section_people_flags(bits);
+        for named in [false, true] {
+            let pages = [
+                (
+                    render(Page::Directory {
+                        scope: section_people_scope(bits, named),
+                        records: vec![],
+                        search_number: None,
+                        next_href: None,
+                        after_cursor: false,
+                    }),
+                    flags[0].then_some(root.as_str()),
+                ),
+                (
+                    render(Page::Registration {
+                        scope: section_people_scope(bits, named),
+                        form: recovery_registration(),
+                    }),
+                    flags[1].then_some(registration.as_str()),
+                ),
+            ];
+            for (kind, (html, exact)) in pages.into_iter().enumerate() {
+                exact_current_people_link(&html, exact);
+                section_people_existing_links(&html, bits);
+                assert_native_section_header(
+                    &html,
+                    COMPANY,
+                    flags,
+                    exact.map(|href| (href, "page")),
+                    false,
+                    "회사 관리",
+                );
+                assert_eq!(html.matches("<form").count(), 1);
+                if kind == 1 {
+                    assert_eq!(html.matches("<input").count(), 11);
+                    for (name, value) in [
+                        ("csrf_proof", PROOF),
+                        ("command_id", COMMAND),
+                        ("expected_company_epoch", "3"),
+                        ("object_type_id", "unit-object"),
+                        ("action_type_id", "unit-action"),
+                        ("expected_action_revision", "4"),
+                        ("expected_schema_revision", "5"),
+                        ("legal_name_property_id", "unit-name-property"),
+                        ("employee_number_property_id", "unit-number-property"),
+                    ] {
+                        let tag = input(&html, name);
+                        assert!(
+                            tag.contains("type=\"hidden\"")
+                                && tag.contains(&format!("value=\"{value}\"")),
+                            "original registration field: {name}"
+                        );
+                    }
+                } else {
+                    assert!(!html.contains(PROOF) && !html.contains("name=\"command_id\""));
+                }
+                for mobile in [false, true] {
+                    let bad = corrupt_native_section(
+                        &html,
+                        mobile,
+                        "<a href=\"/account\"",
+                        "<a aria-current=\"location\" href=\"/account\"",
+                    );
+                    exact_current_people_link(&bad, exact); // old page-only oracle still passes
+                    assert!(
+                        std::panic::catch_unwind(|| assert_native_section_header(
+                            &bad,
+                            COMPANY,
+                            flags,
+                            exact.map(|href| (href, "page")),
+                            false,
+                            "회사 관리"
+                        ))
+                        .is_err()
+                    );
+                }
+            }
+            let html = render(Page::RequestNotVisible {
+                scope: section_people_scope(bits, named),
+                command: COMMAND.into(),
+            });
+            exact_current_people_link(&html, None);
+            section_people_existing_links(&html, bits);
+            assert_native_section_header(&html, COMPANY, flags, None, false, "회사 관리");
+            assert!(html.contains(&format!("href=\"{root}/requests/{COMMAND}\"")));
+            for undisclosed in [
+                "김하늘",
+                "사번&amp;",
+                PROOF,
+                "unit-intake-receipt",
+                EMPLOYEE,
+                PERSON,
+            ] {
+                assert!(!html.contains(undisclosed));
+            }
+            let (desktop, mobile) = native_header_regions(&html);
+            assert!(!desktop.contains(COMMAND) && !mobile.contains(COMMAND));
+            for mobile in [false, true] {
+                let bad = corrupt_native_section(
+                    &html,
+                    mobile,
+                    "<a href=\"/account\"",
+                    "<a aria-current=\"location\" href=\"/account\"",
+                );
+                exact_current_people_link(&bad, None);
+                assert!(
+                    std::panic::catch_unwind(|| assert_native_section_header(
+                        &bad,
+                        COMPANY,
+                        flags,
+                        None,
+                        false,
+                        "회사 관리"
+                    ))
+                    .is_err()
+                );
+            }
+        }
+    }
+    for page in [
+        Page::Refused,
+        Page::Unavailable,
+        Page::Uncertain {
+            company: COMPANY.into(),
+            command: COMMAND.into(),
+        },
+    ] {
+        let html = render(page);
+        exact_current_people_link(&html, None);
+        assert_native_section_header(&html, COMPANY, [false; 5], None, false, "회사 관리");
+        let (desktop, mobile) = native_header_regions(&html);
+        for region in [desktop, mobile] {
+            assert_eq!(native_header_links(region), vec![("/account", false)]);
+            assert!(!region.contains(COMPANY) && !region.contains(COMMAND));
+        }
+        assert!(
+            !html.contains(PROOF)
+                && !html.contains("unit-intake-receipt")
+                && !html.contains("<form")
+        );
+        for mobile in [false, true] {
+            let bad = corrupt_native_section(
+                &html,
+                mobile,
+                "<a href=\"/account\"",
+                "<a aria-current=\"location\" href=\"/account\"",
+            );
+            exact_current_people_link(&bad, None);
+            assert!(
+                std::panic::catch_unwind(|| assert_native_section_header(
+                    &bad,
+                    COMPANY,
+                    [false; 5],
+                    None,
+                    false,
+                    "회사 관리"
+                ))
+                .is_err()
+            );
+        }
+    }
+    let mut form = recovery_registration();
+    form.name_error = Some("unit validation");
+    let html = render(Page::Registration {
+        scope: section_people_scope(31, true),
+        form,
+    });
+    exact_current_people_link(&html, Some(&registration));
+    assert_native_section_header(
+        &html,
+        COMPANY,
+        [true; 5],
+        Some((&registration, "page")),
+        false,
+        "회사 관리",
+    );
+    assert!(html.contains("unit validation"));
+}
