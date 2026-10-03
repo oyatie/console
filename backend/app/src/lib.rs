@@ -1690,9 +1690,9 @@ impl AppState {
             self.auth_rest.as_ref()?.auth_database()?.clone(),
         );
         Some(
-            if self.serving_custody_profile
-                == Some(account_custody::VerifiedCustodyProfile::NativePeopleDirectoryRowLock)
-            {
+            if self.serving_custody_profile.is_some_and(
+                account_custody::VerifiedCustodyProfile::requires_current_company_provenance,
+            ) {
                 verification.require_current_company_provenance()
             } else {
                 verification
@@ -1833,9 +1833,9 @@ impl AppState {
 
         let mut state = Self::new(config.clone(), database)?;
         state.serving_custody_profile = serving_custody_profile;
-        if serving_custody_profile
-            == Some(account_custody::VerifiedCustodyProfile::NativePeopleDirectoryRowLock)
-        {
+        if serving_custody_profile.is_some_and(
+            account_custody::VerifiedCustodyProfile::requires_current_company_provenance,
+        ) {
             state.auth_rest = state
                 .auth_rest
                 .map(AuthRestState::require_current_company_provenance);

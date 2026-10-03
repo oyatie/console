@@ -11,11 +11,22 @@ pub(crate) enum VerifiedCustodyProfile {
     // Verified predecessor substrate; Directory needs the row-lock correction.
     NativePeopleDirectory,
     NativePeopleDirectoryRowLock,
+    // Exact Directory predecessor or classifier-only successor; OrgUnit closed.
+    NativeOrgBridgeCompatible,
 }
 
 impl VerifiedCustodyProfile {
     pub(crate) fn supports_native_directory(self) -> bool {
-        self == Self::NativePeopleDirectoryRowLock
+        matches!(
+            self,
+            Self::NativePeopleDirectoryRowLock | Self::NativeOrgBridgeCompatible
+        )
+    }
+    pub(crate) fn requires_current_company_provenance(self) -> bool {
+        matches!(
+            self,
+            Self::NativePeopleDirectoryRowLock | Self::NativeOrgBridgeCompatible
+        )
     }
     pub(crate) fn supports_policy(self) -> bool {
         matches!(
@@ -24,6 +35,7 @@ impl VerifiedCustodyProfile {
                 | Self::NativeCompanyPolicyV2
                 | Self::NativePeopleDirectory
                 | Self::NativePeopleDirectoryRowLock
+                | Self::NativeOrgBridgeCompatible
         )
     }
     pub(crate) fn supports_people(self) -> bool {
@@ -32,6 +44,7 @@ impl VerifiedCustodyProfile {
             Self::NativeCompanyPolicyV2
                 | Self::NativePeopleDirectory
                 | Self::NativePeopleDirectoryRowLock
+                | Self::NativeOrgBridgeCompatible
         )
     }
 }
@@ -46,6 +59,20 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let provenance: String =
+        sqlx::query_scalar(include_str!("company_provenance_v1_custody_state.sql"))
+            .fetch_one(&mut *transaction)
+            .await?;
+    if matches!(
+        provenance.as_str(),
+        "company_provenance.predecessor_compatible" | "company_provenance.installed_compatible"
+    ) {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativeOrgBridgeCompatible);
+    }
+    if provenance != "company_provenance.absent" {
+        return Err(AppError::Config(provenance));
+    }
     let directory: String = sqlx::query_scalar(include_str!(
         "native_people_directory_row_lock_custody_state.sql"
     ))

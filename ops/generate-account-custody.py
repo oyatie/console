@@ -7096,10 +7096,78 @@ def company_provenance_capture_files():
     }
 
 
+# Independently captured classifier-only successors; native OrgUnit stays closed.
+# Pair order is plain, then durability observer. Historical profiles stay frozen.
+COMPANY_PROVENANCE_INSTALLED_SHA256 = (
+    'de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a',
+    '8011bd8141ec1a0497319773d73bc1df97a924f99e8aa84b8ef7c9cb4c821b37',
+)
+
+
+def company_provenance_custody_files():
+    _, predecessors = native_people_directory_row_lock_profiles()
+    successors = COMPANY_PROVENANCE_INSTALLED_SHA256
+    values = (*predecessors, *successors)
+    if len(successors) != 2 or len(set(values)) != 4 or any(
+            not isinstance(value, str) or len(value) != 64
+            or any(c not in '0123456789abcdef' for c in value) for value in values):
+        raise SystemExit('Company provenance custody requires independently reviewed paired captures')
+    # Reuse the unchanged declared complete serializer, including source binding,
+    # routine bodies/ABI/security closure and all existing startup rights.
+    capture = company_provenance_capture_files()[
+        'ops/postgres-capture-company-provenance-v1-custody.sql'].removesuffix(';\n')
+    old = ','.join("'" + value + "'" for value in predecessors)
+    installed = ','.join("'" + value + "'" for value in successors)
+    query = f"""-- Generated read-only Company provenance bridge custody; no OrgUnit activation.
+WITH full_capture AS (
+{capture}
+), staged_capture AS (
+ -- Only the existing active namespace predicate below is consumed.
+ SELECT snapshot FROM full_capture
+), directory_presence AS (
+{native_people_directory_presence_query()}
+), provenance_namespace AS (
+ -- Do not filter by schema, routine kind, owner or SECURITY DEFINER: an
+ -- unexpected invoker outside the full serializer must still close serving.
+ SELECT count(*)=0 AS absent,
+ count(*)=2 AND bool_and(n.nspname='public' AND p.prokind='f' AND (
+  (p.proname='account_company_provenance_v1'
+   AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid]::oidvector)
+  OR (p.proname='account_company_provenance_lock_v1'
+   AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid,'pg_catalog.uuid'::regtype::oid]::oidvector)
+ )) AS installed
+ FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+ WHERE starts_with(p.proname,'account_company_provenance')
+)
+SELECT CASE
+ WHEN (SELECT absent FROM provenance_namespace) IS FALSE
+  AND (SELECT installed FROM provenance_namespace) IS NOT TRUE
+ THEN 'company_provenance.profile_mismatch'
+ WHEN (SELECT absent FROM provenance_namespace) IS TRUE
+  AND (SELECT snapshot_sha256 FROM full_capture) IN ({old})
+  AND (SELECT native_directory_startup_rights_valid FROM full_capture) IS TRUE
+  AND (SELECT active_namespace_valid FROM directory_presence) IS TRUE
+ THEN 'company_provenance.predecessor_compatible'
+ WHEN (SELECT installed FROM provenance_namespace) IS TRUE
+  AND (SELECT snapshot_sha256 FROM full_capture) IN ({installed})
+  AND (SELECT native_directory_startup_rights_valid FROM full_capture) IS TRUE
+  AND (SELECT active_namespace_valid FROM directory_presence) IS TRUE
+ THEN 'company_provenance.installed_compatible'
+ WHEN (SELECT absent FROM provenance_namespace) IS TRUE
+ THEN 'company_provenance.absent'
+ ELSE 'company_provenance.profile_mismatch' END AS state;\n"""
+    return {
+        'ops/postgres-company-provenance-v1-custody-state.sql': query,
+        'backend/app/src/company_provenance_v1_custody_state.sql': query,
+    }
+
+
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--company-provenance-capture'], ['--company-provenance-capture', '--check']):
-        files = company_provenance_capture_files()
+    if arguments in (['--company-provenance-capture'], ['--company-provenance-capture', '--check'],
+                     ['--company-provenance-custody'], ['--company-provenance-custody', '--check']):
+        files = (company_provenance_custody_files() if arguments[0] == '--company-provenance-custody'
+                 else company_provenance_capture_files())
         paths = {name: company_provenance_regular_path(name, required=False) for name in files}
         if '--check' in arguments:
             for name, expected in files.items():
@@ -7110,7 +7178,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture | --company-provenance-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
