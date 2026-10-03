@@ -457,10 +457,9 @@ mod native_company_provenance_pair_capture {
             ] {
                 assert!(raw[field].is_null(), "unexpected routine field: {field}");
             }
-            for field in ["provariadic", "pronargdefaults"] {
-                assert_eq!(raw[field], 0);
-            }
-            assert_eq!(routine["support_oid"], 0);
+            assert_eq!(raw["provariadic"], "0");
+            assert_eq!(raw["pronargdefaults"], 0);
+            assert_eq!(routine["support_oid"], "0");
             assert_eq!(raw["proacl"].as_array().unwrap().len(), 2);
             let rights: BTreeMap<_, _> = routine["effective_execute"]
                 .as_array()
