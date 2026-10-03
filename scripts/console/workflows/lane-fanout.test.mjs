@@ -1302,9 +1302,11 @@ const threw = async (args) => {
       || /\\\/\.+\):\$/.test(driftSrc))
   check('contract-drift refuses repo-wide same-name fallback for undeclared PATH consts',
     /refusing repo-wide same-name fallback/.test(driftSrc))
+  const discoverySrc = driftSrc.match(/function discoverRouteSourceFiles\([\s\S]*?\n\}/)?.[0] ?? ''
+  const cachedSources = discoverySrc.match(/const sources = new Map\(rustSources\.map\(\(file\) => \[file, readFileSync\(resolve\(root, file\), "utf8"\)\]\)\);/)
+  const strippedRoutes = discoverySrc.match(/\.filter\(\(file\) =>\s*stripRustCommentsAndLiterals\(sources\.get\(file\)\)\.includes\(\s*"\.route\("\s*\),?\s*\)/)
   check('contract-drift discovers route sources after stripping comments/literals',
-    /stripRustCommentsAndLiterals\(readFileSync\(file, "utf8"\)\)\.includes\(\s*"\.route\("\s*\)/.test(driftSrc)
-      || /stripRustCommentsAndLiterals\(readFileSync\(file, "utf8"\)\)\.includes\("\.route\("\)/.test(driftSrc))
+    !!cachedSources && !!strippedRoutes && cachedSources.index < strippedRoutes.index)
 
   const maskSrc = driftSrc.match(/function maskStringLiterals\([\s\S]*?\n\}/)
   const stripSrc = driftSrc.match(/function stripRustCommentsAndLiterals\([\s\S]*?\n\}/)
