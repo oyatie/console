@@ -706,12 +706,12 @@ mod native_org_unit_closed_finalizer_tests {
             (
                 "closed_finalizer",
                 FINALIZER,
-                "2596a0f43b2e81d87302fbbe92354922558a61fce62bbba06c75731c94ca8c7b",
+                "6bda0446f5f75e71cf272e5180f1632c9066d18c7e48b95c913390b4723c49ed",
             ),
             (
                 "closed_state",
                 CLOSED_STATE,
-                "138b3179b41b15bfbbaae4d49b93888ff92a662547a14725ccf52a36dc3d28ff",
+                "670564ce4a107746d8f50d316014b4aca763af0335d9c38a01fcfa23ec9e46dc",
             ),
             (
                 "wider76_capture",
