@@ -4,6 +4,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 harness="${repo_root}/tools/buck/test_needs_postgres.sh"
 scratch="$(mktemp -d "${TMPDIR:-/tmp}/console-buck-postgres-test.XXXXXX")"
 fake_bin="${scratch}/bin"; log="${scratch}/calls.log"; mkdir -p "${fake_bin}"
+export TMPDIR="${scratch}"
 trap 'rm -rf "${scratch}"' EXIT
 cat >"${fake_bin}/docker" <<'DOCKER'
 #!/usr/bin/env bash
@@ -20,7 +21,44 @@ sequence_value() {
   printf '%s' "${values[index]}"
 }
 case "$1" in
-  run) echo fake-container ;;
+  run)
+    run_name=""; cidfile=""
+    while (($#)); do
+      case "$1" in
+        --name) run_name="$2"; shift ;;
+        --env-file) printf '%s\n' "$2" >"${HARNESS_LOG}.container-env-file"; shift ;;
+        --cidfile) cidfile="$2"; shift ;;
+      esac
+      shift
+    done
+    printf '%s\n' "${run_name}" >"${HARNESS_LOG}.run-name"
+    if [[ -n "${cidfile}" ]]; then
+      python3 - "${cidfile}" <<'PY_CIDFILE' || exit 1
+import os, pathlib, stat, sys
+p = pathlib.Path(sys.argv[1])
+assert not p.exists(), "Docker --cidfile requires a nonexistent file"
+assert p.parent.is_dir() and not p.parent.is_symlink()
+assert stat.S_IMODE(p.parent.stat().st_mode) == 0o700, "CID parent must be private"
+assert p.parent.stat().st_uid == os.getuid()
+with p.open("x") as stream: stream.write("")
+PY_CIDFILE
+      printf '%s\n' "${cidfile}" >"${HARNESS_LOG}.cidfile"
+    fi
+    if [[ "${FAKE_DOCKER_RUN_STATUS:-0}" != 0 ]]; then
+      touch "${HARNESS_LOG}.preexisting-container-present"
+      echo 'fake container name already in use' >&2
+      exit "${FAKE_DOCKER_RUN_STATUS}"
+    fi
+    cid=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    printf '%s\n' "${cid}" >"${HARNESS_LOG}.created-cid"
+    touch "${HARNESS_LOG}.owned-container-present" "${HARNESS_LOG}.owned-volume-present"
+    [[ -z "${cidfile}" ]] || printf '%s' "${cid}" >"${cidfile}"
+    if [[ "${FAKE_DOCKER_RUN_PAUSE_BEFORE_STDOUT:-0}" == 1 ]]; then
+      printf '%s\n' "$$" >"${HARNESS_LOG}.dockerpid"
+      touch "${HARNESS_LOG}.run-ready"
+      exec /bin/sleep 30
+    fi
+    printf '%s\n' "${cid}" ;;
   cp)
     if [[ "$3" == *:/topology.env ]]; then
       cut -d= -f1 "$2" | sort >"${HARNESS_LOG}.topology-env-keys"
@@ -60,7 +98,27 @@ PY_STARTUP_TOPOLOGY
   image) exit "${FAKE_DOCKER_IMAGE_INSPECT_STATUS:-1}" ;;
   pull) exit "$(sequence_value "${FAKE_DOCKER_PULL_STATUS_SEQUENCE:-}" "${HARNESS_LOG}.pull-attempt" "${FAKE_DOCKER_PULL_STATUS:-0}")" ;;
   port) echo 127.0.0.1:49123 ;;
-  rm) exit 0 ;;
+  rm)
+    if [[ "${FAKE_DOCKER_RM_STATUS:-0}" != 0 ]]; then
+      echo 'fake-rm-private postgres://secret-password@127.0.0.1/private' >&2
+      exit "${FAKE_DOCKER_RM_STATUS}"
+    fi
+    python3 - "${HARNESS_LOG}" "$@" <<'PY_REMOVE'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1]); args = sys.argv[3:]
+options = [arg for arg in args if arg.startswith("-")]
+targets = [arg for arg in args if not arg.startswith("-")]
+volume = any(arg == "--volumes" or (arg.startswith("-") and not arg.startswith("--") and "v" in arg) for arg in options)
+def marker(suffix): return pathlib.Path(str(p) + suffix)
+name = marker(".run-name").read_text().strip() if marker(".run-name").exists() else ""
+cid = marker(".created-cid").read_text().strip() if marker(".created-cid").exists() else ""
+if name and name in targets:
+    marker(".preexisting-container-present").unlink(missing_ok=True)
+if any(target and target in (name, cid) for target in targets):
+    marker(".owned-container-present").unlink(missing_ok=True)
+    if volume: marker(".owned-volume-present").unlink(missing_ok=True)
+PY_REMOVE
+    ;;
   *) exit 1 ;;
 esac
 DOCKER
@@ -119,6 +177,7 @@ PY_STARTUP_TEST
 fi
 printf '%s\n' "${env_file}" >>"${HARNESS_LOG}.envfiles"
 if [[ "${FAKE_BUCK_SLEEP:-0}" == 1 ]]; then printf "%s\n" "$$" >"${HARNESS_LOG}.childpid"; exec sleep 30; fi
+if [[ "$1" == test ]]; then exit "${FAKE_BUCK_TEST_STATUS:-${FAKE_BUCK_STATUS:-0}}"; fi
 exit "${FAKE_BUCK_STATUS:-0}"
 BUCK
 cat >"${fake_bin}/sleep" <<'SLEEP'
@@ -127,6 +186,30 @@ if [[ "${FAKE_SLEEP_INSTANT:-0}" == 1 ]]; then exit 0; fi
 exec /bin/sleep "$@"
 SLEEP
 chmod +x "${fake_bin}/docker" "${fake_bin}/openssl" "${fake_bin}/sleep" "${scratch}/buck"
+# Direct negative controls exercise the exact fake Docker's refusal boundary.
+python3 - "${scratch}" "${fake_bin}/docker" <<'PY_CID_CONTROLS'
+import json, os, pathlib, subprocess, sys
+scratch, docker = map(pathlib.Path, sys.argv[1:])
+for case, mode, existing in [("parent-0755", 0o755, False), ("existing-cidfile", 0o700, True)]:
+    directory = scratch / case; directory.mkdir(); directory.chmod(mode)
+    cidfile = directory / "container.cid"; sentinel = directory / "sentinel"
+    sentinel.write_text("unrelated sentinel must remain\n")
+    if existing: cidfile.write_text("preexisting CID sentinel\n")
+    log = scratch / (case + ".log")
+    result = subprocess.run([str(docker), "run", "--name", case, "--cidfile", str(cidfile)],
+                            env=dict(os.environ, HARNESS_LOG=str(log)), capture_output=True,
+                            text=True, timeout=30)
+    raw = {"case": case, "argv": result.args, "exit": result.returncode,
+           "stdout": result.stdout, "stderr": result.stderr,
+           "sentinel_unchanged": sentinel.read_text() == "unrelated sentinel must remain\n",
+           "cidfile_preserved": cidfile.read_text() == "preexisting CID sentinel\n" if existing else not cidfile.exists(),
+           "owned_markers_absent": all(not pathlib.Path(str(log) + suffix).exists()
+               for suffix in (".created-cid", ".owned-container-present", ".owned-volume-present"))}
+    print(json.dumps(raw), flush=True)
+    assert result.returncode != 0 and not result.stdout, "fake Docker validator failure was masked"
+    assert raw["sentinel_unchanged"] and raw["cidfile_preserved"] and raw["owned_markers_absent"]
+print("cidfile-controls: discovered=2 executed=2 failures=0", flush=True)
+PY_CID_CONTROLS
 raw_target_log="${scratch}/raw-target.log"
 if PATH="${fake_bin}:${PATH}" HARNESS_LOG="${raw_target_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" "${harness}" //backend/app:console-app-itest-org_change_api; then exit 1; fi
 ! grep -q '^docker' "${raw_target_log}" 2>/dev/null
@@ -220,13 +303,17 @@ if PATH="${fake_bin}:${PATH}" HARNESS_LOG="${invalid_isolation_log}" CONSOLE_BUC
 ! grep -q '^buck' "${invalid_isolation_log}" 2>/dev/null
 if PATH="${fake_bin}:${PATH}" HARNESS_LOG="${exact_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT='bad test' "${harness}" //tools/buck:pr473-ontology-key-revision-postgres; then exit 1; fi
 setup_failure_log="${scratch}/setup-failure.log"
-if PATH="${fake_bin}:${PATH}" HARNESS_LOG="${setup_failure_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_DOCKER_EXEC_STATUS=23 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres; then exit 1; fi
+setup_failure_status=0
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${setup_failure_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_DOCKER_EXEC_STATUS=23 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres || setup_failure_status="$?"
+[[ "${setup_failure_status}" != 0 ]]
 grep -Fq 'docker rm -f' "${setup_failure_log}"
 ! grep -q '^buck' "${setup_failure_log}"
 ! grep -Fq -- 'secret-' "${setup_failure_log}"
 [[ ! -e "$(cat "${setup_failure_log}.topology-env-file")" ]]
-if PATH="${fake_bin}:${PATH}" HARNESS_LOG="${log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_BUCK_STATUS=17 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres; then exit 1; fi
-while IFS= read -r envfile; do [[ ! -e "${envfile}" ]]; done <"${log}.envfiles"
+buck_failure_log="${scratch}/buck-failure.log"; buck_failure_status=0
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${buck_failure_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_BUCK_STATUS=17 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres || buck_failure_status="$?"
+[[ "${buck_failure_status}" != 0 ]]
+while IFS= read -r envfile; do [[ ! -e "${envfile}" ]]; done <"${buck_failure_log}.envfiles"
 signal_log="${scratch}/signal.log"
 PATH="${fake_bin}:${PATH}" HARNESS_LOG="${signal_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_BUCK_SLEEP=1 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres &
 harness_pid=$!
@@ -342,5 +429,101 @@ for case, target, supplied in [
     assert not marker.exists(), "environment value was evaluated as shell code"
     assert not pathlib.Path(forwarded["CONSOLE_BUCK_POSTGRES_ENV_FILE"]).exists(), "credential cleanup omitted"
 PY_BROWSER_ENV
+
+# Preserve every preceding contract; add ownership assertions at the end so the
+# baseline reports all eight new histories instead of stopping at the first RED.
+lifecycle_failures=0; lifecycle_executed=0
+lifecycle_case() {
+  local name="$1"; shift
+  lifecycle_executed=$((lifecycle_executed + 1))
+  if "$@"; then echo "owned-lifecycle ${name}: PASS"; else
+    echo "owned-lifecycle ${name}: FAIL" >&2
+    lifecycle_failures=$((lifecycle_failures + 1))
+  fi
+}
+assert_owned_cleanup() {
+  python3 - "$1" "$2" "$3" <<'PY_OWNED'
+import pathlib, shlex, sys
+p = pathlib.Path(sys.argv[1]); actual, expected = map(int, sys.argv[2:])
+assert actual == expected, "primary status changed"
+rows = [shlex.split(line) for line in p.read_text().splitlines() if line.startswith("docker rm ")]
+assert len(rows) == 1, "exactly one owned removal required"
+args = rows[0][2:]; flags = [a for a in args if a.startswith("-")]
+targets = [a for a in args if not a.startswith("-")]
+cid = pathlib.Path(str(p) + ".created-cid").read_text().strip()
+assert targets == [cid], "OWNED_RETURNED_CID_ONLY_REQUIRED"
+assert any(a == "--force" or (a.startswith("-") and not a.startswith("--") and "f" in a) for a in flags)
+assert any(a == "--volumes" or (a.startswith("-") and not a.startswith("--") and "v" in a) for a in flags), "OWNED_ANONYMOUS_VOLUME_CLEANUP_REQUIRED"
+assert not pathlib.Path(str(p) + ".owned-container-present").exists()
+assert not pathlib.Path(str(p) + ".owned-volume-present").exists()
+assert not list(p.parent.glob("console-buck-postgres-container.*")), "container credentials survived"
+assert not list(p.parent.glob("console-buck-postgres-env.*")), "test credentials survived"
+record = pathlib.Path(str(p) + ".cidfile")
+assert record.exists(), "private native CID path must be recorded"
+cidfile = pathlib.Path(record.read_text().strip())
+assert not cidfile.exists() and not cidfile.is_symlink(), "CID file survived"
+assert not cidfile.parent.exists(), "private CID directory survived"
+PY_OWNED
+}
+lifecycle_case success assert_owned_cleanup "${log}" 0 0
+lifecycle_case setup-failure assert_owned_cleanup "${setup_failure_log}" "${setup_failure_status}" 23
+lifecycle_case buck-failure assert_owned_cleanup "${buck_failure_log}" "${buck_failure_status}" 17
+lifecycle_case term assert_owned_cleanup "${signal_log}" "${signal_status}" 143
+
+creation_failure_log="${scratch}/creation-failure.log"; creation_failure_status=0
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${creation_failure_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_DOCKER_RUN_STATUS=125 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres || creation_failure_status="$?"
+lifecycle_case failed-creation-preserves-preexisting python3 - "${creation_failure_log}" "${creation_failure_status}" <<'PY_CREATION'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1])
+assert int(sys.argv[2]) == 125
+assert pathlib.Path(str(p) + ".preexisting-container-present").exists(), "preexisting container deleted"
+assert not any(line.startswith("docker rm ") for line in p.read_text().splitlines()), "failed creation attempted removal"
+assert not any(line.startswith("buck ") for line in p.read_text().splitlines())
+assert not list(p.parent.glob("console-buck-postgres-container.*"))
+assert not list(p.parent.glob("console-buck-postgres-env.*"))
+record = pathlib.Path(str(p) + ".cidfile")
+assert record.exists(), "private native CID path must be recorded"
+cidfile = pathlib.Path(record.read_text().strip())
+assert not cidfile.exists() and not cidfile.is_symlink(), "CID file survived"
+assert not cidfile.parent.exists(), "private CID directory survived"
+PY_CREATION
+
+for primary_status in 0 17; do
+  removal_failure_log="${scratch}/removal-failure-${primary_status}.log"; removal_failure_status=0
+  PATH="${fake_bin}:${PATH}" HARNESS_LOG="${removal_failure_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_DOCKER_RM_STATUS=42 FAKE_BUCK_TEST_STATUS="${primary_status}" "${harness}" //tools/buck:pr473-ontology-key-revision-postgres >"${removal_failure_log}.output" 2>&1 || removal_failure_status="$?"
+  lifecycle_case "removal-failure-primary-${primary_status}" python3 - "${removal_failure_log}" "${removal_failure_status}" "${primary_status}" <<'PY_RM_FAILURE'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1]); actual, primary = map(int, sys.argv[2:])
+assert actual == primary if primary else actual != 0, "cleanup failure claimed success or masked primary failure"
+output = pathlib.Path(str(p) + ".output").read_text()
+assert "buck-postgres: owned disposable PostgreSQL cleanup failed" in output, "cleanup failure needs a fixed diagnostic"
+assert "fake-rm-private" not in output and "postgres://" not in output and "secret-password" not in output
+assert pathlib.Path(str(p) + ".owned-container-present").exists()
+assert pathlib.Path(str(p) + ".owned-volume-present").exists()
+assert not list(p.parent.glob("console-buck-postgres-container.*")), "container credentials survived failed removal"
+assert not list(p.parent.glob("console-buck-postgres-env.*")), "test credentials survived failed removal"
+record = pathlib.Path(str(p) + ".cidfile")
+assert record.exists(), "private native CID path must be recorded"
+cidfile = pathlib.Path(record.read_text().strip())
+assert not cidfile.exists() and not cidfile.is_symlink(), "CID file survived"
+assert not cidfile.parent.exists(), "private CID directory survived"
+PY_RM_FAILURE
+done
+
+creation_signal_log="${scratch}/creation-signal.log"
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${creation_signal_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" FAKE_DOCKER_RUN_PAUSE_BEFORE_STDOUT=1 "${harness}" //tools/buck:pr473-ontology-key-revision-postgres &
+creation_harness_pid=$!
+for _ in {1..50}; do [[ -s "${creation_signal_log}.dockerpid" && -e "${creation_signal_log}.run-ready" ]] && break; sleep 0.1; done
+[[ -s "${creation_signal_log}.dockerpid" && -e "${creation_signal_log}.run-ready" ]]
+creation_docker_pid="$(cat "${creation_signal_log}.dockerpid")"
+# The fixture models a process-group TERM after Docker created/wrote the native
+# CID but before stdout or command-substitution assignment can return it.
+kill -TERM "${creation_harness_pid}" "${creation_docker_pid}"
+creation_signal_status=0
+wait "${creation_harness_pid}" || creation_signal_status="$?"
+! kill -0 "${creation_docker_pid}" 2>/dev/null
+lifecycle_case term-during-creation assert_owned_cleanup "${creation_signal_log}" "${creation_signal_status}" 143
+printf 'owned-lifecycle: discovered=8 executed=%s failures=%s\n' "${lifecycle_executed}" "${lifecycle_failures}"
+[[ "${lifecycle_executed}" == 8 && "${lifecycle_failures}" == 0 ]]
 
 echo 'test_needs_postgres: PASS'
