@@ -14,6 +14,8 @@ fi
 database="console_buck_test_$$_contract"
 container_env_file=""
 test_env_file=""
+container_cid_dir=""
+container_cid_file=""
 active_buck_pid=""
 exact_test="${CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT:-}"
 if [[ -n "${exact_test}" && ! "${exact_test}" =~ ^[[:alnum:]_:]+$ ]]; then
@@ -30,9 +32,27 @@ for arg in "$@"; do
 done
 
 cleanup() {
-  docker rm -f "${container_name}" >/dev/null 2>&1 || true
-  [[ -z "${container_env_file}" ]] || rm -f "${container_env_file}"
-  [[ -z "${test_env_file}" ]] || rm -f "${test_env_file}"
+  local status="$?" failed=0 cid=""
+  trap - EXIT
+  if [[ -n "${container_cid_file}" && -s "${container_cid_file}" ]]; then
+    if [[ -f "${container_cid_file}" && ! -L "${container_cid_file}" ]]; then
+      cid="$(<"${container_cid_file}")"
+    fi
+    if [[ "${cid}" =~ ^[0-9a-f]{64}$ ]]; then
+      docker rm -f -v "${cid}" >/dev/null 2>&1 || failed=1
+    else
+      failed=1
+    fi
+  fi
+  [[ -z "${container_env_file}" ]] || rm -f "${container_env_file}" 2>/dev/null || failed=1
+  [[ -z "${test_env_file}" ]] || rm -f "${test_env_file}" 2>/dev/null || failed=1
+  [[ -z "${container_cid_file}" ]] || rm -f "${container_cid_file}" 2>/dev/null || failed=1
+  [[ -z "${container_cid_dir}" ]] || rmdir "${container_cid_dir}" 2>/dev/null || failed=1
+  if ((failed)); then
+    echo "buck-postgres: owned disposable PostgreSQL cleanup failed" >&2
+    [[ "${status}" != 0 ]] || status=1
+  fi
+  exit "${status}"
 }
 
 on_signal() {
@@ -70,6 +90,9 @@ for ((i = 0; i < ${#passwords[@]}; i++)); do
 done
 
 umask 077
+container_cid_dir="$(mktemp -d "${TMPDIR:-/tmp}/console-buck-postgres-cid.XXXXXX")"
+chmod 700 "${container_cid_dir}"
+container_cid_file="${container_cid_dir}/container.cid"
 container_env_file="$(mktemp "${TMPDIR:-/tmp}/console-buck-postgres-container.XXXXXX")"
 chmod 600 "${container_env_file}"
 {
@@ -111,7 +134,7 @@ if ! docker image inspect "${postgres_image}" >/dev/null 2>&1; then
 fi
 
 docker run -d --rm --name "${container_name}" -p 127.0.0.1::5432 \
-  --env-file "${container_env_file}" "${postgres_image}" \
+  --cidfile "${container_cid_file}" --env-file "${container_env_file}" "${postgres_image}" \
   -c fsync=off -c synchronous_commit=off -c full_page_writes=off >/dev/null
 docker cp "${repo_root}/ops/postgres-reconcile-topology.sh" "${container_name}:/topology.sh"
 docker cp "${container_env_file}" "${container_name}:/topology.env"
