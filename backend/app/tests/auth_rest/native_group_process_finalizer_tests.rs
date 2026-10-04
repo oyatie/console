@@ -678,6 +678,8 @@ mod native_group_process_finalizer_tests {
             .expect("refusal evidence write failed");
         output.flush().expect("refusal evidence flush failed");
     }
+    include!("native_group_navigation_correction_tests.rs");
+
     #[cfg(feature = "test-browser")]
     include!("native_group_process_browser_fixture.rs");
 }
