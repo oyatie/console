@@ -7812,9 +7812,86 @@ def native_group_process_custody_files():
     }
 
 
+# Additive navigation correction: frozen v1 custody remains independently valid.
+NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE = 'ops/native-group-process/navigation-head-revision-v1.sql'
+NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE_SHA256 = '83164dd8ac21cc30bbb7e6ed07c37fa184b148c4377fde22414740483cdb2f90'
+NATIVE_GROUP_PROCESS_NAVIGATION_PHASE_PAIRS = (
+    ('plain',
+     'ec5c2d1523e69520ac32f3d253c1c222d52e1b01bba12040328502ab319d6862',
+     '3f5972d2e5c1d7277e71b4f716b79a405d152ca5bbab25b614dbc1fc67c5fd7f'),
+    ('observer',
+     'cda9967f7b8b267e5294551314c80fd9fc1795f962450b7b0f3d6353f11043a6',
+     '304e176d646edf62e8767a9f986879abc74753a3b2a8812c1a8cec8447a20b78'),
+)
+
+
+def native_group_process_navigation_custody_files():
+    import json
+    pairs = NATIVE_GROUP_PROCESS_NAVIGATION_PHASE_PAIRS
+    if (not isinstance(pairs, tuple) or len(pairs) != 2
+            or any(not isinstance(row, tuple) or len(row) != 3 for row in pairs)
+            or hashlib.sha256(json.dumps(pairs, separators=(',', ':')).encode()).hexdigest()
+            != '00b0e19c4be0978b0ed9c3c0f21cc119890a9cbb28ed0f41bab94fde452534bd'):
+        raise SystemExit('Native Group navigation requires the reviewed measured phase pairs')
+    # Reuse all original14/compiled3/capture/complete231 input validation.
+    prior, capture, owner, _ = native_group_process_custody_inputs()
+    if tuple((row[0], row[1]) for row in pairs) != tuple((row[0], row[2]) for row in prior):
+        raise SystemExit('Native Group navigation predecessors differ from accepted v1 installed profiles')
+    raw = company_provenance_regular_path(
+        NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE, required=True).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE_SHA256:
+        raise SystemExit('Native Group navigation correction differs from reviewed bytes')
+    header = 'CREATE FUNCTION public.identity_native_group_process_navigation_candidates_v1(\n'
+    terminator = '\n$body$;\n'
+    if owner.count(header) != 1:
+        raise SystemExit('Native Group navigation original function boundary drift')
+    remainder = owner.split(header, 1)[1]
+    original = header + remainder[:remainder.index(terminator) + len(terminator)]
+    if (hashlib.sha256(original.encode()).hexdigest()
+            != '2e58ddbe2c6d4ee8b82f6a96aec9d8343a97a6db9d7074759d17c9d8bf38c1db'
+            or 'v_navigation_head_revision' in original):
+        raise SystemExit('Native Group navigation original function differs')
+    corrected = original.replace('CREATE FUNCTION', 'CREATE OR REPLACE FUNCTION', 1)
+    for before, after, count in (
+        ('head_revision bigint', 'v_navigation_head_revision bigint', 1),
+        ('head_revision:=', 'v_navigation_head_revision:=', 5),
+        ('<>head_revision::numeric', '<>v_navigation_head_revision::numeric', 2),
+        ('IF head_revision>0', 'IF v_navigation_head_revision>0', 2),
+        ('h.head_revision<=head_revision ORDER BY h.head_revision',
+         'h.head_revision<=v_navigation_head_revision ORDER BY h.head_revision', 1),
+    ):
+        if corrected.count(before) != count:
+            raise SystemExit('Native Group navigation exact local rename boundary drift')
+        corrected = corrected.replace(before, after)
+    inverse = corrected.replace('v_navigation_head_revision', 'head_revision').replace(
+        'CREATE OR REPLACE FUNCTION', 'CREATE FUNCTION', 1)
+    if corrected.count('v_navigation_head_revision') != 11 or inverse != original or raw != corrected.encode():
+        raise SystemExit('Native Group navigation correction must preserve the exact eleven-site inverse')
+    # Keep the frozen serializer and existing bounded paired-query construction.
+    # Only the rights verdict, installed-v1 maintenance branch and state prefix
+    # differ; neither historical query/output nor its accepted profile changes.
+    query = native_group_process_state_query(pairs, capture)
+    for before, after, count in (
+        ('AND f.native_group_process_startup_rights_valid IS FALSE',
+         'AND f.native_group_process_startup_rights_valid IS TRUE', 1),
+        ("  AND (SELECT valid FROM namespace_absence) IS TRUE\n THEN 'native_group_process.install_required'",
+         " THEN 'native_group_process.head_revision_required'", 1),
+        ("'native_group_process.", "'native_group_process_navigation.", 4),
+    ):
+        if query.count(before) != count:
+            raise SystemExit('Native Group navigation classifier boundary drift')
+        query = query.replace(before, after)
+    return {
+        'ops/postgres-native-group-process-navigation-v1-custody-state.sql': query,
+        'backend/app/src/native_group_process_navigation_v1_custody_state.sql': query,
+    }
+
+
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-group-process-custody'], ['--native-group-process-custody', '--check'],
+    if arguments in (['--native-group-process-navigation-custody'],
+                     ['--native-group-process-navigation-custody', '--check'],
+                     ['--native-group-process-custody'], ['--native-group-process-custody', '--check'],
                      ['--native-group-process-capture'], ['--native-group-process-capture', '--check'],
                      ['--company-provenance-capture'], ['--company-provenance-capture', '--check'],
                      ['--company-provenance-custody'], ['--company-provenance-custody', '--check'],
@@ -7822,7 +7899,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-group-process-custody':
+        if arguments[0] == '--native-group-process-navigation-custody':
+            files = native_group_process_navigation_custody_files()
+        elif arguments[0] == '--native-group-process-custody':
             files = native_group_process_custody_files()
         elif arguments[0] == '--native-group-process-capture':
             files = native_group_process_capture_files()
@@ -7843,7 +7922,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:

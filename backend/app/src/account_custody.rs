@@ -14,11 +14,15 @@ pub(crate) enum VerifiedCustodyProfile {
     // Exact Directory predecessor or classifier-only successor; OrgUnit closed.
     NativeOrgBridgeCompatible,
     NativeGroupProcess,
+    NativeGroupProcessNavigation,
 }
 
 impl VerifiedCustodyProfile {
     pub(crate) fn supports_native_group_process(self) -> bool {
-        matches!(self, Self::NativeGroupProcess)
+        matches!(
+            self,
+            Self::NativeGroupProcess | Self::NativeGroupProcessNavigation
+        )
     }
     pub(crate) fn supports_native_directory(self) -> bool {
         matches!(
@@ -26,6 +30,7 @@ impl VerifiedCustodyProfile {
             Self::NativePeopleDirectoryRowLock
                 | Self::NativeOrgBridgeCompatible
                 | Self::NativeGroupProcess
+                | Self::NativeGroupProcessNavigation
         )
     }
     pub(crate) fn requires_current_company_provenance(self) -> bool {
@@ -34,6 +39,7 @@ impl VerifiedCustodyProfile {
             Self::NativePeopleDirectoryRowLock
                 | Self::NativeOrgBridgeCompatible
                 | Self::NativeGroupProcess
+                | Self::NativeGroupProcessNavigation
         )
     }
     pub(crate) fn supports_policy(self) -> bool {
@@ -45,6 +51,7 @@ impl VerifiedCustodyProfile {
                 | Self::NativePeopleDirectoryRowLock
                 | Self::NativeOrgBridgeCompatible
                 | Self::NativeGroupProcess
+                | Self::NativeGroupProcessNavigation
         )
     }
     pub(crate) fn supports_people(self) -> bool {
@@ -55,6 +62,7 @@ impl VerifiedCustodyProfile {
                 | Self::NativePeopleDirectoryRowLock
                 | Self::NativeOrgBridgeCompatible
                 | Self::NativeGroupProcess
+                | Self::NativeGroupProcessNavigation
         )
     }
 }
@@ -69,6 +77,15 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let navigation: String = sqlx::query_scalar(include_str!(
+        "native_group_process_navigation_v1_custody_state.sql"
+    ))
+    .fetch_one(&mut *transaction)
+    .await?;
+    if navigation == "native_group_process_navigation.finalized" {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativeGroupProcessNavigation);
+    }
     let group: String =
         sqlx::query_scalar(include_str!("native_group_process_v1_custody_state.sql"))
             .fetch_one(&mut *transaction)
