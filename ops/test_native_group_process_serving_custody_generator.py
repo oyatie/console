@@ -342,5 +342,307 @@ class NativeGroupServingCustodyGeneration(unittest.TestCase):
         self.assertNotRegex(compact(protocol), r'\b(?:INSERT INTO|UPDATE|DELETE FROM|TRUNCATE(?: TABLE)?) public\._sqlx_migrations\b')
 
 
+# Additive navigation correction stage: source input and two read-only
+# classifiers only. Atomic finalizer and runtime acceptance remain separate.
+NAVIGATION_SOURCE = 'ops/native-group-process/navigation-head-revision-v1.sql'
+NAVIGATION_SOURCE_SHA256 = '83164dd8ac21cc30bbb7e6ed07c37fa184b148c4377fde22414740483cdb2f90'
+NAVIGATION_CLASSIFIER = 'ops/postgres-native-group-process-navigation-v1-custody-state.sql'
+NAVIGATION_APP_CLASSIFIER = 'backend/app/src/native_group_process_navigation_v1_custody_state.sql'
+NAVIGATION_ARTIFACTS = {NAVIGATION_CLASSIFIER, NAVIGATION_APP_CLASSIFIER}
+NAVIGATION_PAIRS = (
+    ('plain',
+     'ec5c2d1523e69520ac32f3d253c1c222d52e1b01bba12040328502ab319d6862',
+     '3f5972d2e5c1d7277e71b4f716b79a405d152ca5bbab25b614dbc1fc67c5fd7f'),
+    ('observer',
+     'cda9967f7b8b267e5294551314c80fd9fc1795f962450b7b0f3d6353f11043a6',
+     '304e176d646edf62e8767a9f986879abc74753a3b2a8812c1a8cec8447a20b78'),
+)
+NAVIGATION_FROZEN_SERVING_DEFINITIONS = {
+    'assignment:NATIVE_GROUP_PROCESS_PHASE_PAIRS': '601fae5af5d922be4a3c9775201b61f5b5563fb4fd954f0df24c37184b3fdca3',
+    'assignment:NATIVE_GROUP_PROCESS_CAPTURE_SHA256': 'fc721e25c27c269920aa17c53e99b5f0cb0bf0bb739101bf662473c9cfff7a8a',
+    'function:native_group_process_custody_inputs': 'e02f3c425b19ce5cbc6240fa8140a05cf0132dbba0454da16044afc8b0c72307',
+    'function:native_group_process_state_query': '5bd08193d425e4a91848c931e2bd9bddcd1cb211a2bc840372f46007f4e9ba2e',
+    'function:native_group_process_finalizer_sql': 'baea0f254e05d1fcf8d52abc99dd3e152807750fec2f41bc86c11f48f8a33636',
+    'function:native_group_process_custody_files': '61bd48e6529973d4abf60b231f6df5b52b5460065b43a94ece7492677d5f887c',
+}
+NAVIGATION_FROZEN_SERVING_OUTPUTS = {
+    CLASSIFIER: 'c44e239958fd5e716ddaec66459aba45df783fedf63b1d4d7939425fd018491d',
+    APP_CLASSIFIER: 'c44e239958fd5e716ddaec66459aba45df783fedf63b1d4d7939425fd018491d',
+    FINALIZER: '2f7d9463df35c8f5ffa679ffacff869b8724e2fe042e2bdeadd5498a4e0e8f65',
+}
+
+
+class NativeGroupNavigationCustodyGeneration(unittest.TestCase):
+    def custody(self):
+        entry = getattr(GENERATOR, 'native_group_process_navigation_custody_files', None)
+        self.assertTrue(callable(entry), 'NATIVE_GROUP_NAVIGATION_CUSTODY_FUNCTION_MISSING')
+        files = entry()
+        self.assertEqual(set(files), NAVIGATION_ARTIFACTS,
+                         'this bounded stage generates only the two successor classifiers')
+        self.assertTrue(all(isinstance(value, str) and value for value in files.values()))
+        self.assertEqual(files[NAVIGATION_CLASSIFIER].encode(), files[NAVIGATION_APP_CLASSIFIER].encode())
+        return files
+
+    @staticmethod
+    def normalized_predicate(text):
+        # Only the finite generated predicate grammar below. This does not
+        # parse or establish semantic equivalence for arbitrary SQL.
+        return re.sub(r'\s*(->>|->|::|,|=)\s*', r'\1', compact(text))
+
+    def test_navigation_correction_is_one_exact_function_and_inverse_recovers_original(self):
+        self.custody()  # Missing source is not the admitted missing-generator RED.
+        path = ROOT / NAVIGATION_SOURCE
+        self.assertTrue(path.is_file() and not path.is_symlink(), 'reviewed correction input required')
+        raw = path.read_bytes()
+        self.assertEqual(sha(raw), NAVIGATION_SOURCE_SHA256)
+        owner = (ROOT / OWNER).read_text()
+        self.assertEqual(sha(owner.encode()), INPUT_SHA256[OWNER])
+        header = 'CREATE FUNCTION public.identity_native_group_process_navigation_candidates_v1(\n'
+        terminator = '\n$body$;\n'
+        self.assertEqual(owner.count(header), 1)
+        remainder = owner.split(header, 1)[1]
+        original = header + remainder[:remainder.index(terminator) + len(terminator)]
+        self.assertEqual(sha(original.encode()),
+                         '2e58ddbe2c6d4ee8b82f6a96aec9d8343a97a6db9d7074759d17c9d8bf38c1db')
+        self.assertNotIn('v_navigation_head_revision', original)
+        expected = original.replace('CREATE FUNCTION', 'CREATE OR REPLACE FUNCTION', 1)
+        for before, after, count in (
+            ('head_revision bigint', 'v_navigation_head_revision bigint', 1),
+            ('head_revision:=', 'v_navigation_head_revision:=', 5),
+            ('<>head_revision::numeric', '<>v_navigation_head_revision::numeric', 2),
+            ('IF head_revision>0', 'IF v_navigation_head_revision>0', 2),
+            ('h.head_revision<=head_revision ORDER BY h.head_revision',
+             'h.head_revision<=v_navigation_head_revision ORDER BY h.head_revision', 1),
+        ):
+            self.assertEqual(expected.count(before), count, 'finite independently reviewed rename frame')
+            expected = expected.replace(before, after)
+        self.assertEqual(expected.count('v_navigation_head_revision'), 11)
+        self.assertEqual(raw, expected.encode(), 'no other function, SQL, comments or source bytes')
+        inverse = raw.decode().replace('v_navigation_head_revision', 'head_revision').replace(
+            'CREATE OR REPLACE FUNCTION', 'CREATE FUNCTION', 1)
+        self.assertEqual(inverse, original)
+        self.assertEqual(raw.decode().count('CREATE OR REPLACE FUNCTION'), 1)
+        self.assertEqual(raw.decode().count('AS $body$'), 1)
+        self.assertEqual(raw.decode().count(terminator), 1)
+
+    def test_navigation_two_artifacts_bind_exact_measured_same_variant_pairs_and_raw_capture(self):
+        query = self.custody()[NAVIGATION_CLASSIFIER]
+        self.assertEqual(tuple(GENERATOR.NATIVE_GROUP_PROCESS_NAVIGATION_PHASE_PAIRS), NAVIGATION_PAIRS)
+        self.assertEqual(tuple((row[0], row[1]) for row in NAVIGATION_PAIRS),
+                         tuple((row[0], row[2]) for row in EXPECTED_PAIRS))
+        self.assertEqual(len({digest for row in NAVIGATION_PAIRS for digest in row[1:]}), 4)
+        capture = (ROOT / CAPTURE).read_text().removesuffix(';\n')
+        self.assertEqual(sha((ROOT / CAPTURE).read_bytes()), INPUT_SHA256[CAPTURE])
+        self.assertEqual(query.count(capture), 1, 'one complete frozen raw83 capture, no alternate serializer')
+        self.assertEqual(query.count('WITH wanted(name) AS (VALUES\n'), 1,
+                         'a second independently truncated/modified capture cannot coexist')
+        phases = re.search(
+            r'phase_pairs\s*\(variant\s*,\s*predecessor83\s*,\s*installed83\)'
+            r'\s+AS\s*\((.*?)\n\)', query, re.S)
+        self.assertIsNotNone(phases)
+        rows = re.findall(r"\('([^']+)','([0-9a-f]{64})','([0-9a-f]{64})'\)", compact(phases.group(1)))
+        self.assertEqual(tuple(rows), NAVIGATION_PAIRS)
+        self.assertRegex(compact(phases.group(1)),
+                         r"^VALUES \('[^']+','[0-9a-f]{64}','[0-9a-f]{64}'\), \('[^']+','[0-9a-f]{64}','[0-9a-f]{64}'\)$")
+        for forbidden in (NAVIGATION_SOURCE_SHA256,):
+            self.assertNotIn(forbidden, compact(phases.group(1)),
+                             'a source digest is not an observed database fingerprint')
+
+    def test_navigation_both_phases_require_true_effective_rights(self):
+        query = self.custody()[NAVIGATION_CLASSIFIER]
+        matching = re.search(
+            r'matching_phase(?:\s*\(variant\s*,\s*phase\))?\s+AS\s*\((.*?)\n\),', query, re.S)
+        self.assertIsNotNone(matching)
+        branches = re.split(r'\bUNION ALL\b', compact(matching.group(1)))
+        self.assertEqual(len(branches), 2)
+        observed = set()
+        for branch in branches:
+            aliases = re.search(r'FROM phase_pairs (\w+) CROSS JOIN full83 (\w+)', branch)
+            self.assertIsNotNone(aliases)
+            pair, snapshot = aliases.groups()
+            phase = re.search(r"SELECT " + re.escape(pair)
+                              + r"\.variant\s*,\s*'(installed|predecessor)'(?:\s*::\s*text)?", branch)
+            self.assertIsNotNone(phase)
+            phase = phase.group(1)
+            observed.add(phase)
+            column = 'installed83' if phase == 'installed' else 'predecessor83'
+            expected = (f"SELECT {pair}.variant,'{phase}'::text "
+                        f"FROM phase_pairs {pair} CROSS JOIN full83 {snapshot} "
+                        f"WHERE {snapshot}.snapshot_sha256={pair}.{column} "
+                        f"AND {snapshot}.native_group_process_startup_rights_valid IS TRUE")
+            permitted = {self.normalized_predicate(expected),
+                         self.normalized_predicate(expected.replace(f"'{phase}'::text", f"'{phase}'", 1))}
+            self.assertIn(self.normalized_predicate(branch), permitted,
+                          'the whole match is positive digest equality AND TRUE rights; no negation or alternate condition')
+        self.assertEqual(observed, {'installed', 'predecessor'})
+
+    def test_navigation_unique_match_and_complete_absence_are_only_disclosure_paths(self):
+        query = self.custody()[NAVIGATION_CLASSIFIER]
+        absent = re.search(r'namespace_absence\s+AS\s*\((.*?)\n\)', query, re.S)
+        self.assertIsNotNone(absent)
+        namespaces = contract()['reserved_namespace_expressions']
+        expected_absence = 'SELECT ' + ' AND '.join(
+            "snapshot->>'" + key + "' IS NULL" for key in namespaces) + ' AS valid FROM full83'
+        self.assertEqual(self.normalized_predicate(absent.group(1)),
+                         self.normalized_predicate(expected_absence),
+                         'all four exact namespace-null predicates must be positively AND-conjoined')
+        for expression in namespaces.values():
+            self.assertIn(expression, query)
+        cases = list(re.finditer(r'\bSELECT\s+CASE\b', query))
+        self.assertTrue(cases)
+        tail = compact(query[cases[-1].start():])
+        expected_tail = """SELECT CASE
+ WHEN (SELECT count(*) FROM matching_phase)=1
+  AND (SELECT phase FROM matching_phase)='installed'
+ THEN 'native_group_process_navigation.finalized'
+ WHEN (SELECT count(*) FROM matching_phase)=1
+  AND (SELECT phase FROM matching_phase)='predecessor'
+ THEN 'native_group_process_navigation.head_revision_required'
+ WHEN (SELECT count(*) FROM matching_phase)=0
+  AND (SELECT valid FROM namespace_absence) IS TRUE
+ THEN 'native_group_process_navigation.absent'
+ ELSE 'native_group_process_navigation.profile_mismatch' END AS state;"""
+        self.assertEqual(self.normalized_predicate(tail), self.normalized_predicate(expected_tail),
+                         'complete dispatch requires exact positive phase equality, unique matching and bounded absence fallback')
+
+    def test_navigation_preserves_all_existing_definitions_defaults_sources_pairs_and_outputs(self):
+        files = self.custody()
+        expected = contract()
+        frozen = {**expected['historical_generator_definitions'], **FROZEN_GROUP_DEFINITIONS,
+                  **NAVIGATION_FROZEN_SERVING_DEFINITIONS}
+        self.assertEqual(len(frozen), 146)
+        actual = definition_hashes(SCRIPT.read_text())
+        for key, digest in frozen.items():
+            self.assertEqual(actual.get(key), digest, key)
+        defaults = GENERATOR.generated_files()
+        self.assertEqual(set(defaults), set(expected['historical_default_outputs']))
+        self.assertFalse(set(defaults) & set(files), 'successor is opt-in, never a default rewrite')
+        for name, digest in expected['historical_default_outputs'].items():
+            self.assertEqual(sha(defaults[name].encode()), digest, name)
+            self.assertEqual(sha((ROOT / name).read_bytes()), digest, name)
+        self.assertEqual(tuple(GENERATOR.NATIVE_GROUP_PROCESS_PHASE_PAIRS), EXPECTED_PAIRS)
+        current = GENERATOR.native_group_process_custody_files()
+        self.assertEqual(set(current), set(NAVIGATION_FROZEN_SERVING_OUTPUTS))
+        for name, digest in NAVIGATION_FROZEN_SERVING_OUTPUTS.items():
+            self.assertEqual(sha(current[name].encode()), digest, name)
+            self.assertEqual(sha((ROOT / name).read_bytes()), digest, name)
+        for row in expected['group_sql_sources'] + expected['compiled_source_identity']:
+            self.assertEqual(sha((ROOT / row['path']).read_bytes()), row['sha256'], row['path'])
+        ledger = (ROOT / LEDGER).read_bytes()
+        self.assertEqual(len(ledger.splitlines()), 231)
+        self.assertEqual(sha(ledger), INPUT_SHA256[LEDGER])
+        self.assertEqual(sha(b''.join(ledger.splitlines(keepends=True)[:230])),
+                         '25e02488cdaf864f6d15ee21d62df98eb263bb82de1e2a283470ca659d160325')
+
+    def test_navigation_malformed_duplicate_mixed_and_unmeasured_pairs_are_refused(self):
+        self.custody()
+        plain, observer = NAVIGATION_PAIRS
+        cases = {
+            'missing': (), 'one_variant': (plain,), 'wrong_width': (plain[:2], observer),
+            'duplicate_variant': (plain, ('plain', *observer[1:])), 'wrong_order': (observer, plain),
+            'duplicate_hash': (plain, ('observer', plain[1], observer[2])),
+            'null_hash': (('plain', None, plain[2]), observer),
+            'short_hash': (('plain', plain[1][:-1], plain[2]), observer),
+            'uppercase_hash': (('plain', plain[1].upper(), plain[2]), observer),
+            'nonhex_hash': (('plain', 'g' * 64, plain[2]), observer),
+            'reversed_phases': (('plain', plain[2], plain[1]), observer),
+            'mixed_corrected_variant': (('plain', plain[1], observer[2]), ('observer', observer[1], plain[2])),
+            'mixed_predecessor_variant': (('plain', observer[1], plain[2]), ('observer', plain[1], observer[2])),
+            'unmeasured_valid_hash': (('plain', plain[1], '0' * 64), observer),
+            'old_absent_predecessor': (('plain', EXPECTED_PAIRS[0][1], plain[2]), observer),
+            'equal_phases': (('plain', plain[1], plain[1]), observer),
+            'list_instead_of_tuple': [plain, observer],
+        }
+        for name, value in cases.items():
+            with self.subTest(corruption=name), patch.object(
+                    GENERATOR, 'NATIVE_GROUP_PROCESS_NAVIGATION_PHASE_PAIRS', value):
+                with self.assertRaises((SystemExit, ValueError), msg=name):
+                    GENERATOR.native_group_process_navigation_custody_files()
+
+    def test_navigation_corrupted_inputs_and_pins_are_refused_after_positive_generation(self):
+        self.custody()
+        expected = contract()
+        migrations = sorted((ROOT / 'backend/crates/platform/db/migrations').glob('*.sql'))
+        self.assertEqual(len(migrations), 231)
+        names = [row['path'] for row in expected['group_sql_sources'] + expected['compiled_source_identity']]
+        names += [OWNER, CAPTURE, LEDGER, str(migrations[0].relative_to(ROOT)),
+                  str(migrations[-1].relative_to(ROOT)), NAVIGATION_SOURCE]
+        self.assertEqual((len(names), len(set(names))), (23, 23))
+        original = GENERATOR.company_provenance_regular_path
+        for name in names:
+            for corruption in ('changed', 'missing', 'symlink'):
+                with self.subTest(source=name, corruption=corruption), tempfile.TemporaryDirectory() as temporary:
+                    target = Path(temporary) / 'mutated-input'
+                    raw = (ROOT / name).read_bytes()
+                    if corruption == 'changed':
+                        target.write_bytes(raw + b'\n')
+                    elif corruption == 'symlink':
+                        retained = Path(temporary) / 'retained-exact-input'
+                        retained.write_bytes(raw)
+                        target.symlink_to(retained)
+                    def regular(requested, *, required):
+                        if requested == name:
+                            self.assertTrue(required, 'all correction and original inputs are mandatory')
+                            if target.is_symlink() or not target.is_file():
+                                raise SystemExit('mutated input is not a regular file')
+                            return target
+                        return original(requested, required=required)
+                    with patch.object(GENERATOR, 'company_provenance_regular_path', side_effect=regular):
+                        with self.assertRaises((SystemExit, ValueError), msg=name + '/' + corruption):
+                            GENERATOR.native_group_process_navigation_custody_files()
+        for attribute in ('NATIVE_GROUP_PROCESS_SOURCE_SHA256',
+                          'NATIVE_GROUP_PROCESS_COMPILED_SOURCE_SHA256', 'NATIVE_GROUP_PROCESS_CAPTURE_SHA256'):
+            pins = getattr(GENERATOR, attribute)
+            for name in pins:
+                with self.subTest(pin=attribute, source=name), patch.dict(pins, {name: '0' * 64}):
+                    with self.assertRaises((SystemExit, ValueError), msg=attribute + '/' + name):
+                        GENERATOR.native_group_process_navigation_custody_files()
+        self.assertEqual(GENERATOR.NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE_SHA256, NAVIGATION_SOURCE_SHA256)
+        with patch.object(GENERATOR, 'NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE_SHA256', '0' * 64):
+            with self.assertRaises((SystemExit, ValueError)):
+                GENERATOR.native_group_process_navigation_custody_files()
+
+    def test_navigation_cli_is_explicit_two_artifact_opt_in_with_exact_check(self):
+        files = self.custody()
+        with tempfile.TemporaryDirectory() as temporary:
+            paths = {name: Path(temporary) / Path(name).name for name in files}
+            self.assertEqual(len(set(paths.values())), 2)
+            def output_path(name, *, required):
+                self.assertIn(name, files)
+                self.assertFalse(required)
+                return paths[name]
+            with patch.object(GENERATOR, 'native_group_process_navigation_custody_files', return_value=files) as selected, \
+                    patch.object(GENERATOR, 'company_provenance_regular_path', side_effect=output_path), \
+                    patch.object(GENERATOR, 'generated_files', side_effect=AssertionError('opt-in may not select defaults')):
+                with patch.object(GENERATOR.sys, 'argv', [str(SCRIPT), '--native-group-process-navigation-custody']):
+                    GENERATOR.main()
+                self.assertEqual(selected.call_count, 1)
+                for name, path in paths.items():
+                    self.assertEqual(path.read_bytes(), files[name].encode())
+                with patch.object(GENERATOR.sys, 'argv',
+                                  [str(SCRIPT), '--native-group-process-navigation-custody', '--check']):
+                    GENERATOR.main()
+                self.assertEqual(selected.call_count, 2)
+                damaged = paths[NAVIGATION_CLASSIFIER]
+                damaged.write_bytes(damaged.read_bytes() + b'\n')
+                with patch.object(GENERATOR.sys, 'argv',
+                                  [str(SCRIPT), '--native-group-process-navigation-custody', '--check']):
+                    with self.assertRaises(SystemExit):
+                        GENERATOR.main()
+                self.assertEqual(selected.call_count, 3)
+                damaged.write_bytes(files[NAVIGATION_CLASSIFIER].encode())
+                paths[NAVIGATION_APP_CLASSIFIER].unlink()
+                with patch.object(GENERATOR.sys, 'argv',
+                                  [str(SCRIPT), '--native-group-process-navigation-custody', '--check']):
+                    with self.assertRaises(SystemExit):
+                        GENERATOR.main()
+                self.assertEqual(selected.call_count, 4)
+                paths[NAVIGATION_APP_CLASSIFIER].write_bytes(files[NAVIGATION_APP_CLASSIFIER].encode())
+                with patch.object(GENERATOR.sys, 'argv',
+                                  [str(SCRIPT), '--native-group-process-navigation-custody', '--check']):
+                    GENERATOR.main()
+                self.assertEqual(selected.call_count, 5, 'positive check follows each independently repaired fault')
+
+
 if __name__ == '__main__':
     unittest.main()
