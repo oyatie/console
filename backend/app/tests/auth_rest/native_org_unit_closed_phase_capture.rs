@@ -335,6 +335,7 @@ mod native_org_unit_closed_phase_capture {
         writeln!(&mut output, "ORG_UNIT_CLOSED_PHASE_DIAGNOSTIC_COMPLETE variants=2 original73_rights=true wider76_raw_rights=false added3_table_checks=24 added3_column_checks=80 rollback=verified acceptance=not_claimed").expect("completion write failed");
         output.flush().expect("diagnostic evidence flush failed");
     }
+    include!("native_group_process_full83_phase_capture.rs");
 }
 
 // Actual isolated metadata protocol tests, separate from the frozen diagnostic.
@@ -1737,4 +1738,7 @@ mod native_org_unit_closed_finalizer_tests {
     }
 
     include!("native_org_unit_closed_serving.rs");
+    include!("native_group_process_finalizer_tests.rs");
+    #[cfg(feature = "test-browser")]
+    pub(in super::super::super) use native_group_process_finalizer_tests::prepare_native_group_browser_database;
 }

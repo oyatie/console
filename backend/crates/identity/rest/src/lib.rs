@@ -19,6 +19,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod company;
+pub mod group_process;
 mod openapi;
 pub use openapi::OPENAPI_FRAGMENT;
 

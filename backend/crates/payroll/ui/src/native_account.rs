@@ -12,6 +12,12 @@ pub struct CompanyPolicyNavigation {
     pub show_payroll_navigation: bool,
 }
 
+/// Only finalized current Group-owner projections may populate this list.
+pub struct GroupNavigation {
+    pub group: String,
+    pub label: String,
+}
+
 pub struct TermsItem {
     pub kind: String,
     pub title: String,
@@ -94,7 +100,11 @@ fn AttemptStatus() -> impl IntoView {
     }
 }
 
-fn body(page: Page, policy_navigation: &CompanyPolicyNavigation) -> AnyView {
+fn body(
+    page: Page,
+    policy_navigation: &CompanyPolicyNavigation,
+    groups: Vec<GroupNavigation>,
+) -> AnyView {
     match page {
         Page::Public => view! {
             <section class="entry-card welcome">
@@ -175,7 +185,7 @@ fn body(page: Page, policy_navigation: &CompanyPolicyNavigation) -> AnyView {
             let workspace = match context {
                 ContextState::Companies(companies) => view! {
                     <section class="workspace-state" data-context-state="populated">
-                        <h2>"내 업무 공간"</h2>
+                        <h2>"회사 업무 공간"</h2>
                         <ul>{companies.into_iter().map(|(id, name)| view! {
                             <li><a href=format!("/companies/{id}")>{name}</a></li>
                         }).collect_view()}</ul>
@@ -183,26 +193,38 @@ fn body(page: Page, policy_navigation: &CompanyPolicyNavigation) -> AnyView {
                 }.into_any(),
                 ContextState::Empty => view! {
                     <section class="workspace-state" data-context-state="empty">
-                        <span class="state-label">"연결된 업무 공간 없음"</span>
+                        <span class="state-label">"연결된 회사 없음"</span>
                         <h2>"계정은 준비되었습니다"</h2>
-                        <p>"현재 이 계정으로 접근할 수 있는 업무 공간이 없습니다. 업무 접근 권한이 연결되면 이곳에서 이어갈 수 있습니다."</p>
+                        <p>"현재 이 계정으로 접근할 수 있는 회사 업무 공간이 없습니다. 업무 접근 권한이 연결되면 이곳에서 이어갈 수 있습니다."</p>
                         <a href="/account">"다시 확인"</a>
                     </section>
                 }.into_any(),
                 ContextState::Unavailable => view! {
                     <section class="workspace-state" data-context-state="unavailable" role="alert">
                         <span class="state-label">"다시 확인이 필요합니다"</span>
-                        <h2>"업무 공간을 확인할 수 없습니다"</h2>
-                        <p>"계정 로그인은 확인했지만 업무 접근 정보를 불러오지 못했습니다. 잠시 후 다시 확인해 주세요."</p>
+                        <h2>"회사 업무 공간을 확인할 수 없습니다"</h2>
+                        <p>"계정 로그인은 확인했지만 회사 업무 접근 정보를 불러오지 못했습니다. 잠시 후 다시 확인해 주세요."</p>
                         <a href="/account">"다시 확인"</a>
                     </section>
                 }.into_any(),
             };
+            let group_work = (!groups.is_empty()).then(|| view! {
+                <section class="workspace-state" aria-labelledby="account-group-work-title">
+                    <h2 id="account-group-work-title">"그룹 관리"</h2>
+                    <ul>{groups.into_iter().map(|group| view! {
+                        <li>
+                            <p>{group.label}</p>
+                            <a href=format!("/groups/{}/identity", group.group)>"그룹 신원 확인"</a>
+                        </li>
+                    }).collect_view()}</ul>
+                </section>
+            }.into_any());
             view! {
                 <section class="entry-card" data-account-state="active">
                     <p class="eyebrow">"내 CONSOLE"</p>
                     <h1>"계정에 로그인했습니다"</h1>
                     {workspace}
+                    {group_work}
                     {setup}
                     {can_logout.then(|| view! {
                         <form data-native-action="logout" class="logout-form">
@@ -449,6 +471,14 @@ pub fn render_with_policy_navigation(
     page: Page,
     policy_navigation: CompanyPolicyNavigation,
 ) -> String {
+    render_with_navigation(page, policy_navigation, Vec::new())
+}
+
+fn render_with_navigation(
+    page: Page,
+    policy_navigation: CompanyPolicyNavigation,
+    groups: Vec<GroupNavigation>,
+) -> String {
     let company_workspace = matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. });
     let title = match &page {
         Page::Public => "Console · 업무의 연결",
@@ -517,7 +547,7 @@ pub fn render_with_policy_navigation(
             payroll.then(|| (format!("/companies/{org_id}/payroll"), false)),
         )
     });
-    let content = body(page, &policy_navigation);
+    let content = body(page, &policy_navigation, groups);
     if company_workspace {
         let html = view! {
             <html lang="ko"><head><meta charset="utf-8"/>
@@ -563,13 +593,32 @@ pub fn document_with_policy_navigation(
     status: axum::http::StatusCode,
     navigation: CompanyPolicyNavigation,
 ) -> axum::response::Response {
+    document_with_navigation(page, status, navigation, Vec::new())
+}
+
+#[cfg(feature = "ssr")]
+pub fn document_with_group_navigation(
+    page: Page,
+    status: axum::http::StatusCode,
+    groups: Vec<GroupNavigation>,
+) -> axum::response::Response {
+    document_with_navigation(page, status, CompanyPolicyNavigation::default(), groups)
+}
+
+#[cfg(feature = "ssr")]
+fn document_with_navigation(
+    page: Page,
+    status: axum::http::StatusCode,
+    navigation: CompanyPolicyNavigation,
+    groups: Vec<GroupNavigation>,
+) -> axum::response::Response {
     let policy = if matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. }) {
         "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
     } else {
         "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
     };
     super::ssr::private_document(
-        render_with_policy_navigation(page, navigation),
+        render_with_navigation(page, navigation, groups),
         status,
         policy,
     )

@@ -388,6 +388,10 @@ keys = [prefix + "_" + suffix for prefix in prefixes for suffix in ("DRIVER", "S
 base = dict(os.environ)
 for key in keys:
     base.pop(key, None)
+# Group descriptor transport is independently exercised below; keep these
+# historical browser cases independent of ambient public descriptor settings.
+base.pop("CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR", None)
+base.pop("CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256", None)
 marker = scratch / "browser-env-must-not-execute"
 public_values = {}
 for prefix in prefixes:
@@ -559,5 +563,89 @@ PY_CID_FAULT
 done
 printf 'owned-lifecycle: discovered=11 executed=%s failures=%s\n' "${lifecycle_executed}" "${lifecycle_failures}"
 [[ "${lifecycle_executed}" == 11 && "${lifecycle_failures}" == 0 ]]
+
+# Public Group source descriptor transport only: these are not credential keys
+# or compiler inputs. The real harness hands them to the existing browser
+# wrappers; the unchanged Rust Group leaf owns descriptor/custody validation.
+# Mock Docker/Buck handoff proves forwarding only, never native Group acceptance.
+python3 - "${scratch}" "${fake_bin}" "${harness}" <<'PY_GROUP_DESCRIPTOR_ENV'
+import json, os, pathlib, subprocess, sys
+scratch, fake_bin, harness = map(pathlib.Path, sys.argv[1:])
+keys = ["CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR",
+        "CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256"]
+legacy = [prefix + "_" + suffix for prefix in
+          ("CONSOLE_BROWSER_JOURNEY", "CONSOLE_COMPANY_BROWSER",
+           "CONSOLE_COMPANY_PREVIEW_BROWSER", "CONSOLE_HYDRATION_BROWSER")
+          for suffix in ("DRIVER", "SHA256", "OUTPUT")]
+unknown = {keys[0] + "_EXTRA": "must-not-be-forwarded",
+           keys[1] + "_EXTRA": "must-not-be-forwarded",
+           "CONSOLE_GROUP_PROCESS_ARBITRARY": "must-not-be-forwarded"}
+base = dict(os.environ)
+for key in keys + legacy + list(unknown):
+    base.pop(key, None)
+marker = scratch / "group-descriptor-env-must-not-execute"
+# Spaces, command-substitution spelling, a semicolon and an equals sign must
+# survive as one literal argument. No shell evaluation may create this marker.
+public_values = {
+    keys[0]: str(scratch / ("Group descriptor $(touch " + str(marker)
+                           + "); literal=source.json")),
+    keys[1]: "a" * 64,
+}
+cases = [
+    ("both-auth", "//tools/buck:app-auth-rest-browser-pg", public_values, public_values),
+    ("both-root-auth", "root//tools/buck:app-auth-rest-browser-pg", public_values, public_values),
+    ("both-hydration", "//tools/buck:app-health-readiness-browser-pg", public_values, public_values),
+    ("both-root-hydration", "root//tools/buck:app-health-readiness-browser-pg", public_values, public_values),
+    ("path-only", "//tools/buck:app-auth-rest-browser-pg",
+     {keys[0]: public_values[keys[0]]}, {keys[0]: public_values[keys[0]]}),
+    ("sha-only", "//tools/buck:app-auth-rest-browser-pg",
+     {keys[1]: public_values[keys[1]]}, {keys[1]: public_values[keys[1]]}),
+    ("missing", "//tools/buck:app-auth-rest-browser-pg", {}, {}),
+    ("empty", "//tools/buck:app-auth-rest-browser-pg", {key: "" for key in keys}, {}),
+    ("ordinary", "//tools/buck:app-auth-rest-pg", public_values, {}),
+    ("root-ordinary", "root//tools/buck:app-auth-rest-pg", public_values, {}),
+    ("unrelated", "//tools/buck:pr473-ontology-key-revision-postgres", public_values, {}),
+]
+executed = 0
+for case, target, supplied, expected in cases:
+    capture = scratch / ("group-descriptor-" + case)
+    capture.mkdir()
+    env = dict(base, PATH=str(fake_bin) + os.pathsep + base["PATH"],
+               HARNESS_LOG=str(capture / "calls.log"),
+               CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK=str(scratch / "buck"),
+               CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT="actual_group_browser_leaf",
+               BROWSER_ARGV_CAPTURE_DIR=str(capture), **unknown, **supplied)
+    result = subprocess.run([str(harness), target], env=env,
+                            text=True, capture_output=True, timeout=30)
+    assert result.returncode == 0, "Group descriptor harness fixture failed: " + case
+    build = json.loads((capture / "build.json").read_text())
+    tested = json.loads((capture / "test.json").read_text())
+    assert build[0] == "build" and tested[0] == "test"
+    assert not any(arg.startswith("CONSOLE_GROUP_PROCESS_") for arg in build), \
+        "Group descriptor runtime configuration entered build argv"
+    boundary = tested.index("--")
+    forwarded = {}
+    for index in range(boundary + 1, len(tested)):
+        if tested[index] == "--env":
+            key, value = tested[index + 1].split("=", 1)
+            assert key not in forwarded, "duplicate Group descriptor runtime variable"
+            forwarded[key] = value
+    actual = {key: value for key, value in forwarded.items() if key in keys}
+    assert actual == expected, "GROUP_DESCRIPTOR_RUNTIME_ENV_REQUIRED: " + case
+    assert not (set(unknown) & set(forwarded)), "undeclared Group descriptor variable forwarded"
+    assert set(forwarded) == set(expected) | {
+        "CONSOLE_BUCK_POSTGRES_ENV_FILE", "RUST_TEST_THREADS", "CONSOLE_BUCK_RUST_TEST_EXACT"}
+    assert forwarded["RUST_TEST_THREADS"] == "1"
+    assert forwarded["CONSOLE_BUCK_RUST_TEST_EXACT"] == "actual_group_browser_leaf"
+    assert not any("postgres://" in arg or "secret-" in arg for arg in build + tested)
+    assert not marker.exists(), "Group descriptor environment value was evaluated as shell code"
+    assert not pathlib.Path(forwarded["CONSOLE_BUCK_POSTGRES_ENV_FILE"]).exists(), \
+        "credential cleanup omitted in Group descriptor handoff"
+    # Existing fake Buck also verifies the exact nine credential-file key names.
+    executed += 1
+    print("group-descriptor-env: PASS " + case)
+assert executed == len(cases) == 11
+print("group-descriptor-env: discovered=11 executed=" + str(executed) + " failures=0")
+PY_GROUP_DESCRIPTOR_ENV
 
 echo 'test_needs_postgres: PASS'

@@ -15,7 +15,7 @@ export_file(
 
 rust_library(
     name = "console-platform-authz",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedar", "src/company_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedar", "src/company_policy/*.cedarschema", "src/group_process/*.cedar", "src/group_process/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
         "//docs/specs:cedar-pbac-map": "docs/specs/cedar-pbac-coexistence-map.json",
     }),
     crate = "console_platform_authz",
@@ -40,7 +40,7 @@ rust_library(
 
 rust_test(
     name = "console-platform-authz-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedar", "src/company_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedar", "src/company_policy/*.cedarschema", "src/group_process/*.cedar", "src/group_process/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
         "//docs/specs:cedar-pbac-map": "docs/specs/cedar-pbac-coexistence-map.json",
     }),
     crate = "console_platform_authz",

@@ -137,7 +137,9 @@ async fn company_browser_journey_with_group_process(
         output.is_absolute() && !output.exists(),
         "browser output must be a fresh owned directory"
     );
-    if people_entry {
+    if group_process_entry {
+        native_policy_startup_tests::prepare_native_group_browser_database(&pool).await;
+    } else if people_entry {
         // Verify the actual guarded Directory activation before UI data exists.
         // Its temporary AppState uses the fixture origin; close it before the
         // browser creates the fresh TLS-origin-specific state below.

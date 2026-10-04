@@ -168,3 +168,100 @@ export_file(
     name = "postgres-native-org-unit-closed-perimeter-v1-custody-state.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "postgres-native-group-process-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-group-process-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/codec-contract-v1.json",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/schema-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/codec-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/result-codec-v2.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/source-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/locks-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/closure-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/context-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/material-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/transition-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/guards-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/commands-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/audit-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/discovery-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/acl-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Reviewed Group serving inputs; isolated transaction tests only.
+
+export_file(
+    name = "postgres-native-group-process-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-native-group-process-v1.sql",
+    visibility = ["PUBLIC"],
+)

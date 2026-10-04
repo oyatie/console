@@ -9,6 +9,7 @@
 mod company;
 pub mod company_enrollment;
 pub mod company_policy;
+pub mod group_process;
 mod org;
 
 pub use company::CompanyEnrollmentV1;

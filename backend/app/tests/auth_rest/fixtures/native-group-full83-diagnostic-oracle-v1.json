@@ -1,0 +1,1617 @@
+{
+  "schema": "console.native_group_full83_diagnostic_oracle.v1",
+  "source_owner_sha256": "cbf641175a7bf589bd46fc21dc775fe2fab8b1a8ab7e46b04dee3c32422038f9",
+  "relation_roster": [
+    "native_group_process_inputs_v1",
+    "native_group_process_effects_v1",
+    "native_group_process_results_v1",
+    "native_group_identity_policy_heads_v1",
+    "native_group_process_versions_v1",
+    "native_group_process_head_revisions_v1",
+    "native_group_process_heads_v1"
+  ],
+  "routines": [
+    {
+      "name": "native_group_process_uuid_v1",
+      "signature": "public.native_group_process_uuid_v1(bytea,integer)",
+      "type_arguments": "bytea, integer",
+      "identity_arguments": "p_bytes bytea, p_at integer",
+      "input_arguments": [
+        {
+          "name": "p_bytes",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_at",
+          "type": "integer",
+          "printed_type": "integer"
+        }
+      ],
+      "result": "uuid",
+      "argnames": [
+        "p_bytes",
+        "p_at"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE result uuid;\nBEGIN\n IF p_at<1 OR p_at>octet_length(p_bytes)-15 THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n result:=encode(substring(p_bytes FROM p_at FOR 16),'hex')::uuid;\n IF result='00000000-0000-0000-0000-000000000000'::uuid THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n RETURN result;\nEND\n",
+      "source_sha256": "03d10b276c2ce8e6eae48effe44e9ec24f997e0fbfeca5f31116b87d17a8cec0",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_i64_v1",
+      "signature": "public.native_group_process_i64_v1(bytea,integer)",
+      "type_arguments": "bytea, integer",
+      "identity_arguments": "p_bytes bytea, p_at integer",
+      "input_arguments": [
+        {
+          "name": "p_bytes",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_at",
+          "type": "integer",
+          "printed_type": "integer"
+        }
+      ],
+      "result": "bigint",
+      "argnames": [
+        "p_bytes",
+        "p_at"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nBEGIN\n IF p_at<1 OR p_at>octet_length(p_bytes)-7 THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n RETURN ('x'||encode(substring(p_bytes FROM p_at FOR 8),'hex'))::bit(64)::bigint;\nEND\n",
+      "source_sha256": "9adb083194408615cd7590cf636e452af8eb6bb2c46b33c8793095fc6ed380e6",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_text_v1",
+      "signature": "public.native_group_process_text_v1(text,integer)",
+      "type_arguments": "text, integer",
+      "identity_arguments": "p_value text, p_max integer",
+      "input_arguments": [
+        {
+          "name": "p_value",
+          "type": "text",
+          "printed_type": "text"
+        },
+        {
+          "name": "p_max",
+          "type": "integer",
+          "printed_type": "integer"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "p_value",
+        "p_max"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE bytes bytea:=convert_to(p_value,'UTF8'); index_value integer;point integer; nonblank boolean:=false;\nBEGIN\n IF octet_length(bytes) NOT BETWEEN 1 AND p_max OR btrim(p_value,E' \\t\\n\\r')=''\n  OR p_max NOT IN (120,128,2048) THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n -- Unicode control points U+0000..001F and U+007F..009F; only tab/newline\n -- are admitted. UTF8 conversion also rejects ill-formed input at the boundary.\n FOR index_value IN 1..char_length(p_value) LOOP\n  point:=ascii(substring(p_value FROM index_value FOR 1));\n  IF (point BETWEEN 0 AND 31 AND point NOT IN (9,10)) OR point BETWEEN 127 AND 159 THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n  END IF;\n  IF NOT (point BETWEEN 9 AND 13 OR point IN (32,133,160,5760,8232,8233,8239,8287,12288)\n   OR point BETWEEN 8192 AND 8202) THEN nonblank:=true; END IF;\n END LOOP;\n IF NOT nonblank THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n RETURN int4send(octet_length(bytes))||bytes;\nEND\n",
+      "source_sha256": "2c76f783aa11659bd1582d8608e17d2d3d9db9155cd60b1a9bc0810980e02d2b",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_micros_v1",
+      "signature": "public.native_group_process_micros_v1(timestamptz)",
+      "type_arguments": "timestamp with time zone",
+      "identity_arguments": "p_value timestamp with time zone",
+      "input_arguments": [
+        {
+          "name": "p_value",
+          "type": "timestamptz",
+          "printed_type": "timestamp with time zone"
+        }
+      ],
+      "result": "bigint",
+      "argnames": [
+        "p_value"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nBEGIN\n IF NOT isfinite(p_value) THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n RETURN (extract(epoch FROM p_value)*1000000)::bigint;\nEND\n",
+      "source_sha256": "e261491e396ac942c944adc90be00ab9d52f738dfccb8916a4d8edaf2097fc1c",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_decode_v1",
+      "signature": "public.native_group_process_decode_v1(bytea)",
+      "type_arguments": "bytea",
+      "identity_arguments": "p_input bytea",
+      "input_arguments": [
+        {
+          "name": "p_input",
+          "type": "bytea",
+          "printed_type": "bytea"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_input"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE result jsonb; content jsonb:='{}'; size integer:=octet_length(p_input);\n cursor_value integer:=1; operation integer; group_value uuid; incarnation_value uuid;\n value bigint; length_value bigint; text_value text; content_sum integer:=42; field_name text;\n prefix bytea:=convert_to('CONSOLE.IDENTITY.GROUP','UTF8')||decode('000001','hex');\nBEGIN\n IF size NOT BETWEEN 188 AND 16521 OR substring(p_input FROM 1 FOR octet_length(prefix))<>prefix THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n cursor_value:=octet_length(prefix)+1;\n operation:=get_byte(p_input,cursor_value-1)*256+get_byte(p_input,cursor_value);cursor_value:=cursor_value+2;\n IF operation NOT IN (1,6) OR (operation=6 AND size NOT BETWEEN 208 AND 2255) THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n result:=jsonb_build_object('operation',operation,\n  'actor_account_id',public.native_group_process_uuid_v1(p_input,cursor_value),\n  'command_id',public.native_group_process_uuid_v1(p_input,cursor_value+16));cursor_value:=cursor_value+32;\n group_value:=public.native_group_process_uuid_v1(p_input,cursor_value);\n incarnation_value:=public.native_group_process_uuid_v1(p_input,cursor_value+16);cursor_value:=cursor_value+32;\n value:=public.native_group_process_i64_v1(p_input,cursor_value);cursor_value:=cursor_value+8;\n IF value<1 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n result:=result||jsonb_build_object('group_id',group_value,'group_incarnation',incarnation_value,'expected_group_revision',value);\n value:=public.native_group_process_i64_v1(p_input,cursor_value);cursor_value:=cursor_value+8;\n IF value<0 OR (operation=6 AND value=0) THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n result:=result||jsonb_build_object('expected_policy_revision',value,'process_id',public.native_group_process_uuid_v1(p_input,cursor_value));\n cursor_value:=cursor_value+16;\n IF operation=1 THEN\n  value:=public.native_group_process_i64_v1(p_input,cursor_value);cursor_value:=cursor_value+8;\n  IF value<0 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n  result:=result||jsonb_build_object('expected_prior_head_revision',value);\n  value:=public.native_group_process_i64_v1(p_input,cursor_value);cursor_value:=cursor_value+8;\n  -- HTML input grammar is years 0001..9999, KST seconds exactly; avoid\n  -- floating-point to_timestamp and retain the original UTC microseconds.\n  IF value NOT BETWEEN -62135629200000000 AND 253402268399000000 OR value%1000000<>0 THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n  END IF;\n  result:=result||jsonb_build_object('expiry_us',value);\n  IF substring(p_input FROM cursor_value FOR 2)<>decode('0001','hex') THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n  END IF;\n  cursor_value:=cursor_value+2;\n  FOREACH field_name IN ARRAY ARRAY['title','intended_claimant_matching_procedure','account_possession_procedure',\n   'physical_human_evidence_procedure','duplicate_contradictory_claim_procedure','qualification_criteria_instruction',\n   'escalation_adjudication_procedure','evidence_minimization_retention_description','recipient_responsibility'] LOOP\n   IF cursor_value>size-3 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n   length_value:=('x'||encode(substring(p_input FROM cursor_value FOR 4),'hex'))::bit(32)::bigint;cursor_value:=cursor_value+4;\n   IF length_value NOT BETWEEN 1 AND (CASE WHEN field_name='title' THEN 120 ELSE 2048 END)\n    OR length_value>size-cursor_value+1 THEN\n    RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n   END IF;\n   text_value:=convert_from(substring(p_input FROM cursor_value FOR length_value::integer),'UTF8');\n   PERFORM public.native_group_process_text_v1(text_value,CASE WHEN field_name='title' THEN 120 ELSE 2048 END);\n   cursor_value:=cursor_value+length_value::integer;content_sum:=content_sum+length_value::integer;\n   content:=content||jsonb_build_object(field_name,text_value);\n   IF field_name='title' THEN\n    IF cursor_value>size-1 OR substring(p_input FROM cursor_value FOR 2)<>decode('0001','hex') THEN\n     RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n    END IF;\n    cursor_value:=cursor_value+2;\n   END IF;\n  END LOOP;\n  IF content_sum>16384 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n  result:=result||jsonb_build_object('operator_responsibility',1,\n   'content',content||jsonb_build_object('method','ATTENDED_ACCOUNT_AND_DOCUMENTARY_REVIEW_V1'));\n ELSE\n  value:=public.native_group_process_i64_v1(p_input,cursor_value);cursor_value:=cursor_value+8;\n  IF value<1 OR cursor_value>size-31 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n  result:=result||jsonb_build_object('content_version',value,'content_digest',chr(92)||'x'||encode(substring(p_input FROM cursor_value FOR 32),'hex'));\n  cursor_value:=cursor_value+32;value:=public.native_group_process_i64_v1(p_input,cursor_value);cursor_value:=cursor_value+8;\n  IF value<1 OR cursor_value>size-31 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n  result:=result||jsonb_build_object('expected_head_revision',value,'expected_head_digest',chr(92)||'x'||encode(substring(p_input FROM cursor_value FOR 32),'hex'));\n  cursor_value:=cursor_value+32;\n  IF cursor_value>size-3 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n  length_value:=('x'||encode(substring(p_input FROM cursor_value FOR 4),'hex'))::bit(32)::bigint;cursor_value:=cursor_value+4;\n  IF length_value NOT BETWEEN 1 AND 2048 OR length_value>size-cursor_value+1 THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n  END IF;\n  text_value:=convert_from(substring(p_input FROM cursor_value FOR length_value::integer),'UTF8');\n  PERFORM public.native_group_process_text_v1(text_value,2048);cursor_value:=cursor_value+length_value::integer;\n  result:=result||jsonb_build_object('reason',text_value);\n END IF;\n IF cursor_value<>size+1 THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input'; END IF;\n RETURN result;\nEND\n",
+      "source_sha256": "17bf273f4c3008d38cda3623a2c1a1313a8dd8d898e62b61ac0130427df5d231",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_policy_ref_v1",
+      "signature": "public.native_group_process_policy_ref_v1(smallint,bigint,bytea)",
+      "type_arguments": "smallint, bigint, bytea",
+      "identity_arguments": "p_tag smallint, p_revision bigint, p_digest bytea",
+      "input_arguments": [
+        {
+          "name": "p_tag",
+          "type": "smallint",
+          "printed_type": "smallint"
+        },
+        {
+          "name": "p_revision",
+          "type": "bigint",
+          "printed_type": "bigint"
+        },
+        {
+          "name": "p_digest",
+          "type": "bytea",
+          "printed_type": "bytea"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "p_tag",
+        "p_revision",
+        "p_digest"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": false,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nBEGIN\n IF p_tag=0 AND p_revision IS NULL AND p_digest IS NULL THEN RETURN decode('00','hex'); END IF;\n IF p_tag=1 AND p_revision>0 AND octet_length(p_digest)=32 THEN\n  RETURN decode('01','hex')||int8send(p_revision)||p_digest;\n END IF;\n RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_policy_reference';\nEND\n",
+      "source_sha256": "ce57f515e1eaa9db1d65d7cb3564a4e5595bd685e8da9328b4a4f7adb84bc237",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_head_ref_v1",
+      "signature": "public.native_group_process_head_ref_v1(uuid,bigint,bigint,bytea,bytea,text,timestamptz)",
+      "type_arguments": "uuid, bigint, bigint, bytea, bytea, text, timestamp with time zone",
+      "identity_arguments": "p_process uuid, p_head bigint, p_version bigint, p_content_digest bytea, p_head_digest bytea, p_state text, p_expiry timestamp with time zone",
+      "input_arguments": [
+        {
+          "name": "p_process",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_head",
+          "type": "bigint",
+          "printed_type": "bigint"
+        },
+        {
+          "name": "p_version",
+          "type": "bigint",
+          "printed_type": "bigint"
+        },
+        {
+          "name": "p_content_digest",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_head_digest",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_state",
+          "type": "text",
+          "printed_type": "text"
+        },
+        {
+          "name": "p_expiry",
+          "type": "timestamptz",
+          "printed_type": "timestamp with time zone"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "p_process",
+        "p_head",
+        "p_version",
+        "p_content_digest",
+        "p_head_digest",
+        "p_state",
+        "p_expiry"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": false,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nBEGIN\n IF num_nonnulls(p_process,p_head,p_version,p_content_digest,p_head_digest,p_state,p_expiry)=0 THEN\n  RETURN decode('00','hex');\n END IF;\n IF (num_nonnulls(p_process,p_head,p_version,p_content_digest,p_head_digest,p_state,p_expiry)=7\n  AND p_process<>'00000000-0000-0000-0000-000000000000'::uuid AND p_head>0 AND p_version>0\n  AND octet_length(p_content_digest)=32 AND octet_length(p_head_digest)=32\n  AND p_state IN ('ACTIVE','SUSPENDED') AND isfinite(p_expiry)) IS TRUE THEN\n  RETURN decode('01','hex')||uuid_send(p_process)||int8send(p_head)||int8send(p_version)\n   ||p_content_digest||p_head_digest||int2send(CASE p_state WHEN 'ACTIVE' THEN 1 ELSE 2 END::smallint)\n   ||int8send(public.native_group_process_micros_v1(p_expiry));\n END IF;\n RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_head_reference';\nEND\n",
+      "source_sha256": "00c91269c7f9c842e72736698c979b77528bf2b3f28db9e05bcde10e0a13d3bc",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_action_roster_v1",
+      "signature": "public.native_group_process_action_roster_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "jsonb",
+      "argnames": null,
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": false,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": " SELECT $roster$[{\"key\":\"identity.verifier.process.adopt/1\",\"revision\":1,\"fields\":[\"process_id\",\"process_version\",\"process_digest\",\"process_head_revision\",\"process_head_digest\",\"state\",\"expiry\",\"title\",\"method\",\"intended_claimant_matching_procedure\",\"account_possession_procedure\",\"physical_human_evidence_procedure\",\"duplicate_contradictory_claim_procedure\",\"qualification_criteria_instruction\",\"escalation_adjudication_procedure\",\"evidence_minimization_retention_description\",\"recipient_responsibility\",\"receipt_locator\"]},{\"key\":\"identity.verifier.process.suspend/1\",\"revision\":1,\"fields\":[\"process_id\",\"process_version\",\"process_digest\",\"process_head_revision\",\"process_head_digest\",\"state\",\"expiry\",\"reason\",\"receipt_locator\"]},{\"key\":\"identity.verifier.process.read/1\",\"revision\":1,\"fields\":[\"group_context\",\"process_id\",\"process_version\",\"process_digest\",\"process_head_revision\",\"process_head_digest\",\"state\",\"expiry\",\"title\",\"method\",\"intended_claimant_matching_procedure\",\"account_possession_procedure\",\"physical_human_evidence_procedure\",\"duplicate_contradictory_claim_procedure\",\"qualification_criteria_instruction\",\"escalation_adjudication_procedure\",\"evidence_minimization_retention_description\",\"recipient_responsibility\",\"history\",\"allowed_actions\"]},{\"key\":\"identity.verifier.process.receipt.read-own/1\",\"revision\":1,\"fields\":[\"command_id\",\"input_digest\",\"intake_receipt_id\",\"result_receipt_id\",\"terminal_code\",\"accepted_at\",\"executed_at\",\"process_id\",\"before_head\",\"after_head\",\"original_content\",\"original_reason\",\"receipt_locator\"]}]$roster$::jsonb ",
+      "source_sha256": "6b92947bf0a22319521a941f0872d988da51a58877f73efb4ab76b0b14c5e4dd",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_registration_bytes_v1",
+      "signature": "public.native_group_process_registration_bytes_v1(uuid,uuid,text,bytea,bytea,bytea,jsonb)",
+      "type_arguments": "uuid, uuid, text, bytea, bytea, bytea, jsonb",
+      "identity_arguments": "p_group uuid, p_incarnation uuid, p_schema text, p_schema_digest bytea, p_policy_digest bytea, p_codec_digest bytea, p_actions jsonb",
+      "input_arguments": [
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_incarnation",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_schema",
+          "type": "text",
+          "printed_type": "text"
+        },
+        {
+          "name": "p_schema_digest",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_policy_digest",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_codec_digest",
+          "type": "bytea",
+          "printed_type": "bytea"
+        },
+        {
+          "name": "p_actions",
+          "type": "jsonb",
+          "printed_type": "jsonb"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "p_group",
+        "p_incarnation",
+        "p_schema",
+        "p_schema_digest",
+        "p_policy_digest",
+        "p_codec_digest",
+        "p_actions"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE output bytea; item jsonb; field_value text; action_id uuid; seen uuid[]:=ARRAY[]::uuid[]; roster jsonb:=public.native_group_process_action_roster_v1(); action_index integer:=0;\nBEGIN\n IF p_group='00000000-0000-0000-0000-000000000000'::uuid\n  OR p_incarnation='00000000-0000-0000-0000-000000000000'::uuid\n  OR p_schema<>'native-group-process-v1' OR octet_length(p_schema_digest)<>32\n  OR octet_length(p_policy_digest)<>32 OR octet_length(p_codec_digest)<>32\n  OR jsonb_typeof(p_actions)<>'array' OR jsonb_array_length(p_actions)<>4 THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_registration';\n END IF;\n output:=convert_to('CONSOLE.IDENTITY.GROUP.PROCESS.REGISTRATION','UTF8')||decode('000001','hex')\n  ||uuid_send(p_group)||uuid_send(p_incarnation)||int8send(1::bigint)\n  ||public.native_group_process_text_v1(p_schema,128)||p_schema_digest||p_policy_digest||p_codec_digest||int2send(4::smallint);\n FOR item IN SELECT value FROM jsonb_array_elements(p_actions) WITH ORDINALITY x(value,position) ORDER BY position LOOP\n  IF jsonb_typeof(item) IS DISTINCT FROM 'object'\n   OR item-'action_id' IS DISTINCT FROM roster->action_index\n   OR jsonb_typeof(item->'action_id') IS DISTINCT FROM 'string'\n   OR (item->>'action_id') COLLATE \"C\" !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_registration';\n  END IF;\n  action_index:=action_index+1;\n  action_id:=(item->>'action_id')::uuid;\n  IF action_id IS NULL OR action_id='00000000-0000-0000-0000-000000000000'::uuid\n   OR action_id=ANY(seen) OR (item->>'revision')::bigint IS DISTINCT FROM 1\n   OR jsonb_typeof(item->'fields') IS DISTINCT FROM 'array'\n   OR jsonb_array_length(item->'fields') NOT BETWEEN 1 AND 64 THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_registration';\n  END IF;\n  seen:=array_append(seen,action_id);\n  output:=output||public.native_group_process_text_v1(item->>'key',128)||uuid_send(action_id)||int8send(1::bigint)\n   ||int2send(jsonb_array_length(item->'fields')::smallint);\n  FOR field_value IN SELECT value FROM jsonb_array_elements_text(item->'fields') WITH ORDINALITY x(value,position) ORDER BY position LOOP\n   output:=output||public.native_group_process_text_v1(field_value,128);\n  END LOOP;\n END LOOP;\n IF output IS NULL THEN RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_registration'; END IF;\n RETURN output;\nEND\n",
+      "source_sha256": "79e3f67a7b997ff37bf0ce0a340d7435251a90cd62995ae4750dcfa803d057f7",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_policy_head_bytes_v1",
+      "signature": "public.native_group_process_policy_head_bytes_v1(public.native_group_identity_policy_heads_v1)",
+      "type_arguments": "public.native_group_identity_policy_heads_v1",
+      "identity_arguments": "r public.native_group_identity_policy_heads_v1",
+      "input_arguments": [
+        {
+          "name": "r",
+          "type": "public.native_group_identity_policy_heads_v1",
+          "printed_type": "public.native_group_identity_policy_heads_v1"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "r"
+      ],
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\n SELECT convert_to('CONSOLE.IDENTITY.GROUP.POLICY.HEAD','UTF8')||decode('000001','hex')\n  ||uuid_send(r.group_id)||uuid_send(r.group_incarnation)||int8send(r.revision)\n  ||public.native_group_process_text_v1(r.schema_id,128)||r.schema_digest||r.policy_digest||r.codec_contract_digest\n  ||r.registration_manifest_digest||uuid_send(r.first_actor_account_id)||uuid_send(r.first_command_id)\n  ||r.first_input_digest||uuid_send(r.activation_receipt_id)||int8send(public.native_group_process_micros_v1(r.activated_at))\n",
+      "source_sha256": "e96033de75d7f5f9e1d39bc031a7f8d629e2a8b3680946c74af9b2544dc00d9b",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_version_bytes_v1",
+      "signature": "public.native_group_process_version_bytes_v1(public.native_group_process_versions_v1)",
+      "type_arguments": "public.native_group_process_versions_v1",
+      "identity_arguments": "r public.native_group_process_versions_v1",
+      "input_arguments": [
+        {
+          "name": "r",
+          "type": "public.native_group_process_versions_v1",
+          "printed_type": "public.native_group_process_versions_v1"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "r"
+      ],
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\n SELECT convert_to('CONSOLE.IDENTITY.PROCESS.VERSION','UTF8')||decode('000001','hex')\n  ||uuid_send(r.group_id)||uuid_send(r.group_incarnation)||uuid_send(r.process_id)||int8send(r.version)\n  ||public.native_group_process_text_v1(r.schema_id,128)||uuid_send(r.actor_account_id)||uuid_send(r.designation_receipt_id)\n  ||int8send(r.designation_revision)||int8send(r.policy_revision)||r.policy_head_digest||uuid_send(r.adopt_command_id)\n  ||r.input_digest||int8send(public.native_group_process_micros_v1(r.admitted_at))||int8send(public.native_group_process_micros_v1(r.expires_at))\n  ||int2send(r.operator_responsibility)||public.native_group_process_text_v1(r.title,120)||int2send(1::smallint)\n  ||public.native_group_process_text_v1(r.intended_claimant_matching_procedure,2048)\n  ||public.native_group_process_text_v1(r.account_possession_procedure,2048)\n  ||public.native_group_process_text_v1(r.physical_human_evidence_procedure,2048)\n  ||public.native_group_process_text_v1(r.duplicate_contradictory_claim_procedure,2048)\n  ||public.native_group_process_text_v1(r.qualification_criteria_instruction,2048)\n  ||public.native_group_process_text_v1(r.escalation_adjudication_procedure,2048)\n  ||public.native_group_process_text_v1(r.evidence_minimization_retention_description,2048)\n  ||public.native_group_process_text_v1(r.recipient_responsibility,2048)\n",
+      "source_sha256": "01901c95e2f9b37ed1cc1ecc553026a6bb779156e5b8fd2e5dfe94e147bc34fc",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_head_bytes_v1",
+      "signature": "public.native_group_process_head_bytes_v1(public.native_group_process_head_revisions_v1)",
+      "type_arguments": "public.native_group_process_head_revisions_v1",
+      "identity_arguments": "r public.native_group_process_head_revisions_v1",
+      "input_arguments": [
+        {
+          "name": "r",
+          "type": "public.native_group_process_head_revisions_v1",
+          "printed_type": "public.native_group_process_head_revisions_v1"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "r"
+      ],
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\n SELECT convert_to('CONSOLE.IDENTITY.PROCESS.HEAD','UTF8')||decode('000001','hex')\n  ||uuid_send(r.group_id)||uuid_send(r.group_incarnation)||uuid_send(r.process_id)||int8send(r.head_revision)\n  ||int8send(r.content_version)||r.content_digest||int2send(CASE r.state WHEN 'ACTIVE' THEN 1 WHEN 'SUSPENDED' THEN 2 END::smallint)\n  ||int8send(public.native_group_process_micros_v1(r.expires_at))||uuid_send(r.last_actor_account_id)||uuid_send(r.last_command_id)\n  ||r.last_input_digest||uuid_send(r.result_receipt_id)||int8send(public.native_group_process_micros_v1(r.updated_at))\n",
+      "source_sha256": "90dcd373e22163bbcb485cf48b6aab0fcabad6ea82abc004941331dd5d75fb1b",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_result_bytes_v2",
+      "signature": "public.native_group_process_result_bytes_v2(public.native_group_process_results_v1)",
+      "type_arguments": "public.native_group_process_results_v1",
+      "identity_arguments": "r public.native_group_process_results_v1",
+      "input_arguments": [
+        {
+          "name": "r",
+          "type": "public.native_group_process_results_v1",
+          "printed_type": "public.native_group_process_results_v1"
+        }
+      ],
+      "result": "bytea",
+      "argnames": [
+        "r"
+      ],
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\n SELECT convert_to('CONSOLE.IDENTITY.PROCESS.RESULT','UTF8')||decode('000002','hex')\n  ||uuid_send(r.actor_account_id)||uuid_send(r.command_id)||uuid_send(r.group_id)||uuid_send(r.group_incarnation)\n  ||int2send(r.operation)||r.input_digest||uuid_send(r.intake_receipt_id)||uuid_send(r.result_receipt_id)\n  ||int2send(CASE r.terminal_code WHEN 'ADOPTED' THEN 1 WHEN 'REPLACED' THEN 2 WHEN 'SUSPENDED' THEN 3\n   WHEN 'REJECTED_STALE_EXPECTATION' THEN 4 WHEN 'REJECTED_PROCESS_EXPIRED' THEN 5 WHEN 'REJECTED_ALREADY_SUSPENDED' THEN 6 END::smallint)\n  ||int8send(public.native_group_process_micros_v1(r.accepted_at))||int8send(public.native_group_process_micros_v1(r.executed_at))\n  ||uuid_send(r.execution_session_id)||int8send(r.account_security_generation)||uuid_send(r.designation_receipt_id)\n  ||int8send(r.designation_revision)||int8send(r.observed_group_revision)\n  ||public.native_group_process_policy_ref_v1(r.policy_before_tag,r.policy_before_revision,r.policy_before_head_digest)\n  ||public.native_group_process_policy_ref_v1(r.policy_after_tag,r.policy_after_revision,r.policy_after_head_digest)\n  ||public.native_group_process_text_v1(r.schema_id,128)||r.schema_digest||r.policy_digest||r.codec_contract_digest\n  ||int8send(r.registration_manifest_version)||r.registration_manifest_digest\n  ||public.native_group_process_text_v1(r.cedar_sdk_version,128)||public.native_group_process_text_v1(r.cedar_language_version,128)\n  ||uuid_send(r.requested_process_id)\n  ||public.native_group_process_head_ref_v1(r.before_process_id,r.before_head_revision,r.before_content_version,\n   r.before_content_digest,r.before_head_digest,r.before_state,r.before_expires_at)\n  ||public.native_group_process_head_ref_v1(r.after_process_id,r.after_head_revision,r.after_content_version,\n   r.after_content_digest,r.after_head_digest,r.after_state,r.after_expires_at)\n  ||xid8send(r.effect_xid)||int4send(r.effect_backend_pid)\n",
+      "source_sha256": "846bda1974175a09fc0c8c2fef5e74dc6b71fc714796087af1e398405754c5a9",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_registered_actions_v1",
+      "signature": "public.native_group_process_registered_actions_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "jsonb",
+      "argnames": null,
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": false,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": " SELECT $actions$[{\"key\":\"identity.verifier.process.adopt/1\",\"action_id\":\"47c0f0fe-92d6-473a-b0b5-1c0d218f919f\",\"revision\":1,\"fields\":[\"process_id\",\"process_version\",\"process_digest\",\"process_head_revision\",\"process_head_digest\",\"state\",\"expiry\",\"title\",\"method\",\"intended_claimant_matching_procedure\",\"account_possession_procedure\",\"physical_human_evidence_procedure\",\"duplicate_contradictory_claim_procedure\",\"qualification_criteria_instruction\",\"escalation_adjudication_procedure\",\"evidence_minimization_retention_description\",\"recipient_responsibility\",\"receipt_locator\"]},{\"key\":\"identity.verifier.process.suspend/1\",\"action_id\":\"12865e98-68d3-4086-a516-2cc9e4f75cf0\",\"revision\":1,\"fields\":[\"process_id\",\"process_version\",\"process_digest\",\"process_head_revision\",\"process_head_digest\",\"state\",\"expiry\",\"reason\",\"receipt_locator\"]},{\"key\":\"identity.verifier.process.read/1\",\"action_id\":\"fb8eaa7c-f7b5-4a0f-8fba-d6bed0f98e31\",\"revision\":1,\"fields\":[\"group_context\",\"process_id\",\"process_version\",\"process_digest\",\"process_head_revision\",\"process_head_digest\",\"state\",\"expiry\",\"title\",\"method\",\"intended_claimant_matching_procedure\",\"account_possession_procedure\",\"physical_human_evidence_procedure\",\"duplicate_contradictory_claim_procedure\",\"qualification_criteria_instruction\",\"escalation_adjudication_procedure\",\"evidence_minimization_retention_description\",\"recipient_responsibility\",\"history\",\"allowed_actions\"]},{\"key\":\"identity.verifier.process.receipt.read-own/1\",\"action_id\":\"13dec8e4-5451-4d09-b7e1-a1e043e67d53\",\"revision\":1,\"fields\":[\"command_id\",\"input_digest\",\"intake_receipt_id\",\"result_receipt_id\",\"terminal_code\",\"accepted_at\",\"executed_at\",\"process_id\",\"before_head\",\"after_head\",\"original_content\",\"original_reason\",\"receipt_locator\"]}]$actions$::jsonb ",
+      "source_sha256": "cd66a906ab6495eb7e5bf00eff294fead2d59c21d93d0402ad44657a366a0c1e",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_source_v1",
+      "signature": "public.native_group_process_source_v1(uuid,uuid)",
+      "type_arguments": "uuid, uuid",
+      "identity_arguments": "p_group uuid, p_incarnation uuid",
+      "input_arguments": [
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_incarnation",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_group",
+        "p_incarnation"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE schema_digest bytea:=decode('c711017368596094ad0ff9b1123eb17573722df47f1b4abb15a31ce1ce8b1e44','hex');\n policy_digest bytea:=decode('2453684b70134124a8cf77f2d882fb7497d8c1498325fac1321ca7e616791ed8','hex');\n codec_digest bytea:=decode('595376f9edea8ebd5a698bd27d6f7310a470f5e5d95522d7eed7c01db8169067','hex');\n actions jsonb:=public.native_group_process_registered_actions_v1(); registration bytea;\nBEGIN\n registration:=public.native_group_process_registration_bytes_v1(p_group,p_incarnation,\n  'native-group-process-v1',schema_digest,policy_digest,codec_digest,actions);\n RETURN jsonb_build_object('schema_id','native-group-process-v1','schema_digest',schema_digest,\n  'policy_digest',policy_digest,'codec_contract_digest',codec_digest,\n  'registration_manifest_version',1,'registration_manifest_digest',sha256(registration),\n  'cedar_sdk_version','4.13.0','cedar_language_version','4.5','registered_actions',actions);\nEND\n",
+      "source_sha256": "375818abc14b02ff307fe3f3697165b35177f334c11a3533fd74be7688ace3de",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_group_guard_v1",
+      "signature": "public.native_group_process_group_guard_v1(uuid,boolean)",
+      "type_arguments": "uuid, boolean",
+      "identity_arguments": "p_group uuid, p_write boolean",
+      "input_arguments": [
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_write",
+          "type": "boolean",
+          "printed_type": "boolean"
+        }
+      ],
+      "result": "void",
+      "argnames": [
+        "p_group",
+        "p_write"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE guard_key bigint;\nBEGIN\n IF p_group IS NULL OR p_write IS NULL\n  OR p_group='00000000-0000-0000-0000-000000000000'::uuid\n  OR current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN\n  RAISE EXCEPTION 'native_group_process.guard_unavailable';\n END IF;\n guard_key:=hashtextextended('console.identity.group-process.group/1:'||p_group::text,0);\n IF p_write THEN PERFORM pg_advisory_xact_lock(guard_key);\n ELSE PERFORM pg_advisory_xact_lock_shared(guard_key); END IF;\nEND\n",
+      "source_sha256": "d34613f757a209c434eae3f94d3c92007b6a47e4515766d1269347d43479d6df",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_command_guard_v1",
+      "signature": "public.native_group_process_command_guard_v1(uuid,uuid,boolean)",
+      "type_arguments": "uuid, uuid, boolean",
+      "identity_arguments": "p_actor uuid, p_command uuid, p_write boolean",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_write",
+          "type": "boolean",
+          "printed_type": "boolean"
+        }
+      ],
+      "result": "void",
+      "argnames": [
+        "p_actor",
+        "p_command",
+        "p_write"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE guard_key bigint;\nBEGIN\n IF p_actor IS NULL OR p_command IS NULL OR p_write IS NULL\n  OR '00000000-0000-0000-0000-000000000000'::uuid IN(p_actor,p_command)\n  OR current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN\n  RAISE EXCEPTION 'native_group_process.guard_unavailable';\n END IF;\n guard_key:=hashtextextended('console.identity.group-process.command/1:'||p_actor::text||':'||p_command::text,0);\n IF p_write THEN PERFORM pg_advisory_xact_lock(guard_key);\n ELSE PERFORM pg_advisory_xact_lock_shared(guard_key); END IF;\nEND\n",
+      "source_sha256": "012df7ff65edee43c44d3009e651032855170d8a386c9f68486b6fa1e8557647",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_topology_fence_v1",
+      "signature": "public.native_group_process_topology_fence_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE old_row jsonb; new_row jsonb; affected uuid;\nBEGIN\n IF TG_OP='TRUNCATE' THEN\n  IF EXISTS(SELECT 1 FROM public.groups g WHERE g.origin_account_id IS NOT NULL)\n   OR EXISTS(SELECT 1 FROM public.native_group_process_inputs_v1) THEN\n   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='native_group_process.topology_fenced';\n  END IF;\n  RETURN NULL;\n END IF;\n IF TG_TABLE_NAME NOT IN ('groups','group_authority_heads','group_memberships','group_membership_revisions')\n  OR TG_OP NOT IN ('INSERT','UPDATE','DELETE') THEN\n  RAISE EXCEPTION 'native_group_process.guard_unavailable';\n END IF;\n IF TG_OP<>'INSERT' THEN old_row:=to_jsonb(OLD); END IF;\n IF TG_OP<>'DELETE' THEN new_row:=to_jsonb(NEW); END IF;\n FOR affected IN SELECT DISTINCT value FROM unnest(ARRAY[\n   (old_row->>CASE TG_TABLE_NAME WHEN 'groups' THEN 'id' ELSE 'group_id' END)::uuid,\n   (new_row->>CASE TG_TABLE_NAME WHEN 'groups' THEN 'id' ELSE 'group_id' END)::uuid]) value\n  WHERE value IS NOT NULL ORDER BY value\n LOOP\n  -- UPDATE and DELETE are denied before waiting for any new owner guard; this\n  -- prevents a legacy row lock from inverting the Group-first owner order.\n  IF TG_OP IN ('UPDATE','DELETE') AND\n   (EXISTS(SELECT 1 FROM public.groups g WHERE g.id=affected AND g.origin_account_id IS NOT NULL)\n    OR EXISTS(SELECT 1 FROM public.native_group_process_inputs_v1 i WHERE i.group_id=affected)\n    OR (TG_TABLE_NAME='groups' AND old_row->>'origin_account_id' IS NOT NULL)) THEN\n   RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='native_group_process.topology_fenced';\n  END IF;\n  IF TG_OP='INSERT' AND TG_TABLE_NAME='groups' THEN\n   -- Native birth holds Account already. Never wait here on a Group-first\n   -- reader; abort contended B, preserving A. Successful birth retains the\n   -- exact exclusive identity guard through publication and existing closure.\n   IF affected='00000000-0000-0000-0000-000000000000'::uuid\n    OR current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN\n    RAISE EXCEPTION 'native_group_process.guard_unavailable';\n   END IF;\n   IF NOT pg_try_advisory_xact_lock(hashtextextended('console.identity.group-process.group/1:'||affected::text,0)) THEN\n    RAISE EXCEPTION USING ERRCODE='55P03',MESSAGE='native_group_process.birth_guard_unavailable';\n   END IF;\n  ELSIF TG_OP='INSERT' AND\n   EXISTS(SELECT 1 FROM public.groups g WHERE g.id=affected AND g.origin_account_id IS NOT NULL) THEN\n   -- Only the original same-transaction Company birth may add its initial\n   -- authority/membership rows. No legacy append may widen an existing Group.\n   IF NOT EXISTS(SELECT 1 FROM public.groups g\n    JOIN public.company_enrollment_effect_bindings b ON\n     (b.account_id,b.command_id,b.receipt_id,b.group_id)=\n     (g.origin_account_id,g.origin_command_id,g.origin_receipt_id,g.id)\n    WHERE g.id=affected AND b.effect_xid=pg_current_xact_id()\n     AND b.effect_backend_pid=pg_backend_pid()) THEN\n    RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='native_group_process.topology_fenced';\n   END IF;\n  END IF;\n END LOOP;\n IF TG_OP='DELETE' THEN RETURN OLD; END IF;\n RETURN NEW;\nEND\n",
+      "source_sha256": "6de3e42fd9343d12c22068bb971d611866af8a364c857adfde8f27a355863987",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_accept_snapshot_v1",
+      "signature": "public.native_group_process_accept_snapshot_v1(public.native_group_process_inputs_v1)",
+      "type_arguments": "public.native_group_process_inputs_v1",
+      "identity_arguments": "i public.native_group_process_inputs_v1",
+      "input_arguments": [
+        {
+          "name": "i",
+          "type": "public.native_group_process_inputs_v1",
+          "printed_type": "public.native_group_process_inputs_v1"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "i"
+      ],
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\n SELECT jsonb_build_object('protocol','GROUP_PROCESS_V1','command_id',i.command_id::text,\n  'group_id',i.group_id::text,'group_incarnation',i.group_incarnation::text,'operation',i.operation,\n  'input_digest',encode(i.input_digest,'hex'),'intake_receipt_id',i.intake_receipt_id::text,\n  'session_id',i.accepted_session_id::text)\n",
+      "source_sha256": "131739e413a1c59b4d378db344edc9a3d630e04a7bcf1c5b11260677e635bee0",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_complete_snapshot_v1",
+      "signature": "public.native_group_process_complete_snapshot_v1(public.native_group_process_results_v1)",
+      "type_arguments": "public.native_group_process_results_v1",
+      "identity_arguments": "r public.native_group_process_results_v1",
+      "input_arguments": [
+        {
+          "name": "r",
+          "type": "public.native_group_process_results_v1",
+          "printed_type": "public.native_group_process_results_v1"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "r"
+      ],
+      "argmodes": null,
+      "language": "sql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\n SELECT jsonb_build_object('protocol','GROUP_PROCESS_V1','command_id',r.command_id::text,\n  'group_id',r.group_id::text,'group_incarnation',r.group_incarnation::text,'operation',r.operation,\n  'input_digest',encode(r.input_digest,'hex'),'intake_receipt_id',r.intake_receipt_id::text,\n  'result_receipt_id',r.result_receipt_id::text,'session_id',r.execution_session_id::text,\n  'terminal_code',r.terminal_code)\n",
+      "source_sha256": "9948a49789bb2a2cf9e14917ab302ccfafe7e78452126397141d7fa012c9c9e0",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_assert_input_v1",
+      "signature": "public.native_group_process_assert_input_v1(uuid,uuid)",
+      "type_arguments": "uuid, uuid",
+      "identity_arguments": "p_actor uuid, p_command uuid",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "void",
+      "argnames": [
+        "p_actor",
+        "p_command"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE i public.native_group_process_inputs_v1; decoded jsonb;\nBEGIN\n SELECT x.* INTO STRICT i FROM public.native_group_process_inputs_v1 x\n  WHERE x.actor_account_id=p_actor AND x.command_id=p_command;\n decoded:=public.native_group_process_decode_v1(i.input_bytes);\n IF i.codec_version<>1 OR i.input_digest IS DISTINCT FROM sha256(i.input_bytes)\n  OR (decoded->>'actor_account_id',decoded->>'command_id',decoded->>'group_id',decoded->>'group_incarnation',\n    (decoded->>'operation')::smallint)\n   IS DISTINCT FROM (i.actor_account_id::text,i.command_id::text,i.group_id::text,i.group_incarnation::text,i.operation)\n  OR NOT EXISTS(SELECT 1 FROM public.audit_events a WHERE a.id=i.audit_id\n    AND a.org_id IS NULL AND a.actor=i.actor_account_id AND a.action='identity.group_process.accept'\n    AND a.target_type='native_group_process_inputs_v1' AND a.target_id=i.intake_receipt_id::text\n    AND a.occurred_at=i.accepted_at AND a.before_snap IS NULL AND a.branch_id IS NULL\n    AND a.after_snap=public.native_group_process_accept_snapshot_v1(i))\n  OR (SELECT count(*) FROM public.audit_events a WHERE a.action='identity.group_process.accept'\n    AND a.target_id=i.intake_receipt_id::text)<>1 THEN\n  RAISE EXCEPTION 'native_group_process.input_closure_invalid';\n END IF;\n IF i.operation=1 AND ((decoded->>'expiry_us')::numeric<=public.native_group_process_micros_v1(i.accepted_at)\n  OR (decoded->>'expiry_us')::numeric-public.native_group_process_micros_v1(i.accepted_at)>31536000000000) THEN\n  RAISE EXCEPTION 'native_group_process.input_closure_invalid';\n END IF;\nEND\n",
+      "source_sha256": "784854d2aae0311b14179066b82f563e42f35878fc115ac0d4661af4efd23c27",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_assert_result_v1",
+      "signature": "public.native_group_process_assert_result_v1(uuid,uuid)",
+      "type_arguments": "uuid, uuid",
+      "identity_arguments": "p_actor uuid, p_command uuid",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "void",
+      "argnames": [
+        "p_actor",
+        "p_command"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE i public.native_group_process_inputs_v1; r public.native_group_process_results_v1;\n f public.native_group_process_effects_v1; policy public.native_group_identity_policy_heads_v1;\n activation public.native_group_process_results_v1; adoption public.native_group_process_results_v1;\n prior public.native_group_process_head_revisions_v1; successor public.native_group_process_head_revisions_v1;\n version_row public.native_group_process_versions_v1; decoded jsonb; content jsonb;\n stale boolean; expected_code text; committed boolean;\nBEGIN\n PERFORM public.native_group_process_assert_input_v1(p_actor,p_command);\n SELECT x.* INTO STRICT i FROM public.native_group_process_inputs_v1 x\n  WHERE x.actor_account_id=p_actor AND x.command_id=p_command;\n SELECT x.* INTO STRICT r FROM public.native_group_process_results_v1 x\n  WHERE x.actor_account_id=p_actor AND x.command_id=p_command;\n SELECT x.* INTO STRICT f FROM public.native_group_process_effects_v1 x\n  WHERE x.actor_account_id=p_actor AND x.command_id=p_command;\n decoded:=public.native_group_process_decode_v1(i.input_bytes);\n IF to_jsonb(r)-ARRAY['layout_version','result_bytes','result_digest','audit_id'] IS DISTINCT FROM to_jsonb(f)\n  OR r.layout_version<>2 OR r.result_bytes IS DISTINCT FROM public.native_group_process_result_bytes_v2(r)\n  OR r.result_digest IS DISTINCT FROM sha256(r.result_bytes)\n  OR (r.policy_before_tag=0)<>(r.before_process_id IS NULL)\n  OR (r.policy_after_tag=0)<>(r.after_process_id IS NULL)\n  OR (r.policy_before_tag=0 AND (r.operation<>1\n    OR (decoded->>'expected_policy_revision')::bigint IS DISTINCT FROM 0\n    OR (decoded->>'expected_prior_head_revision')::bigint IS DISTINCT FROM 0))\n  OR (r.group_id,r.group_incarnation,r.operation,r.input_digest,r.intake_receipt_id,r.accepted_at)\n   IS DISTINCT FROM (i.group_id,i.group_incarnation,i.operation,i.input_digest,i.intake_receipt_id,i.accepted_at)\n  OR r.requested_process_id::text IS DISTINCT FROM decoded->>'process_id'\n  OR r.effect_xid=i.acceptance_xid\n  OR NOT EXISTS(SELECT 1 FROM public.audit_events a WHERE a.id=r.audit_id\n    AND a.org_id IS NULL AND a.actor=r.actor_account_id AND a.action='identity.group_process.complete'\n    AND a.target_type='native_group_process_results_v1' AND a.target_id=r.result_receipt_id::text\n    AND a.occurred_at=r.executed_at AND a.before_snap IS NULL AND a.branch_id IS NULL\n    AND a.after_snap=public.native_group_process_complete_snapshot_v1(r))\n  OR (SELECT count(*) FROM public.audit_events a WHERE a.action='identity.group_process.complete'\n    AND a.target_id=r.result_receipt_id::text)<>1 THEN\n  RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n END IF;\n -- Source identity is historical metadata. Current serving-source checks are\n -- separate, and never rewrite the original result or command bytes.\n IF (r.schema_id,r.schema_digest,r.policy_digest,r.codec_contract_digest,r.registration_manifest_version,\n   r.registration_manifest_digest,r.cedar_sdk_version,r.cedar_language_version)\n  IS DISTINCT FROM (i.schema_id,i.schema_digest,i.policy_digest,i.codec_contract_digest,i.registration_manifest_version,\n   i.registration_manifest_digest,i.cedar_sdk_version,i.cedar_language_version) THEN\n  RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n END IF;\n IF r.policy_after_tag=1 THEN\n  SELECT x.* INTO STRICT policy FROM public.native_group_identity_policy_heads_v1 x\n   WHERE x.group_id=r.group_id AND x.group_incarnation=r.group_incarnation;\n  IF (policy.revision,policy.head_digest) IS DISTINCT FROM (r.policy_after_revision,r.policy_after_head_digest)\n   OR policy.head_digest IS DISTINCT FROM sha256(public.native_group_process_policy_head_bytes_v1(policy))\n   OR policy.registration_manifest_digest IS DISTINCT FROM sha256(public.native_group_process_registration_bytes_v1(\n     policy.group_id,policy.group_incarnation,policy.schema_id,policy.schema_digest,policy.policy_digest,\n     policy.codec_contract_digest,policy.registered_actions)) THEN\n   RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n  END IF;\n  IF r.terminal_code<>'ADOPTED' THEN\n   SELECT x.* INTO STRICT activation FROM public.native_group_process_results_v1 x\n    WHERE x.actor_account_id=policy.first_actor_account_id AND x.command_id=policy.first_command_id;\n   -- Check the closed terminal role before recursion: activation is always\n   -- the first adoption, so corrupt self-links cannot form a recursion cycle.\n   IF activation.terminal_code<>'ADOPTED' OR activation.operation<>1\n    OR (activation.group_id,activation.group_incarnation,activation.result_receipt_id,activation.executed_at,\n      activation.input_digest,activation.policy_after_revision,activation.policy_after_head_digest)\n     IS DISTINCT FROM (policy.group_id,policy.group_incarnation,policy.activation_receipt_id,policy.activated_at,\n      policy.first_input_digest,policy.revision,policy.head_digest)\n    OR activation.executed_at>r.executed_at THEN\n    RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n   END IF;\n   PERFORM public.native_group_process_assert_result_v1(activation.actor_account_id,activation.command_id);\n  END IF;\n END IF;\n IF r.before_process_id IS NOT NULL THEN\n  SELECT x.* INTO STRICT prior FROM public.native_group_process_head_revisions_v1 x\n   WHERE x.group_id=r.group_id AND x.group_incarnation=r.group_incarnation AND x.head_revision=r.before_head_revision;\n  IF (prior.process_id,prior.content_version,prior.content_digest,prior.head_digest,prior.state,prior.expires_at)\n   IS DISTINCT FROM (r.before_process_id,r.before_content_version,r.before_content_digest,r.before_head_digest,r.before_state,r.before_expires_at)\n   OR prior.head_digest IS DISTINCT FROM sha256(public.native_group_process_head_bytes_v1(prior))\n   OR prior.updated_at>r.executed_at THEN RAISE EXCEPTION 'native_group_process.result_closure_invalid'; END IF;\n END IF;\n stale:=(decoded->>'expected_group_revision')::bigint<>r.observed_group_revision\n  OR (decoded->>'expected_policy_revision')::bigint<>coalesce(r.policy_before_revision,0);\n IF r.operation=1 THEN\n  stale:=stale OR (decoded->>'expected_prior_head_revision')::bigint<>coalesce(r.before_head_revision,0)\n   OR (r.before_process_id IS NOT NULL AND r.before_process_id<>r.requested_process_id);\n ELSE\n  stale:=stale OR r.before_process_id IS NULL OR r.before_process_id<>r.requested_process_id\n   OR (decoded->>'content_version')::bigint IS DISTINCT FROM r.before_content_version\n   OR (decoded->>'content_digest')::bytea IS DISTINCT FROM r.before_content_digest\n   OR (decoded->>'expected_head_revision')::bigint IS DISTINCT FROM r.before_head_revision\n   OR (decoded->>'expected_head_digest')::bytea IS DISTINCT FROM r.before_head_digest;\n END IF;\n IF stale THEN expected_code:='REJECTED_STALE_EXPECTATION';\n ELSIF r.operation=1 THEN\n  IF (decoded->>'expiry_us')::bigint<=public.native_group_process_micros_v1(r.executed_at) THEN\n   expected_code:='REJECTED_PROCESS_EXPIRED';\n  ELSIF r.before_process_id IS NULL THEN expected_code:='ADOPTED';\n  ELSE expected_code:='REPLACED'; END IF;\n ELSIF r.before_state='SUSPENDED' THEN expected_code:='REJECTED_ALREADY_SUSPENDED';\n ELSIF r.before_expires_at<=r.executed_at THEN expected_code:='REJECTED_PROCESS_EXPIRED';\n ELSE expected_code:='SUSPENDED'; END IF;\n IF r.terminal_code IS DISTINCT FROM expected_code THEN RAISE EXCEPTION 'native_group_process.result_closure_invalid'; END IF;\n committed:=r.terminal_code IN ('ADOPTED','REPLACED','SUSPENDED');\n IF NOT committed THEN\n  IF EXISTS(SELECT 1 FROM public.native_group_process_head_revisions_v1 h WHERE h.result_receipt_id=r.result_receipt_id)\n   OR EXISTS(SELECT 1 FROM public.native_group_process_versions_v1 v WHERE v.actor_account_id=p_actor AND v.adopt_command_id=p_command)\n   OR EXISTS(SELECT 1 FROM public.native_group_identity_policy_heads_v1 p WHERE p.activation_receipt_id=r.result_receipt_id) THEN\n   RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n  END IF;\n  RETURN;\n END IF;\n SELECT x.* INTO STRICT successor FROM public.native_group_process_head_revisions_v1 x\n  WHERE x.group_id=r.group_id AND x.group_incarnation=r.group_incarnation AND x.head_revision=r.after_head_revision;\n IF (successor.process_id,successor.content_version,successor.content_digest,successor.head_digest,successor.state,successor.expires_at,\n   successor.last_actor_account_id,successor.last_command_id,successor.last_input_digest,successor.result_receipt_id,successor.updated_at,successor.before_head_digest)\n  IS DISTINCT FROM (r.after_process_id,r.after_content_version,r.after_content_digest,r.after_head_digest,r.after_state,r.after_expires_at,\n   r.actor_account_id,r.command_id,r.input_digest,r.result_receipt_id,r.executed_at,r.before_head_digest)\n  OR successor.head_digest IS DISTINCT FROM sha256(public.native_group_process_head_bytes_v1(successor)) THEN\n  RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n END IF;\n SELECT x.* INTO STRICT version_row FROM public.native_group_process_versions_v1 x WHERE\n  (x.group_id,x.group_incarnation,x.process_id,x.version)=(r.group_id,r.group_incarnation,r.after_process_id,r.after_content_version);\n IF (version_row.content_digest,version_row.expires_at,version_row.policy_revision,version_row.policy_head_digest)\n  IS DISTINCT FROM (r.after_content_digest,r.after_expires_at,r.policy_after_revision,r.policy_after_head_digest)\n  OR version_row.content_digest IS DISTINCT FROM sha256(public.native_group_process_version_bytes_v1(version_row)) THEN\n  RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n END IF;\n IF r.operation=1 THEN\n  content:=jsonb_build_object('title',version_row.title,'method',version_row.method,\n   'intended_claimant_matching_procedure',version_row.intended_claimant_matching_procedure,\n   'account_possession_procedure',version_row.account_possession_procedure,\n   'physical_human_evidence_procedure',version_row.physical_human_evidence_procedure,\n   'duplicate_contradictory_claim_procedure',version_row.duplicate_contradictory_claim_procedure,\n   'qualification_criteria_instruction',version_row.qualification_criteria_instruction,\n   'escalation_adjudication_procedure',version_row.escalation_adjudication_procedure,\n   'evidence_minimization_retention_description',version_row.evidence_minimization_retention_description,\n   'recipient_responsibility',version_row.recipient_responsibility);\n  IF content IS DISTINCT FROM decoded->'content'\n   OR public.native_group_process_micros_v1(version_row.expires_at) IS DISTINCT FROM (decoded->>'expiry_us')::bigint\n   OR (version_row.actor_account_id,version_row.designation_receipt_id,version_row.designation_revision,\n    version_row.adopt_command_id,version_row.input_digest,version_row.admitted_at,version_row.operator_responsibility)\n    IS DISTINCT FROM (r.actor_account_id,r.designation_receipt_id,r.designation_revision,r.command_id,r.input_digest,i.accepted_at,1::smallint) THEN\n   RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n  END IF;\n ELSE\n  SELECT x.* INTO STRICT adoption FROM public.native_group_process_results_v1 x\n   WHERE x.actor_account_id=version_row.actor_account_id AND x.command_id=version_row.adopt_command_id;\n  -- A suspension retains the original version and its original admission\n  -- attribution. Resolve that adoption rather than attribute it to suspension.\n  IF adoption.operation<>1 OR adoption.terminal_code NOT IN ('ADOPTED','REPLACED')\n   OR (adoption.group_id,adoption.group_incarnation,adoption.after_process_id,adoption.after_content_version,\n     adoption.after_content_digest,adoption.after_expires_at,adoption.policy_after_revision,adoption.policy_after_head_digest)\n    IS DISTINCT FROM (version_row.group_id,version_row.group_incarnation,version_row.process_id,version_row.version,\n     version_row.content_digest,version_row.expires_at,version_row.policy_revision,version_row.policy_head_digest)\n   OR adoption.executed_at>r.executed_at THEN\n   RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n  END IF;\n  PERFORM public.native_group_process_assert_result_v1(adoption.actor_account_id,adoption.command_id);\n END IF;\n IF r.terminal_code='ADOPTED' AND (policy.first_actor_account_id,policy.first_command_id,policy.first_input_digest,\n  policy.activation_receipt_id,policy.activated_at,policy.schema_id,policy.schema_digest,policy.policy_digest,policy.codec_contract_digest,\n  policy.registration_manifest_version,policy.registration_manifest_digest)\n  IS DISTINCT FROM (r.actor_account_id,r.command_id,r.input_digest,r.result_receipt_id,r.executed_at,r.schema_id,r.schema_digest,\n   r.policy_digest,r.codec_contract_digest,r.registration_manifest_version,r.registration_manifest_digest) THEN\n  RAISE EXCEPTION 'native_group_process.result_closure_invalid';\n END IF;\nEND\n",
+      "source_sha256": "6dd0809a6593c9af3567485f9602689ad7d3f3986b8c6cd36a772c2cf4e5df59",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_assert_current_v1",
+      "signature": "public.native_group_process_assert_current_v1(uuid,uuid)",
+      "type_arguments": "uuid, uuid",
+      "identity_arguments": "p_group uuid, p_incarnation uuid",
+      "input_arguments": [
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_incarnation",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "void",
+      "argnames": [
+        "p_group",
+        "p_incarnation"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE policy public.native_group_identity_policy_heads_v1; head public.native_group_process_heads_v1;\n historical public.native_group_process_head_revisions_v1; source jsonb; count_value bigint; latest bigint; version_count bigint;\nBEGIN\n SELECT x.* INTO policy FROM public.native_group_identity_policy_heads_v1 x\n  WHERE x.group_id=p_group AND x.group_incarnation=p_incarnation;\n SELECT x.* INTO head FROM public.native_group_process_heads_v1 x\n  WHERE x.group_id=p_group AND x.group_incarnation=p_incarnation;\n SELECT count(*),max(h.head_revision) INTO count_value,latest FROM public.native_group_process_head_revisions_v1 h\n  WHERE h.group_id=p_group AND h.group_incarnation=p_incarnation;\n SELECT count(*) INTO version_count FROM public.native_group_process_versions_v1 v\n  WHERE v.group_id=p_group AND v.group_incarnation=p_incarnation;\n IF policy.group_id IS NULL THEN\n  IF head.group_id IS NOT NULL OR count_value<>0 OR version_count<>0 THEN\n   RAISE EXCEPTION 'native_group_process.current_closure_invalid';\n  END IF;\n  RETURN;\n END IF;\n source:=public.native_group_process_source_v1(p_group,p_incarnation);\n IF policy.revision<>1 OR head.group_id IS NULL OR count_value<>latest OR latest IS DISTINCT FROM head.head_revision\n  OR version_count<>head.content_version\n  OR (to_jsonb(policy)-ARRAY['group_id','group_incarnation','revision','first_actor_account_id','first_command_id',\n    'first_input_digest','activation_receipt_id','activated_at','head_digest'])\n   IS DISTINCT FROM (source-ARRAY['cedar_sdk_version','cedar_language_version'])\n  OR policy.head_digest IS DISTINCT FROM sha256(public.native_group_process_policy_head_bytes_v1(policy)) THEN\n  RAISE EXCEPTION 'native_group_process.current_closure_invalid';\n END IF;\n SELECT x.* INTO STRICT historical FROM public.native_group_process_head_revisions_v1 x\n  WHERE x.group_id=p_group AND x.group_incarnation=p_incarnation AND x.head_revision=latest;\n IF head IS DISTINCT FROM historical THEN RAISE EXCEPTION 'native_group_process.current_closure_invalid'; END IF;\n FOR historical IN SELECT x.* FROM public.native_group_process_head_revisions_v1 x\n  WHERE x.group_id=p_group AND x.group_incarnation=p_incarnation ORDER BY x.head_revision LOOP\n  IF historical.process_id IS DISTINCT FROM head.process_id THEN\n   RAISE EXCEPTION 'native_group_process.current_closure_invalid';\n  END IF;\n  PERFORM public.native_group_process_assert_result_v1(historical.last_actor_account_id,historical.last_command_id);\n END LOOP;\n IF EXISTS(SELECT 1 FROM public.native_group_process_versions_v1 v WHERE v.group_id=p_group AND v.group_incarnation=p_incarnation\n  AND (v.process_id<>head.process_id OR NOT EXISTS(SELECT 1 FROM public.native_group_process_head_revisions_v1 h\n   WHERE h.group_id=v.group_id AND h.group_incarnation=v.group_incarnation AND h.process_id=v.process_id\n    AND h.content_version=v.version AND h.content_digest=v.content_digest AND h.state='ACTIVE')))\n  OR EXISTS(SELECT 1 FROM public.native_group_process_effects_v1 f WHERE f.group_id=p_group AND f.group_incarnation=p_incarnation\n   AND NOT EXISTS(SELECT 1 FROM public.native_group_process_results_v1 r WHERE r.actor_account_id=f.actor_account_id AND r.command_id=f.command_id)) THEN\n  RAISE EXCEPTION 'native_group_process.current_closure_invalid';\n END IF;\nEND\n",
+      "source_sha256": "ada73ec2ded8149015f96c7f597a14aff7373701d2e2cb8939307f9056b322af",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_current_context_v1",
+      "signature": "public.native_group_process_current_context_v1(uuid,uuid,uuid,uuid,boolean)",
+      "type_arguments": "uuid, uuid, uuid, uuid, boolean",
+      "identity_arguments": "p_account uuid, p_family uuid, p_group uuid, p_incarnation uuid, p_write boolean",
+      "input_arguments": [
+        {
+          "name": "p_account",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_incarnation",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_write",
+          "type": "boolean",
+          "printed_type": "boolean"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_account",
+        "p_family",
+        "p_group",
+        "p_incarnation",
+        "p_write"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE account_material jsonb; topology public.group_authority_heads; group_row public.groups;\n designation public.deployment_operator_head; birth public.company_enrollment_receipts;\n provenance public.deployment_operator_receipts;\nBEGIN\n PERFORM public.native_group_process_group_guard_v1(p_group,p_write);\n PERFORM 1 FROM public.group_authority_lock_shared_v1(p_group);\n account_material:=public.native_group_process_account_material_v1(p_account,p_family);\n IF NOT public.account_company_setup_eligibility_v1(p_account) THEN\n  RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found';\n END IF;\n SELECT h.* INTO STRICT designation FROM public.deployment_operator_head h\n  WHERE h.singleton=1 AND h.account_id=p_account;\n SELECT g.* INTO STRICT group_row FROM public.groups g WHERE g.id=p_group;\n SELECT h.* INTO STRICT topology FROM public.group_authority_heads h WHERE h.group_id=p_group;\n IF topology.incarnation IS DISTINCT FROM p_incarnation OR topology.state IS DISTINCT FROM 'ACTIVE'\n  OR group_row.status IS DISTINCT FROM 'ACTIVE' THEN\n  RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found';\n END IF;\n SELECT r.* INTO STRICT birth FROM public.company_enrollment_receipts r\n  JOIN public.company_enrollment_requests q ON q.account_id=r.account_id AND q.command_id=r.command_id\n   AND q.committed_receipt_id=r.receipt_id AND q.state='COMMITTED'\n  WHERE (r.group_id,r.account_id,r.command_id,r.receipt_id)=\n   (p_group,group_row.origin_account_id,group_row.origin_command_id,group_row.origin_receipt_id);\n SELECT r.* INTO STRICT provenance FROM public.deployment_operator_receipts r WHERE r.receipt_id=birth.designation_receipt_id;\n IF (provenance.system_identifier,provenance.database_name,provenance.database_oid)\n  IS DISTINCT FROM (designation.system_identifier,designation.database_name,designation.database_oid) THEN\n  RAISE EXCEPTION 'native_group_process.source_unavailable';\n END IF;\n RETURN jsonb_build_object('account',account_material,'group',to_jsonb(group_row),\n  'topology',to_jsonb(topology),'designation',to_jsonb(designation),\n  'group_deployment',jsonb_build_object('system_identifier',provenance.system_identifier,\n   'database_name',provenance.database_name,'database_oid',provenance.database_oid),\n  'source',public.native_group_process_source_v1(p_group,p_incarnation));\nEXCEPTION WHEN no_data_found OR too_many_rows THEN\n RAISE EXCEPTION 'native_group_process.material_unavailable';\nEND\n",
+      "source_sha256": "ba7c666d44eb8ab2448ae923954d60d3d7a251fd683864671e102c13a4d960e1",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_account_material_v1",
+      "signature": "public.native_group_process_account_material_v1(uuid,uuid)",
+      "type_arguments": "uuid, uuid",
+      "identity_arguments": "p_account uuid, p_family uuid",
+      "input_arguments": [
+        {
+          "name": "p_account",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_account",
+        "p_family"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE control record; family record; enrollment uuid; terms uuid; now_value timestamptz;\nBEGIN\n SELECT * INTO STRICT control FROM public.account_security_lock_shared_v1(p_account);\n SELECT * INTO STRICT family FROM public.auth_account_session_shared_material_v1(p_account,p_family);\n now_value:=clock_timestamp();\n IF control.security_state IS DISTINCT FROM 'ACTIVE' OR family.protocol IS DISTINCT FROM 'ACCOUNT_V1'\n  OR family.user_id IS DISTINCT FROM p_account OR family.org_id IS NOT NULL OR family.revoked_at IS NOT NULL\n  OR family.account_security_generation IS DISTINCT FROM control.security_generation\n  OR family.assurance IS DISTINCT FROM 'PASSKEY_PRIMARY' OR family.auth_time IS NULL\n  OR NOT isfinite(family.auth_time) OR NOT isfinite(family.created_at)\n  OR family.auth_time>family.created_at OR family.created_at>now_value THEN\n  RAISE EXCEPTION 'account.authentication_invalid';\n END IF;\n PERFORM 1 FROM public.account_login_consent_v1(p_account);\n SELECT e.id INTO STRICT enrollment FROM public.account_security_events e\n  WHERE e.account_id=p_account AND e.kind='ENROLLED';\n -- Retain the terms owner's validated head through commit; the Account owner\n -- must neither read the protected table directly nor race a terms release.\n SELECT h.release_receipt_id INTO STRICT terms FROM public.account_terms_registration_head_v1() h;\n RETURN jsonb_build_object('actor_account_id',p_account,'session_id',p_family,\n  'account_security_generation',control.security_generation,'account_state',control.security_state,\n  'registration_receipt',enrollment,'current_terms_receipt',terms,\n  'observed_at_us',public.native_group_process_micros_v1(clock_timestamp()),\n  'source_xid',pg_current_xact_id()::text,'source_backend_pid',pg_backend_pid());\nEXCEPTION WHEN no_data_found OR too_many_rows THEN\n RAISE EXCEPTION 'native_group_process.account_material_unavailable';\nEND\n",
+      "source_sha256": "5c18e6bab05a71046acc1537f5666bba68ecb4b0748085eaf85e2972b93d4a85",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_original_material_v1",
+      "signature": "public.native_group_process_original_material_v1(uuid,uuid,uuid,uuid)",
+      "type_arguments": "uuid, uuid, uuid, uuid",
+      "identity_arguments": "p_actor uuid, p_group uuid, p_incarnation uuid, p_command uuid",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_incarnation",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_actor",
+        "p_group",
+        "p_incarnation",
+        "p_command"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE accepted public.native_group_process_inputs_v1; terminal public.native_group_process_results_v1;\nBEGIN\n SELECT i.* INTO accepted FROM public.native_group_process_inputs_v1 i\n  WHERE i.actor_account_id=p_actor AND i.command_id=p_command;\n IF NOT FOUND THEN RETURN NULL; END IF;\n IF (accepted.group_id,accepted.group_incarnation) IS DISTINCT FROM (p_group,p_incarnation) THEN\n  RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found';\n END IF;\n PERFORM public.native_group_process_assert_input_v1(p_actor,p_command);\n SELECT r.* INTO terminal FROM public.native_group_process_results_v1 r\n  WHERE r.actor_account_id=p_actor AND r.command_id=p_command;\n IF FOUND THEN\n  PERFORM public.native_group_process_assert_result_v1(p_actor,p_command);\n  RETURN jsonb_build_object('accepted',to_jsonb(accepted),'terminal',to_jsonb(terminal));\n END IF;\n IF EXISTS(SELECT 1 FROM public.native_group_process_effects_v1 f\n  WHERE f.actor_account_id=p_actor AND f.command_id=p_command) THEN\n  RAISE EXCEPTION 'native_group_process.closure_unavailable';\n END IF;\n RETURN jsonb_build_object('accepted',to_jsonb(accepted),'terminal',NULL);\nEND\n",
+      "source_sha256": "3c21c0a8cf6ad6ca351baf96d848b952c864ba9056973cad5352b5a7c80cda51",
+      "runtime_execute": false
+    },
+    {
+      "name": "identity_native_group_process_material_v1",
+      "signature": "public.identity_native_group_process_material_v1(uuid,uuid,uuid,uuid,uuid,smallint,bytea)",
+      "type_arguments": "uuid, uuid, uuid, uuid, uuid, smallint, bytea",
+      "identity_arguments": "p_account uuid, p_family uuid, p_group uuid, p_incarnation uuid, p_command uuid, p_mode smallint, p_input bytea",
+      "input_arguments": [
+        {
+          "name": "p_account",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_incarnation",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_mode",
+          "type": "smallint",
+          "printed_type": "smallint"
+        },
+        {
+          "name": "p_input",
+          "type": "bytea",
+          "printed_type": "bytea"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_account",
+        "p_family",
+        "p_group",
+        "p_incarnation",
+        "p_command",
+        "p_mode",
+        "p_input"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE account_material jsonb; original jsonb; decoded jsonb; source jsonb; own_receipt boolean; current_context jsonb;\n optional_topology record; policy public.native_group_identity_policy_heads_v1;\n head public.native_group_process_heads_v1; content public.native_group_process_versions_v1;\n history jsonb; final_terminal public.native_group_process_results_v1;\nBEGIN\n IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'\n  OR num_nonnulls(p_account,p_family,p_group,p_incarnation,p_mode)<>5\n  OR '00000000-0000-0000-0000-000000000000'::uuid IN(p_account,p_family,p_group,p_incarnation)\n  OR p_mode NOT BETWEEN 1 AND 8\n  OR ((p_mode IN (1,2,7))<>(p_command IS NULL))\n  OR ((p_mode=3)<>(p_input IS NOT NULL))\n  OR p_command='00000000-0000-0000-0000-000000000000'::uuid THEN\n  RAISE EXCEPTION 'native_group_process.material_unavailable';\n END IF;\n IF p_mode=3 THEN\n  decoded:=public.native_group_process_decode_v1(p_input);\n  IF (decoded->>'actor_account_id',decoded->>'command_id',decoded->>'group_id',decoded->>'group_incarnation')\n   IS DISTINCT FROM (p_account::text,p_command::text,p_group::text,p_incarnation::text) THEN\n   RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n  END IF;\n END IF;\n -- The historical key has no FK to a deletable live head. Fixed Group then\n -- Account/family then command ordering also applies to the retry branch.\n PERFORM public.native_group_process_group_guard_v1(p_group,p_mode IN (3,4,6));\n -- Take an existing live-head guard before Account, matching existing Company\n -- writers. Absence is permitted for every historical receipt purpose.\n SELECT h.* INTO optional_topology FROM public.group_authority_lock_shared_v1(p_group) h;\n account_material:=public.native_group_process_account_material_v1(p_account,p_family);\n IF p_command IS NOT NULL THEN\n  PERFORM public.native_group_process_command_guard_v1(p_account,p_command,p_mode IN (3,4,6));\n  original:=public.native_group_process_original_material_v1(p_account,p_group,p_incarnation,p_command);\n END IF;\n source:=public.native_group_process_source_v1(p_group,p_incarnation);\n own_receipt:=p_mode IN (5,8);\n IF p_mode=6 AND original->'terminal' IS DISTINCT FROM 'null'::jsonb\n  AND original IS NOT NULL THEN\n  SELECT r.* INTO STRICT final_terminal FROM public.native_group_process_results_v1 r\n   WHERE r.actor_account_id=p_account AND r.command_id=p_command;\n  -- A terminal already committed elsewhere is read-own replay. The same-B\n  -- postimage remains current material for its checked consuming finalizer.\n  own_receipt:=(final_terminal.effect_xid,final_terminal.effect_backend_pid)\n   IS DISTINCT FROM (pg_current_xact_id(),pg_backend_pid());\n END IF;\n IF own_receipt THEN\n  IF original IS NULL THEN RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found'; END IF;\n  RETURN jsonb_build_object('variant','OwnReceipt','mode',p_mode,'account',account_material,\n   'group_id',p_group,'group_incarnation',p_incarnation,'original',original,'source',source);\n END IF;\n IF p_mode IN (4,6) AND original IS NULL THEN\n  RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found';\n END IF;\n current_context:=public.native_group_process_current_context_v1(p_account,p_family,p_group,p_incarnation,p_mode IN (3,4,6));\n PERFORM public.native_group_process_assert_current_v1(p_group,p_incarnation);\n SELECT h.* INTO policy FROM public.native_group_identity_policy_heads_v1 h\n  WHERE h.group_id=p_group AND h.group_incarnation=p_incarnation;\n SELECT h.* INTO head FROM public.native_group_process_heads_v1 h\n  WHERE h.group_id=p_group AND h.group_incarnation=p_incarnation;\n IF head.process_id IS NOT NULL THEN\n  SELECT v.* INTO STRICT content FROM public.native_group_process_versions_v1 v\n   WHERE (v.group_id,v.group_incarnation,v.process_id,v.version)=\n    (head.group_id,head.group_incarnation,head.process_id,head.content_version);\n END IF;\n SELECT coalesce(jsonb_agg(jsonb_build_object('head',to_jsonb(h),'reason',\n   CASE i.operation WHEN 6 THEN public.native_group_process_decode_v1(i.input_bytes)->>'reason' END)\n   ORDER BY h.head_revision),'[]'::jsonb) INTO history\n  FROM public.native_group_process_head_revisions_v1 h\n  JOIN public.native_group_process_inputs_v1 i ON i.actor_account_id=h.last_actor_account_id AND i.command_id=h.last_command_id\n  WHERE h.group_id=p_group AND h.group_incarnation=p_incarnation;\n RETURN current_context||jsonb_build_object('variant','CurrentMutation','mode',p_mode,\n  'policy',CASE WHEN policy.group_id IS NOT NULL THEN to_jsonb(policy) END,\n  'head',CASE WHEN head.process_id IS NOT NULL THEN to_jsonb(head) END,\n  'version',CASE WHEN content.process_id IS NOT NULL THEN to_jsonb(content) END,\n  'history',history,'original',original);\nEXCEPTION WHEN no_data_found OR too_many_rows THEN\n RAISE EXCEPTION 'native_group_process.material_unavailable';\nEND\n",
+      "source_sha256": "b707f03c64891777e898d9ebe1d1d40b7abe3d7b732948f8b78e38cd0c9f5d0c",
+      "runtime_execute": true
+    },
+    {
+      "name": "native_group_process_classify_v1",
+      "signature": "public.native_group_process_classify_v1(public.native_group_process_effects_v1,jsonb)",
+      "type_arguments": "public.native_group_process_effects_v1, jsonb",
+      "identity_arguments": "r public.native_group_process_effects_v1, decoded jsonb",
+      "input_arguments": [
+        {
+          "name": "r",
+          "type": "public.native_group_process_effects_v1",
+          "printed_type": "public.native_group_process_effects_v1"
+        },
+        {
+          "name": "decoded",
+          "type": "jsonb",
+          "printed_type": "jsonb"
+        }
+      ],
+      "result": "text",
+      "argnames": [
+        "r",
+        "decoded"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "i",
+      "strict": true,
+      "security_definer": false,
+      "parallel": "s",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": "\nDECLARE stale boolean; expected_code text;\nBEGIN\n stale:=(decoded->>'expected_group_revision')::bigint<>r.observed_group_revision\n  OR (decoded->>'expected_policy_revision')::bigint<>coalesce(r.policy_before_revision,0);\n IF r.operation=1 THEN\n  stale:=stale OR (decoded->>'expected_prior_head_revision')::bigint<>coalesce(r.before_head_revision,0)\n   OR (r.before_process_id IS NOT NULL AND r.before_process_id<>r.requested_process_id);\n ELSE\n  stale:=stale OR r.before_process_id IS NULL OR r.before_process_id<>r.requested_process_id\n   OR (decoded->>'content_version')::bigint IS DISTINCT FROM r.before_content_version\n   OR (decoded->>'content_digest')::bytea IS DISTINCT FROM r.before_content_digest\n   OR (decoded->>'expected_head_revision')::bigint IS DISTINCT FROM r.before_head_revision\n   OR (decoded->>'expected_head_digest')::bytea IS DISTINCT FROM r.before_head_digest;\n END IF;\n IF stale THEN expected_code:='REJECTED_STALE_EXPECTATION';\n ELSIF r.operation=1 THEN\n  IF (decoded->>'expiry_us')::bigint<=public.native_group_process_micros_v1(r.executed_at) THEN\n   expected_code:='REJECTED_PROCESS_EXPIRED';\n  ELSIF r.before_process_id IS NULL THEN expected_code:='ADOPTED';\n  ELSE expected_code:='REPLACED'; END IF;\n ELSIF r.before_state='SUSPENDED' THEN expected_code:='REJECTED_ALREADY_SUSPENDED';\n ELSIF r.before_expires_at<=r.executed_at THEN expected_code:='REJECTED_PROCESS_EXPIRED';\n ELSE expected_code:='SUSPENDED'; END IF;\n RETURN expected_code;\nEND\n",
+      "source_sha256": "8a985f2ad7af5f84e8426a43e8f0756dda8f83570dd87c0480da5215f7b67fda",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_validate_frame_v1",
+      "signature": "public.native_group_process_validate_frame_v1(public.native_group_process_effects_v1)",
+      "type_arguments": "public.native_group_process_effects_v1",
+      "identity_arguments": "f public.native_group_process_effects_v1",
+      "input_arguments": [
+        {
+          "name": "f",
+          "type": "public.native_group_process_effects_v1",
+          "printed_type": "public.native_group_process_effects_v1"
+        }
+      ],
+      "result": "void",
+      "argnames": [
+        "f"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE i public.native_group_process_inputs_v1; m jsonb; source jsonb; d jsonb;\nBEGIN\n PERFORM public.native_group_process_group_guard_v1(f.group_id,true);\n m:=public.native_group_process_current_context_v1(f.actor_account_id,f.execution_session_id,f.group_id,f.group_incarnation,true);\n PERFORM public.native_group_process_command_guard_v1(f.actor_account_id,f.command_id,true);\n SELECT x.* INTO STRICT i FROM public.native_group_process_inputs_v1 x\n  WHERE x.actor_account_id=f.actor_account_id AND x.command_id=f.command_id;\n PERFORM public.native_group_process_assert_input_v1(f.actor_account_id,f.command_id);\n source:=m->'source'; d:=public.native_group_process_decode_v1(i.input_bytes);\n IF (f.group_id,f.group_incarnation,f.operation,f.input_digest,f.intake_receipt_id,f.accepted_at)\n   IS DISTINCT FROM (i.group_id,i.group_incarnation,i.operation,i.input_digest,i.intake_receipt_id,i.accepted_at)\n  OR f.effect_xid IS DISTINCT FROM pg_current_xact_id() OR f.effect_backend_pid IS DISTINCT FROM pg_backend_pid()\n  OR f.effect_xid=i.acceptance_xid OR f.executed_at<transaction_timestamp() OR f.executed_at>clock_timestamp()\n  OR f.executed_at<i.accepted_at\n  OR f.account_security_generation IS DISTINCT FROM (m#>>'{account,account_security_generation}')::bigint\n  OR (f.designation_receipt_id,f.designation_revision,f.observed_group_revision)\n   IS DISTINCT FROM ((m#>>'{designation,receipt_id}')::uuid,(m#>>'{designation,revision}')::bigint,(m#>>'{topology,revision}')::bigint)\n  OR (f.schema_id,f.schema_digest,f.policy_digest,f.codec_contract_digest,f.registration_manifest_version,\n    f.registration_manifest_digest,f.cedar_sdk_version,f.cedar_language_version)\n   IS DISTINCT FROM (source->>'schema_id',(source->>'schema_digest')::bytea,(source->>'policy_digest')::bytea,\n    (source->>'codec_contract_digest')::bytea,(source->>'registration_manifest_version')::bigint,\n    (source->>'registration_manifest_digest')::bytea,source->>'cedar_sdk_version',source->>'cedar_language_version')\n  OR (f.schema_id,f.schema_digest,f.policy_digest,f.codec_contract_digest,f.registration_manifest_version,\n    f.registration_manifest_digest,f.cedar_sdk_version,f.cedar_language_version)\n   IS DISTINCT FROM (i.schema_id,i.schema_digest,i.policy_digest,i.codec_contract_digest,i.registration_manifest_version,\n    i.registration_manifest_digest,i.cedar_sdk_version,i.cedar_language_version)\n  OR f.requested_process_id IS DISTINCT FROM (d->>'process_id')::uuid\n  OR f.terminal_code IS DISTINCT FROM public.native_group_process_classify_v1(f,d)\n  OR (f.terminal_code IN ('ADOPTED','REPLACED','SUSPENDED') AND f.after_expires_at<=clock_timestamp()) THEN\n  RAISE EXCEPTION 'native_group_process.effect_frame_invalid';\n END IF;\nEND\n",
+      "source_sha256": "ea1f536cdbef177a145e3b5d228ccbfc6d3e02ef89524086d2eee4345ec8b1d2",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_input_guard_v1",
+      "signature": "public.native_group_process_input_guard_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE m jsonb; source jsonb; d jsonb;\nBEGIN\n IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'native_group_process.input_immutable'; END IF;\n m:=public.identity_native_group_process_material_v1(NEW.actor_account_id,NEW.accepted_session_id,\n  NEW.group_id,NEW.group_incarnation,NEW.command_id,3::smallint,NEW.input_bytes);\n source:=m->'source'; d:=public.native_group_process_decode_v1(NEW.input_bytes);\n IF NEW.acceptance_xid IS DISTINCT FROM pg_current_xact_id() OR NEW.acceptance_backend_pid IS DISTINCT FROM pg_backend_pid()\n  OR NEW.accepted_at<transaction_timestamp() OR NEW.accepted_at>clock_timestamp()\n  OR NEW.codec_version<>1 OR NEW.input_digest IS DISTINCT FROM sha256(NEW.input_bytes)\n  OR NEW.operation IS DISTINCT FROM (d->>'operation')::smallint\n  OR NEW.account_security_generation IS DISTINCT FROM (m#>>'{account,account_security_generation}')::bigint\n  OR (NEW.designation_receipt_id,NEW.designation_revision,NEW.observed_group_revision)\n   IS DISTINCT FROM ((m#>>'{designation,receipt_id}')::uuid,(m#>>'{designation,revision}')::bigint,(m#>>'{topology,revision}')::bigint)\n  OR (NEW.schema_id,NEW.schema_digest,NEW.policy_digest,NEW.codec_contract_digest,NEW.registration_manifest_version,\n    NEW.registration_manifest_digest,NEW.cedar_sdk_version,NEW.cedar_language_version)\n   IS DISTINCT FROM (source->>'schema_id',(source->>'schema_digest')::bytea,(source->>'policy_digest')::bytea,\n    (source->>'codec_contract_digest')::bytea,(source->>'registration_manifest_version')::bigint,\n    (source->>'registration_manifest_digest')::bytea,source->>'cedar_sdk_version',source->>'cedar_language_version')\n  OR (NEW.accepted_policy_tag,NEW.accepted_policy_revision,NEW.accepted_policy_head_digest)\n   IS DISTINCT FROM (CASE WHEN m->'policy'='null'::jsonb THEN 0::smallint ELSE 1::smallint END,\n    (m#>>'{policy,revision}')::bigint,(m#>>'{policy,head_digest}')::bytea)\n  OR (d->>'expected_group_revision')::bigint IS DISTINCT FROM NEW.observed_group_revision\n  OR (d->>'expected_policy_revision')::bigint IS DISTINCT FROM coalesce(NEW.accepted_policy_revision,0)\n  OR (NEW.operation=1 AND ((d->>'expected_prior_head_revision')::bigint IS DISTINCT FROM coalesce((m#>>'{head,head_revision}')::bigint,0)\n    OR (m->'head'<>'null'::jsonb AND (d->>'process_id')::uuid IS DISTINCT FROM (m#>>'{head,process_id}')::uuid)\n    OR (d->>'expiry_us')::numeric<=public.native_group_process_micros_v1(NEW.accepted_at)\n    OR (d->>'expiry_us')::numeric-public.native_group_process_micros_v1(NEW.accepted_at)>31536000000000))\n  OR (NEW.operation=6 AND (m->'head'='null'::jsonb\n    OR (d->>'process_id',d->>'content_version',d->>'content_digest',d->>'expected_head_revision',d->>'expected_head_digest')\n     IS DISTINCT FROM (m#>>'{head,process_id}',m#>>'{head,content_version}',m#>>'{head,content_digest}',m#>>'{head,head_revision}',m#>>'{head,head_digest}'))) THEN\n  RAISE EXCEPTION 'native_group_process.input_frame_invalid';\n END IF;\n RETURN NEW;\nEND\n",
+      "source_sha256": "f49962188d721bba18a99647ec9188cbc29b8417fa70cbb06a04c876580d5d99",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_effect_guard_v1",
+      "signature": "public.native_group_process_effect_guard_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE head public.native_group_process_heads_v1; policy public.native_group_identity_policy_heads_v1;\nBEGIN\n IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'native_group_process.effect_immutable'; END IF;\n PERFORM public.native_group_process_validate_frame_v1(NEW);\n PERFORM public.native_group_process_assert_current_v1(NEW.group_id,NEW.group_incarnation);\n SELECT x.* INTO head FROM public.native_group_process_heads_v1 x WHERE x.group_id=NEW.group_id AND x.group_incarnation=NEW.group_incarnation;\n SELECT x.* INTO policy FROM public.native_group_identity_policy_heads_v1 x WHERE x.group_id=NEW.group_id AND x.group_incarnation=NEW.group_incarnation;\n IF (NEW.policy_before_tag,NEW.policy_before_revision,NEW.policy_before_head_digest)\n   IS DISTINCT FROM (CASE WHEN policy.group_id IS NULL THEN 0::smallint ELSE 1::smallint END,policy.revision,policy.head_digest)\n  OR (NEW.before_process_id,NEW.before_head_revision,NEW.before_content_version,NEW.before_content_digest,\n    NEW.before_head_digest,NEW.before_state,NEW.before_expires_at)\n   IS DISTINCT FROM (head.process_id,head.head_revision,head.content_version,head.content_digest,head.head_digest,head.state,head.expires_at) THEN\n  RAISE EXCEPTION 'native_group_process.effect_preimage_invalid';\n END IF;\n RETURN NEW;\nEND\n",
+      "source_sha256": "919596477d7e5aefa67753f407607809cab58a661197ab36dc19dce955d5043c",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_participant_guard_v1",
+      "signature": "public.native_group_process_participant_guard_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE row_json jsonb; f public.native_group_process_effects_v1; actor uuid; command uuid; receipt uuid;\nBEGIN\n IF TG_OP='TRUNCATE' THEN RAISE EXCEPTION 'native_group_process.truncate_denied'; END IF;\n IF TG_OP='DELETE' OR (TG_OP='UPDATE' AND TG_TABLE_NAME<>'native_group_process_heads_v1') THEN\n  RAISE EXCEPTION 'native_group_process.participant_immutable';\n END IF;\n row_json:=to_jsonb(NEW);\n IF TG_TABLE_NAME='native_group_process_results_v1' THEN\n  actor:=NEW.actor_account_id; command:=NEW.command_id;\n ELSIF TG_TABLE_NAME='native_group_identity_policy_heads_v1' THEN\n  actor:=NEW.first_actor_account_id; command:=NEW.first_command_id;\n ELSIF TG_TABLE_NAME='native_group_process_versions_v1' THEN\n  actor:=NEW.actor_account_id; command:=NEW.adopt_command_id;\n ELSIF TG_TABLE_NAME IN ('native_group_process_head_revisions_v1','native_group_process_heads_v1') THEN\n  actor:=NEW.last_actor_account_id; command:=NEW.last_command_id;\n ELSE RAISE EXCEPTION 'native_group_process.guard_unavailable'; END IF;\n SELECT x.* INTO STRICT f FROM public.native_group_process_effects_v1 x WHERE x.actor_account_id=actor AND x.command_id=command;\n PERFORM public.native_group_process_validate_frame_v1(f);\n IF (row_json->>'group_id',row_json->>'group_incarnation') IS DISTINCT FROM (f.group_id::text,f.group_incarnation::text) THEN\n  RAISE EXCEPTION 'native_group_process.participant_frame_invalid';\n END IF;\n IF TG_TABLE_NAME='native_group_process_results_v1' THEN\n  IF row_json-ARRAY['layout_version','result_bytes','result_digest','audit_id'] IS DISTINCT FROM to_jsonb(f)\n   OR NEW.layout_version<>2 OR NEW.result_bytes IS DISTINCT FROM public.native_group_process_result_bytes_v2(NEW)\n   OR NEW.result_digest IS DISTINCT FROM sha256(NEW.result_bytes) THEN RAISE EXCEPTION 'native_group_process.participant_frame_invalid'; END IF;\n ELSIF TG_TABLE_NAME='native_group_identity_policy_heads_v1' THEN\n  IF f.terminal_code<>'ADOPTED' OR NEW.activation_receipt_id IS DISTINCT FROM f.result_receipt_id\n   OR NEW.head_digest IS DISTINCT FROM f.policy_after_head_digest\n   OR NEW.head_digest IS DISTINCT FROM sha256(public.native_group_process_policy_head_bytes_v1(NEW)) THEN\n   RAISE EXCEPTION 'native_group_process.participant_frame_invalid';\n  END IF;\n ELSIF TG_TABLE_NAME='native_group_process_versions_v1' THEN\n  IF f.terminal_code NOT IN ('ADOPTED','REPLACED')\n   OR (NEW.process_id,NEW.version,NEW.content_digest,NEW.expires_at)\n    IS DISTINCT FROM (f.after_process_id,f.after_content_version,f.after_content_digest,f.after_expires_at)\n   OR NEW.content_digest IS DISTINCT FROM sha256(public.native_group_process_version_bytes_v1(NEW)) THEN\n   RAISE EXCEPTION 'native_group_process.participant_frame_invalid';\n  END IF;\n ELSE\n  IF f.terminal_code NOT IN ('ADOPTED','REPLACED','SUSPENDED')\n   OR (NEW.process_id,NEW.head_revision,NEW.content_version,NEW.content_digest,NEW.head_digest,NEW.state,NEW.expires_at,\n     NEW.last_input_digest,NEW.result_receipt_id,NEW.updated_at,NEW.before_head_digest)\n    IS DISTINCT FROM (f.after_process_id,f.after_head_revision,f.after_content_version,f.after_content_digest,f.after_head_digest,\n     f.after_state,f.after_expires_at,f.input_digest,f.result_receipt_id,f.executed_at,f.before_head_digest) THEN\n   RAISE EXCEPTION 'native_group_process.participant_frame_invalid';\n  END IF;\n  IF TG_TABLE_NAME='native_group_process_heads_v1' THEN\n   IF (TG_OP='INSERT' AND f.terminal_code<>'ADOPTED') OR (TG_OP='UPDATE' AND\n     (f.terminal_code='ADOPTED' OR (OLD.group_id,OLD.group_incarnation,OLD.process_id,OLD.head_revision,OLD.content_version,\n       OLD.content_digest,OLD.head_digest,OLD.state,OLD.expires_at)\n      IS DISTINCT FROM (f.group_id,f.group_incarnation,f.before_process_id,f.before_head_revision,f.before_content_version,\n       f.before_content_digest,f.before_head_digest,f.before_state,f.before_expires_at))) THEN\n    RAISE EXCEPTION 'native_group_process.head_preimage_invalid';\n   END IF;\n  END IF;\n END IF;\n RETURN NEW;\nEND\n",
+      "source_sha256": "2fd16e3cd941f10fc50e72df19ac6be2208120bc588b06c521789f4ca4ca1f69",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_deferred_guard_v1",
+      "signature": "public.native_group_process_deferred_guard_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE row_json jsonb:=to_jsonb(NEW); actor uuid; command uuid;\nBEGIN\n IF TG_TABLE_NAME='native_group_identity_policy_heads_v1' THEN actor:=NEW.first_actor_account_id; command:=NEW.first_command_id;\n ELSIF TG_TABLE_NAME='native_group_process_versions_v1' THEN actor:=NEW.actor_account_id; command:=NEW.adopt_command_id;\n ELSIF TG_TABLE_NAME IN ('native_group_process_head_revisions_v1','native_group_process_heads_v1') THEN actor:=NEW.last_actor_account_id; command:=NEW.last_command_id;\n ELSE actor:=NEW.actor_account_id; command:=NEW.command_id; END IF;\n PERFORM public.native_group_process_assert_input_v1(actor,command);\n IF TG_TABLE_NAME<>'native_group_process_inputs_v1' THEN\n  PERFORM public.native_group_process_assert_result_v1(actor,command);\n  PERFORM public.native_group_process_assert_current_v1((row_json->>'group_id')::uuid,(row_json->>'group_incarnation')::uuid);\n END IF;\n RETURN NULL;\nEND\n",
+      "source_sha256": "ee86dcde061f74780c4a30ae160810a3dfc2c3311f3ea00e6679ef611aeffde9",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_immutable_statement_v1",
+      "signature": "public.native_group_process_immutable_statement_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "body": " BEGIN RAISE EXCEPTION 'native_group_process.statement_denied'; END ",
+      "source_sha256": "22fdafcacfdeae65d700ec57f919ef17481d3553dacecf75a833ffe01f3ac323",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_head_statement_v1",
+      "signature": "public.native_group_process_head_statement_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nBEGIN\n IF (SELECT count(*) FROM native_group_old_heads)<>1 OR (SELECT count(*) FROM native_group_new_heads)<>1 THEN\n  RAISE EXCEPTION 'native_group_process.head_statement_invalid';\n END IF;\n RETURN NULL;\nEND\n",
+      "source_sha256": "03efe21899ba266833796965c65398bbf1a508367c4176b5d148b5f09ad3296d",
+      "runtime_execute": false
+    },
+    {
+      "name": "identity_native_group_process_prepare_v1",
+      "signature": "public.identity_native_group_process_prepare_v1(uuid,uuid,uuid,bytea)",
+      "type_arguments": "uuid, uuid, uuid, bytea",
+      "identity_arguments": "p_actor uuid, p_family uuid, p_command uuid, p_input bytea",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_input",
+          "type": "bytea",
+          "printed_type": "bytea"
+        }
+      ],
+      "result": "TABLE(inserted boolean, accepted_input public.native_group_process_inputs_v1, terminal public.native_group_process_results_v1)",
+      "argnames": [
+        "p_actor",
+        "p_family",
+        "p_command",
+        "p_input",
+        "inserted",
+        "accepted_input",
+        "terminal"
+      ],
+      "argmodes": [
+        "i",
+        "i",
+        "i",
+        "i",
+        "t",
+        "t",
+        "t"
+      ],
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": true,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE d jsonb; m jsonb; source jsonb; at_time timestamptz;\nBEGIN\n d:=public.native_group_process_decode_v1(p_input);\n IF (d->>'actor_account_id',d->>'command_id') IS DISTINCT FROM (p_actor::text,p_command::text) THEN\n  RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='native_group_process.invalid_input';\n END IF;\n m:=public.identity_native_group_process_material_v1(p_actor,p_family,(d->>'group_id')::uuid,\n  (d->>'group_incarnation')::uuid,p_command,3::smallint,p_input);\n IF m->'original'<>'null'::jsonb THEN\n  SELECT i.* INTO STRICT accepted_input FROM public.native_group_process_inputs_v1 i\n   WHERE i.actor_account_id=p_actor AND i.command_id=p_command;\n  IF accepted_input.input_bytes IS DISTINCT FROM p_input THEN RAISE EXCEPTION 'native_group_process.conflict'; END IF;\n  SELECT r.* INTO terminal FROM public.native_group_process_results_v1 r WHERE r.actor_account_id=p_actor AND r.command_id=p_command;\n  inserted:=false; RETURN NEXT; RETURN;\n END IF;\n source:=m->'source'; at_time:=clock_timestamp();\n accepted_input:=jsonb_populate_record(NULL::public.native_group_process_inputs_v1,source-'registered_actions'||jsonb_build_object(\n  'actor_account_id',p_actor,'command_id',p_command,'group_id',d->>'group_id','group_incarnation',d->>'group_incarnation',\n  'operation',(d->>'operation')::smallint,'codec_version',1,'input_bytes',p_input,'input_digest',sha256(p_input),\n  'intake_receipt_id',gen_random_uuid(),'accepted_at',at_time,'accepted_session_id',p_family,\n  'account_security_generation',(m#>>'{account,account_security_generation}')::bigint,\n  'designation_receipt_id',m#>>'{designation,receipt_id}','designation_revision',(m#>>'{designation,revision}')::bigint,\n  'observed_group_revision',(m#>>'{topology,revision}')::bigint,\n  'accepted_policy_tag',CASE WHEN m->'policy'='null'::jsonb THEN 0 ELSE 1 END,\n  'accepted_policy_revision',m#>>'{policy,revision}','accepted_policy_head_digest',m#>>'{policy,head_digest}',\n  'acceptance_xid',pg_current_xact_id()::text,'acceptance_backend_pid',pg_backend_pid(),'audit_id',gen_random_uuid()));\n INSERT INTO public.native_group_process_inputs_v1 SELECT accepted_input.*;\n -- The adapter appends the exact returned audit UUID before any closure read.\n inserted:=true; RETURN NEXT;\nEND\n",
+      "source_sha256": "d28d52c43eec21d28c469ed883abd437771ae54ebd94ba6637af965101a43fb2",
+      "runtime_execute": true
+    },
+    {
+      "name": "identity_native_group_process_execute_v1",
+      "signature": "public.identity_native_group_process_execute_v1(uuid,uuid,uuid)",
+      "type_arguments": "uuid, uuid, uuid",
+      "identity_arguments": "p_actor uuid, p_family uuid, p_command uuid",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "TABLE(inserted boolean, accepted_input public.native_group_process_inputs_v1, terminal public.native_group_process_results_v1)",
+      "argnames": [
+        "p_actor",
+        "p_family",
+        "p_command",
+        "inserted",
+        "accepted_input",
+        "terminal"
+      ],
+      "argmodes": [
+        "i",
+        "i",
+        "i",
+        "t",
+        "t",
+        "t"
+      ],
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": true,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE m jsonb; source jsonb; d jsonb; at_time timestamptz; expiry_value timestamptz;\n f public.native_group_process_effects_v1; policy public.native_group_identity_policy_heads_v1;\n head public.native_group_process_heads_v1; version_row public.native_group_process_versions_v1;\n history public.native_group_process_head_revisions_v1; policy_json jsonb; head_json jsonb; content jsonb;\nBEGIN\n -- Namespace discovery is a selector only. Rows are immutable; their Group and\n -- actor binding is reloaded after the deterministic Group-first lock plan.\n SELECT i.* INTO STRICT accepted_input FROM public.native_group_process_inputs_v1 i\n  WHERE i.actor_account_id=p_actor AND i.command_id=p_command;\n m:=public.identity_native_group_process_material_v1(p_actor,p_family,accepted_input.group_id,\n  accepted_input.group_incarnation,p_command,4::smallint,NULL);\n SELECT i.* INTO STRICT accepted_input FROM public.native_group_process_inputs_v1 i\n  WHERE i.actor_account_id=p_actor AND i.command_id=p_command;\n IF accepted_input.acceptance_xid=pg_current_xact_id() THEN RAISE EXCEPTION 'native_group_process.separate_commit_required'; END IF;\n IF m#>'{original,terminal}'<>'null'::jsonb THEN\n  -- Terminal replay belongs to the retained read-own scope, never this writer.\n  RAISE EXCEPTION 'native_group_process.pending_required';\n END IF;\n source:=m->'source'; d:=public.native_group_process_decode_v1(accepted_input.input_bytes);\n at_time:=clock_timestamp(); policy_json:=m->'policy'; head_json:=m->'head';\n f:=jsonb_populate_record(NULL::public.native_group_process_effects_v1,source-'registered_actions'||jsonb_build_object(\n  'actor_account_id',p_actor,'command_id',p_command,'group_id',accepted_input.group_id,'group_incarnation',accepted_input.group_incarnation,\n  'operation',accepted_input.operation,'input_digest',accepted_input.input_digest,'intake_receipt_id',accepted_input.intake_receipt_id,\n  'effect_id',gen_random_uuid(),'result_receipt_id',gen_random_uuid(),'accepted_at',accepted_input.accepted_at,\n  'executed_at',at_time,'execution_session_id',p_family,\n  'account_security_generation',(m#>>'{account,account_security_generation}')::bigint,\n  'designation_receipt_id',m#>>'{designation,receipt_id}','designation_revision',(m#>>'{designation,revision}')::bigint,\n  'observed_group_revision',(m#>>'{topology,revision}')::bigint,\n  'policy_before_tag',CASE WHEN policy_json='null'::jsonb THEN 0 ELSE 1 END,\n  'policy_before_revision',policy_json->>'revision','policy_before_head_digest',policy_json->>'head_digest',\n  'requested_process_id',d->>'process_id','before_process_id',head_json->>'process_id',\n  'before_head_revision',head_json->>'head_revision','before_content_version',head_json->>'content_version',\n  'before_content_digest',head_json->>'content_digest','before_head_digest',head_json->>'head_digest',\n  'before_state',head_json->>'state','before_expires_at',head_json->>'expires_at',\n  'effect_xid',pg_current_xact_id()::text,'effect_backend_pid',pg_backend_pid()));\n f.terminal_code:=public.native_group_process_classify_v1(f,d);\n f.policy_after_tag:=f.policy_before_tag; f.policy_after_revision:=f.policy_before_revision; f.policy_after_head_digest:=f.policy_before_head_digest;\n f.after_process_id:=f.before_process_id; f.after_head_revision:=f.before_head_revision; f.after_content_version:=f.before_content_version;\n f.after_content_digest:=f.before_content_digest; f.after_head_digest:=f.before_head_digest; f.after_state:=f.before_state; f.after_expires_at:=f.before_expires_at;\n IF f.terminal_code='ADOPTED' THEN\n  policy:=jsonb_populate_record(NULL::public.native_group_identity_policy_heads_v1,source-ARRAY['cedar_sdk_version','cedar_language_version']||jsonb_build_object(\n   'group_id',f.group_id,'group_incarnation',f.group_incarnation,'revision',1,'first_actor_account_id',p_actor,\n   'first_command_id',p_command,'first_input_digest',f.input_digest,'activation_receipt_id',f.result_receipt_id,'activated_at',at_time));\n  policy.head_digest:=sha256(public.native_group_process_policy_head_bytes_v1(policy));\n  f.policy_after_tag:=1; f.policy_after_revision:=1; f.policy_after_head_digest:=policy.head_digest;\n END IF;\n IF f.terminal_code IN ('ADOPTED','REPLACED') THEN\n  content:=d->'content';\n  -- Parse integer seconds through PostgreSQL's interval grammar, never a float\n  -- to_timestamp. Exact microsecond roundtrip is mandatory before persistence.\n  expiry_value:=((timestamp '1970-01-01'+(((d->>'expiry_us')::bigint/1000000)::text||' seconds')::interval) AT TIME ZONE 'UTC');\n  IF public.native_group_process_micros_v1(expiry_value) IS DISTINCT FROM (d->>'expiry_us')::bigint THEN\n   RAISE EXCEPTION 'native_group_process.expiry_unavailable';\n  END IF;\n  version_row:=jsonb_populate_record(NULL::public.native_group_process_versions_v1,content||jsonb_build_object(\n   'group_id',f.group_id,'group_incarnation',f.group_incarnation,'process_id',f.requested_process_id,\n   'version',coalesce(f.before_content_version,0)+1,'schema_id','GROUP_VERIFIER_PROCESS_V1',\n   'actor_account_id',p_actor,'designation_receipt_id',f.designation_receipt_id,'designation_revision',f.designation_revision,\n   'policy_revision',f.policy_after_revision,'policy_head_digest',f.policy_after_head_digest,\n   'adopt_command_id',p_command,'input_digest',f.input_digest,'admitted_at',accepted_input.accepted_at,\n   'expires_at',expiry_value,'operator_responsibility',1));\n  version_row.content_digest:=sha256(public.native_group_process_version_bytes_v1(version_row));\n  f.after_process_id:=f.requested_process_id; f.after_content_version:=version_row.version;\n  f.after_content_digest:=version_row.content_digest; f.after_expires_at:=expiry_value; f.after_state:='ACTIVE';\n END IF;\n IF f.terminal_code IN ('ADOPTED','REPLACED','SUSPENDED') THEN\n  f.after_head_revision:=coalesce(f.before_head_revision,0)+1;\n  IF f.terminal_code='SUSPENDED' THEN f.after_state:='SUSPENDED'; END IF;\n  history:=jsonb_populate_record(NULL::public.native_group_process_head_revisions_v1,jsonb_build_object(\n   'group_id',f.group_id,'group_incarnation',f.group_incarnation,'process_id',f.after_process_id,'head_revision',f.after_head_revision,\n   'content_version',f.after_content_version,'content_digest',f.after_content_digest,'state',f.after_state,'expires_at',f.after_expires_at,\n   'last_actor_account_id',p_actor,'last_command_id',p_command,'last_input_digest',f.input_digest,\n   'result_receipt_id',f.result_receipt_id,'updated_at',at_time,'before_head_digest',f.before_head_digest));\n  history.head_digest:=sha256(public.native_group_process_head_bytes_v1(history)); f.after_head_digest:=history.head_digest;\n END IF;\n f.effect_census:=jsonb_build_object('policy_heads',CASE WHEN f.terminal_code='ADOPTED' THEN 1 ELSE 0 END,\n  'versions',CASE WHEN f.terminal_code IN ('ADOPTED','REPLACED') THEN 1 ELSE 0 END,\n  'heads',CASE WHEN f.terminal_code IN ('ADOPTED','REPLACED','SUSPENDED') THEN 1 ELSE 0 END,\n  'head_revisions',CASE WHEN f.terminal_code IN ('ADOPTED','REPLACED','SUSPENDED') THEN 1 ELSE 0 END,\n  'effects',1,'results',1,'audits',1);\n terminal:=jsonb_populate_record(NULL::public.native_group_process_results_v1,to_jsonb(f)||jsonb_build_object('layout_version',2,'audit_id',gen_random_uuid()));\n terminal.result_bytes:=public.native_group_process_result_bytes_v2(terminal); terminal.result_digest:=sha256(terminal.result_bytes);\n -- Frame precedes provisional participants. All reciprocal FKs are deferred;\n -- no complete material/closure is read until the adapter appends shared audit.\n INSERT INTO public.native_group_process_effects_v1 SELECT f.*;\n INSERT INTO public.native_group_process_results_v1 SELECT terminal.*;\n IF f.terminal_code='ADOPTED' THEN INSERT INTO public.native_group_identity_policy_heads_v1 SELECT policy.*; END IF;\n IF f.terminal_code IN ('ADOPTED','REPLACED') THEN INSERT INTO public.native_group_process_versions_v1 SELECT version_row.*; END IF;\n IF f.terminal_code IN ('ADOPTED','REPLACED','SUSPENDED') THEN\n  INSERT INTO public.native_group_process_head_revisions_v1 SELECT history.*;\n  IF f.terminal_code='ADOPTED' THEN\n   INSERT INTO public.native_group_process_heads_v1 SELECT history.*;\n  ELSE\n   UPDATE public.native_group_process_heads_v1 h SET\n    head_revision=history.head_revision,content_version=history.content_version,content_digest=history.content_digest,\n    state=history.state,expires_at=history.expires_at,last_actor_account_id=history.last_actor_account_id,\n    last_command_id=history.last_command_id,last_input_digest=history.last_input_digest,result_receipt_id=history.result_receipt_id,\n    updated_at=history.updated_at,head_digest=history.head_digest,before_head_digest=history.before_head_digest\n   WHERE h.group_id=f.group_id AND h.group_incarnation=f.group_incarnation\n    AND (h.process_id,h.head_revision,h.content_version,h.content_digest,h.head_digest,h.state,h.expires_at)\n     IS NOT DISTINCT FROM (f.before_process_id,f.before_head_revision,f.before_content_version,f.before_content_digest,\n      f.before_head_digest,f.before_state,f.before_expires_at);\n   IF NOT FOUND THEN RAISE EXCEPTION 'native_group_process.head_conflict'; END IF;\n  END IF;\n END IF;\n inserted:=true; RETURN NEXT;\nEXCEPTION WHEN no_data_found OR too_many_rows THEN RAISE EXCEPTION 'native_group_process.material_unavailable';\nEND\n",
+      "source_sha256": "5fbca2b4e452964048f5cc0882f16ec0ceb0687f1e450d6876f04a36c2a76387",
+      "runtime_execute": true
+    },
+    {
+      "name": "native_group_process_audit_guard_v1",
+      "signature": "public.native_group_process_audit_guard_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nDECLARE i public.native_group_process_inputs_v1; r public.native_group_process_results_v1;\n frame_group uuid; frame_actor uuid; frame_session uuid; frame_generation bigint;\n frame_xid xid8; frame_pid integer; frame_target text; frame_receipt uuid; frame_time timestamptz;\n frame_payload jsonb; account_material jsonb;\nBEGIN\n IF TG_OP IN ('UPDATE','DELETE') AND OLD.action IN ('identity.group_process.accept','identity.group_process.complete') THEN\n  RAISE EXCEPTION 'native_group_process.audit_immutable';\n END IF;\n IF TG_OP='DELETE' THEN RETURN OLD; END IF;\n IF NEW.action NOT IN ('identity.group_process.accept','identity.group_process.complete') THEN RETURN NEW; END IF;\n IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'native_group_process.audit_immutable'; END IF;\n -- These selectors confer no authority. The exact same-transaction frame and\n -- fixed Group-first locks are checked before any protected event is admitted.\n IF NEW.action='identity.group_process.accept' THEN\n  SELECT x.* INTO STRICT i FROM public.native_group_process_inputs_v1 x WHERE x.audit_id=NEW.id;\n  frame_group:=i.group_id; frame_actor:=i.actor_account_id; frame_session:=i.accepted_session_id;\n  frame_generation:=i.account_security_generation; frame_xid:=i.acceptance_xid; frame_pid:=i.acceptance_backend_pid;\n  frame_target:='native_group_process_inputs_v1'; frame_receipt:=i.intake_receipt_id; frame_time:=i.accepted_at;\n  frame_payload:=public.native_group_process_accept_snapshot_v1(i);\n ELSE\n  SELECT x.* INTO STRICT r FROM public.native_group_process_results_v1 x WHERE x.audit_id=NEW.id;\n  frame_group:=r.group_id; frame_actor:=r.actor_account_id; frame_session:=r.execution_session_id;\n  frame_generation:=r.account_security_generation; frame_xid:=r.effect_xid; frame_pid:=r.effect_backend_pid;\n  frame_target:='native_group_process_results_v1'; frame_receipt:=r.result_receipt_id; frame_time:=r.executed_at;\n  frame_payload:=public.native_group_process_complete_snapshot_v1(r);\n END IF;\n IF frame_xid IS DISTINCT FROM pg_current_xact_id() OR frame_pid IS DISTINCT FROM pg_backend_pid() THEN\n  RAISE EXCEPTION 'native_group_process.audit_frame_invalid';\n END IF;\n PERFORM public.native_group_process_group_guard_v1(frame_group,true);\n PERFORM 1 FROM public.group_authority_lock_shared_v1(frame_group);\n account_material:=public.native_group_process_account_material_v1(frame_actor,frame_session);\n IF (account_material->>'account_security_generation')::bigint IS DISTINCT FROM frame_generation\n  OR (NEW.actor,NEW.target_type,NEW.target_id,NEW.occurred_at,NEW.after_snap)\n   IS DISTINCT FROM (frame_actor,frame_target,frame_receipt::text,frame_time,frame_payload)\n  OR NEW.org_id IS NOT NULL OR NEW.branch_id IS NOT NULL OR NEW.before_snap IS NOT NULL\n  OR num_nonnulls(NEW.ip,NEW.user_agent,NEW.auth_method,NEW.device,NEW.classification_badges,NEW.anomaly,NEW.reason)<>0\n  OR NEW.trace_id IS NULL OR octet_length(NEW.trace_id)<>32 OR NEW.trace_id !~ '^[0-9a-f]{32}$' OR NEW.trace_id=repeat('0',32)\n  OR NEW.span_id IS NULL OR octet_length(NEW.span_id)<>16 OR NEW.span_id !~ '^[0-9a-f]{16}$' OR NEW.span_id=repeat('0',16) THEN\n  RAISE EXCEPTION 'native_group_process.audit_frame_invalid';\n END IF;\n RETURN NEW;\nEND\n",
+      "source_sha256": "d11e5b29695d59edf72d1d0247a4b03ebf38d8d3d68976dc8d8e22be47b7f622",
+      "runtime_execute": false
+    },
+    {
+      "name": "native_group_process_audit_truncate_guard_v1",
+      "signature": "public.native_group_process_audit_truncate_guard_v1()",
+      "type_arguments": "",
+      "identity_arguments": "",
+      "input_arguments": [],
+      "result": "trigger",
+      "argnames": null,
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "body": "\nBEGIN\n IF EXISTS(SELECT 1 FROM public.native_group_process_inputs_v1)\n  OR EXISTS(SELECT 1 FROM public.native_group_process_results_v1) THEN\n  RAISE EXCEPTION 'native_group_process.audit_immutable';\n END IF;\n RETURN NULL;\nEND\n",
+      "source_sha256": "1b509b28e57817f9ee7bdbd0eecd8905116b45f76d1c9028225bd28a30d81d81",
+      "runtime_execute": false
+    },
+    {
+      "name": "identity_native_group_process_incarnation_selector_v1",
+      "signature": "public.identity_native_group_process_incarnation_selector_v1(uuid,uuid,uuid,uuid)",
+      "type_arguments": "uuid, uuid, uuid, uuid",
+      "identity_arguments": "p_actor uuid, p_family uuid, p_group uuid, p_command uuid",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_group",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_command",
+          "type": "uuid",
+          "printed_type": "uuid"
+        }
+      ],
+      "result": "uuid",
+      "argnames": [
+        "p_actor",
+        "p_family",
+        "p_group",
+        "p_command"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on",
+        "TimeZone=UTC",
+        "bytea_output=hex",
+        "DateStyle=ISO, YMD",
+        "IntervalStyle=postgres"
+      ],
+      "body": "\nDECLARE incarnation uuid; original jsonb; origin_columns integer;\nBEGIN\n IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'\n  OR current_setting('server_encoding') IS DISTINCT FROM 'UTF8'\n  OR num_nonnulls(p_actor,p_family,p_group)<>3\n  OR '00000000-0000-0000-0000-000000000000'::uuid IN(p_actor,p_family,p_group,p_command) THEN\n  RAISE EXCEPTION 'native_group_process.material_unavailable';\n END IF;\n PERFORM public.native_group_process_group_guard_v1(p_group,false);\n IF p_command IS NULL THEN\n  -- Native birth retains this same historical guard. Take any live topology\n  -- row before Account/family; a later scope rechecks the selected incarnation.\n  PERFORM 1 FROM public.group_authority_lock_shared_v1(p_group);\n END IF;\n PERFORM public.native_group_process_account_material_v1(p_actor,p_family);\n IF p_command IS NULL THEN\n  SELECT num_nonnulls(g.origin_account_id,g.origin_command_id,g.origin_receipt_id) INTO origin_columns\n   FROM public.groups g WHERE g.id=p_group;\n  IF NOT FOUND OR origin_columns=0 THEN\n   RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found';\n  END IF;\n  IF origin_columns<>3 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  SELECT h.incarnation INTO incarnation FROM public.group_authority_heads h WHERE h.group_id=p_group;\n  IF NOT FOUND THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  IF incarnation IS NULL OR incarnation='00000000-0000-0000-0000-000000000000'::uuid THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  PERFORM public.native_group_process_current_context_v1(p_actor,p_family,p_group,incarnation,false);\n  PERFORM public.native_group_process_assert_current_v1(p_group,incarnation);\n ELSE\n  -- Historical receipt selection has no live-head/designation prerequisite.\n  -- The immutable input supplies the incarnation; do not reinterpret bytes.\n  PERFORM public.native_group_process_command_guard_v1(p_actor,p_command,false);\n  SELECT i.group_incarnation INTO incarnation FROM public.native_group_process_inputs_v1 i\n   WHERE i.actor_account_id=p_actor AND i.command_id=p_command AND i.group_id=p_group;\n  IF NOT FOUND THEN\n   RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='native_group_process.not_found';\n  END IF;\n  IF incarnation IS NULL OR incarnation='00000000-0000-0000-0000-000000000000'::uuid THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  original:=public.native_group_process_original_material_v1(p_actor,p_group,incarnation,p_command);\n  IF original IS NULL THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n END IF;\n RETURN incarnation;\nEND\n",
+      "source_sha256": "35639a138b8d01e0d12a3b122d46e5d6345c3d7d9b6adc4f565b3b0167152325",
+      "runtime_execute": true
+    },
+    {
+      "name": "identity_native_group_process_navigation_candidates_v1",
+      "signature": "public.identity_native_group_process_navigation_candidates_v1(uuid,uuid,bytea)",
+      "type_arguments": "uuid, uuid, bytea",
+      "identity_arguments": "p_actor uuid, p_family uuid, p_original bytea",
+      "input_arguments": [
+        {
+          "name": "p_actor",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_family",
+          "type": "uuid",
+          "printed_type": "uuid"
+        },
+        {
+          "name": "p_original",
+          "type": "bytea",
+          "printed_type": "bytea"
+        }
+      ],
+      "result": "jsonb",
+      "argnames": [
+        "p_actor",
+        "p_family",
+        "p_original"
+      ],
+      "argmodes": null,
+      "language": "plpgsql",
+      "volatility": "v",
+      "strict": false,
+      "security_definer": true,
+      "parallel": "u",
+      "returns_set": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on",
+        "TimeZone=UTC",
+        "bytea_output=hex",
+        "DateStyle=ISO, YMD",
+        "IntervalStyle=postgres"
+      ],
+      "body": "\nDECLARE original jsonb; snapshot_text text; captured jsonb; snapshot_bytes bytea;\n old_groups uuid[]:=ARRAY[]::uuid[]; current_groups uuid[]; guarded_groups uuid[]; after_groups uuid[];\n selected_group uuid; candidate jsonb; previous_group uuid; group_value jsonb; history_value jsonb;\n candidates jsonb:='[]'::jsonb; groups_value jsonb:='[]'::jsonb; consent_value jsonb:='[]'::jsonb;\n material jsonb; account_value jsonb; designation_value jsonb; item record; head_revision bigint;\n budget integer:=1048576; additional integer; first_group boolean:=true; first_history boolean;\n root public.accounts; security public.account_security; enrollment public.account_security_events;\n family record; terms record; designation public.deployment_operator_head; designation_receipt public.deployment_operator_receipts;\n rows_to_validate jsonb:='[]'::jsonb; checked_row jsonb; expected_keys text[];\n -- Exact schema types/nullability; no field-name inference. Native closure\n -- tightens nullable database columns only where that row purpose requires it.\n row_shapes jsonb:=$shapes${\"account_security\":{\"account_id\":[\"uuid\",false],\"context_generation\":[\"integer\",false],\"revision\":[\"integer\",false],\"security_generation\":[\"integer\",false],\"security_state\":[\"string\",false],\"updated_at\":[\"timestamp\",false]},\"account_security_events\":{\"account_id\":[\"uuid\",false],\"actor_account_id\":[\"uuid\",false],\"evidence_ref\":[\"object\",false],\"id\":[\"uuid\",false],\"kind\":[\"string\",false],\"occurred_at\":[\"timestamp\",false],\"payload\":[\"object\",false],\"session_id\":[\"uuid\",false]},\"accounts\":{\"created_at\":[\"timestamp\",false],\"id\":[\"uuid\",false]},\"company_enrollment_receipts\":{\"account_id\":[\"uuid\",false],\"action_refs\":[\"array\",false],\"administrative_account_id\":[\"uuid\",false],\"catalog_version\":[\"string\",false],\"codec_version\":[\"integer\",false],\"command_id\":[\"uuid\",false],\"committed_at\":[\"timestamp\",false],\"designation_receipt_id\":[\"uuid\",false],\"group_id\":[\"uuid\",false],\"input_digest\":[\"bytea\",false],\"manifest_digest\":[\"bytea\",false],\"org_id\":[\"uuid\",false],\"property_refs\":[\"array\",false],\"receipt_id\":[\"uuid\",false],\"root_assignment_id\":[\"uuid\",false],\"root_revision\":[\"integer\",false],\"session_id\":[\"uuid\",false]},\"company_enrollment_requests\":{\"account_id\":[\"uuid\",false],\"codec_version\":[\"integer\",false],\"command_id\":[\"uuid\",false],\"committed_receipt_id\":[\"uuid\",false],\"created_at\":[\"timestamp\",false],\"designation_receipt_id\":[\"uuid\",false],\"expires_at\":[\"timestamp\",false],\"input_bytes\":[\"bytea\",true],\"input_digest\":[\"bytea\",false],\"state\":[\"string\",false],\"terminal_at\":[\"timestamp\",false]},\"consent\":{\"accepted_at\":[\"timestamp\",false],\"content_sha256\":[\"bytea\",false],\"manifest_sha256\":[\"bytea\",false],\"terms_kind\":[\"string\",false]},\"deployment_operator_head\":{\"account_id\":[\"uuid\",false],\"database_name\":[\"string\",false],\"database_oid\":[\"integer\",false],\"receipt_id\":[\"uuid\",false],\"revision\":[\"integer\",false],\"singleton\":[\"integer\",false],\"system_identifier\":[\"string\",false]},\"deployment_operator_receipts\":{\"account_id\":[\"uuid\",false],\"command_id\":[\"uuid\",false],\"database_name\":[\"string\",false],\"database_oid\":[\"integer\",false],\"expected_revision\":[\"integer\",false],\"expected_security_generation\":[\"integer\",true],\"kind\":[\"string\",false],\"reason\":[\"string\",true],\"receipt_id\":[\"uuid\",false],\"recorded_at\":[\"timestamp\",false],\"revision\":[\"integer\",false],\"system_identifier\":[\"string\",false]},\"family\":{\"account_security_generation\":[\"integer\",false],\"assurance\":[\"string\",false],\"auth_time\":[\"timestamp\",false],\"created_at\":[\"timestamp\",false],\"org_id\":[\"uuid\",true],\"protocol\":[\"string\",false],\"revoked_at\":[\"timestamp\",true],\"user_id\":[\"uuid\",false]},\"group_authority_heads\":{\"group_id\":[\"uuid\",false],\"incarnation\":[\"uuid\",false],\"revision\":[\"integer\",false],\"state\":[\"string\",false]},\"groups\":{\"created_at\":[\"timestamp\",false],\"id\":[\"uuid\",false],\"name\":[\"string\",false],\"origin_account_id\":[\"uuid\",false],\"origin_command_id\":[\"uuid\",false],\"origin_receipt_id\":[\"uuid\",false],\"slug\":[\"string\",false],\"status\":[\"string\",false],\"updated_at\":[\"timestamp\",false]},\"native_group_identity_policy_heads_v1\":{\"activated_at\":[\"timestamp\",false],\"activation_receipt_id\":[\"uuid\",false],\"codec_contract_digest\":[\"bytea\",false],\"first_actor_account_id\":[\"uuid\",false],\"first_command_id\":[\"uuid\",false],\"first_input_digest\":[\"bytea\",false],\"group_id\":[\"uuid\",false],\"group_incarnation\":[\"uuid\",false],\"head_digest\":[\"bytea\",false],\"policy_digest\":[\"bytea\",false],\"registered_actions\":[\"array\",false],\"registration_manifest_digest\":[\"bytea\",false],\"registration_manifest_version\":[\"integer\",false],\"revision\":[\"integer\",false],\"schema_digest\":[\"bytea\",false],\"schema_id\":[\"string\",false]},\"native_group_process_head_revisions_v1\":{\"before_head_digest\":[\"bytea\",true],\"content_digest\":[\"bytea\",false],\"content_version\":[\"integer\",false],\"expires_at\":[\"timestamp\",false],\"group_id\":[\"uuid\",false],\"group_incarnation\":[\"uuid\",false],\"head_digest\":[\"bytea\",false],\"head_revision\":[\"integer\",false],\"last_actor_account_id\":[\"uuid\",false],\"last_command_id\":[\"uuid\",false],\"last_input_digest\":[\"bytea\",false],\"process_id\":[\"uuid\",false],\"result_receipt_id\":[\"uuid\",false],\"state\":[\"string\",false],\"updated_at\":[\"timestamp\",false]},\"native_group_process_heads_v1\":{\"before_head_digest\":[\"bytea\",true],\"content_digest\":[\"bytea\",false],\"content_version\":[\"integer\",false],\"expires_at\":[\"timestamp\",false],\"group_id\":[\"uuid\",false],\"group_incarnation\":[\"uuid\",false],\"head_digest\":[\"bytea\",false],\"head_revision\":[\"integer\",false],\"last_actor_account_id\":[\"uuid\",false],\"last_command_id\":[\"uuid\",false],\"last_input_digest\":[\"bytea\",false],\"process_id\":[\"uuid\",false],\"result_receipt_id\":[\"uuid\",false],\"state\":[\"string\",false],\"updated_at\":[\"timestamp\",false]},\"native_group_process_versions_v1\":{\"account_possession_procedure\":[\"string\",false],\"actor_account_id\":[\"uuid\",false],\"admitted_at\":[\"timestamp\",false],\"adopt_command_id\":[\"uuid\",false],\"content_digest\":[\"bytea\",false],\"designation_receipt_id\":[\"uuid\",false],\"designation_revision\":[\"integer\",false],\"duplicate_contradictory_claim_procedure\":[\"string\",false],\"escalation_adjudication_procedure\":[\"string\",false],\"evidence_minimization_retention_description\":[\"string\",false],\"expires_at\":[\"timestamp\",false],\"group_id\":[\"uuid\",false],\"group_incarnation\":[\"uuid\",false],\"input_digest\":[\"bytea\",false],\"intended_claimant_matching_procedure\":[\"string\",false],\"method\":[\"string\",false],\"operator_responsibility\":[\"integer\",false],\"physical_human_evidence_procedure\":[\"string\",false],\"policy_head_digest\":[\"bytea\",false],\"policy_revision\":[\"integer\",false],\"process_id\":[\"uuid\",false],\"qualification_criteria_instruction\":[\"string\",false],\"recipient_responsibility\":[\"string\",false],\"schema_id\":[\"string\",false],\"title\":[\"string\",false],\"version\":[\"integer\",false]},\"source\":{\"cedar_language_version\":[\"string\",false],\"cedar_sdk_version\":[\"string\",false],\"codec_contract_digest\":[\"bytea\",false],\"policy_digest\":[\"bytea\",false],\"registered_actions\":[\"array\",false],\"registration_manifest_digest\":[\"bytea\",false],\"registration_manifest_version\":[\"integer\",false],\"schema_digest\":[\"bytea\",false],\"schema_id\":[\"string\",false]},\"terms_head\":{\"manifest_sha256\":[\"bytea\",false],\"release_receipt_id\":[\"uuid\",false],\"revision\":[\"integer\",false]}}$shapes$::jsonb;\n document jsonb; required text; incarnation uuid; row_key text; row_value jsonb;\n entry jsonb; revision_value text; field_shape jsonb; value_text text; parsed_time timestamptz;\n birth_request public.company_enrollment_requests; birth_receipt public.company_enrollment_receipts;\n birth_effect public.company_enrollment_effect_bindings; decoded_birth record;\nBEGIN\n IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'\n  OR current_setting('server_encoding') IS DISTINCT FROM 'UTF8'\n  OR num_nonnulls(p_actor,p_family)<>2\n  OR '00000000-0000-0000-0000-000000000000'::uuid IN(p_actor,p_family) THEN\n  RAISE EXCEPTION 'native_group_process.material_unavailable';\n END IF;\n IF p_original IS NOT NULL THEN\n  IF octet_length(p_original) NOT BETWEEN 1 AND 1048576 THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  BEGIN\n   snapshot_text:=convert_from(p_original,'UTF8'); original:=snapshot_text::jsonb;\n  EXCEPTION WHEN invalid_text_representation OR character_not_in_repertoire THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END;\n  -- Equality rejects duplicate members and alternate serialization before any\n  -- source selector is used. This is an internal observation, not permission.\n  IF convert_to(original::text,'UTF8') IS DISTINCT FROM p_original\n   OR jsonb_typeof(original) IS DISTINCT FROM 'object'\n   OR original->>'protocol' IS DISTINCT FROM 'GROUP_PROCESS_NAVIGATION_SOURCE_V1'\n   OR ARRAY(SELECT key FROM jsonb_object_keys(original) key ORDER BY key COLLATE \"C\")\n      IS DISTINCT FROM ARRAY['account','designation','groups','protocol']\n   OR original#>>'{account,actor_account_id}' IS DISTINCT FROM p_actor::text\n   OR original#>>'{account,session_id}' IS DISTINCT FROM p_family::text\n   OR jsonb_typeof(original->'groups') IS DISTINCT FROM 'array' THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  IF jsonb_array_length(original->'groups')>256 THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  FOR candidate IN SELECT value FROM jsonb_array_elements(original->'groups') LOOP\n   IF jsonb_typeof(candidate) IS DISTINCT FROM 'object'\n    OR jsonb_typeof(candidate->'group_id') IS DISTINCT FROM 'string'\n    OR candidate->>'group_id' !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'\n    OR jsonb_typeof(candidate->'group_incarnation') IS DISTINCT FROM 'string'\n    OR candidate->>'group_incarnation' !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   selected_group:=(candidate->>'group_id')::uuid;\n   incarnation:=(candidate->>'group_incarnation')::uuid;\n   IF '00000000-0000-0000-0000-000000000000'::uuid IN(selected_group,incarnation)\n    OR (previous_group IS NOT NULL AND selected_group<=previous_group) THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   old_groups:=array_append(old_groups,selected_group); previous_group:=selected_group;\n  END LOOP;\n  document:=original;\n  IF jsonb_typeof(document->'account') IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  IF ARRAY(SELECT key FROM jsonb_object_keys(document->'account') key ORDER BY key COLLATE \"C\")\n   IS DISTINCT FROM ARRAY['actor_account_id','consent','enrollment','family','root','security','session_id','terms_head']\n   OR document#>>'{account,actor_account_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,session_id}' IS DISTINCT FROM p_family::text\n   OR document#>>'{account,root,id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,security,account_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,family,user_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,enrollment,account_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,enrollment,kind}' IS DISTINCT FROM 'ENROLLED'\n   OR jsonb_typeof(document#>'{account,consent}') IS DISTINCT FROM 'array' THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  IF jsonb_array_length(document#>'{account,consent}') NOT BETWEEN 1 AND 8 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  rows_to_validate:=jsonb_build_array(jsonb_build_array('accounts',document#>'{account,root}'),\n   jsonb_build_array('account_security',document#>'{account,security}'),\n   jsonb_build_array('family',document#>'{account,family}'),\n   jsonb_build_array('account_security_events',document#>'{account,enrollment}'),\n   jsonb_build_array('terms_head',document#>'{account,terms_head}'));\n  required:=NULL;\n  FOR entry IN SELECT value FROM jsonb_array_elements(document#>'{account,consent}') LOOP\n   IF jsonb_typeof(entry->'terms_kind') IS DISTINCT FROM 'string'\n    OR entry->>'terms_kind' !~ '^[a-z][a-z0-9_.-]{0,63}$'\n    OR (required IS NOT NULL AND (entry->>'terms_kind') COLLATE \"C\"<=required COLLATE \"C\") THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   required:=entry->>'terms_kind'; rows_to_validate:=rows_to_validate||jsonb_build_array(jsonb_build_array('consent',entry));\n  END LOOP;\n  IF document->'designation' IS DISTINCT FROM 'null'::jsonb THEN\n   IF jsonb_typeof(document->'designation') IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n   IF ARRAY(SELECT key FROM jsonb_object_keys(document->'designation') key ORDER BY key COLLATE \"C\") IS DISTINCT FROM ARRAY['head','receipt'] THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   rows_to_validate:=rows_to_validate||jsonb_build_array(\n    jsonb_build_array('deployment_operator_head',document#>'{designation,head}'),\n    jsonb_build_array('deployment_operator_receipts',document#>'{designation,receipt}'));\n  END IF;\n  FOR candidate IN SELECT value FROM jsonb_array_elements(document->'groups') LOOP\n   IF ARRAY(SELECT key FROM jsonb_object_keys(candidate) key ORDER BY key COLLATE \"C\")\n    IS DISTINCT FROM ARRAY['birth_designation_receipt','birth_receipt','birth_request','group','group_id','group_incarnation','head','history','policy','source','topology','version']\n    OR candidate#>>'{group,id}' IS DISTINCT FROM candidate->>'group_id'\n    OR candidate#>>'{topology,group_id}' IS DISTINCT FROM candidate->>'group_id'\n    OR candidate#>>'{topology,incarnation}' IS DISTINCT FROM candidate->>'group_incarnation'\n    OR candidate#>>'{birth_receipt,group_id}' IS DISTINCT FROM candidate->>'group_id'\n    OR jsonb_typeof(candidate->'history') IS DISTINCT FROM 'array' THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   IF (candidate->'policy'='null'::jsonb) IS DISTINCT FROM (candidate->'head'='null'::jsonb)\n    OR (candidate->'head'='null'::jsonb) IS DISTINCT FROM (candidate->'version'='null'::jsonb)\n    OR ((candidate->'head'='null'::jsonb) IS DISTINCT FROM (jsonb_array_length(candidate->'history')=0)) THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   rows_to_validate:=rows_to_validate||jsonb_build_array(\n    jsonb_build_array('groups',candidate->'group'),jsonb_build_array('group_authority_heads',candidate->'topology'),\n    jsonb_build_array('company_enrollment_requests',candidate->'birth_request'),\n    jsonb_build_array('company_enrollment_receipts',candidate->'birth_receipt'),\n    jsonb_build_array('deployment_operator_receipts',candidate->'birth_designation_receipt'),\n    jsonb_build_array('source',candidate->'source'));\n   IF candidate->'policy' IS DISTINCT FROM 'null'::jsonb THEN\n    rows_to_validate:=rows_to_validate||jsonb_build_array(\n     jsonb_build_array('native_group_identity_policy_heads_v1',candidate->'policy'),\n     jsonb_build_array('native_group_process_heads_v1',candidate->'head'),\n     jsonb_build_array('native_group_process_versions_v1',candidate->'version'));\n   END IF;\n   head_revision:=0;\n   FOR entry IN SELECT value FROM jsonb_array_elements(candidate->'history') LOOP\n    IF jsonb_typeof(entry) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n    IF ARRAY(SELECT key FROM jsonb_object_keys(entry) key ORDER BY key COLLATE \"C\") IS DISTINCT FROM ARRAY['head','reason']\n     OR jsonb_typeof(entry->'reason') NOT IN ('string','null')\n     OR entry#>>'{head,group_id}' IS DISTINCT FROM candidate->>'group_id'\n     OR entry#>>'{head,group_incarnation}' IS DISTINCT FROM candidate->>'group_incarnation'\n     OR entry#>>'{head,process_id}' IS DISTINCT FROM candidate#>>'{head,process_id}' THEN\n     RAISE EXCEPTION 'native_group_process.material_unavailable';\n    END IF;\n    revision_value:=entry#>>'{head,head_revision}';\n    IF revision_value IS NULL OR revision_value !~ '^[1-9][0-9]{0,18}$' OR revision_value::numeric>9223372036854775807\n     OR revision_value::numeric<>head_revision::numeric+1 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n    head_revision:=revision_value::bigint;\n    rows_to_validate:=rows_to_validate||jsonb_build_array(jsonb_build_array('native_group_process_head_revisions_v1',entry->'head'));\n   END LOOP;\n   IF head_revision>0 AND (candidate->'history'->-1->'head') IS DISTINCT FROM candidate->'head' THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n  END LOOP;\n  FOR checked_row IN SELECT value FROM jsonb_array_elements(rows_to_validate) LOOP\n   IF jsonb_typeof(checked_row->1) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n   expected_keys:=ARRAY(SELECT key FROM jsonb_object_keys(row_shapes->(checked_row->>0)) key ORDER BY key COLLATE \"C\");\n   IF cardinality(expected_keys)=0 OR ARRAY(SELECT key FROM jsonb_object_keys(checked_row->1) key ORDER BY key COLLATE \"C\") IS DISTINCT FROM expected_keys THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   FOR row_key,row_value IN SELECT key,value FROM jsonb_each(checked_row->1) LOOP\n    field_shape:=row_shapes->(checked_row->>0)->row_key;\n    IF row_value='null'::jsonb THEN\n     IF field_shape->1 IS DISTINCT FROM 'true'::jsonb THEN\n      RAISE EXCEPTION 'native_group_process.material_unavailable';\n     END IF;\n     CONTINUE;\n    END IF;\n    value_text:=row_value#>>'{}';\n    CASE field_shape->>0\n     WHEN 'uuid' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'string'\n       OR value_text !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'\n       OR value_text='00000000-0000-0000-0000-000000000000' THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     WHEN 'integer' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'number' OR value_text !~ '^(0|[1-9][0-9]{0,18})$' THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n      IF value_text::numeric>9223372036854775807 OR (value_text='0' AND row_key<>'expected_revision') THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     WHEN 'timestamp' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'string' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n      parsed_time:=value_text::timestamptz;\n      IF NOT isfinite(parsed_time) OR to_jsonb(parsed_time) IS DISTINCT FROM row_value THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     WHEN 'bytea' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'string' OR left(value_text,2) IS DISTINCT FROM '\\x'\n       OR substring(value_text FROM 3) !~ '^([0-9a-f]{2})*$'\n       OR (right(row_key,6)='digest' AND length(value_text)<>66)\n       OR (right(row_key,6)='sha256' AND length(value_text)<>66) THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     ELSE\n      IF jsonb_typeof(row_value) IS DISTINCT FROM field_shape->>0 THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n    END CASE;\n   END LOOP;\n  END LOOP;\n END IF;\n\n SELECT coalesce(array_agg(g.id ORDER BY g.id),ARRAY[]::uuid[]) INTO current_groups\n  FROM (SELECT id FROM public.groups WHERE num_nonnulls(origin_account_id,origin_command_id,origin_receipt_id)>0 ORDER BY id LIMIT 257) g;\n IF cardinality(current_groups)>256 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n IF p_original IS NOT NULL THEN\n  SELECT coalesce(array_agg(id ORDER BY id),ARRAY[]::uuid[]) INTO guarded_groups\n   FROM (SELECT DISTINCT unnest(old_groups||current_groups) id) required_guards;\n  FOREACH selected_group IN ARRAY guarded_groups LOOP\n   PERFORM public.native_group_process_group_guard_v1(selected_group,false);\n  END LOOP;\n  FOREACH selected_group IN ARRAY guarded_groups LOOP\n   PERFORM 1 FROM public.group_authority_lock_shared_v1(selected_group);\n  END LOOP;\n  SELECT coalesce(array_agg(g.id ORDER BY g.id),ARRAY[]::uuid[]) INTO after_groups\n   FROM (SELECT id FROM public.groups WHERE num_nonnulls(origin_account_id,origin_command_id,origin_receipt_id)>0 ORDER BY id LIMIT 257) g;\n  IF cardinality(after_groups)>256 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  IF NOT after_groups<@guarded_groups THEN\n   RETURN jsonb_build_object('protocol','GROUP_PROCESS_NAVIGATION_V1','actor_account_id',p_actor,\n    'session_id',p_family,'status','CONFLICT','candidates','[]'::jsonb,'snapshot',NULL);\n  END IF;\n  current_groups:=after_groups;\n END IF;\n\n -- Enumeration takes no Group locks. Account guards end with this transaction\n -- before per-candidate Landing7 scopes. Final recheck has taken all Group\n -- guards already; neither branch acquires a new Group guard after Account.\n material:=public.native_group_process_account_material_v1(p_actor,p_family);\n SELECT a.* INTO STRICT root FROM public.accounts a WHERE a.id=p_actor;\n SELECT s.* INTO STRICT security FROM public.account_security s WHERE s.account_id=p_actor;\n SELECT e.* INTO STRICT enrollment FROM public.account_security_events e WHERE e.account_id=p_actor AND e.kind='ENROLLED';\n SELECT f.* INTO STRICT family FROM public.auth_account_session_shared_material_v1(p_actor,p_family) f;\n SELECT h.* INTO STRICT terms FROM public.account_terms_registration_head_v1() h;\n FOR item IN SELECT c.* FROM public.account_login_consent_v1(p_actor) c ORDER BY c.terms_kind COLLATE \"C\" LIMIT 9 LOOP\n  IF jsonb_array_length(consent_value)>=8 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  additional:=octet_length(convert_to(to_jsonb(item)::text,'UTF8'))+2;\n  IF additional>budget THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  consent_value:=consent_value||jsonb_build_array(to_jsonb(item)); budget:=budget-additional;\n END LOOP;\n IF jsonb_array_length(consent_value)=0 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n account_value:=jsonb_build_object('actor_account_id',p_actor,'session_id',p_family,\n  'root',to_jsonb(root),'security',to_jsonb(security),'family',to_jsonb(family),\n  'enrollment',to_jsonb(enrollment),'consent',consent_value,'terms_head',to_jsonb(terms));\n PERFORM public.account_company_setup_eligibility_v1(p_actor);\n SELECT h.* INTO designation FROM public.deployment_operator_head h WHERE h.singleton=1 FOR SHARE OF h;\n IF FOUND THEN\n  SELECT r.* INTO STRICT designation_receipt FROM public.deployment_operator_receipts r WHERE r.receipt_id=designation.receipt_id;\n  IF (designation.receipt_id,designation.revision,designation.account_id,designation.system_identifier,designation.database_name,designation.database_oid)\n   IS DISTINCT FROM (designation_receipt.receipt_id,designation_receipt.revision,designation_receipt.account_id,\n    designation_receipt.system_identifier,designation_receipt.database_name,designation_receipt.database_oid)\n   OR designation_receipt.expected_revision IS DISTINCT FROM designation_receipt.revision-1\n   OR ((designation_receipt.kind='DESIGNATE' AND designation_receipt.revision=1\n     AND designation_receipt.expected_security_generation>0 AND designation_receipt.reason IS NULL)\n    OR (designation_receipt.kind='REVOKE' AND designation_receipt.revision>1\n     AND designation_receipt.expected_security_generation IS NULL AND designation_receipt.reason IS NOT NULL\n     AND octet_length(designation_receipt.reason) BETWEEN 1 AND 512\n     AND length(btrim(designation_receipt.reason,E' \\t\\n\\r\\f\\013'))>0)) IS DISTINCT FROM true\n   OR designation.system_identifier IS DISTINCT FROM (SELECT system_identifier::text FROM pg_control_system())\n   OR designation.database_name IS DISTINCT FROM current_database()::text\n   OR designation.database_oid IS DISTINCT FROM (SELECT oid::bigint FROM pg_database WHERE datname=current_database()) THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  designation_value:=jsonb_build_object('head',to_jsonb(designation),'receipt',to_jsonb(designation_receipt));\n END IF;\n captured:=jsonb_build_object('protocol','GROUP_PROCESS_NAVIGATION_SOURCE_V1',\n  'account',account_value,'designation',designation_value,'groups',groups_value);\n -- The base already contains consent. Reset to its exact canonical byte size;\n -- subsequent accounting replaces the empty array with bounded complete rows.\n budget:=1048576-octet_length(convert_to(captured::text,'UTF8'));\n IF budget<0 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n\n FOREACH selected_group IN ARRAY current_groups LOOP\n  -- One SPI snapshot binds policy/head/content. History is the immutable prefix\n  -- ending at that captured head, even when enumeration races a later commit.\n  SELECT jsonb_build_object('group_id',g.id,'group_incarnation',t.incarnation,\n    'group',to_jsonb(g),'topology',to_jsonb(t),'birth_request',to_jsonb(q),'birth_receipt',to_jsonb(r),\n    'birth_designation_receipt',to_jsonb(d),'source',public.native_group_process_source_v1(g.id,t.incarnation),\n    'policy',to_jsonb(p),'head',to_jsonb(h),'version',to_jsonb(v),'history','[]'::jsonb)\n   INTO STRICT group_value FROM public.groups g\n   LEFT JOIN public.group_authority_heads t ON t.group_id=g.id\n   LEFT JOIN public.company_enrollment_receipts r ON\n    (r.account_id,r.command_id,r.receipt_id,r.group_id)=(g.origin_account_id,g.origin_command_id,g.origin_receipt_id,g.id)\n   LEFT JOIN public.company_enrollment_requests q ON\n    (q.account_id,q.command_id,q.committed_receipt_id,q.state)=(r.account_id,r.command_id,r.receipt_id,'COMMITTED')\n   LEFT JOIN public.deployment_operator_receipts d ON d.receipt_id=r.designation_receipt_id\n   LEFT JOIN public.native_group_identity_policy_heads_v1 p ON (p.group_id,p.group_incarnation)=(g.id,t.incarnation)\n   LEFT JOIN public.native_group_process_heads_v1 h ON (h.group_id,h.group_incarnation)=(g.id,t.incarnation)\n   LEFT JOIN public.native_group_process_versions_v1 v ON\n    (v.group_id,v.group_incarnation,v.process_id,v.version)=(h.group_id,h.group_incarnation,h.process_id,h.content_version)\n   WHERE g.id=selected_group;\n  incarnation:=(group_value->>'group_incarnation')::uuid;\n  IF incarnation IS NULL OR incarnation='00000000-0000-0000-0000-000000000000'::uuid THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  FOREACH required IN ARRAY ARRAY['group','topology','birth_request','birth_receipt','birth_designation_receipt','source'] LOOP\n   IF jsonb_typeof(group_value->required) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  END LOOP;\n  IF group_value#>>'{birth_designation_receipt,kind}' IS DISTINCT FROM 'DESIGNATE'\n   OR group_value#>>'{birth_designation_receipt,system_identifier}' IS DISTINCT FROM (SELECT system_identifier::text FROM pg_control_system())\n   OR group_value#>>'{birth_designation_receipt,database_name}' IS DISTINCT FROM current_database()::text\n   OR group_value#>>'{birth_designation_receipt,database_oid}' IS DISTINCT FROM (SELECT oid::bigint::text FROM pg_database WHERE datname=current_database()) THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  SELECT q.* INTO STRICT birth_request FROM public.company_enrollment_requests q WHERE\n   (q.account_id,q.command_id)=((group_value#>>'{group,origin_account_id}')::uuid,(group_value#>>'{group,origin_command_id}')::uuid);\n  SELECT r.* INTO STRICT birth_receipt FROM public.company_enrollment_receipts r WHERE\n   (r.account_id,r.command_id)=(birth_request.account_id,birth_request.command_id);\n  SELECT b.* INTO STRICT birth_effect FROM public.company_enrollment_effect_bindings b WHERE\n   (b.account_id,b.command_id)=(birth_request.account_id,birth_request.command_id);\n  IF to_jsonb(birth_request) IS DISTINCT FROM group_value->'birth_request'\n   OR to_jsonb(birth_receipt) IS DISTINCT FROM group_value->'birth_receipt'\n   OR birth_request.state IS DISTINCT FROM 'COMMITTED'\n   OR (birth_request.codec_version,birth_request.input_digest,birth_request.designation_receipt_id,\n       birth_request.committed_receipt_id,birth_request.terminal_at)\n    IS DISTINCT FROM (birth_receipt.codec_version,birth_receipt.input_digest,birth_receipt.designation_receipt_id,\n       birth_receipt.receipt_id,birth_receipt.committed_at)\n   OR (birth_effect.codec_version,birth_effect.input_digest,birth_effect.designation_receipt_id,\n       birth_effect.org_id,birth_effect.group_id,birth_effect.receipt_id,birth_effect.administrative_account_id,\n       birth_effect.catalog_version,birth_effect.manifest_digest,birth_effect.session_id,birth_effect.started_at)\n    IS DISTINCT FROM (birth_receipt.codec_version,birth_receipt.input_digest,birth_receipt.designation_receipt_id,\n       birth_receipt.org_id,birth_receipt.group_id,birth_receipt.receipt_id,birth_receipt.administrative_account_id,\n       birth_receipt.catalog_version,birth_receipt.manifest_digest,birth_receipt.session_id,birth_receipt.committed_at)\n   OR birth_receipt.codec_version<>1 OR birth_receipt.root_revision<>1\n   OR birth_receipt.catalog_version IS DISTINCT FROM 'native-company-identity-2026-09-19.1'\n   OR birth_receipt.manifest_digest IS DISTINCT FROM decode('0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935','hex')\n   OR birth_receipt.committed_at<birth_request.created_at OR birth_receipt.committed_at>=birth_request.expires_at\n   OR public.native_group_process_micros_v1(birth_receipt.committed_at) IS DISTINCT FROM\n      public.native_group_process_micros_v1((group_value#>>'{group,created_at}')::timestamptz)\n   OR group_value#>>'{group,created_at}' IS DISTINCT FROM group_value#>>'{group,updated_at}'\n   OR birth_receipt.account_id::text IS DISTINCT FROM group_value#>>'{birth_designation_receipt,account_id}'\n   OR group_value#>>'{birth_designation_receipt,revision}' IS DISTINCT FROM '1'\n   OR group_value#>>'{birth_designation_receipt,expected_revision}' IS DISTINCT FROM '0'\n   OR group_value#>>'{birth_designation_receipt,expected_security_generation}' IS NULL\n   OR (group_value#>>'{birth_designation_receipt,expected_security_generation}')::bigint<1\n   OR group_value#>'{birth_designation_receipt,reason}' IS DISTINCT FROM 'null'::jsonb\n   OR (SELECT count(*) FROM public.company_enrollment_request_events e\n      WHERE (e.account_id,e.command_id)=(birth_request.account_id,birth_request.command_id))<>2\n   OR NOT EXISTS(SELECT 1 FROM public.company_enrollment_request_events e\n     WHERE (e.account_id,e.command_id,e.event_revision)=(birth_request.account_id,birth_request.command_id,1)\n      AND e.from_state IS NULL AND e.to_state='PENDING' AND e.reason_code='PREPARED'\n      AND e.occurred_at=birth_request.created_at AND e.actor_account_id=birth_request.account_id)\n   OR NOT EXISTS(SELECT 1 FROM public.company_enrollment_request_events e\n     WHERE (e.account_id,e.command_id,e.event_revision)=(birth_request.account_id,birth_request.command_id,2)\n      AND e.from_state='PENDING' AND e.to_state='COMMITTED' AND e.reason_code='COMMITTED'\n      AND e.occurred_at=birth_receipt.committed_at AND e.actor_account_id=birth_receipt.account_id\n      AND e.session_id=birth_receipt.session_id) THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  -- Retention may remove terminal payload; decode only retained historical bytes.\n  IF birth_request.input_bytes IS NOT NULL THEN\n   SELECT * INTO STRICT decoded_birth FROM public.company_enrollment_decode_input_v1(birth_request.input_bytes);\n   IF (decoded_birth.codec_version,decoded_birth.account_id,decoded_birth.command_id,decoded_birth.input_digest,\n       decoded_birth.administrative_account_id,decoded_birth.company_name)\n    IS DISTINCT FROM (birth_receipt.codec_version,birth_receipt.account_id,birth_receipt.command_id,birth_receipt.input_digest,\n       birth_receipt.administrative_account_id,group_value#>>'{group,name}')\n    OR decoded_birth.group_id IS NOT NULL THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n  END IF;\n  additional:=octet_length(convert_to(group_value::text,'UTF8'))+CASE WHEN first_group THEN 0 ELSE 2 END;\n  IF additional>budget THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  budget:=budget-additional;\n  history_value:='[]'::jsonb; first_history:=true;\n  head_revision:=(group_value#>>'{head,head_revision}')::bigint;\n  FOR item IN SELECT h.*,i.operation,i.input_bytes FROM public.native_group_process_head_revisions_v1 h\n   LEFT JOIN public.native_group_process_inputs_v1 i ON (i.actor_account_id,i.command_id)=(h.last_actor_account_id,h.last_command_id)\n   WHERE h.group_id=selected_group AND h.group_incarnation=incarnation AND h.head_revision<=head_revision ORDER BY h.head_revision\n  LOOP\n   IF item.operation IS NULL OR item.input_bytes IS NULL THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n   candidate:=jsonb_build_object('head',to_jsonb(item)-ARRAY['operation','input_bytes'],\n    'reason',CASE WHEN item.operation=6 THEN public.native_group_process_decode_v1(item.input_bytes)->>'reason' END);\n   additional:=octet_length(convert_to(candidate::text,'UTF8'))+CASE WHEN first_history THEN 0 ELSE 2 END;\n   IF additional>budget THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n   budget:=budget-additional;\n   history_value:=history_value||jsonb_build_array(candidate); first_history:=false;\n  END LOOP;\n  -- Full owner closure work starts only after the complete history fits.\n  PERFORM public.native_group_process_assert_current_v1(selected_group,incarnation);\n  group_value:=jsonb_set(group_value,'{history}',history_value);\n  groups_value:=groups_value||jsonb_build_array(group_value); first_group:=false;\n  candidates:=candidates||jsonb_build_array(jsonb_build_object('group_id',selected_group,'group_incarnation',incarnation));\n END LOOP;\n captured:=jsonb_set(captured,'{groups}',groups_value);\n snapshot_bytes:=convert_to(captured::text,'UTF8');\n IF octet_length(snapshot_bytes) NOT BETWEEN 1 AND 1048576 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n\n -- Recheck the actual row shapes too: adding a column cannot silently broaden\n -- this ephemeral internal projection. The same frozen parser governs both.\n document:=captured;\n  IF jsonb_typeof(document->'account') IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  IF ARRAY(SELECT key FROM jsonb_object_keys(document->'account') key ORDER BY key COLLATE \"C\")\n   IS DISTINCT FROM ARRAY['actor_account_id','consent','enrollment','family','root','security','session_id','terms_head']\n   OR document#>>'{account,actor_account_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,session_id}' IS DISTINCT FROM p_family::text\n   OR document#>>'{account,root,id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,security,account_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,family,user_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,enrollment,account_id}' IS DISTINCT FROM p_actor::text\n   OR document#>>'{account,enrollment,kind}' IS DISTINCT FROM 'ENROLLED'\n   OR jsonb_typeof(document#>'{account,consent}') IS DISTINCT FROM 'array' THEN\n   RAISE EXCEPTION 'native_group_process.material_unavailable';\n  END IF;\n  IF jsonb_array_length(document#>'{account,consent}') NOT BETWEEN 1 AND 8 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n  rows_to_validate:=jsonb_build_array(jsonb_build_array('accounts',document#>'{account,root}'),\n   jsonb_build_array('account_security',document#>'{account,security}'),\n   jsonb_build_array('family',document#>'{account,family}'),\n   jsonb_build_array('account_security_events',document#>'{account,enrollment}'),\n   jsonb_build_array('terms_head',document#>'{account,terms_head}'));\n  required:=NULL;\n  FOR entry IN SELECT value FROM jsonb_array_elements(document#>'{account,consent}') LOOP\n   IF jsonb_typeof(entry->'terms_kind') IS DISTINCT FROM 'string'\n    OR entry->>'terms_kind' !~ '^[a-z][a-z0-9_.-]{0,63}$'\n    OR (required IS NOT NULL AND (entry->>'terms_kind') COLLATE \"C\"<=required COLLATE \"C\") THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   required:=entry->>'terms_kind'; rows_to_validate:=rows_to_validate||jsonb_build_array(jsonb_build_array('consent',entry));\n  END LOOP;\n  IF document->'designation' IS DISTINCT FROM 'null'::jsonb THEN\n   IF jsonb_typeof(document->'designation') IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n   IF ARRAY(SELECT key FROM jsonb_object_keys(document->'designation') key ORDER BY key COLLATE \"C\") IS DISTINCT FROM ARRAY['head','receipt'] THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   rows_to_validate:=rows_to_validate||jsonb_build_array(\n    jsonb_build_array('deployment_operator_head',document#>'{designation,head}'),\n    jsonb_build_array('deployment_operator_receipts',document#>'{designation,receipt}'));\n  END IF;\n  FOR candidate IN SELECT value FROM jsonb_array_elements(document->'groups') LOOP\n   IF ARRAY(SELECT key FROM jsonb_object_keys(candidate) key ORDER BY key COLLATE \"C\")\n    IS DISTINCT FROM ARRAY['birth_designation_receipt','birth_receipt','birth_request','group','group_id','group_incarnation','head','history','policy','source','topology','version']\n    OR candidate#>>'{group,id}' IS DISTINCT FROM candidate->>'group_id'\n    OR candidate#>>'{topology,group_id}' IS DISTINCT FROM candidate->>'group_id'\n    OR candidate#>>'{topology,incarnation}' IS DISTINCT FROM candidate->>'group_incarnation'\n    OR candidate#>>'{birth_receipt,group_id}' IS DISTINCT FROM candidate->>'group_id'\n    OR jsonb_typeof(candidate->'history') IS DISTINCT FROM 'array' THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   IF (candidate->'policy'='null'::jsonb) IS DISTINCT FROM (candidate->'head'='null'::jsonb)\n    OR (candidate->'head'='null'::jsonb) IS DISTINCT FROM (candidate->'version'='null'::jsonb)\n    OR ((candidate->'head'='null'::jsonb) IS DISTINCT FROM (jsonb_array_length(candidate->'history')=0)) THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   rows_to_validate:=rows_to_validate||jsonb_build_array(\n    jsonb_build_array('groups',candidate->'group'),jsonb_build_array('group_authority_heads',candidate->'topology'),\n    jsonb_build_array('company_enrollment_requests',candidate->'birth_request'),\n    jsonb_build_array('company_enrollment_receipts',candidate->'birth_receipt'),\n    jsonb_build_array('deployment_operator_receipts',candidate->'birth_designation_receipt'),\n    jsonb_build_array('source',candidate->'source'));\n   IF candidate->'policy' IS DISTINCT FROM 'null'::jsonb THEN\n    rows_to_validate:=rows_to_validate||jsonb_build_array(\n     jsonb_build_array('native_group_identity_policy_heads_v1',candidate->'policy'),\n     jsonb_build_array('native_group_process_heads_v1',candidate->'head'),\n     jsonb_build_array('native_group_process_versions_v1',candidate->'version'));\n   END IF;\n   head_revision:=0;\n   FOR entry IN SELECT value FROM jsonb_array_elements(candidate->'history') LOOP\n    IF jsonb_typeof(entry) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n    IF ARRAY(SELECT key FROM jsonb_object_keys(entry) key ORDER BY key COLLATE \"C\") IS DISTINCT FROM ARRAY['head','reason']\n     OR jsonb_typeof(entry->'reason') NOT IN ('string','null')\n     OR entry#>>'{head,group_id}' IS DISTINCT FROM candidate->>'group_id'\n     OR entry#>>'{head,group_incarnation}' IS DISTINCT FROM candidate->>'group_incarnation'\n     OR entry#>>'{head,process_id}' IS DISTINCT FROM candidate#>>'{head,process_id}' THEN\n     RAISE EXCEPTION 'native_group_process.material_unavailable';\n    END IF;\n    revision_value:=entry#>>'{head,head_revision}';\n    IF revision_value IS NULL OR revision_value !~ '^[1-9][0-9]{0,18}$' OR revision_value::numeric>9223372036854775807\n     OR revision_value::numeric<>head_revision::numeric+1 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n    head_revision:=revision_value::bigint;\n    rows_to_validate:=rows_to_validate||jsonb_build_array(jsonb_build_array('native_group_process_head_revisions_v1',entry->'head'));\n   END LOOP;\n   IF head_revision>0 AND (candidate->'history'->-1->'head') IS DISTINCT FROM candidate->'head' THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n  END LOOP;\n  FOR checked_row IN SELECT value FROM jsonb_array_elements(rows_to_validate) LOOP\n   IF jsonb_typeof(checked_row->1) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n   expected_keys:=ARRAY(SELECT key FROM jsonb_object_keys(row_shapes->(checked_row->>0)) key ORDER BY key COLLATE \"C\");\n   IF cardinality(expected_keys)=0 OR ARRAY(SELECT key FROM jsonb_object_keys(checked_row->1) key ORDER BY key COLLATE \"C\") IS DISTINCT FROM expected_keys THEN\n    RAISE EXCEPTION 'native_group_process.material_unavailable';\n   END IF;\n   FOR row_key,row_value IN SELECT key,value FROM jsonb_each(checked_row->1) LOOP\n    field_shape:=row_shapes->(checked_row->>0)->row_key;\n    IF row_value='null'::jsonb THEN\n     IF field_shape->1 IS DISTINCT FROM 'true'::jsonb THEN\n      RAISE EXCEPTION 'native_group_process.material_unavailable';\n     END IF;\n     CONTINUE;\n    END IF;\n    value_text:=row_value#>>'{}';\n    CASE field_shape->>0\n     WHEN 'uuid' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'string'\n       OR value_text !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'\n       OR value_text='00000000-0000-0000-0000-000000000000' THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     WHEN 'integer' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'number' OR value_text !~ '^(0|[1-9][0-9]{0,18})$' THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n      IF value_text::numeric>9223372036854775807 OR (value_text='0' AND row_key<>'expected_revision') THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     WHEN 'timestamp' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'string' THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n      parsed_time:=value_text::timestamptz;\n      IF NOT isfinite(parsed_time) OR to_jsonb(parsed_time) IS DISTINCT FROM row_value THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     WHEN 'bytea' THEN\n      IF jsonb_typeof(row_value) IS DISTINCT FROM 'string' OR left(value_text,2) IS DISTINCT FROM '\\x'\n       OR substring(value_text FROM 3) !~ '^([0-9a-f]{2})*$'\n       OR (right(row_key,6)='digest' AND length(value_text)<>66)\n       OR (right(row_key,6)='sha256' AND length(value_text)<>66) THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n     ELSE\n      IF jsonb_typeof(row_value) IS DISTINCT FROM field_shape->>0 THEN\n       RAISE EXCEPTION 'native_group_process.material_unavailable';\n      END IF;\n    END CASE;\n   END LOOP;\n  END LOOP;\n SELECT coalesce(array_agg(g.id ORDER BY g.id),ARRAY[]::uuid[]) INTO after_groups\n  FROM (SELECT id FROM public.groups WHERE num_nonnulls(origin_account_id,origin_command_id,origin_receipt_id)>0 ORDER BY id LIMIT 257) g;\n IF cardinality(after_groups)>256 THEN RAISE EXCEPTION 'native_group_process.material_unavailable'; END IF;\n IF p_original IS NOT NULL AND (after_groups IS DISTINCT FROM current_groups OR snapshot_bytes IS DISTINCT FROM p_original) THEN\n  RETURN jsonb_build_object('protocol','GROUP_PROCESS_NAVIGATION_V1','actor_account_id',p_actor,\n   'session_id',p_family,'status','CONFLICT','candidates','[]'::jsonb,'snapshot',NULL);\n END IF;\n RETURN jsonb_build_object('protocol','GROUP_PROCESS_NAVIGATION_V1','actor_account_id',p_actor,\n  'session_id',p_family,'status','MATCH','candidates',candidates,'snapshot',snapshot_bytes);\nEXCEPTION WHEN no_data_found OR too_many_rows THEN\n RAISE EXCEPTION 'native_group_process.material_unavailable';\nEND\n",
+      "source_sha256": "9f60837f5b5cb97d7becbaeb0d3e78e89858a1d534973c5a7ee93c908a815c27",
+      "runtime_execute": true
+    }
+  ],
+  "source_order": [
+    "ops/native-group-process/schema-v1.sql",
+    "ops/native-group-process/codec-v1.sql",
+    "ops/native-group-process/result-codec-v2.sql",
+    "ops/native-group-process/source-v1.sql",
+    "ops/native-group-process/locks-v1.sql",
+    "ops/native-group-process/closure-v1.sql",
+    "ops/native-group-process/context-v1.sql",
+    "ops/native-group-process/material-v1.sql",
+    "ops/native-group-process/transition-v1.sql",
+    "ops/native-group-process/guards-v1.sql",
+    "ops/native-group-process/commands-v1.sql",
+    "ops/native-group-process/audit-v1.sql",
+    "ops/native-group-process/discovery-v1.sql",
+    "ops/native-group-process/acl-v1.sql"
+  ],
+  "phase_pairs": null,
+  "derivation": "Frozen test-source oracle from exact declared CREATE FUNCTION text and exact ACL declaration; never read back from an installed database or derive expected metadata from the tested generator.",
+  "historical76_relations": [
+    "account_context_candidates",
+    "account_security",
+    "account_security_events",
+    "account_terms_acceptances",
+    "account_terms_head",
+    "account_terms_release_receipts",
+    "accounts",
+    "audit_events",
+    "auth_bootstrap_credentials",
+    "auth_device_login_handoffs",
+    "auth_refresh_token_families",
+    "auth_refresh_tokens",
+    "auth_webauthn_ceremonies",
+    "auth_webauthn_ceremony_bindings",
+    "auth_webauthn_credentials",
+    "cedar_policy_catalog_entries",
+    "company_actors",
+    "company_authority_heads",
+    "company_enrollment_effect_bindings",
+    "company_enrollment_receipts",
+    "company_enrollment_request_events",
+    "company_enrollment_requests",
+    "deployment_operator_head",
+    "deployment_operator_receipts",
+    "employee_employment_profiles",
+    "employee_lifecycle_events",
+    "employee_person_bindings",
+    "employees",
+    "employment_revisions",
+    "employment_source_bindings",
+    "group_authority_heads",
+    "group_membership_revisions",
+    "group_memberships",
+    "group_role_grants",
+    "groups",
+    "leave_balance_import_receipts",
+    "native_company_action_refs",
+    "native_company_catalog_installs",
+    "native_company_object_refs",
+    "native_company_policy_inputs_v1",
+    "native_company_policy_receipts_v1",
+    "native_company_property_refs",
+    "native_people_inputs_v1",
+    "native_people_terminals_v1",
+    "ont_action_command_receipts",
+    "ont_action_types",
+    "ont_analytics",
+    "ont_builtin_catalog_allowlist",
+    "ont_builtin_catalog_installs",
+    "ont_link_types",
+    "ont_object_policies",
+    "ont_object_type_key_revisions",
+    "ont_object_types",
+    "ont_property_defs",
+    "org_unit_revisions",
+    "org_unit_source_bindings",
+    "org_units",
+    "organizations",
+    "person_revisions",
+    "persons",
+    "platform_force_removal_effect_bindings",
+    "platform_force_removal_receipts",
+    "platform_legacy_catalog_effect_bindings",
+    "platform_legacy_membership_effect_bindings",
+    "platform_legacy_topology_effect_bindings",
+    "platform_legacy_topology_receipts",
+    "platform_legacy_user_birth_witnesses",
+    "policy_assignment_revisions",
+    "policy_capability_clause_fields",
+    "policy_capability_clauses",
+    "policy_role_conditions",
+    "policy_role_permissions",
+    "policy_role_revisions",
+    "policy_roles",
+    "user_role_assignments",
+    "users"
+  ],
+  "accepted_closed_predecessor_pairs": {
+    "closed73": [
+      "fe0f65aebe362a969202e13d79c21d4e49f75834fd7b254a16a85a270e4e3c98",
+      "be18fc18f7bc6df0b5371ff01140d6a06c0a6a0438e7323d3eddaa7b070851e1"
+    ],
+    "closed76": [
+      "be4e86175dcd561150beb68db36de84fd3f224ca39d3128b1dcc958fa319a46d",
+      "7bf64f46c07608b2fba7a39be765a80e45db727b424caa55342103dc180dfcc9"
+    ]
+  },
+  "startup_repeated_nine_relations": [
+    "users",
+    "organizations",
+    "groups",
+    "employees",
+    "persons",
+    "person_revisions",
+    "employee_person_bindings",
+    "group_memberships",
+    "group_role_grants"
+  ]
+}

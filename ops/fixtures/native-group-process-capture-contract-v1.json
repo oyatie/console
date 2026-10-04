@@ -1,0 +1,708 @@
+{
+  "schema": "console.native_group_process_capture_contract.v1",
+  "supplied_base": "be7f714b0e3de106f5c561e8e6d40e6d03405be4",
+  "all54_original_pins": [
+    {
+      "path": "backend/app/src/account_credential_custody_state.sql",
+      "size": 449613,
+      "sha256": "0bc6fe6579414ebed546d076c0ec1b7f1cc5ba30f4fe5e135159f4e75c0416a2"
+    },
+    {
+      "path": "backend/app/src/account_custody.rs",
+      "size": 6621,
+      "sha256": "af4e92d793cd4c9426127f99acb1ac79fbc2088b052f0acad1be89649ed0fdb9"
+    },
+    {
+      "path": "backend/app/src/account_custody_state.sql",
+      "size": 371666,
+      "sha256": "5fb0a2608c5904fe0c1d58723290b9603afb9af08eef19c410d023a484230865"
+    },
+    {
+      "path": "backend/app/src/company_enrollment_custody_state.sql",
+      "size": 78521,
+      "sha256": "fb2030a4d2891b206c41454ce8258d65920034e8ef817c5f7a812569aae614bd"
+    },
+    {
+      "path": "backend/app/src/company_provenance_v1_custody_state.sql",
+      "size": 89399,
+      "sha256": "12e91abb9fa850bef99c709d2a01963161c6b134511b4dbedf3b958d10240a4b"
+    },
+    {
+      "path": "backend/app/src/native_company_policy_custody_state.sql",
+      "size": 83313,
+      "sha256": "072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479"
+    },
+    {
+      "path": "backend/app/src/native_company_policy_v2_custody_state.sql",
+      "size": 86563,
+      "sha256": "e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc"
+    },
+    {
+      "path": "backend/app/src/native_org_unit_closed_perimeter_v1_custody_state.sql",
+      "size": 176764,
+      "sha256": "670564ce4a107746d8f50d316014b4aca763af0335d9c38a01fcfa23ec9e46dc"
+    },
+    {
+      "path": "backend/app/src/native_people_directory_custody_state.sql",
+      "size": 174639,
+      "sha256": "20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd"
+    },
+    {
+      "path": "backend/app/src/native_people_directory_row_lock_custody_state.sql",
+      "size": 349437,
+      "sha256": "781cc446ce26525cbad6cd281c66239d1a7366eb9369d914068f39886cad3d6e"
+    },
+    {
+      "path": "ops/BUCK",
+      "size": 4086,
+      "sha256": "56269cadcaf47544a5c3ca15dd8eb133992a8b708b4f1bbb0584e83fa1651e00"
+    },
+    {
+      "path": "ops/account-custody-migrations.sha384",
+      "size": 23223,
+      "sha256": "42079d3f1b8077e163960adc65f35f1959c22a67bf42acf43d6b816721ba1357"
+    },
+    {
+      "path": "ops/company-enrollment/owner-v1.sql",
+      "size": 684400,
+      "sha256": "c6b7047727914d1d29fd77bd50355e7e2f5f918c9b6771658a0103475f5d8a44"
+    },
+    {
+      "path": "ops/company-enrollment/provenance-acl-v1.sql",
+      "size": 1110,
+      "sha256": "9a09acfe856cf76ac4491a3460da366240cd8aa3ecf88ca052492e2bf8fb791c"
+    },
+    {
+      "path": "ops/company-enrollment/provenance-v1.sql",
+      "size": 16547,
+      "sha256": "58f6275c37c6b3722871b9cf89980ebae4f651fb2979f3fe97b17371d006a284"
+    },
+    {
+      "path": "ops/generate-account-custody.py",
+      "size": 582435,
+      "sha256": "08e1827ad283fcfe68e7862b58e5f5e848e0c0df901d8fb4941d905e6d1ec84e"
+    },
+    {
+      "path": "ops/native-org-unit/closed-perimeter-v1.sql",
+      "size": 7845,
+      "sha256": "d57ec1df27184c7c0f8b6359a4ea72c08b7ce89e88c4d6054ca335d7e744cbcb"
+    },
+    {
+      "path": "ops/native-people-directory/input-row-lock-v1.sql",
+      "size": 476,
+      "sha256": "d3c48ec3134fd8f67241f0eb4a19d76b02ab51266821a1a1faec530893f67f79"
+    },
+    {
+      "path": "ops/postgres-capture-company-enrollment-custody.sql",
+      "size": 77022,
+      "sha256": "6ef7b2754176952da89a0b61a7ba999d64b4c12e70fc949add18c63171b0abb5"
+    },
+    {
+      "path": "ops/postgres-capture-company-provenance-v1-custody.sql",
+      "size": 84462,
+      "sha256": "0fc02c2bd70375acb0b6ddc86b66892af4069003c88dc58455347887cdf28ab2"
+    },
+    {
+      "path": "ops/postgres-capture-native-company-policy-custody.sql",
+      "size": 79711,
+      "sha256": "d5d2c45c691383ddde9ac213d9fe2674db0750f3ceabdc733eaaf2a570d937e3"
+    },
+    {
+      "path": "ops/postgres-capture-native-company-policy-v2-custody.sql",
+      "size": 82389,
+      "sha256": "7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4"
+    },
+    {
+      "path": "ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql",
+      "size": 84680,
+      "sha256": "6be2e3d095d59bbdb9e1b932dac8da48bde261601455cdcd166c6f2a649e6010"
+    },
+    {
+      "path": "ops/postgres-capture-native-people-directory-custody.sql",
+      "size": 84349,
+      "sha256": "bc8a1f87f57cd676ca1a3deae12263b1cca4a290c71a12e9a1749d189e090ca7"
+    },
+    {
+      "path": "ops/postgres-capture-native-people-directory-staged-custody.sql",
+      "size": 86679,
+      "sha256": "890ebc034fe9836f45e26c13d05352085db753f17e4a72b1ec05b6ecbe0a0e36"
+    },
+    {
+      "path": "ops/postgres-company-enrollment-guards.sql",
+      "size": 20145,
+      "sha256": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a"
+    },
+    {
+      "path": "ops/postgres-company-enrollment-input.sql",
+      "size": 4841,
+      "sha256": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290"
+    },
+    {
+      "path": "ops/postgres-company-enrollment-intake.sql",
+      "size": 17995,
+      "sha256": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532"
+    },
+    {
+      "path": "ops/postgres-company-enrollment-owner.sql",
+      "size": 684567,
+      "sha256": "2a7fffb57eedff3c3ba5981015e22f53ea80972e3222c38ff1c6ace1f0858d2d"
+    },
+    {
+      "path": "ops/postgres-company-enrollment-schema.sql",
+      "size": 11030,
+      "sha256": "7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb"
+    },
+    {
+      "path": "ops/postgres-company-provenance-v1-custody-state.sql",
+      "size": 89399,
+      "sha256": "12e91abb9fa850bef99c709d2a01963161c6b134511b4dbedf3b958d10240a4b"
+    },
+    {
+      "path": "ops/postgres-company-provenance-v1-owner.sql",
+      "size": 17915,
+      "sha256": "e813293ace00c46358a0c1c62093e0911aae4da1b93c4dd1577dcb351c5398c2"
+    },
+    {
+      "path": "ops/postgres-finalize-account-credentials.sql",
+      "size": 4046866,
+      "sha256": "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sql",
+      "size": 1131709,
+      "sha256": "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8"
+    },
+    {
+      "path": "ops/postgres-finalize-company-enrollment.sql",
+      "size": 897157,
+      "sha256": "bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f"
+    },
+    {
+      "path": "ops/postgres-finalize-native-company-policy-v2.sql",
+      "size": 350147,
+      "sha256": "ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e"
+    },
+    {
+      "path": "ops/postgres-finalize-native-company-policy.sql",
+      "size": 475391,
+      "sha256": "4e7fc41b1d2ed6c2155d44d43347c18815ed9e70611eb9285f21e1c590bf996a"
+    },
+    {
+      "path": "ops/postgres-finalize-native-org-unit-closed-perimeter-v1.sql",
+      "size": 449201,
+      "sha256": "6bda0446f5f75e71cf272e5180f1632c9066d18c7e48b95c913390b4723c49ed"
+    },
+    {
+      "path": "ops/postgres-finalize-native-people-directory-row-lock.sql",
+      "size": 1919393,
+      "sha256": "040652e06b9ae491514898964ff9cd6db03ffe860db3e14dfd9ccf8ea85b221f"
+    },
+    {
+      "path": "ops/postgres-finalize-native-people-directory.sql",
+      "size": 611152,
+      "sha256": "f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357"
+    },
+    {
+      "path": "ops/postgres-native-company-policy-custody-state.sql",
+      "size": 83313,
+      "sha256": "072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479"
+    },
+    {
+      "path": "ops/postgres-native-company-policy-owner.sql",
+      "size": 229812,
+      "sha256": "833300caeac6874f35ebb08017bfbb7891a5fe765a4c761b139466ae221573d5"
+    },
+    {
+      "path": "ops/postgres-native-company-policy-v2-custody-state.sql",
+      "size": 86563,
+      "sha256": "e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc"
+    },
+    {
+      "path": "ops/postgres-native-company-policy-v2-owner.sql",
+      "size": 96895,
+      "sha256": "f2050f21ef8151339289b2f013abdd543e90f8803fb6f6d4b9f004abf4409602"
+    },
+    {
+      "path": "ops/postgres-native-org-unit-closed-perimeter-v1-custody-state.sql",
+      "size": 176764,
+      "sha256": "670564ce4a107746d8f50d316014b4aca763af0335d9c38a01fcfa23ec9e46dc"
+    },
+    {
+      "path": "ops/postgres-native-org-unit-closed-perimeter-v1-owner.sql",
+      "size": 8062,
+      "sha256": "aba221ad2cfa03390eca638ccd290901877fef615450b17cf14a96304e9f2609"
+    },
+    {
+      "path": "ops/postgres-native-people-directory-custody-state.sql",
+      "size": 174639,
+      "sha256": "20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd"
+    },
+    {
+      "path": "ops/postgres-native-people-directory-owner.sql",
+      "size": 88111,
+      "sha256": "3dd0524bc751eba2aa806ee0dc670dc3cecbf8838c20b83896773a0c5b6016a0"
+    },
+    {
+      "path": "ops/postgres-native-people-directory-row-lock-custody-state.sql",
+      "size": 349437,
+      "sha256": "781cc446ce26525cbad6cd281c66239d1a7366eb9369d914068f39886cad3d6e"
+    },
+    {
+      "path": "ops/postgres-verify-account-native.sql",
+      "size": 332301,
+      "sha256": "c4e30ee9560b4d443acad1813a63667cbab9a32aadfbd893542f4b054bf6b308"
+    },
+    {
+      "path": "tools/buck/gen_first_party.py",
+      "size": 99629,
+      "sha256": "9888631caa950979694164fc917589cc07defb38e7e75b8e5be215b04dd214ff"
+    },
+    {
+      "path": "tools/buck/run_test_with_postgres_env.sh",
+      "size": 4105,
+      "sha256": "7e4a53d254a3fc2a3583b235201d004b3615b6f8d991259dde47315c5a1f0805"
+    },
+    {
+      "path": "tools/buck/test_needs_postgres.sh",
+      "size": 12584,
+      "sha256": "e2c352f7a80c588c78c9c17a2b619a7298ca643eeeed5de17dcc8bfb9f0461d8"
+    },
+    {
+      "path": "tools/buck/test_needs_postgres.test.sh",
+      "size": 36132,
+      "sha256": "9c949627df2dba9e85d44a62a0ce788bff6c27d0b4cda8aeff31fe788a04462e"
+    }
+  ],
+  "declared_writer_seams": [
+    "backend/app/src/account_custody.rs",
+    "ops/BUCK",
+    "ops/generate-account-custody.py",
+    "tools/buck/gen_first_party.py",
+    "tools/buck/test_needs_postgres.sh",
+    "tools/buck/test_needs_postgres.test.sh"
+  ],
+  "frozen48_paths": [
+    "backend/app/src/account_credential_custody_state.sql",
+    "backend/app/src/account_custody_state.sql",
+    "backend/app/src/company_enrollment_custody_state.sql",
+    "backend/app/src/company_provenance_v1_custody_state.sql",
+    "backend/app/src/native_company_policy_custody_state.sql",
+    "backend/app/src/native_company_policy_v2_custody_state.sql",
+    "backend/app/src/native_org_unit_closed_perimeter_v1_custody_state.sql",
+    "backend/app/src/native_people_directory_custody_state.sql",
+    "backend/app/src/native_people_directory_row_lock_custody_state.sql",
+    "ops/account-custody-migrations.sha384",
+    "ops/company-enrollment/owner-v1.sql",
+    "ops/company-enrollment/provenance-acl-v1.sql",
+    "ops/company-enrollment/provenance-v1.sql",
+    "ops/native-org-unit/closed-perimeter-v1.sql",
+    "ops/native-people-directory/input-row-lock-v1.sql",
+    "ops/postgres-capture-company-enrollment-custody.sql",
+    "ops/postgres-capture-company-provenance-v1-custody.sql",
+    "ops/postgres-capture-native-company-policy-custody.sql",
+    "ops/postgres-capture-native-company-policy-v2-custody.sql",
+    "ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql",
+    "ops/postgres-capture-native-people-directory-custody.sql",
+    "ops/postgres-capture-native-people-directory-staged-custody.sql",
+    "ops/postgres-company-enrollment-guards.sql",
+    "ops/postgres-company-enrollment-input.sql",
+    "ops/postgres-company-enrollment-intake.sql",
+    "ops/postgres-company-enrollment-owner.sql",
+    "ops/postgres-company-enrollment-schema.sql",
+    "ops/postgres-company-provenance-v1-custody-state.sql",
+    "ops/postgres-company-provenance-v1-owner.sql",
+    "ops/postgres-finalize-account-credentials.sql",
+    "ops/postgres-finalize-account-custody.sql",
+    "ops/postgres-finalize-company-enrollment.sql",
+    "ops/postgres-finalize-native-company-policy-v2.sql",
+    "ops/postgres-finalize-native-company-policy.sql",
+    "ops/postgres-finalize-native-org-unit-closed-perimeter-v1.sql",
+    "ops/postgres-finalize-native-people-directory-row-lock.sql",
+    "ops/postgres-finalize-native-people-directory.sql",
+    "ops/postgres-native-company-policy-custody-state.sql",
+    "ops/postgres-native-company-policy-owner.sql",
+    "ops/postgres-native-company-policy-v2-custody-state.sql",
+    "ops/postgres-native-company-policy-v2-owner.sql",
+    "ops/postgres-native-org-unit-closed-perimeter-v1-custody-state.sql",
+    "ops/postgres-native-org-unit-closed-perimeter-v1-owner.sql",
+    "ops/postgres-native-people-directory-custody-state.sql",
+    "ops/postgres-native-people-directory-owner.sql",
+    "ops/postgres-native-people-directory-row-lock-custody-state.sql",
+    "ops/postgres-verify-account-native.sql",
+    "tools/buck/run_test_with_postgres_env.sh"
+  ],
+  "historical_generator_definitions": {
+    "assignment:ROOT": "7efba0850e8eeaef93e5c3de6b7d47927a3e4bde0e8161dfb3d03fc10717d3c2",
+    "assignment:TABLES": "65b328bda00597744ad7929d2470e551abd1f495ad8c357428ed48d095b92ed9",
+    "assignment:FENCE_BODY": "e4a9df5f14d7c47739840e4d2a6cb8fb6546397f0362cc93ce07f9c3f657bbc1",
+    "assignment:GUARD_BODY": "6237edf970668974d49fd6d6d80403c25ad2c1046fa35e121a2ad14da3046451",
+    "assignment:CURRENT_BODY": "2c9a8a42acf76de50b3c8b7b0c1f4e92202cc5594825c7e53c215df8747fd3b0",
+    "assignment:ROOT_GUARD_BODY": "0065c7426fd2f2430984c7498a8a6706f289725d65550cfa317103698fba52da",
+    "assignment:ROOT_BRIDGE_BODY": "f0d74e15859ffb5bc99586820722ed46cac45d65086bdb17601d05b0020f6f7e",
+    "assignment:USER_ID_GUARD_BODY": "1cbaa290c2fa44ef368064c05f2a136bb62b3dc7af705bd954f6d1f447c23de7",
+    "assignment:DEACTIVATION_GUARD_BODY": "b663f912303b5472cb91ac5385e1252b76dca30dc8d15074083aeb0d01228a30",
+    "assignment:DEACTIVATION_INSTALL": "48c584f882515856b0305a77aaae1423121507946981cc8ae3ef8f698904482d",
+    "assignment:INSTALL": "9902c4c90eca46926a1716aa92b784db992176b569d097bcc3e869242aa8a528",
+    "assignment:ROOT_INSTALL": "674dc16e51b52f2a0aa3a51997cf9feaf0763e3efc06b0be5ffcf1ab6920e142",
+    "function:generated_files": "ae8522ad424412c5c4a8584a6d0529e1debd991c9a985ee9a0710f7c02c9aef9",
+    "assignment:COMPANY_OWNER_SOURCE_SHA256": "821544e67e62965532c039105945e70c1fc4a4469c56179ed78e643e6e532274",
+    "assignment:COMPANY_CUSTODY_ADDITIONAL_RELATIONS": "a9b60fad4228341b56aab67057c33d45a59354120c05fca4ff5937adc34f8d0d",
+    "assignment:COMPANY_CUSTODY_ROUTINE_NAMES": "82ad0e4d85a0e6ea19d222223f07593d2f95a025c8b35f7f7b100a6f84edd147",
+    "function:company_enrollment_owner_sql": "6c6b23a03621205f8c0b26ba22b986553cc976e266e1d7b611f2311da2bd6ab6",
+    "function:company_enrollment_snapshot_query": "eb04dd2ac6201bf67cd6170cf7fc9229e8dcb2bf4b88751810470e6e20cb2a58",
+    "function:company_enrollment_guards_sql": "c090d44a3100314bee0ef4de82bae1a6b2a1a478fcb2c9cc67189823f363af8f",
+    "function:company_enrollment_intake_sql": "23e502cd0bcf546ff01e7ff1788e065b6695f7ed7c28db51b19175a1f57d3d88",
+    "function:company_enrollment_schema_sql": "99b0b3ac5e165188d341be1e03bb35b3aec48518b11db65ecf4a896b25a29913",
+    "function:company_enrollment_input_sql": "bc0ccf996ea1011c89e75fbad0f98b60a19c605ec8a55ca3fbbdf1bf3785273c",
+    "assignment:CREDENTIAL_TABLES": "04a550411e2c6f394623b568e6b48a32fadc73dc6799ef333d475f20e13e468b",
+    "assignment:CREDENTIAL_STATE_QUERY": "d16b35f3422d68d81570475e00f083132c1b3093c78e9b3150faaf5a62bd93a5",
+    "assignment:CREDENTIAL_INSTALL": "487bd5039780a744c8adc974e193256810ef32e8122df115463f75de449b3cac",
+    "function:credential_generated_files": "d3d4a2e781cb4715f744946a5f743404e435aea8b73185c7605cdfa10db3cbc5",
+    "assignment:NATIVE_STAGED_SHA256": "09051ed2e4e8fdadd47289d07472d77f1f9ed6b2df0c6d2b460576e04a56a71a",
+    "assignment:NATIVE_FINALIZED9_SHA256": "793b608230bc5fc2d8d66e5ae291413895ab302102dd402c4a2d58008ac27dcf",
+    "function:native227_state_query": "2b446b66bbb5b72e6ef215e7f30c64b4f72369d31e0b1bc36d241703febbb4ef",
+    "function:deployment_fingerprints": "dcd1e976daa441471c2d124c670c2bf76c2b9d18f8f1951e71517a98f543155d",
+    "assignment:AUDIT_PRIOR_SHA256": "c66da22380911f2674a2996e84f2d881fb10f80924940fdee48b8139479a454b",
+    "assignment:AUDIT_FINALIZED_SHA256": "8414891af3cdf79a2b1975c31456403363672c35a731e8fc19f60e62d3b5e173",
+    "function:audit_attribution_fingerprints": "351ceddbc226912a6b685645ccd629255465239cc189b975742e45b0004126ee",
+    "function:audit_attribution_snapshot_query": "776d6cea88f93eca8b22e62d4a6512174c072297cbac698f8c4542a6bda80a28",
+    "assignment:BUSINESS_SESSION_INSTALL": "4d6c5896d898228efd594baa1c7eb15d3806d13e7918c65b78ddffa41b414735",
+    "function:business_session_snapshot_query": "fab338f49faf2196b3ad91a88d67e683d2710c68d74471560c64989f5c24b346",
+    "function:audit_native_state_query": "850d92edb5e23501cef9b4665f1144511f2ce621e93b371798e542a9cd87601b",
+    "assignment:BUSINESS_SESSION_PRIOR_SHA256": "8ad59b924e2bb66f6b1bbf0686773e00d6e9b4cb424f3b5a5c9b5a68e2372fd8",
+    "assignment:BUSINESS_SESSION_FINALIZED_SHA256": "37856593f59b8487028cb501db32808c05be57062dfb707aae343540142d78de",
+    "function:native_state_query": "8e2a6d7bc42627fc7f77bf8cfea1836da94e2184dff94da448c6200d44a79877",
+    "assignment:COMPANY_ELIGIBILITY_INSTALL": "0cf5add145581ed77f8a28be7b83a840c1df413662aca49b8520e7b9543a71a0",
+    "function:company_eligibility_snapshot_query": "a8d31d55941ebd4d05e82e2ccae0892bacc57a4309d2f7e765dac556f2e9df0b",
+    "assignment:COMPANY_ELIGIBILITY_PRIOR_SHA256": "a2843946516f845aedbde6db9c910bc598541aa95ced30cc2b34241a73e77024",
+    "assignment:COMPANY_ELIGIBILITY_FINALIZED_SHA256": "1ad9bd94e625866c1473b38dc0154be28217763a72f59b36142a7209fbc4fae2",
+    "function:company_eligibility_fingerprints": "86f89943474bca367b49dcf696d0d6f7964c5d7ce9211682386eae99930d2362",
+    "function:company_eligibility_state_query": "f0ebfd4fd2968e7931fea446d62adc79cbe335530a5005afa5c766861a132a9e",
+    "assignment:PLATFORM_SOURCE_INSTALL": "d0854b445a44b2758492572a8ae060c903800300bd12c3200cdef91bbf28eb48",
+    "function:platform_source_snapshot_query": "d11a25159560aedbe8e0acc3455d7ca731238792179864fc438e72cf3c2d4757",
+    "assignment:PLATFORM_SOURCE_PRIOR_SHA256": "127eeca525dbf801e6e65a4c184978d3c79de1b21085ac69001368f5bef1bb89",
+    "assignment:PLATFORM_SOURCE_FINALIZED_SHA256": "66301fa90e172dd1278736cf393d6e5f00597bfda4c96608f8db59fe99818564",
+    "function:platform_source_fingerprints": "6eaf3631a56cbdc73c74e85248e4aaa335d5ea21ff1776a8ff2149ec2f98b933",
+    "function:platform_source_state_query": "06a65d6a725a99e6ca2657523c208e37a2113b532be7501207bb6f66d2a01209",
+    "function:platform_source_upgrade_sql": "93dd198057347c247bc6ce2c9e43ae503775219e664541257f009c70552611a4",
+    "function:company_eligibility_upgrade_sql": "3e7fa98f314cb3bb0834bd0315b884065235815e67e7fb0dda6a1b138a79d27f",
+    "function:business_session_upgrade_sql": "e1274b8c20354e8adb64ba370e63f4bff09e7eafc711a2e2da894d65a8be1e8d",
+    "function:audit_attribution_upgrade_sql": "2d61aca9da5f4dee8405d93c8917fb4e0b1bed35ef9f2f0caf4c247d355894b0",
+    "function:deployment_upgrade_sql": "9891327d6d4bef99af4144174a16df14c2f398c06dd3b03fb1312e6530105154",
+    "function:native_postcondition_sql": "41572e0f102e0cc29265b46c16c326ba718eca0b24b7ecbdc78ea83b245da5cd",
+    "function:root_state_query": "4a8097db18435aa9bc2a063f84ac70c61ecc7e67d4f19b119b3a51aa35d323f6",
+    "function:credential_state_query": "5e3108eaf9906e3e87c24482e555a23ef807667258d65a2caaeb8ccc56e72c90",
+    "assignment:LEGACY_ROOT_QUERY": "c38c0f356afab964408b4ad40a235b60b8a9181b5dd081452cce13692ead36cc",
+    "assignment:NATIVE_SNAPSHOT_QUERY": "77b700f255acdb0e0bf599bf83ea05500b960f540f65db097a286d1ba9b04ee6",
+    "assignment:NATIVE_INSTALL": "90e20dbe6bd3fab6c2a9666f95cc5f4a2513abd04a5b3fe150831f289b9e8b5e",
+    "assignment:NATIVE_EXTENSION_INSTALL": "f0447e6c3fb4b816b68e526a1a2843ed89f1171ec1f288e2982d93743981f608",
+    "assignment:DEPLOYMENT_INSTALL": "53e9ea6436723264be07bbb1c836aff24224f29bf3e1803e38c757d6c18ea774",
+    "function:deployment228_snapshot_query": "2bda6256929c7f0a18dd4147b7f726c8f2aa359a8ac272792c24c322fa8a89f2",
+    "assignment:COMPANY_CUSTODY_PRIOR_SHA256": "7bf150a6b39899d09f4235fc94cf5f7f01c07834d6ef7b0b569f82f00e3cd008",
+    "assignment:COMPANY_CUSTODY_FINALIZED_SHA256": "22dbbdfb52860dd0109d710d48c1676e7f0ef7fb531a24f222ce1deaf0ba3305",
+    "assignment:COMPANY_CUSTODY_CREATED_RELATIONS": "a37a945687904383c8ee1fe2bfcd3d78915d906fce8b5c25fe288c781e9c4e52",
+    "function:company_enrollment_state_query": "6aa236200af15c384aefb4e6f07bd83fa70104ff84a36306f49177bf64b1cc28",
+    "function:company_enrollment_finalizer_sql": "af5944e0b54669f7d9781b20462b3cf49b0a8bbe8e75464c93cde962dc9afc2f",
+    "assignment:NATIVE_POLICY_SOURCE_ORDER": "c13a380ce10a6966464aad88b1cb4ca88bc2e3d3976f0e2fb0f7c1741e06a33e",
+    "assignment:NATIVE_POLICY_RELATIONS": "5b262b98893987e5294ba9c0ea30656385eacd9eda5acffa40ce6125d17e20ea",
+    "assignment:NATIVE_POLICY_SOURCE_SHA256": "c9fb977e242e30ac914f189a3c5ce22a6f05733e924797376307a1a5639b5b37",
+    "assignment:NATIVE_POLICY_PREVIOUS_SHA256": "602ed342adef85d9fa3e0a3bbcc3dd4ee78c046e75ab662ee461ab42438e262d",
+    "assignment:NATIVE_POLICY_GUARD_ONLY_SHA256": "2bded9547cd294f5eee882a6373aa33439de52f1bda60a2b9a644cfeafb70ddc",
+    "assignment:NATIVE_POLICY_FINALIZED_SHA256": "fc975e5557fe8e60d05e917877818b312b9df67c222e7703f7bf300639c24ce4",
+    "assignment:NATIVE_POLICY_CATALOG_REFERENCE_SQL": "0b0bd58b04a42fe3aff29e4919457f2f390018334ea64eedcfecbae4c85c37c2",
+    "function:native_company_policy_source_sql": "bf521891bd2d74d483b86a42431f3d0750c42ed90e9dcd1553b5754ca354e4e3",
+    "function:native_company_policy_snapshot_query": "a5af31590d0d5875245b9fc15279718b6a1a7faba4c560b6e70bda6a49dd37fd",
+    "function:native_company_policy_profiles": "e74fb975cdaf4f70a19cd40cd04beae01c249f6c9c0c33ec5a9fc496859529c2",
+    "function:native_company_policy_state_query": "5354265a3b071b0054231fb239ffe10afe903ca6f2d068e4877a4064429ee6b4",
+    "function:native_company_policy_finalizer_sql": "a8544ce9590868d21f2b6791c66f144e83d4ca2b5805afed1805b50dbdbdf7c8",
+    "function:native_company_policy_generated_files": "c17b22e269e289a8a32ef9b867d2074c8d4dfacc3e5be4d79b4717d6832afed5",
+    "assignment:NATIVE_POLICY_V2_NAMESPACE_PREDICATE": "c17f8e6a521fb3c7dcacdbd284a18ce27f74483eb705b2323070449a074754e8",
+    "assignment:NATIVE_POLICY_V2_SOURCE_SHA256": "bf76a9e7f772a64ef3e02304f76ecdb56dc5b2aa00d3e69f29f6d18ee1864601",
+    "function:native_company_policy_v2_source_sql": "28f16bd3bcfa5e088b2c659bcab79ae0cde46f6802dfef80056e625db160838b",
+    "function:native_company_policy_v2_snapshot_query": "2c51d6a7b34ec7aa080abed1cf418c9e86d974b3d776ec4f1b410b2877f3267c",
+    "function:native_company_policy_v2_capture_files": "8c4b633c4153c3a3d6a7647e01815df7bbfbc65cf6617e209b8a642d024cbbf9",
+    "assignment:NATIVE_POLICY_V2_FINALIZED_SHA256": "a66b3b79fc948b9b70a29a25d3c0ac5b035b41990e4a839c1e683e9ab9285685",
+    "function:native_company_policy_v2_profiles": "ae93193c12655a8f08ea9585d8f7b67a11d8e639d34b966a4df5c8f631aced90",
+    "function:native_company_policy_v2_presence_query": "c29a9a36c0386151b1a03757e8829d34bdbf652aa346b7453bd96208053546ed",
+    "function:native_company_policy_v2_state_query": "10ed66d02df8dda2d48f0c19bc343afe7a4c45bc06f2e4bef75aceab2c1a929f",
+    "function:native_company_policy_v2_finalizer_sql": "6917295e7fac5876aeb080c805156eaea727f3c42ccd28566267151b703a0a36",
+    "function:native_company_policy_v2_finalized_files": "64667beb1b00618013207f4db911fa4547d645120171d8bc278068e2db4c3e8b",
+    "assignment:NATIVE_DIRECTORY_SOURCE_SHA256": "bf9edc65da699894936d6f2ed42cfc41ac9ad0a50ad6207d9755d280d3657b26",
+    "assignment:NATIVE_DIRECTORY_MIGRATION": "fae04d59df9141429d10a612af3dff982c700dfb2a72570e996f6cdf841467f2",
+    "assignment:NATIVE_DIRECTORY_MIGRATION_SHA256": "38aaa7e6942503e87396bb79e9feea52bb64451102d8ce4bdd0d9287f3bed377",
+    "assignment:NATIVE_DIRECTORY_ADDED_RELATIONS": "d29b7d1fa30a69928580bf873cbb07f2076fabb9358e48e197268901bd0b6d7d",
+    "function:native_people_directory_source_files": "a4a220bc26136a1b21443b2728f11405424a1a10dd7a6c0b8e35c881ea7ee9e4",
+    "function:native_people_directory_source_sql": "de588baf26825ffc7800ca308807df1c38cc1a86cab0208cfa53d7db1f7b88da",
+    "function:native_people_directory_routine_names": "2fe3942ba7d521fd681c2e2516f6375fe87f5885f71c19ad837dab63955d8896",
+    "function:native_people_directory_snapshot_query": "a29435e4cbc3e695615835130c2eba9a2e98b3837a848302ead3fe03de1b3fae",
+    "function:native_people_directory_staged_snapshot_query": "bf58ab46140d512ab5e083fd31be089c53aece14956c72c5c6097e012b847bba",
+    "function:native_people_directory_capture_files": "25735556daf60d2512fcc5ccb0e10144d8a913ae6cef4abd2d486d8ad8e2b208",
+    "assignment:NATIVE_DIRECTORY_CLOSED_SHA256": "e6483ef80ac9eb241411363eb1a89e9b7c8b5524651f1cec61cc9f586ecfcd5a",
+    "assignment:NATIVE_DIRECTORY_FINALIZED_SHA256": "f77d5c5e3e0eea411e7c2562bc317123932de8ab2304ae2a16c96b447cd05caa",
+    "function:native_people_directory_fingerprints": "9120e4522adb9022f49ad4686c8769af47ad9cd840d72394d9b328c7e57f8e0d",
+    "function:native_people_directory_presence_query": "4de34d87b15ab4e807ec55afd649ecb6ebef7f2270a3c5cce0550f03c32a942c",
+    "function:native_people_directory_state_query": "b3e6eb0a434dff2e7aebe277dc567944d5805815ff03bc37ed545f8d5228cd17",
+    "function:native_people_directory_classifier_files": "915029d332409dd8afa1219e074f10d5ac46ac32ae63d15c7da35520740622f9",
+    "assignment:NATIVE_DIRECTORY_STAGED_SHA256": "0c8991ec29ad4c61cd8c2e5cd725aa22f292e672dca484c000e1c5e4daaef6a4",
+    "function:native_people_directory_finalizer_sql": "d22c642c6884a066b2cfad9593d4dad72f7419a7115526152044073387d3ffc6",
+    "assignment:NATIVE_DIRECTORY_ROW_LOCK_SOURCE": "c981ff210535e74b966a9cc07522de7cd207e40c220e2c8e3617201428297675",
+    "assignment:NATIVE_DIRECTORY_ROW_LOCK_SOURCE_SHA256": "392b9c93b8f83638d33b36a31e62861f60d701c3359a8f83c869703de0ced960",
+    "assignment:NATIVE_DIRECTORY_ROW_LOCK_FINALIZED_SHA256": "2d39a929f126a5343c0d100be01894b73d7e151ce5a284a26f518d46b9e620b1",
+    "assignment:NATIVE_DIRECTORY_V1_FINALIZER_SHA256": "671c12fcee8f8007b03ee97f0fffe41a1f92af5ff8c5140f6377454d4ea8e5f3",
+    "function:native_people_directory_row_lock_profiles": "83559803fd11a6d89d9027e02a2977cf80d0ce40bff65f3b0c8e91b467e84e9e",
+    "function:native_people_directory_row_lock_source_sql": "b9429da5c611ae6c0b46f777849e0401c60cb5a46f1f41ee967e9229a9fc4574",
+    "function:native_people_directory_row_lock_state_query": "58c9707fd9cea5f6ea7b57bc8acb70aba2f59ae4e2618b93d4988ed5ec7d6205",
+    "function:native_people_directory_row_lock_finalizer_sql": "5657cab9fe1d9738f01c14ba5e2fb1a6ca1ed05bdc483e169ff65781b56a12f8",
+    "function:native_people_directory_row_lock_files": "c7a05c4f1bd998d3a613c3d0f90f7533fc7c8199494e660e03018863af49083a",
+    "assignment:COMPANY_PROVENANCE_SOURCE_SHA256": "1a3305fe208fdac413ae197297ce10d10837a6e0d55bad9923dd7bf79fb4a4b6",
+    "function:company_provenance_regular_path": "7f8bd8d2c528ed5ff5fd3ef3bcf89fc8619813068d7970b36d5f25238d5ed53c",
+    "function:company_provenance_capture_files": "8088cfb61a9f961765bd4d94311c7c28ad3161820f0f3d46afcdfe447e8e73c5",
+    "assignment:COMPANY_PROVENANCE_INSTALLED_SHA256": "ce41327f16f241c0432c06213d409549e6fd0962b0de985d0ddcb39162c24d68",
+    "function:company_provenance_custody_files": "84cee5849bbdb178a55b48fae9bb071568190052bf38c0bc80daf9a1fba89582",
+    "assignment:NATIVE_ORG_UNIT_CLOSED_PERIMETER_SOURCE_SHA256": "8d2ee244c2c50db97429bc06fc0f93bf96574204a15e6254ccba6143ea1500e5",
+    "function:native_org_unit_closed_perimeter_capture_files": "b7948cee4ab35cf9d01be3bfd79a3c34aafeed1469f5d692ee59e291c194f6f1",
+    "assignment:NATIVE_ORG_UNIT_CLOSED_PHASE_PAIRS": "4faeb0a91aacc1536551b0ac0396c64614e1f2f28d92f2373c92751ecd371099",
+    "assignment:NATIVE_ORG_UNIT_CLOSED_CAPTURE_SHA256": "b9d9405faa1a4986221977bbc0b3ad5ad1c808836f6f696022f813a776b62141",
+    "function:native_org_unit_closed_custody_inputs": "3a141c718de7238efb9e67d1652c1534f243b6b8410a570c79f71751df862eaa",
+    "function:native_org_unit_closed_values": "c502d275a3347e8eb2f3b0280be79374b86259d960541974602d0f986c90c5f0",
+    "function:native_org_unit_closed_state_query": "73afce563a515b766201aeb89db5099052b4d2145c057a9df00cc43ba7f3688b",
+    "function:native_org_unit_closed_finalizer_sql": "a06b51d4b5f3bc6b93db7c74fe1793cdcd0b276b5b42e8558b1c9a1d74f670f4",
+    "function:native_org_unit_closed_perimeter_custody_files": "30fc9b38b59f6698d080166373ef927531ad60048b1a63a98875f9503c30bb07"
+  },
+  "historical_default_outputs": {
+    "backend/app/src/account_credential_custody_state.sql": "0bc6fe6579414ebed546d076c0ec1b7f1cc5ba30f4fe5e135159f4e75c0416a2",
+    "backend/app/src/account_custody_state.sql": "5fb0a2608c5904fe0c1d58723290b9603afb9af08eef19c410d023a484230865",
+    "backend/app/src/company_enrollment_custody_state.sql": "fb2030a4d2891b206c41454ce8258d65920034e8ef817c5f7a812569aae614bd",
+    "backend/app/src/native_company_policy_custody_state.sql": "072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479",
+    "backend/app/src/native_company_policy_v2_custody_state.sql": "e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc",
+    "backend/app/src/native_people_directory_custody_state.sql": "20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd",
+    "backend/app/src/native_people_directory_row_lock_custody_state.sql": "781cc446ce26525cbad6cd281c66239d1a7366eb9369d914068f39886cad3d6e",
+    "ops/account-custody-migrations.sha384": "42079d3f1b8077e163960adc65f35f1959c22a67bf42acf43d6b816721ba1357",
+    "ops/postgres-capture-company-enrollment-custody.sql": "6ef7b2754176952da89a0b61a7ba999d64b4c12e70fc949add18c63171b0abb5",
+    "ops/postgres-capture-native-company-policy-custody.sql": "d5d2c45c691383ddde9ac213d9fe2674db0750f3ceabdc733eaaf2a570d937e3",
+    "ops/postgres-capture-native-company-policy-v2-custody.sql": "7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4",
+    "ops/postgres-capture-native-people-directory-custody.sql": "bc8a1f87f57cd676ca1a3deae12263b1cca4a290c71a12e9a1749d189e090ca7",
+    "ops/postgres-capture-native-people-directory-staged-custody.sql": "890ebc034fe9836f45e26c13d05352085db753f17e4a72b1ec05b6ecbe0a0e36",
+    "ops/postgres-company-enrollment-guards.sql": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a",
+    "ops/postgres-company-enrollment-input.sql": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+    "ops/postgres-company-enrollment-owner.sql": "2a7fffb57eedff3c3ba5981015e22f53ea80972e3222c38ff1c6ace1f0858d2d",
+    "ops/postgres-company-enrollment-schema.sql": "7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb",
+    "ops/postgres-finalize-account-credentials.sql": "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9",
+    "ops/postgres-finalize-account-custody.sql": "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8",
+    "ops/postgres-finalize-company-enrollment.sql": "bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f",
+    "ops/postgres-finalize-native-company-policy-v2.sql": "ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e",
+    "ops/postgres-finalize-native-company-policy.sql": "4e7fc41b1d2ed6c2155d44d43347c18815ed9e70611eb9285f21e1c590bf996a",
+    "ops/postgres-finalize-native-people-directory-row-lock.sql": "040652e06b9ae491514898964ff9cd6db03ffe860db3e14dfd9ccf8ea85b221f",
+    "ops/postgres-finalize-native-people-directory.sql": "f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357",
+    "ops/postgres-native-company-policy-custody-state.sql": "072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479",
+    "ops/postgres-native-company-policy-owner.sql": "833300caeac6874f35ebb08017bfbb7891a5fe765a4c761b139466ae221573d5",
+    "ops/postgres-native-company-policy-v2-custody-state.sql": "e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc",
+    "ops/postgres-native-company-policy-v2-owner.sql": "f2050f21ef8151339289b2f013abdd543e90f8803fb6f6d4b9f004abf4409602",
+    "ops/postgres-native-people-directory-custody-state.sql": "20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd",
+    "ops/postgres-native-people-directory-owner.sql": "3dd0524bc751eba2aa806ee0dc670dc3cecbf8838c20b83896773a0c5b6016a0",
+    "ops/postgres-native-people-directory-row-lock-custody-state.sql": "781cc446ce26525cbad6cd281c66239d1a7366eb9369d914068f39886cad3d6e",
+    "ops/postgres-verify-account-native.sql": "c4e30ee9560b4d443acad1813a63667cbab9a32aadfbd893542f4b054bf6b308"
+  },
+  "group_sql_sources": [
+    {
+      "path": "ops/native-group-process/acl-v1.sql",
+      "size": 5809,
+      "sha256": "5661c038e1d07076d0ced512cdc43ce9c04e5bb918f8bf3a33c3bc0821bf30e0"
+    },
+    {
+      "path": "ops/native-group-process/audit-v1.sql",
+      "size": 6140,
+      "sha256": "5ed8aa96a668de24cd0b0daef13bc5084bf3951fac581597d3bf3c746ac4607f"
+    },
+    {
+      "path": "ops/native-group-process/closure-v1.sql",
+      "size": 19764,
+      "sha256": "4ca58c102d9ed803e0decff8b5e4eaa130f3c594a55b251facc2e98d6042ca2f"
+    },
+    {
+      "path": "ops/native-group-process/codec-v1.sql",
+      "size": 9671,
+      "sha256": "feb28474e77d423da87a0eb2e8cd1588791a2c9ecf6e6112e00afc6e12153219"
+    },
+    {
+      "path": "ops/native-group-process/commands-v1.sql",
+      "size": 12529,
+      "sha256": "9b86d73c28b5f5f98da684b7b8da6ba8225c115228d3d7bb437f64bb133f28c7"
+    },
+    {
+      "path": "ops/native-group-process/context-v1.sql",
+      "size": 3002,
+      "sha256": "0b51c44a6401f5eaf5452b25458cd9cbddb1c321d10e3199133a5441e6c80a2a"
+    },
+    {
+      "path": "ops/native-group-process/discovery-v1.sql",
+      "size": 47961,
+      "sha256": "58908576d4790f9e7ced9b1040484de9c9594dcf4560f8439c6378cee2e61779"
+    },
+    {
+      "path": "ops/native-group-process/guards-v1.sql",
+      "size": 16597,
+      "sha256": "011700957a179bb1b4d862512eb53e30c37a5fb15262e3d831eb32c8b4f17949"
+    },
+    {
+      "path": "ops/native-group-process/locks-v1.sql",
+      "size": 7478,
+      "sha256": "a74237a27cc270a00bf8fd82595e8f3cfeb79f3f2bb2c981719cef4d0d8abe01"
+    },
+    {
+      "path": "ops/native-group-process/material-v1.sql",
+      "size": 8991,
+      "sha256": "1d78d9336ca88f482bd157da2b18324e6ed3bc1374add4f898867ee753d53ff3"
+    },
+    {
+      "path": "ops/native-group-process/result-codec-v2.sql",
+      "size": 11770,
+      "sha256": "032c8222d7a123ac5614ee29053662c0e543949d557c96b27b865106a6ed9e47"
+    },
+    {
+      "path": "ops/native-group-process/schema-v1.sql",
+      "size": 24531,
+      "sha256": "7b0278ac5993e7ef972740f86c0d969b3f0a0b724abd5a873f3241cd637926c4"
+    },
+    {
+      "path": "ops/native-group-process/source-v1.sql",
+      "size": 3426,
+      "sha256": "6cda12aa3051768db0418b0b0aecb82a590ddfac0c753ef01d07e027720beea7"
+    },
+    {
+      "path": "ops/native-group-process/transition-v1.sql",
+      "size": 1852,
+      "sha256": "55b3fe3456e0e1d92565621856ccf9fbffda64f3b619881ef2e224f17eb7effb"
+    }
+  ],
+  "group_routines": [
+    "public.identity_native_group_process_execute_v1",
+    "public.identity_native_group_process_incarnation_selector_v1",
+    "public.identity_native_group_process_material_v1",
+    "public.identity_native_group_process_navigation_candidates_v1",
+    "public.identity_native_group_process_prepare_v1",
+    "public.native_group_process_accept_snapshot_v1",
+    "public.native_group_process_account_material_v1",
+    "public.native_group_process_action_roster_v1",
+    "public.native_group_process_assert_current_v1",
+    "public.native_group_process_assert_input_v1",
+    "public.native_group_process_assert_result_v1",
+    "public.native_group_process_audit_guard_v1",
+    "public.native_group_process_audit_truncate_guard_v1",
+    "public.native_group_process_classify_v1",
+    "public.native_group_process_command_guard_v1",
+    "public.native_group_process_complete_snapshot_v1",
+    "public.native_group_process_current_context_v1",
+    "public.native_group_process_decode_v1",
+    "public.native_group_process_deferred_guard_v1",
+    "public.native_group_process_effect_guard_v1",
+    "public.native_group_process_group_guard_v1",
+    "public.native_group_process_head_bytes_v1",
+    "public.native_group_process_head_ref_v1",
+    "public.native_group_process_head_statement_v1",
+    "public.native_group_process_i64_v1",
+    "public.native_group_process_immutable_statement_v1",
+    "public.native_group_process_input_guard_v1",
+    "public.native_group_process_micros_v1",
+    "public.native_group_process_original_material_v1",
+    "public.native_group_process_participant_guard_v1",
+    "public.native_group_process_policy_head_bytes_v1",
+    "public.native_group_process_policy_ref_v1",
+    "public.native_group_process_registered_actions_v1",
+    "public.native_group_process_registration_bytes_v1",
+    "public.native_group_process_result_bytes_v2",
+    "public.native_group_process_source_v1",
+    "public.native_group_process_text_v1",
+    "public.native_group_process_topology_fence_v1",
+    "public.native_group_process_uuid_v1",
+    "public.native_group_process_validate_frame_v1",
+    "public.native_group_process_version_bytes_v1"
+  ],
+  "group_runtime_signatures": [
+    "public.identity_native_group_process_material_v1(uuid,uuid,uuid,uuid,uuid,smallint,bytea)",
+    "public.identity_native_group_process_incarnation_selector_v1(uuid,uuid,uuid,uuid)",
+    "public.identity_native_group_process_navigation_candidates_v1(uuid,uuid,bytea)",
+    "public.identity_native_group_process_prepare_v1(uuid,uuid,uuid,bytea)",
+    "public.identity_native_group_process_execute_v1(uuid,uuid,uuid)"
+  ],
+  "group_tables": [
+    "public.native_group_process_inputs_v1",
+    "public.native_group_process_effects_v1",
+    "public.native_group_process_results_v1",
+    "public.native_group_identity_policy_heads_v1",
+    "public.native_group_process_versions_v1",
+    "public.native_group_process_head_revisions_v1",
+    "public.native_group_process_heads_v1"
+  ],
+  "compiled_source_identity": [
+    {
+      "path": "backend/crates/platform/authz/src/group_process/process-v1.cedarschema",
+      "size": 7433,
+      "sha256": "c711017368596094ad0ff9b1123eb17573722df47f1b4abb15a31ce1ce8b1e44"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/group_process/process-v1.cedar",
+      "size": 3170,
+      "sha256": "2453684b70134124a8cf77f2d882fb7497d8c1498325fac1321ca7e616791ed8"
+    },
+    {
+      "path": "ops/native-group-process/codec-contract-v1.json",
+      "size": 7868,
+      "sha256": "595376f9edea8ebd5a698bd27d6f7310a470f5e5d95522d7eed7c01db8169067"
+    }
+  ],
+  "phase_pairs": null,
+  "group_source_installation_order": [
+    "ops/native-group-process/schema-v1.sql",
+    "ops/native-group-process/codec-v1.sql",
+    "ops/native-group-process/result-codec-v2.sql",
+    "ops/native-group-process/source-v1.sql",
+    "ops/native-group-process/locks-v1.sql",
+    "ops/native-group-process/closure-v1.sql",
+    "ops/native-group-process/context-v1.sql",
+    "ops/native-group-process/material-v1.sql",
+    "ops/native-group-process/transition-v1.sql",
+    "ops/native-group-process/guards-v1.sql",
+    "ops/native-group-process/commands-v1.sql",
+    "ops/native-group-process/audit-v1.sql",
+    "ops/native-group-process/discovery-v1.sql",
+    "ops/native-group-process/acl-v1.sql"
+  ],
+  "installation_order_evidence": {
+    "path": "/private/tmp/console-group-sql-isolated-runtime-20261004-v1-95ajge97/group-source-declarations.psql",
+    "sha256": "49465ab72973d8065f2465a76eb7cfe2a163a71438c1e5bf0224aaa4ebee609c",
+    "existing_source_count": 13,
+    "addition": "discovery-v1.sql before final acl-v1.sql",
+    "authority_note": "Parent supplied actual isolated declaration order; recorded source pin is not a runtime execution claim."
+  },
+  "reserved_naming_families": [
+    "native_group_process",
+    "native_group_identity_policy",
+    "identity_native_group_process"
+  ],
+  "reserved_namespace_expressions": {
+    "native_group_process_relation_namespace": "(SELECT jsonb_agg(jsonb_build_array(n.nspname,c.relname,c.relkind,pg_get_userbyid(c.relowner)) ORDER BY n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE starts_with(c.relname,'native_group_process') OR starts_with(c.relname,'native_group_identity_policy') OR starts_with(c.relname,'identity_native_group_process'))",
+    "native_group_process_schema_namespace": "(SELECT jsonb_agg(jsonb_build_array(n.nspname,pg_get_userbyid(n.nspowner)) ORDER BY n.nspname) FROM pg_namespace n WHERE starts_with(n.nspname,'native_group_process') OR starts_with(n.nspname,'native_group_identity_policy') OR starts_with(n.nspname,'identity_native_group_process'))",
+    "native_group_process_type_namespace": "(SELECT jsonb_agg(jsonb_build_array(n.nspname,t.typname,t.typtype,pg_get_userbyid(t.typowner)) ORDER BY n.nspname,t.typname) FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE starts_with(t.typname,'native_group_process') OR starts_with(t.typname,'native_group_identity_policy') OR starts_with(t.typname,'identity_native_group_process'))",
+    "native_group_process_routine_namespace": "(SELECT jsonb_agg(jsonb_build_array(n.nspname,p.proname,pg_get_function_identity_arguments(p.oid),p.prokind,pg_get_userbyid(p.proowner)) ORDER BY n.nspname,p.proname,pg_get_function_identity_arguments(p.oid)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE starts_with(p.proname,'native_group_process') OR starts_with(p.proname,'native_group_identity_policy') OR starts_with(p.proname,'identity_native_group_process'))"
+  },
+  "rights_cardinality_replacements": [
+    [
+      "count(*)=73 AND count(oid)=73",
+      "count(*)=83 AND count(oid)=83"
+    ],
+    [
+      "count(*)=82 AND count(oid)=82",
+      "count(*)=92 AND count(oid)=92"
+    ],
+    [
+      "count(*)=656 AND bool_and(allowed IS FALSE)",
+      "count(*)=736 AND bool_and(allowed IS FALSE)"
+    ],
+    [
+      "count(DISTINCT name)=73",
+      "count(DISTINCT name)=83"
+    ]
+  ]
+}

@@ -7515,15 +7515,318 @@ def native_org_unit_closed_perimeter_custody_files():
     }
 
 
+# Additive capture inputs, in the reviewed dependency order. No installed
+# fingerprint or serving profile is inferred from these source identities.
+NATIVE_GROUP_PROCESS_SOURCE_SHA256 = {
+    'ops/native-group-process/schema-v1.sql': '7b0278ac5993e7ef972740f86c0d969b3f0a0b724abd5a873f3241cd637926c4',
+    'ops/native-group-process/codec-v1.sql': 'feb28474e77d423da87a0eb2e8cd1588791a2c9ecf6e6112e00afc6e12153219',
+    'ops/native-group-process/result-codec-v2.sql': '032c8222d7a123ac5614ee29053662c0e543949d557c96b27b865106a6ed9e47',
+    'ops/native-group-process/source-v1.sql': '6cda12aa3051768db0418b0b0aecb82a590ddfac0c753ef01d07e027720beea7',
+    'ops/native-group-process/locks-v1.sql': 'a74237a27cc270a00bf8fd82595e8f3cfeb79f3f2bb2c981719cef4d0d8abe01',
+    'ops/native-group-process/closure-v1.sql': '4ca58c102d9ed803e0decff8b5e4eaa130f3c594a55b251facc2e98d6042ca2f',
+    'ops/native-group-process/context-v1.sql': '0b51c44a6401f5eaf5452b25458cd9cbddb1c321d10e3199133a5441e6c80a2a',
+    'ops/native-group-process/material-v1.sql': '1d78d9336ca88f482bd157da2b18324e6ed3bc1374add4f898867ee753d53ff3',
+    'ops/native-group-process/transition-v1.sql': '55b3fe3456e0e1d92565621856ccf9fbffda64f3b619881ef2e224f17eb7effb',
+    'ops/native-group-process/guards-v1.sql': '011700957a179bb1b4d862512eb53e30c37a5fb15262e3d831eb32c8b4f17949',
+    'ops/native-group-process/commands-v1.sql': '9b86d73c28b5f5f98da684b7b8da6ba8225c115228d3d7bb437f64bb133f28c7',
+    'ops/native-group-process/audit-v1.sql': '5ed8aa96a668de24cd0b0daef13bc5084bf3951fac581597d3bf3c746ac4607f',
+    'ops/native-group-process/discovery-v1.sql': '58908576d4790f9e7ced9b1040484de9c9594dcf4560f8439c6378cee2e61779',
+    'ops/native-group-process/acl-v1.sql': '5661c038e1d07076d0ced512cdc43ce9c04e5bb918f8bf3a33c3bc0821bf30e0',
+}
+NATIVE_GROUP_PROCESS_COMPILED_SOURCE_SHA256 = {
+    'backend/crates/platform/authz/src/group_process/process-v1.cedarschema': 'c711017368596094ad0ff9b1123eb17573722df47f1b4abb15a31ce1ce8b1e44',
+    'backend/crates/platform/authz/src/group_process/process-v1.cedar': '2453684b70134124a8cf77f2d882fb7497d8c1498325fac1321ca7e616791ed8',
+    'ops/native-group-process/codec-contract-v1.json': '595376f9edea8ebd5a698bd27d6f7310a470f5e5d95522d7eed7c01db8169067',
+}
+NATIVE_GROUP_PROCESS_NAMESPACE_EXPRESSIONS = {
+    'native_group_process_relation_namespace': "(SELECT jsonb_agg(jsonb_build_array(n.nspname,c.relname,c.relkind,pg_get_userbyid(c.relowner)) ORDER BY n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE starts_with(c.relname,'native_group_process') OR starts_with(c.relname,'native_group_identity_policy') OR starts_with(c.relname,'identity_native_group_process'))",
+    'native_group_process_schema_namespace': "(SELECT jsonb_agg(jsonb_build_array(n.nspname,pg_get_userbyid(n.nspowner)) ORDER BY n.nspname) FROM pg_namespace n WHERE starts_with(n.nspname,'native_group_process') OR starts_with(n.nspname,'native_group_identity_policy') OR starts_with(n.nspname,'identity_native_group_process'))",
+    'native_group_process_type_namespace': "(SELECT jsonb_agg(jsonb_build_array(n.nspname,t.typname,t.typtype,pg_get_userbyid(t.typowner)) ORDER BY n.nspname,t.typname) FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE starts_with(t.typname,'native_group_process') OR starts_with(t.typname,'native_group_identity_policy') OR starts_with(t.typname,'identity_native_group_process'))",
+    'native_group_process_routine_namespace': "(SELECT jsonb_agg(jsonb_build_array(n.nspname,p.proname,pg_get_function_identity_arguments(p.oid),p.prokind,pg_get_userbyid(p.proowner)) ORDER BY n.nspname,p.proname,pg_get_function_identity_arguments(p.oid)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE starts_with(p.proname,'native_group_process') OR starts_with(p.proname,'native_group_identity_policy') OR starts_with(p.proname,'identity_native_group_process'))",
+}
+
+
+def native_group_process_capture_files():
+    import re
+    sources = {}
+    for name, digest in {**NATIVE_GROUP_PROCESS_SOURCE_SHA256,
+                         **NATIVE_GROUP_PROCESS_COMPILED_SOURCE_SHA256}.items():
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest:
+            raise SystemExit('Native Group source differs from reviewed bytes: ' + name)
+        if name in NATIVE_GROUP_PROCESS_SOURCE_SHA256:
+            sources[name] = raw.decode('utf-8')
+    owner = ('-- Generated UNINSTALLED native Group source; not a custody finalizer.\n'
+             '-- No installed profile or serving readiness is asserted by this artifact.\n'
+             + '\n'.join('-- source: ' + name + '\n' + source
+                         for name, source in sources.items()))
+    tables = re.findall(r'CREATE TABLE\s+public\.([a-z_0-9]+)\s*\(', owner)
+    routines = sorted(re.findall(r'CREATE(?: OR REPLACE)? FUNCTION\s+public\.([a-z_0-9]+)\(', owner))
+    if len(tables) != 7 or len(set(tables)) != 7 or len(routines) != 41 or len(set(routines)) != 41:
+        raise ValueError('Native Group source roster drift')
+    query = native_org_unit_closed_perimeter_capture_files()[
+        'ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql']
+    relation_begin, relation_end = 'WITH wanted(name) AS (VALUES\n', '), relations AS (\n'
+    routine_begin, routine_end = '), routine_records AS (\n', '), owner_roles AS (\n'
+    rights_begin = '\n ) AS record\n), company_startup_rights AS (\n SELECT\n'
+    rights_end = ' AS valid\n), snapshots AS ('
+    snapshot_begin = '), snapshots AS (\n SELECT jsonb_build_object(\n'
+    for anchor in (relation_begin, routine_begin, routine_end,
+                   rights_begin, rights_end, snapshot_begin):
+        if query.count(anchor) != 1:
+            raise ValueError('Native Group predecessor capture boundary drift')
+    old_relations = query.split(relation_begin, 1)[1].split(relation_end, 1)[0]
+    old_routines = query.split(routine_begin, 1)[1].split(routine_end, 1)[0]
+    old_rights = query.split(rights_begin, 1)[1].split(rights_end, 1)[0]
+    relations = old_relations.rstrip() + ',\n ' + ',\n '.join(
+        "('" + name + "')" for name in tables) + '\n'
+    routines = old_routines + ' OR (n.nspname,p.proname) IN (VALUES ' + ','.join(
+        "('public','" + name + "')" for name in routines) + ')\n'
+    rights = old_rights
+    for before, after in (
+        ('count(*)=73 AND count(oid)=73', 'count(*)=83 AND count(oid)=83'),
+        ('count(*)=82 AND count(oid)=82', 'count(*)=92 AND count(oid)=92'),
+        ('count(*)=656 AND bool_and(allowed IS FALSE)', 'count(*)=736 AND bool_and(allowed IS FALSE)'),
+        ('count(DISTINCT name)=73', 'count(DISTINCT name)=83'),
+    ):
+        if rights.count(before) != 1:
+            raise ValueError('Native Group predecessor rights boundary drift')
+        rights = rights.replace(before, after)
+    namespaces = ''.join("  '" + key + "'," + expression + ',\n'
+                         for key, expression in NATIVE_GROUP_PROCESS_NAMESPACE_EXPRESSIONS.items())
+    for before, after in (
+        (relation_begin + old_relations + relation_end, relation_begin + relations + relation_end),
+        (routine_begin + old_routines + routine_end, routine_begin + routines + routine_end),
+        (snapshot_begin, snapshot_begin + namespaces),
+        (rights_begin + old_rights + rights_end, rights_begin + rights + rights_end),
+        ('AS native_directory_startup_rights_valid FROM snapshots',
+         'AS native_group_process_startup_rights_valid FROM snapshots'),
+    ):
+        if query.count(before) != 1:
+            raise ValueError('Native Group capture replacement boundary drift')
+        query = query.replace(before, after)
+    return {
+        'ops/postgres-native-group-process-v1-owner.sql': owner,
+        'ops/postgres-capture-native-group-process-v1-custody.sql': query,
+    }
+
+
+# Measured and independently reviewed plain/observer pairs. These do not alter
+# historical captures, their serializers, or the migration ledger.
+NATIVE_GROUP_PROCESS_PHASE_PAIRS = (
+    ('plain',
+     'e14842248916f3d79770fba90adb18a6eb947ec4be052f04103b87acae1dd651',
+     'ec5c2d1523e69520ac32f3d253c1c222d52e1b01bba12040328502ab319d6862'),
+    ('observer',
+     '342aedf98ddcc8646cb50576abdf0cacbdd3a0cc5adf56e3931b678b91250a99',
+     'cda9967f7b8b267e5294551314c80fd9fc1795f962450b7b0f3d6353f11043a6'),
+)
+NATIVE_GROUP_PROCESS_CAPTURE_SHA256 = {
+    'ops/postgres-native-group-process-v1-owner.sql':
+        'cbf641175a7bf589bd46fc21dc775fe2fab8b1a8ab7e46b04dee3c32422038f9',
+    'ops/postgres-capture-native-group-process-v1-custody.sql':
+        '3406bac381896fab4e9a1c079110d3dc770a9d89b0b564e7744034379f60cd3b',
+}
+
+
+def native_group_process_custody_inputs():
+    import json
+    pairs = NATIVE_GROUP_PROCESS_PHASE_PAIRS
+    if (not isinstance(pairs, tuple) or len(pairs) != 2
+            or any(not isinstance(row, tuple) or len(row) != 3 for row in pairs)
+            or hashlib.sha256(json.dumps(pairs, separators=(',', ':')).encode()).hexdigest()
+            != '75313fa4903cd4b1804355f4046036496eac81276afa51246f37cd47b74e2bca'):
+        raise SystemExit('Native Group custody requires the reviewed measured phase pairs')
+    computed = native_group_process_capture_files()
+    inputs = []
+    for name, digest in NATIVE_GROUP_PROCESS_CAPTURE_SHA256.items():
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest or computed[name].encode() != raw:
+            raise SystemExit('Native Group custody input differs from reviewed bytes: ' + name)
+        inputs.append(raw.decode())
+    # Reuse the existing complete predecessor/231-ledger/source verification.
+    _, _, _, migrations = native_org_unit_closed_custody_inputs()
+    if '$native_group_process_source$' in inputs[0]:
+        raise SystemExit('Native Group source embedding delimiter collision')
+    return pairs, inputs[1].removesuffix(';\n'), inputs[0], migrations
+
+
+def native_group_process_state_query(pairs, capture):
+    absence = '\n  AND '.join("snapshot->>'" + key + "' IS NULL"
+                              for key in NATIVE_GROUP_PROCESS_NAMESPACE_EXPRESSIONS)
+    return f"""-- Generated read-only complete Group serving custody.
+-- Absent namespaces allow historical verification, never arbitrary installation.
+WITH full83 AS (
+{capture}
+), phase_pairs(variant,predecessor83,installed83) AS (
+{native_org_unit_closed_values(pairs)}
+), matching_phase(variant,phase) AS (
+ SELECT p.variant,'installed'::text FROM phase_pairs p CROSS JOIN full83 f
+ WHERE f.snapshot_sha256=p.installed83
+  AND f.native_group_process_startup_rights_valid IS TRUE
+ UNION ALL
+ SELECT p.variant,'predecessor'::text FROM phase_pairs p CROSS JOIN full83 f
+ WHERE f.snapshot_sha256=p.predecessor83
+  AND f.native_group_process_startup_rights_valid IS FALSE
+), namespace_absence AS (
+ SELECT {absence} AS valid FROM full83
+)
+SELECT CASE
+ WHEN (SELECT count(*) FROM matching_phase)=1
+  AND (SELECT phase FROM matching_phase)='installed'
+ THEN 'native_group_process.finalized'
+ WHEN (SELECT count(*) FROM matching_phase)=1
+  AND (SELECT phase FROM matching_phase)='predecessor'
+  AND (SELECT valid FROM namespace_absence) IS TRUE
+ THEN 'native_group_process.install_required'
+ WHEN (SELECT count(*) FROM matching_phase)=0
+  AND (SELECT valid FROM namespace_absence) IS TRUE
+ THEN 'native_group_process.absent'
+ ELSE 'native_group_process.profile_mismatch' END AS state;
+"""
+
+
+def native_group_process_finalizer_sql(query, source, migrations):
+    import re
+    predecessor = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS,
+        *NATIVE_DIRECTORY_ADDED_RELATIONS, 'org_unit_revisions', 'org_unit_source_bindings', 'org_units'))
+    installed = sorted((*predecessor, *re.findall(r'CREATE TABLE\s+public\.([a-z_0-9]+)\s*\(', source)))
+    if len(predecessor) != 76 or len(set(predecessor)) != 76 or len(installed) != 83 or len(set(installed)) != 83:
+        raise SystemExit('Native Group finalizer relation roster differs')
+    ledger = f"""IF (WITH expected_migrations(version,checksum) AS (
+{native_org_unit_closed_values(migrations)}
+ ) SELECT count(*)=231 AND bool_and(e.version IS NOT NULL AND m.version IS NOT NULL
+    AND m.success IS TRUE AND (encode(m.checksum,'hex')=e.checksum) IS TRUE) IS TRUE
+   FROM expected_migrations e FULL JOIN public._sqlx_migrations m ON m.version=e.version) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process.migration_ledger_mismatch'; END IF;"""
+    inspect = ('SELECT classified.state,classified.variant INTO observed_phase,variant_name FROM (\n'
+               + query.removesuffix(' AS state;\n')
+               + ' AS state,(SELECT variant FROM matching_phase) AS variant\n) classified;')
+
+    def lock_relations(names):
+        required = native_org_unit_closed_values([(name,) for name in names])
+        count = len(names)
+        return f""" IF (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)={count} AND count(DISTINCT c.oid)={count} AND count(DISTINCT n.oid)=1
+    AND bool_and(c.oid IS NOT NULL AND c.oid>0 AND c.relkind='r'
+        AND NOT c.relispartition AND n.nspname='public') IS TRUE
+   FROM required_relations required
+   LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   LEFT JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process.profile_mismatch'; END IF;
+ locked_relations:=0;
+ FOR relation_name IN WITH required_relations(name) AS (
+{required}
+ ) SELECT c.relname::text FROM required_relations required
+   JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+   ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ IF locked_relations<>{count} OR (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)={count} AND count(DISTINCT l.relation)={count}
+   FROM required_relations required
+   JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+   JOIN pg_catalog.pg_locks l ON l.relation=c.oid
+   WHERE l.pid=pg_backend_pid() AND l.locktype='relation'
+    AND l.mode='AccessExclusiveLock' AND l.granted) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process.relation_locks_missing'; END IF;
+"""
+
+    bounds = '\n'.join(f""" IF (pg_catalog.current_setting('{name}') IS NOT NULL
+  AND (SELECT setting::bigint FROM pg_catalog.pg_settings WHERE name='{name}')
+      BETWEEN 1 AND {limit}) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process.entry_bounds_mismatch'; END IF;"""
+        for name, limit in (('lock_timeout', 1000), ('statement_timeout', 60000),
+                           ('idle_in_transaction_session_timeout', 30000), ('transaction_timeout', 120000)))
+    return f"""-- Generated isolated-fixture-only atomic Group finalizer.
+-- Caller freezes/verifies actual database name/OID/system_identifier, owns the
+-- cluster schema/role maintenance lease, BEGINs READ COMMITTED, sets LOCAL
+-- search_path=pg_catalog,pg_temp, jit=off and positive bounded timeouts in a
+-- separate statement, locks the ledger SHARE and actual console_account_owner
+-- pg_authid row FOR UPDATE. Retain all locks through COMMIT/ROLLBACK. Role-row
+-- custody is a trusted caller obligation; no fabricated pg_locks tuple proof.
+-- This fixture protocol does not authorize production DDL or client exposure.
+DO $native_group_process_custody$
+DECLARE observed_phase text; variant_name text; expected_variant text;
+ relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user IS DISTINCT FROM current_user OR current_user<>'console_buck_admin'
+  OR (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) IS NOT TRUE
+  OR starts_with(current_database(),'_sqlx_test_') IS NOT TRUE
+  OR pg_catalog.current_setting('console.sqlx_test_bootstrap',true)
+      IS DISTINCT FROM 'buck-sqlx-superuser-v1' THEN
+  RAISE EXCEPTION 'native_group_process.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'
+  OR pg_catalog.current_setting('search_path') IS DISTINCT FROM 'pg_catalog, pg_temp'
+  OR pg_catalog.current_setting('jit') IS DISTINCT FROM 'off' THEN
+  RAISE EXCEPTION 'native_group_process.entry_settings_mismatch'; END IF;
+{bounds}
+ IF (SELECT count(*)=1 AND bool_and(c.oid IS NOT NULL AND c.oid>0
+      AND c.relkind='r' AND NOT c.relispartition AND r.rolname='console_app') IS TRUE
+     FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+     JOIN pg_catalog.pg_roles r ON r.oid=c.relowner
+     WHERE n.nspname='public' AND c.relname='_sqlx_migrations') IS NOT TRUE
+  OR (SELECT count(*)=1 FROM pg_catalog.pg_locks
+      WHERE pid=pg_backend_pid() AND locktype='relation'
+       AND relation=pg_catalog.to_regclass('public._sqlx_migrations')
+       AND mode='ShareLock' AND granted) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process.migration_ledger_lock_missing'; END IF;
+ {ledger}
+{lock_relations(predecessor)}
+ {inspect}
+ IF (observed_phase IS DISTINCT FROM 'native_group_process.install_required'
+     AND observed_phase IS DISTINCT FROM 'native_group_process.finalized') OR variant_name IS NULL THEN
+  RAISE EXCEPTION 'native_group_process.profile_mismatch'; END IF;
+ expected_variant:=variant_name;
+ IF observed_phase='native_group_process.install_required' THEN
+  EXECUTE $native_group_process_source${source}$native_group_process_source$;
+ END IF;
+{lock_relations(installed)}
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF observed_phase IS DISTINCT FROM 'native_group_process.finalized'
+  OR variant_name IS DISTINCT FROM expected_variant THEN
+  RAISE EXCEPTION 'native_group_process.profile_mismatch'; END IF;
+ {ledger}
+END
+$native_group_process_custody$;
+"""
+
+
+def native_group_process_custody_files():
+    pairs, capture, source, migrations = native_group_process_custody_inputs()
+    query = native_group_process_state_query(pairs, capture)
+    return {
+        'ops/postgres-native-group-process-v1-custody-state.sql': query,
+        'backend/app/src/native_group_process_v1_custody_state.sql': query,
+        'ops/postgres-finalize-native-group-process-v1.sql':
+            native_group_process_finalizer_sql(query, source, migrations),
+    }
+
+
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--company-provenance-capture'], ['--company-provenance-capture', '--check'],
+    if arguments in (['--native-group-process-custody'], ['--native-group-process-custody', '--check'],
+                     ['--native-group-process-capture'], ['--native-group-process-capture', '--check'],
+                     ['--company-provenance-capture'], ['--company-provenance-capture', '--check'],
                      ['--company-provenance-custody'], ['--company-provenance-custody', '--check'],
                      ['--native-org-unit-closed-perimeter-capture'],
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-org-unit-closed-perimeter-custody':
+        if arguments[0] == '--native-group-process-custody':
+            files = native_group_process_custody_files()
+        elif arguments[0] == '--native-group-process-capture':
+            files = native_group_process_capture_files()
+        elif arguments[0] == '--native-org-unit-closed-perimeter-custody':
             files = native_org_unit_closed_perimeter_custody_files()
         elif arguments[0] == '--native-org-unit-closed-perimeter-capture':
             files = native_org_unit_closed_perimeter_capture_files()
@@ -7540,7 +7843,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:

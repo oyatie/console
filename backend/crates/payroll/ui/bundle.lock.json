@@ -6,13 +6,16 @@
     "backend/BUCK": "132ca739f056cd8618838a6b68a9b007d308d677a8ead50cfee9ef656760b083",
     "backend/Cargo.lock": "b2a976428fbe5fb95915cbb3e3098fa1373b8178abab8c26bf58edc39d6fa4c9",
     "backend/Cargo.toml": "d542bb403d6db181811d8000dac7efab60c96cbbbac043959316718229cd26a4",
-    "backend/crates/payroll/ui/BUCK": "5bda3ad41cc6184758fedb10136bffccc9535857b4dcdcdcd0f8ba70fbeebc34",
+    "backend/crates/payroll/ui/BUCK": "1a387b197d79d118ab7a1365bef657073f4a76da9617b73f67c993ffb3a948b2",
     "backend/crates/payroll/ui/Cargo.toml": "29478f482fc9c30194b9bc74a8d17bf92e38359b4294b8dd79f41960f4043b68",
     "backend/crates/payroll/ui/src/island_script.js": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d",
-    "backend/crates/payroll/ui/src/lib.rs": "c936bdd813e63b4202ef9b78876d5021ae19eddcca0b9cad3a4185378753bf38",
+    "backend/crates/payroll/ui/src/lib.rs": "da4002a3819dfad688badb14fa24c0384a1d435d42536638ae653b88f98f6fb7",
     "backend/crates/payroll/ui/src/native_account.css": "49962ceed3f2a80fc8b0849d076767479fe7d806a1022dc4a3681ecdc2e33348",
     "backend/crates/payroll/ui/src/native_account.js": "8e024d85d3f3d691a568b1bc2da4c90827f91b68bfb47ef8d008635b39d32f2f",
-    "backend/crates/payroll/ui/src/native_account.rs": "3b190fa9b9842a785d35ac44e4fcec1fb89b842f86f5bf3b547ba5e4a7b90872",
+    "backend/crates/payroll/ui/src/native_account.rs": "771295aeda89afc63ad8137488b560ad537a46b848e554271870a26e28d7f5f9",
+    "backend/crates/payroll/ui/src/native_group_process.css": "881597911cff33c21bd32569c6f51246f24042567ae1377612ad4a98a63d990c",
+    "backend/crates/payroll/ui/src/native_group_process.rs": "6f0c5aff1a8f68ead1c810e2f7c44fc73c77ba8afddfd0fabe624e82fd1bd120",
+    "backend/crates/payroll/ui/src/native_group_process_tests.rs": "3b60306e6282b3038ee3253cc99b0b820afc8b876b827f6e0e77200346285e61",
     "backend/crates/payroll/ui/src/native_payroll.css": "e8d6648d516db9e26632a7482387c29a6350e2dd3f34541e7d2193827ed6fbfc",
     "backend/crates/payroll/ui/src/native_payroll.rs": "0e673022c1312fb8c0e6a40c1366f66df8184e70fbae31b0703d71e20dd25e30",
     "backend/crates/payroll/ui/src/native_payroll_tests.rs": "4524ad0c628426992b4e273a5dfedb4072aec8d90fe3f2c9da8054300ef9570c",
@@ -162,7 +165,7 @@
     "toolchains/rust/sysroot.bzl": "a1ea4bce4948b707454336706c426af9c4d4307abf01f31746eef01fd9895f20",
     "toolchains/rust/wasm.bzl": "c7b6f21a453724a892e76e0b2b57e6f8c34b699fd6adc15f379948de977c3c10",
     "tools/buck/BUCK": "3cd8904380ff4507e00be4008ace6ea0433a01e958b8b8a57774a6efdb27ab42",
-    "tools/buck/gen_first_party.py": "9cf904699e9b306435a3755b67bd91dc0885e9c684dded1ef0926233a52f6ba9",
+    "tools/buck/gen_first_party.py": "636b07d91a5c8e29ca7034acd393aced3152ad68c77a49301b25f70daa034c74",
     "tools/buck/gen_hydrate.py": "227729e955c248ff16e83ea747643e2c502450e34eb8a183fc355fc478ae6661",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d281912382fa15c336023016a6cedf5fd811117221862b0a05505a6d4625a478",
@@ -172,13 +175,13 @@
   },
   "outputs": {
     "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
-    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "2b44aa0e1964ffd8ad0df376e40385af870bf4cffbb3072c8365d11c9f6f405c"
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "e15108a7d91df947b15ea3443d6dda2dce047a7600193d388ded3f83dc80103d"
   },
   "producer": {
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
-    "compiled_wasm_sha256": "3218d4688aae6bfc51d420c681022bb655e604ae8382011f61da28ac3ca9eaed",
+    "compiled_wasm_sha256": "a31ce5ab46baea331fef0cdc17a03301d1b5ccf6054cae6ff73d1ab2bb79a5ec",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "c7c80edf4be90a553e6663aa5a475eb7142b29cccd08e7b87c25819f7acccce0"
+    "source_snapshot_sha256": "0f2c2906461c46a7e595f6287322d189413e7715fbd211ec04cd2c52c709ba4d"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",

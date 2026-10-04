@@ -1,6 +1,8 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 pub mod native_account;
 #[cfg(feature = "ssr")]
+pub mod native_group_process;
+#[cfg(feature = "ssr")]
 pub mod native_payroll;
 #[cfg(feature = "ssr")]
 pub mod native_people;
@@ -148,7 +150,8 @@ main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px
 "#,
     include_str!("native_policy.css"),
     include_str!("native_people.css"),
-    include_str!("native_payroll.css")
+    include_str!("native_payroll.css"),
+    include_str!("native_group_process.css")
 );
 
 const ISLAND_BOOTSTRAP: &str = concat!(
@@ -1789,3 +1792,7 @@ mod native_payroll_tests;
 mod native_people_tests;
 
 mod native_workspace_header;
+
+#[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
+mod native_group_process_tests;

@@ -5,6 +5,7 @@
 //! shutdown. Domain behavior lands in narrower crates and is composed here.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod native_group_process;
 mod native_payroll;
 mod native_people;
 mod native_policy;
@@ -1541,6 +1542,7 @@ pub struct AppState {
     policy_step_up: Option<PasskeyService>,
     auth_rest: Option<AuthRestState>,
     company_rest: Option<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    group_rest: Option<console_identity_rest::group_process::GroupRestState<PgOrgStore>>,
     serving_custody_profile: Option<account_custody::VerifiedCustodyProfile>,
     native_policy_issuer: Option<JwtIssuer>,
     evidence_storage: Option<EvidenceService<SeaweedS3Storage>>,
@@ -1640,6 +1642,7 @@ impl AppState {
         Ok(Self {
             platform_policy,
             company_rest: None,
+            group_rest: None,
             serving_custody_profile: None,
             native_policy_issuer: None,
             config,
@@ -1681,6 +1684,10 @@ impl AppState {
     #[must_use]
     pub fn with_auth_database(mut self, pool: PgPool) -> Self {
         self.auth_rest = self.auth_rest.map(|state| state.with_auth_database(pool));
+        self.group_rest = match (self.group_rest, self.auth_rest.as_ref()) {
+            (Some(group), Some(auth)) => Some(group.with_auth(auth.clone())),
+            _ => None,
+        };
         self
     }
 
@@ -1936,6 +1943,49 @@ impl AppState {
         // `config.email` is resolved above.
         if let Some(auth_rest) = state.auth_rest.take() {
             state.auth_rest = Some(auth_rest.with_email_sender(state.email_sender.clone()));
+        }
+        if matches!(state.config.role, AppRole::Api)
+            && state
+                .serving_custody_profile
+                .is_some_and(account_custody::VerifiedCustodyProfile::supports_native_group_process)
+        {
+            let (
+                DatabaseDependency::Postgres(pool),
+                Some(auth),
+                Some(verifier),
+                Some(issuer),
+                Some(auth_config),
+            ) = (
+                &state.database,
+                &state.auth_rest,
+                &state.jwt_verifier,
+                &state.native_policy_issuer,
+                &state.config.auth_rest,
+            )
+            else {
+                return Err(AppError::Config(
+                    "native Group composition requires current Auth and policy services".into(),
+                ));
+            };
+            if auth.auth_database().is_none()
+                || auth_config.refresh_family_absolute_ttl <= time::Duration::ZERO
+            {
+                return Err(AppError::Config(
+                    "native Group composition requires admitted Auth transport and positive TTL"
+                        .into(),
+                ));
+            }
+            let store = PgOrgStore::new(pool.clone()).with_native_account_policy(
+                verifier.clone(),
+                issuer.clone(),
+                auth_config.refresh_family_absolute_ttl,
+            );
+            state.group_rest = Some(
+                console_identity_rest::group_process::GroupRestState::new(store, auth.clone())
+                    .map_err(|_| {
+                        AppError::Config("native Group policy composition failed".into())
+                    })?,
+            );
         }
         // Webmail master key (envelope AEAD KEK) — GRACEFULLY OPTIONAL. When
         // `CONSOLE_MAIL_MASTER_KEY` is present + valid it arms the webmail credential
@@ -3905,6 +3955,13 @@ pub fn build_router(mut state: AppState) -> Router {
                     .merge(domain_router)
                     .merge(platform_router)
                     .merge(company_router)
+                    .merge(
+                        state
+                            .group_rest
+                            .clone()
+                            .map(native_group_process::router)
+                            .unwrap_or_default(),
+                    )
                     .merge(native_payroll)
                     .merge(native_people::router(native_people_state));
                 let timed = match state.auth_rest.clone() {
@@ -3995,6 +4052,7 @@ pub fn build_router(mut state: AppState) -> Router {
     let router = console_platform_rest::with_platform_list_transport(router);
     let router = native_payroll::with_transport(router);
     let router = native_people::with_transport(router);
+    let router = native_group_process::with_transport(router);
     with_metrics(router, &state)
 }
 
@@ -4331,13 +4389,26 @@ async fn native_account_page(
                     CompanySetupEligibility::Unavailable
                 }
             };
-            document(
+            let groups = match &state.group_rest {
+                Some(group) => match group.navigation_document(headers).await {
+                    Ok(views) => views.into_iter().map(|view| console_payroll_ui::native_account::GroupNavigation {
+                        group: view.group.as_uuid().to_string(), label: view.label,
+                    }).collect(),
+                    Err(console_identity_application::group_process::GroupProcessError::AuthenticationInvalid) => {
+                        return document(Page::Refused, StatusCode::UNAUTHORIZED);
+                    }
+                    Err(_) => return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE),
+                },
+                None => Vec::new(),
+            };
+            console_payroll_ui::native_account::document_with_group_navigation(
                 Page::Account {
                     context,
                     can_logout,
                     company_setup,
                 },
                 status,
+                groups,
             )
         }
         Err(error) => {

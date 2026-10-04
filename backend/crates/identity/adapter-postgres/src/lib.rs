@@ -38,6 +38,7 @@ const MAX_USER_LIMIT: i64 = 200;
 
 mod company_enrollment;
 mod company_policy;
+mod native_group_process;
 mod native_policy;
 
 #[derive(Debug, thiserror::Error)]

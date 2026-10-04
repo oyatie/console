@@ -19,6 +19,8 @@ use console_platform_auth::{
 use console_platform_authz::company_policy::CompanyPolicy;
 use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
 use futures::FutureExt;
+#[cfg(feature = "test-browser")]
+pub(super) use native_company_provenance_pair_capture::prepare_native_group_browser_database;
 use std::panic::AssertUnwindSafe;
 
 const POLICY_CLASSIFIER: &str =

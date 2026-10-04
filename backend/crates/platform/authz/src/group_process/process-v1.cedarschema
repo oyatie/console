@@ -1,0 +1,285 @@
+{
+  "": {
+    "actions": {
+      "identity.verifier.process.adopt/1": {
+        "appliesTo": {
+          "context": {
+            "attributes": {
+              "bootstrap_stage": {
+                "required": true,
+                "type": "String"
+              },
+              "group_id": {
+                "required": true,
+                "type": "String"
+              },
+              "incarnation": {
+                "required": true,
+                "type": "String"
+              },
+              "manifest_digest": {
+                "required": true,
+                "type": "String"
+              },
+              "policy_state": {
+                "required": true,
+                "type": "String"
+              },
+              "requested_fields": {
+                "element": {
+                  "type": "String"
+                },
+                "required": true,
+                "type": "Set"
+              },
+              "resource_kind": {
+                "required": true,
+                "type": "String"
+              }
+            },
+            "type": "Record"
+          },
+          "principalTypes": [
+            "Account"
+          ],
+          "resourceTypes": [
+            "GroupIdentityResource"
+          ]
+        }
+      },
+      "identity.verifier.process.read/1": {
+        "appliesTo": {
+          "context": {
+            "attributes": {
+              "bootstrap_stage": {
+                "required": true,
+                "type": "String"
+              },
+              "group_id": {
+                "required": true,
+                "type": "String"
+              },
+              "incarnation": {
+                "required": true,
+                "type": "String"
+              },
+              "manifest_digest": {
+                "required": true,
+                "type": "String"
+              },
+              "policy_state": {
+                "required": true,
+                "type": "String"
+              },
+              "requested_fields": {
+                "element": {
+                  "type": "String"
+                },
+                "required": true,
+                "type": "Set"
+              },
+              "resource_kind": {
+                "required": true,
+                "type": "String"
+              }
+            },
+            "type": "Record"
+          },
+          "principalTypes": [
+            "Account"
+          ],
+          "resourceTypes": [
+            "GroupIdentityResource"
+          ]
+        }
+      },
+      "identity.verifier.process.receipt.read-own/1": {
+        "appliesTo": {
+          "context": {
+            "attributes": {
+              "bootstrap_stage": {
+                "required": false,
+                "type": "String"
+              },
+              "group_id": {
+                "required": true,
+                "type": "String"
+              },
+              "incarnation": {
+                "required": true,
+                "type": "String"
+              },
+              "manifest_digest": {
+                "required": true,
+                "type": "String"
+              },
+              "policy_state": {
+                "required": false,
+                "type": "String"
+              },
+              "requested_fields": {
+                "element": {
+                  "type": "String"
+                },
+                "required": true,
+                "type": "Set"
+              },
+              "resource_kind": {
+                "required": true,
+                "type": "String"
+              }
+            },
+            "type": "Record"
+          },
+          "principalTypes": [
+            "Account"
+          ],
+          "resourceTypes": [
+            "GroupIdentityResource"
+          ]
+        }
+      },
+      "identity.verifier.process.suspend/1": {
+        "appliesTo": {
+          "context": {
+            "attributes": {
+              "bootstrap_stage": {
+                "required": true,
+                "type": "String"
+              },
+              "group_id": {
+                "required": true,
+                "type": "String"
+              },
+              "incarnation": {
+                "required": true,
+                "type": "String"
+              },
+              "manifest_digest": {
+                "required": true,
+                "type": "String"
+              },
+              "policy_state": {
+                "required": true,
+                "type": "String"
+              },
+              "requested_fields": {
+                "element": {
+                  "type": "String"
+                },
+                "required": true,
+                "type": "Set"
+              },
+              "resource_kind": {
+                "required": true,
+                "type": "String"
+              }
+            },
+            "type": "Record"
+          },
+          "principalTypes": [
+            "Account"
+          ],
+          "resourceTypes": [
+            "GroupIdentityResource"
+          ]
+        }
+      }
+    },
+    "entityTypes": {
+      "Account": {
+        "shape": {
+          "attributes": {
+            "account_id": {
+              "required": true,
+              "type": "String"
+            },
+            "database_name": {
+              "required": false,
+              "type": "String"
+            },
+            "database_oid": {
+              "required": false,
+              "type": "String"
+            },
+            "designation_account_id": {
+              "required": false,
+              "type": "String"
+            },
+            "designation_state": {
+              "required": false,
+              "type": "String"
+            },
+            "state": {
+              "required": true,
+              "type": "String"
+            },
+            "system_identifier": {
+              "required": false,
+              "type": "String"
+            }
+          },
+          "type": "Record"
+        }
+      },
+      "GroupIdentityResource": {
+        "shape": {
+          "attributes": {
+            "allowed_fields": {
+              "element": {
+                "type": "String"
+              },
+              "required": true,
+              "type": "Set"
+            },
+            "bootstrap_stage": {
+              "required": false,
+              "type": "String"
+            },
+            "database_name": {
+              "required": false,
+              "type": "String"
+            },
+            "database_oid": {
+              "required": false,
+              "type": "String"
+            },
+            "group_id": {
+              "required": true,
+              "type": "String"
+            },
+            "group_state": {
+              "required": false,
+              "type": "String"
+            },
+            "incarnation": {
+              "required": true,
+              "type": "String"
+            },
+            "manifest_digest": {
+              "required": true,
+              "type": "String"
+            },
+            "policy_state": {
+              "required": false,
+              "type": "String"
+            },
+            "receipt_actor": {
+              "required": false,
+              "type": "String"
+            },
+            "resource_kind": {
+              "required": true,
+              "type": "String"
+            },
+            "system_identifier": {
+              "required": false,
+              "type": "String"
+            }
+          },
+          "type": "Record"
+        }
+      }
+    }
+  }
+}

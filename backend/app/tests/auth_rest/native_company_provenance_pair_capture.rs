@@ -738,4 +738,6 @@ mod native_company_provenance_pair_capture {
             .expect("paired capture evidence flush failed");
     }
     include!("native_org_unit_closed_phase_capture.rs");
+    #[cfg(feature = "test-browser")]
+    pub(in super::super) use native_org_unit_closed_finalizer_tests::prepare_native_group_browser_database;
 }

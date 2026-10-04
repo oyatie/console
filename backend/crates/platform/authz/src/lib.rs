@@ -3194,4 +3194,5 @@ mod tests {
 }
 
 pub mod company_policy;
+pub mod group_process;
 pub mod platform_policy;

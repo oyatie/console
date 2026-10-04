@@ -223,6 +223,11 @@ for target in "${build_targets[@]}"; do
           fi
         done
       done
+      for key in CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256; do
+        if [[ -n "${!key:-}" ]]; then
+          test_executor_args+=(--env "${key}=${!key}")
+        fi
+      done
       break
       ;;
   esac
