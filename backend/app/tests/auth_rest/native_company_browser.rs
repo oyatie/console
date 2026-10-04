@@ -408,6 +408,13 @@ async fn company_browser_journey_with_group_process(
             "reload/back/workspace reads created or altered committed Company effects"
         );
         checkpoint_receipts.push("COMPANY_REOPENED");
+        if group_process_entry {
+            group_navigation_sql_diagnostic(&pool, account).await;
+            assert!(
+                committed_state == all_rows(&pool).await,
+                "rolled-back Group navigation diagnostic changed durable state"
+            );
+        }
         browser_owner_continue(&mut input, "COMPANY_REOPENED").await;
         if policy_entry {
             let ready = browser_owner_event(&mut events).await;
@@ -572,6 +579,51 @@ async fn company_browser_journey_with_group_process(
     assert!(
         exit_ok && browser_exit_confirmed,
         "browser did not exit successfully with its owned PID absent after all checkpoints"
+    );
+}
+
+// Test-only diagnosis after real UI population; original workflow checks remain.
+async fn group_navigation_sql_diagnostic(pool: &PgPool, actor: Uuid) {
+    let result: Result<(), sqlx::Error> = async {
+        let families = sqlx::query_scalar::<_, Uuid>(
+            "SELECT id FROM public.auth_refresh_token_families WHERE user_id=$1 AND protocol='ACCOUNT_V1' AND org_id IS NULL AND revoked_at IS NULL")
+            .bind(actor).fetch_all(pool).await?;
+        let [family] = families.as_slice() else { return Err(sqlx::Error::RowNotFound) };
+        let mut tx = pool.begin().await?;
+        let read = async {
+            sqlx::raw_sql("SET LOCAL ROLE console_rt; SET LOCAL TimeZone='UTC'; SET LOCAL bytea_output='hex'; SET LOCAL DateStyle='ISO, YMD'; SET LOCAL IntervalStyle='postgres'")
+                .execute(&mut *tx).await?;
+            sqlx::query_scalar::<_, String>(
+                "SELECT public.identity_native_group_process_navigation_candidates_v1($1::uuid,$2::uuid,$3::bytea)::text")
+                .bind(actor).bind(*family).bind(None::<Vec<u8>>)
+                .fetch_one(&mut *tx).await.map(|_| ())
+        }.await;
+        assert!(tx.rollback().await.is_ok(), "Group diagnostic rollback unresolved");
+        read
+    }.await;
+    let pg = result
+        .as_ref()
+        .err()
+        .and_then(|error| error.as_database_error())
+        .and_then(|db| db.try_downcast_ref::<sqlx::postgres::PgDatabaseError>());
+    let sqlstate = pg
+        .map(|db| db.code())
+        .filter(|code| {
+            code.len() == 5
+                && code
+                    .bytes()
+                    .all(|byte| byte.is_ascii_uppercase() || byte.is_ascii_digit())
+        })
+        .map(str::to_owned);
+    let is_head_revision_ambiguous =
+        pg.is_some_and(|db| db.message() == "column reference \"head_revision\" is ambiguous");
+    // No error/context/SQL/parameters/projection/identifiers are formatted.
+    eprintln!(
+        "GROUP_NAVIGATION_SQL_DIAGNOSTIC {}",
+        json!({
+            "status":result.is_ok(),"sqlstate":sqlstate,
+            "is_head_revision_ambiguous":is_head_revision_ambiguous
+        })
     );
 }
 
