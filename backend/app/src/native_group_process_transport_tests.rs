@@ -326,6 +326,7 @@ mod owner_interruption {
         ))
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = false)]
     async fn real_group_before_parse_timeout_and_native_controls(test_pool: PgPool) {
         let (state, pool) = fixture(&test_pool).await;
@@ -420,6 +421,7 @@ mod owner_interruption {
         );
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = false)]
     async fn real_group_typed_timeout_retains_exact_original_locator(test_pool: PgPool) {
         let (state, pool) = fixture(&test_pool).await;
