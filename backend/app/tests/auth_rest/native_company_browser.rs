@@ -139,6 +139,7 @@ async fn company_browser_journey_with_group_process(
     );
     if group_process_entry {
         native_policy_startup_tests::prepare_native_group_browser_database(&pool).await;
+        seed_terms(&pool).await;
     } else if people_entry {
         // Verify the actual guarded Directory activation before UI data exists.
         // Its temporary AppState uses the fixture origin; close it before the
