@@ -611,5 +611,6 @@ pub(super) mod native_people_directory_finalizer_tests {
         runtime.close().await;
         close_states(&[state], outcome).await;
     }
+    include!("native_directory_shared_capture_probe.rs");
     include!("native_people_directory_row_lock_tests.rs");
 }
