@@ -37,6 +37,11 @@ function validEvidence(result) {
     assert.equal(result.checkpoints[0].held_account_ordering.blocker_retained_until_held_response,true);
     assert.deepEqual(result.checkpoints[0].fresh_account_after_held,
       {path:'/account',status:200,authorized_account:true,after_held_lock_cleanup:true,complete_rows_unchanged:true});
+    assert.deepEqual(result.checkpoints[0].mounted_owner_interruption,
+      {path:`/groups/${result.group}/identity/requests/${result.command}`,http_timeout_ms:500,
+        actual_owner_selector_wait:true,blocker_retained_until_timeout:true,status:408,
+        exact_original_locator:true,owner_quiesced_without_forced_cancel:true,complete_rows_unchanged:true,
+        actual_lock_cleanup:true,status_readmission:404,account_readmission:200,authorized_account:true});
     for(const row of [result.checkpoints[0].fresh_account_positive,result.checkpoints[0].held_account_ordering]) {
       assert.equal(row.complete_rows_unchanged,true);assert.equal(row.actual_lock_cleanup,true);
     }

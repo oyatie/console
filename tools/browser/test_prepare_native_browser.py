@@ -35,7 +35,7 @@ COMPANIONS = {
     "native_header.cjs": "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d",
     "people_journey.cjs": "d69b37066e92f6c2d95d3475bad8f461969422cf07fb83a05252f77a23c27ecc",
     "group_process_journey.cjs": "e8e23b11e75b5652358c500067c8cf62ed40aec964a18145d15f4bdb0fd35bf8",
-    "group_navigation_held.cjs": "8fc818bd52d612a427dc72a58edaf6ab8d9e5cb6529282612d7a2f26e6a37f87",
+    "group_navigation_held.cjs": "2f45b8e0b6393cbe82c2e5745bf5489c99b4fca042e50f8de59cb2a2742524c5",
     "policy_journey.cjs": "766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea",
     "recovery_controls.cjs": "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
 }

@@ -576,9 +576,11 @@ async fn company_browser_journey_with_group_navigation(
             checkpoint_receipts.push("GROUP_PROCESS_AGGREGATE_VERIFIED");
         }
         if group_navigation_held {
-            native_group_navigation_browser::observe(&pool,&mut input,&mut events,
+            let observation = Box::pin(native_group_navigation_browser::observe(&pool,&mut input,&mut events,
                 &config,address,&captured_cookie,
-                account,result.company,result.group,&committed_state,group_form_started).await;
+                account,result.company,result.group,&committed_state,group_form_started));
+            eprintln!("GROUP_NAVIGATION_OBSERVER_FUTURE_BYTES {}", std::mem::size_of_val(observation.as_ref().get_ref()));
+            observation.await;
             checkpoint_receipts.push("GROUP_NAVIGATION_HELD_VERIFIED");
         }
         let final_event = browser_owner_event(&mut events).await;

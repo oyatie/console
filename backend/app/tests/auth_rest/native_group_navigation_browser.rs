@@ -1,6 +1,9 @@
 // Held real HTTP/browser boundary. Account/Company population is the preceding
 // real UI; genuine issued cookies stay in process memory and never in evidence.
 use super::*;
+
+#[path = "native_group_navigation_owner_interruption.rs"]
+mod mounted_owner_interruption;
 use axum::http::{HeaderValue, header};
 use futures::FutureExt;
 use std::{
@@ -11,7 +14,7 @@ use std::{
 
 pub(super) type CapturedCookie = Arc<Mutex<Option<HeaderValue>>>;
 pub(super) const DRIVER_SHA256: &str =
-    "8fc818bd52d612a427dc72a58edaf6ab8d9e5cb6529282612d7a2f26e6a37f87";
+    "2f45b8e0b6393cbe82c2e5745bf5489c99b4fca042e50f8de59cb2a2742524c5";
 
 struct Document {
     status: StatusCode,
@@ -691,6 +694,26 @@ pub(super) async fn observe(
         process.to_string(),
         command.to_string(),
     ]);
+    let business_secrets = [
+        "title",
+        "method",
+        "intended_claimant_matching_procedure",
+        "account_possession_procedure",
+        "physical_human_evidence_procedure",
+        "duplicate_contradictory_claim_procedure",
+        "qualification_criteria_instruction",
+        "escalation_adjudication_procedure",
+        "evidence_minimization_retention_description",
+        "recipient_responsibility",
+    ]
+    .map(|field| named[field].clone());
+    secrets.extend(business_secrets.into_iter().flat_map(|value| {
+        let escaped = value
+            .replace('&', "&amp;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;");
+        [value, escaped]
+    }));
     let invalid = HeaderValue::from_static("__Host-console_account_session=opaque-invalid-session");
     auth_controls(pool, address, group, None, &secrets).await;
     auth_controls(pool, address, group, Some(&invalid), &secrets).await;
@@ -710,7 +733,9 @@ pub(super) async fn observe(
             .status,
         StatusCode::SERVICE_UNAVAILABLE
     );
-    let fresh = AppState::from_config(config.clone())
+    let mut fresh_config = config.clone();
+    fresh_config.request_timeout = Duration::from_millis(500);
+    let fresh = AppState::from_config(fresh_config)
         .await
         .expect("fresh corrected same-target HTTP state");
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -744,6 +769,11 @@ pub(super) async fn observe(
         no_effects(pool,&form_rows).await;
         let fresh_after_held=json!({"path":"/account","status":200,"authorized_account":true,
             "after_held_lock_cleanup":true,"complete_rows_unchanged":true});
+        // Only the requested recovery locator may disclose these two selectors.
+        let requested = [group.to_string(), command.to_string()];
+        let owner_secrets = secrets.iter()
+            .filter(|secret| !requested.contains(*secret)).cloned().collect::<Vec<_>>();
+        let mounted_owner=mounted_owner_interruption::observe(pool,fresh_address,&credential,account,company,group,command,&owner_secrets).await;
         http_matrix(pool,address,&credential,group,company,process,command).await;
         auth_controls(pool,address,group,None,&secrets).await;
         auth_controls(pool,address,group,Some(&invalid),&secrets).await;
@@ -751,7 +781,7 @@ pub(super) async fn observe(
         assert_eq!(native_policy_startup_tests::native_group_navigation_browser_metadata(pool).await,receipt["metadata"]);
         ack(input,&ready,json!({"phase":"GROUP_HELD_FORM_READY","confirmed_correction":true,
             "owner_effects_verified":true,"fresh_account_positive":positive,"held_account_ordering":held_order,
-            "fresh_account_after_held":fresh_after_held})).await;
+            "fresh_account_after_held":fresh_after_held,"mounted_owner_interruption":mounted_owner})).await;
         let submitted=browser_owner_event(events).await;
         event_identity(&submitted,"GROUP_HELD_SUBMITTED",account,company,group);
         assert_eq!(submitted["command_id"],ready["command_id"]);
@@ -792,7 +822,7 @@ pub(super) async fn observe(
             "real_logout_revocation_verified":true,"revoked_session_denied_without_effects":true})).await;
         json!({"correction":receipt,"real_ui_population":true,"held_post_no_effects":true,
             "account_ordering_positive":positive,"account_ordering_held":held_order,
-            "fresh_account_after_held":fresh_after_held,
+            "fresh_account_after_held":fresh_after_held,"mounted_owner_interruption":mounted_owner,
             "full_public_census_each_probe":true,"metadata_and_ledger_unchanged":true,
             "genuine_ui_logout":true,"missing_invalid_revoked_auth_controls":true,
             "late_guard_mutant_execution_required":true,"production_qualified":false})
