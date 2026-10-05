@@ -143,6 +143,9 @@ async fn handle(
             _ => return method_refused(matched.as_str()),
         };
         let headers = request.headers().clone();
+        if let Err(status) = guard(&state.runtime, &headers).await {
+            return error(status);
+        }
         let prepared = match state
             .owner
             .prepare_submit_document(request, &route.group, target)
@@ -151,9 +154,6 @@ async fn handle(
             Ok(prepared) => prepared,
             Err(status) => return error(status),
         };
-        if let Err(status) = guard(&state.runtime, &headers).await {
-            return error(status);
-        }
         return submission(state.owner.submit_prepared_document(prepared).await);
     }
     if request.method() != Method::GET || matched.as_str() == ADOPT {
