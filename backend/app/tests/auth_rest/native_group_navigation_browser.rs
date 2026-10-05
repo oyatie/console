@@ -769,7 +769,14 @@ pub(super) async fn observe(
         .await
     });
     let outcome=AssertUnwindSafe(async {
-        assert_eq!(document(&http,fresh_address,"GET","/readyz",None).await.status,StatusCode::OK);
+        let readiness_started=std::time::Instant::now();
+        let readiness=document(&http,fresh_address,"GET","/readyz",None).await;
+        let readiness_elapsed_millis=u64::try_from(readiness_started.elapsed().as_millis()).unwrap();
+        eprintln!("GROUP_CORRECTED_READINESS_TIMINGS {}",json!({
+            "fixture_api_worker":receipt["fresh_readiness_millis"],
+            "fresh_http_elapsed_millis":readiness_elapsed_millis,
+            "fresh_http_status":readiness.status.as_u16()}));
+        assert_eq!(readiness.status,StatusCode::OK);
         let positive=account_lock_history(pool,fresh_address,&credential,company,true).await;
         let held_order=account_lock_history(pool,address,&credential,company,false).await;
         // Actual corrected readmission follows held blocker/request cleanup,

@@ -88,6 +88,7 @@ pub(in super::super::super::super) async fn correct_native_group_browser_databas
             held.shutdown_realtime().await;
         }
         states.clear();
+        let mut fresh_readiness_millis = Vec::new();
         for role in [console_app::AppRole::Api, console_app::AppRole::Worker] {
             let mut fresh_config = config.clone();
             fresh_config.role = role;
@@ -95,7 +96,10 @@ pub(in super::super::super::super) async fn correct_native_group_browser_databas
                 .await
                 .expect("actual corrected Group startup prerequisite");
             states.push(fresh);
+            let readiness_started = std::time::Instant::now();
             assert_eq!(ready_status(states.last().unwrap()).await, StatusCode::OK);
+            fresh_readiness_millis.push(json!({"role":role.to_string(),
+                "elapsed_millis":u64::try_from(readiness_started.elapsed().as_millis()).unwrap()}));
             states.last().unwrap().shutdown_realtime().await;
             states.pop();
         }
@@ -140,6 +144,7 @@ pub(in super::super::super::super) async fn correct_native_group_browser_databas
             "same_transaction_replay_unchanged":true,"new_connection_replay_unchanged":true,
             "fresh_postcommit_readback":true,"retained_exact83_locks":true,
             "correction_elapsed_millis":u64::try_from(elapsed.as_millis()).unwrap(),
+            "fresh_readiness_millis":fresh_readiness_millis,
             "metadata":navigation_browser_metadata(&candidate),
             "browser_accepted":false,"production_qualified":false})
     })
