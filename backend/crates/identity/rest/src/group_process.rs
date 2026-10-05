@@ -72,6 +72,30 @@ pub enum GroupSubmission {
     },
 }
 
+/// Original transport only; current authentication and policy remain owner checks.
+pub struct PreparedGroupLanding {
+    group: GroupId,
+    credentials: AccountEnrollmentCredentials,
+}
+pub struct PreparedGroupForm {
+    group: GroupId,
+    target: GroupProcessFormTargetV1,
+    credentials: AccountEnrollmentCredentials,
+    headers: HeaderMap,
+    client: Option<TrustedClientIp>,
+}
+pub struct PreparedGroupRequest {
+    requested: GroupProcessRouteSelectorV1,
+    credentials: AccountEnrollmentCredentials,
+    headers: HeaderMap,
+    client: Option<TrustedClientIp>,
+}
+pub struct PreparedGroupSubmission {
+    requested: GroupProcessRouteSelectorV1,
+    credentials: AccountEnrollmentCredentials,
+    input: form::Input,
+}
+
 impl<S> GroupRestState<S>
 where
     S: GroupProcessStore<Credentials = AccountEnrollmentCredentials, FormProof = AccountFormProof>,
@@ -109,28 +133,45 @@ where
         discover_group_process_navigation(&self.store, self.policy.as_ref(), &credentials).await
     }
 
-    pub async fn landing_document(
+    pub fn prepare_landing_document(
         &self,
         headers: &HeaderMap,
         group: &str,
-    ) -> Result<GroupProcessLandingViewV1, StatusCode> {
+    ) -> Result<PreparedGroupLanding, StatusCode> {
         let group = route_group(group)?;
         let credentials = self
             .auth
             .company_document_credentials(headers)
             .map_err(|e| e.status())?;
+        Ok(PreparedGroupLanding { group, credentials })
+    }
+
+    pub async fn landing_prepared_document(
+        &self,
+        prepared: PreparedGroupLanding,
+    ) -> Result<GroupProcessLandingViewV1, StatusCode> {
+        let PreparedGroupLanding { group, credentials } = prepared;
         read_group_process_landing(&self.store, self.policy.as_ref(), &credentials, group)
             .await
             .map_err(workflow_status)
     }
 
-    pub async fn form_document(
+    pub async fn landing_document(
+        &self,
+        headers: &HeaderMap,
+        group: &str,
+    ) -> Result<GroupProcessLandingViewV1, StatusCode> {
+        let prepared = self.prepare_landing_document(headers, group)?;
+        self.landing_prepared_document(prepared).await
+    }
+
+    pub fn prepare_form_document(
         &self,
         headers: &HeaderMap,
         client: Option<TrustedClientIp>,
         group: &str,
         target: GroupFormTarget<'_>,
-    ) -> Result<GroupProcessForm<AccountFormProof>, StatusCode> {
+    ) -> Result<PreparedGroupForm, StatusCode> {
         let group = route_group(group)?;
         let target = match target {
             GroupFormTarget::Adopt => GroupProcessFormTargetV1::Adopt,
@@ -145,6 +186,26 @@ where
             .auth
             .company_document_credentials(headers)
             .map_err(|e| e.status())?;
+        Ok(PreparedGroupForm {
+            group,
+            target,
+            credentials,
+            headers: headers.clone(),
+            client,
+        })
+    }
+
+    pub async fn form_prepared_document(
+        &self,
+        prepared: PreparedGroupForm,
+    ) -> Result<GroupProcessForm<AccountFormProof>, StatusCode> {
+        let PreparedGroupForm {
+            group,
+            target,
+            credentials,
+            headers,
+            client,
+        } = prepared;
         // Wrong or unauthorized routes issue no proof and consume no limiter.
         let landing =
             read_group_process_landing(&self.store, self.policy.as_ref(), &credentials, group)
@@ -160,7 +221,7 @@ where
             .require(head.map(|h| h.reference.process_id()), actions)
             .map_err(workflow_status)?;
         self.auth
-            .limit_company_form(headers, client)
+            .limit_company_form(&headers, client)
             .await
             .map_err(|e| e.status())?;
         group_process_form_for(
@@ -174,13 +235,25 @@ where
         .map_err(workflow_status)
     }
 
-    pub async fn request_document(
+    pub async fn form_document(
         &self,
         headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
+        group: &str,
+        target: GroupFormTarget<'_>,
+    ) -> Result<GroupProcessForm<AccountFormProof>, StatusCode> {
+        let prepared = self.prepare_form_document(headers, client, group, target)?;
+        self.form_prepared_document(prepared).await
+    }
+
+    pub fn prepare_request_document(
+        &self,
+        headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
         group: &str,
         command: &str,
         recovery: Option<&RecoveryLocator>,
-    ) -> Result<GroupProcessStatus, StatusCode> {
+    ) -> Result<PreparedGroupRequest, StatusCode> {
         let requested = route_selector(group, command)?;
         let credentials = self
             .auth
@@ -189,7 +262,61 @@ where
         if let Some(recovery) = recovery {
             recovery.retain_requested(requested);
         }
+        Ok(PreparedGroupRequest {
+            requested,
+            credentials,
+            headers: headers.clone(),
+            client,
+        })
+    }
+
+    pub async fn request_prepared_document(
+        &self,
+        prepared: PreparedGroupRequest,
+    ) -> Result<GroupProcessStatus, StatusCode> {
+        let PreparedGroupRequest {
+            requested,
+            credentials,
+            ..
+        } = prepared;
         group_process_status(&self.store, self.policy.as_ref(), &credentials, requested)
+            .await
+            .map_err(workflow_status)
+    }
+
+    pub async fn request_document(
+        &self,
+        headers: &HeaderMap,
+        group: &str,
+        command: &str,
+        recovery: Option<&RecoveryLocator>,
+    ) -> Result<GroupProcessStatus, StatusCode> {
+        let prepared = self.prepare_request_document(headers, None, group, command, recovery)?;
+        self.request_prepared_document(prepared).await
+    }
+
+    pub async fn retry_prepared_document(
+        &self,
+        prepared: PreparedGroupRequest,
+    ) -> Result<GroupProcessOwnRetryFormV1<AccountFormProof>, StatusCode> {
+        let PreparedGroupRequest {
+            requested,
+            credentials,
+            headers,
+            client,
+        } = prepared;
+        let status =
+            group_process_status(&self.store, self.policy.as_ref(), &credentials, requested)
+                .await
+                .map_err(workflow_status)?;
+        if matches!(status, GroupProcessStatus::NotVisible) {
+            return Err(StatusCode::NOT_FOUND);
+        }
+        self.auth
+            .limit_company_form(&headers, client)
+            .await
+            .map_err(|e| e.status())?;
+        group_process_retry_form(&self.store, self.policy.as_ref(), &credentials, requested)
             .await
             .map_err(workflow_status)
     }
@@ -202,36 +329,16 @@ where
         command: &str,
         recovery: Option<&RecoveryLocator>,
     ) -> Result<GroupProcessOwnRetryFormV1<AccountFormProof>, StatusCode> {
-        let requested = route_selector(group, command)?;
-        let credentials = self
-            .auth
-            .company_document_credentials(headers)
-            .map_err(|e| e.status())?;
-        if let Some(recovery) = recovery {
-            recovery.retain_requested(requested);
-        }
-        let status =
-            group_process_status(&self.store, self.policy.as_ref(), &credentials, requested)
-                .await
-                .map_err(workflow_status)?;
-        if matches!(status, GroupProcessStatus::NotVisible) {
-            return Err(StatusCode::NOT_FOUND);
-        }
-        self.auth
-            .limit_company_form(headers, client)
-            .await
-            .map_err(|e| e.status())?;
-        group_process_retry_form(&self.store, self.policy.as_ref(), &credentials, requested)
-            .await
-            .map_err(workflow_status)
+        let prepared = self.prepare_request_document(headers, client, group, command, recovery)?;
+        self.retry_prepared_document(prepared).await
     }
 
-    pub async fn submit_document(
+    pub async fn prepare_submit_document(
         &self,
         request: Request,
         group: &str,
         target: GroupPostTarget<'_>,
-    ) -> Result<GroupSubmission, StatusCode> {
+    ) -> Result<PreparedGroupSubmission, StatusCode> {
         let group = route_group(group)?;
         let target = match target {
             GroupPostTarget::Adopt => form::Target::Adopt,
@@ -269,8 +376,24 @@ where
         if let Some(recovery) = parts.extensions.get::<RecoveryLocator>() {
             recovery.retain_requested(requested);
         }
+        Ok(PreparedGroupSubmission {
+            requested,
+            credentials,
+            input: parsed.input,
+        })
+    }
+
+    pub async fn submit_prepared_document(
+        &self,
+        prepared: PreparedGroupSubmission,
+    ) -> Result<GroupSubmission, StatusCode> {
+        let PreparedGroupSubmission {
+            requested,
+            credentials,
+            input,
+        } = prepared;
         let trace = TraceContext::generate();
-        let result = match parsed.input {
+        let result = match input {
             form::Input::Validation(draft) => {
                 let current = group_process_validation_form(
                     &self.store,
@@ -316,6 +439,16 @@ where
             }
             Err(error) => Err(workflow_status(error)),
         }
+    }
+
+    pub async fn submit_document(
+        &self,
+        request: Request,
+        group: &str,
+        target: GroupPostTarget<'_>,
+    ) -> Result<GroupSubmission, StatusCode> {
+        let prepared = self.prepare_submit_document(request, group, target).await?;
+        self.submit_prepared_document(prepared).await
     }
 }
 

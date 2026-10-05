@@ -19,6 +19,11 @@ use console_platform_auth::account::AccountFormProof;
 use console_platform_request_context::TrustedClientIp;
 
 type Owner = GroupRestState<PgOrgStore>;
+#[derive(Clone)]
+struct NativeGroupState {
+    owner: Owner,
+    runtime: crate::AppState,
+}
 const LANDING: &str = "/groups/{group}/identity";
 const NEW: &str = "/groups/{group}/identity/processes/new";
 const ADOPT: &str = "/groups/{group}/identity/processes";
@@ -34,7 +39,7 @@ struct Route {
     command: Option<String>,
 }
 
-pub(super) fn router(owner: Owner) -> Router {
+pub(super) fn router(owner: Owner, runtime: crate::AppState) -> Router {
     Router::new()
         .route(LANDING, any(handle))
         .route(NEW, any(handle))
@@ -43,7 +48,37 @@ pub(super) fn router(owner: Owner) -> Router {
         .route(SUSPEND, any(handle))
         .route(REQUEST, any(handle))
         .route(RETRY, any(handle))
-        .with_state(owner)
+        .with_state(NativeGroupState { owner, runtime })
+}
+
+/// Shared native composition admission; this conveys no owner authority.
+pub(super) async fn current_custody(runtime: &crate::AppState) -> Result<(), StatusCode> {
+    let Some(startup) = runtime.serving_custody_profile else {
+        return Err(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    if !startup.supports_native_group_process() {
+        return Err(StatusCode::SERVICE_UNAVAILABLE);
+    }
+    let crate::DatabaseDependency::Postgres(pool) = &runtime.database else {
+        return Err(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    match crate::account_custody::verify(pool).await {
+        Ok(current) if current == startup => Ok(()),
+        _ => Err(StatusCode::SERVICE_UNAVAILABLE),
+    }
+}
+
+async fn guard(runtime: &crate::AppState, headers: &HeaderMap) -> Result<(), StatusCode> {
+    use console_platform_auth_rest::NativeAccountEntry;
+    let Some(auth) = &runtime.auth_rest else {
+        return Err(StatusCode::SERVICE_UNAVAILABLE);
+    };
+    match console_platform_auth_rest::native_account_entry(auth, headers, false).await {
+        Ok(NativeAccountEntry::Active { .. }) => current_custody(runtime).await,
+        Ok(NativeAccountEntry::SignIn) => Err(StatusCode::UNAUTHORIZED),
+        Err(error) => Err(error.status()),
+        Ok(_) => Err(StatusCode::SERVICE_UNAVAILABLE),
+    }
 }
 
 /// Preserve native interruption feedback outside the shared timeout/envelope.
@@ -84,7 +119,7 @@ async fn timeout_response(mut request: Request, next: Next) -> Response {
 }
 
 async fn handle(
-    State(owner): State<Owner>,
+    State(state): State<NativeGroupState>,
     path: Result<Path<Route>, PathRejection>,
     matched: MatchedPath,
     client: Option<Extension<TrustedClientIp>>,
@@ -107,13 +142,25 @@ async fn handle(
             },
             _ => return method_refused(matched.as_str()),
         };
-        return submission(owner.submit_document(request, &route.group, target).await);
+        let headers = request.headers().clone();
+        let prepared = match state
+            .owner
+            .prepare_submit_document(request, &route.group, target)
+            .await
+        {
+            Ok(prepared) => prepared,
+            Err(status) => return error(status),
+        };
+        if let Err(status) = guard(&state.runtime, &headers).await {
+            return error(status);
+        }
+        return submission(state.owner.submit_prepared_document(prepared).await);
     }
     if request.method() != Method::GET || matched.as_str() == ADOPT {
         return method_refused(matched.as_str());
     }
     read(
-        owner,
+        state,
         route,
         matched.as_str(),
         request.headers(),
@@ -124,7 +171,7 @@ async fn handle(
 }
 
 async fn read(
-    owner: Owner,
+    state: NativeGroupState,
     route: Route,
     matched: &str,
     headers: &HeaderMap,
@@ -133,15 +180,35 @@ async fn read(
 ) -> Response {
     let client = client.map(|Extension(ip)| ip);
     let recovery = recovery.as_ref().map(|Extension(locator)| locator);
+    let owner = &state.owner;
     let result = match matched {
-        LANDING => owner
-            .landing_document(headers, &route.group)
+        LANDING => {
+            async {
+                let prepared = owner.prepare_landing_document(headers, &route.group)?;
+                guard(&state.runtime, headers).await?;
+                owner
+                    .landing_prepared_document(prepared)
+                    .await
+                    .and_then(landing)
+            }
             .await
-            .and_then(landing),
-        NEW => owner
-            .form_document(headers, client, &route.group, GroupFormTarget::Adopt)
+        }
+        NEW => {
+            async {
+                let prepared = owner.prepare_form_document(
+                    headers,
+                    client,
+                    &route.group,
+                    GroupFormTarget::Adopt,
+                )?;
+                guard(&state.runtime, headers).await?;
+                owner
+                    .form_prepared_document(prepared)
+                    .await
+                    .and_then(|value| form(value, false))
+            }
             .await
-            .and_then(|value| form(value, false)),
+        }
         REPLACE | SUSPEND => match route.process.as_deref() {
             Some(process) => {
                 let suspend = matched == SUSPEND;
@@ -150,29 +217,61 @@ async fn read(
                 } else {
                     GroupFormTarget::Replace { process }
                 };
-                owner
-                    .form_document(headers, client, &route.group, target)
-                    .await
-                    .and_then(|value| form(value, suspend))
+                async {
+                    let prepared =
+                        owner.prepare_form_document(headers, client, &route.group, target)?;
+                    guard(&state.runtime, headers).await?;
+                    owner
+                        .form_prepared_document(prepared)
+                        .await
+                        .and_then(|value| form(value, suspend))
+                }
+                .await
             }
             None => Err(StatusCode::NOT_FOUND),
         },
         REQUEST => match route.command.as_deref() {
-            Some(command) => owner
-                .request_document(headers, &route.group, command, recovery)
+            Some(command) => {
+                async {
+                    let prepared = owner.prepare_request_document(
+                        headers,
+                        None,
+                        &route.group,
+                        command,
+                        recovery,
+                    )?;
+                    guard(&state.runtime, headers).await?;
+                    owner
+                        .request_prepared_document(prepared)
+                        .await
+                        .and_then(request)
+                }
                 .await
-                .and_then(request),
+            }
             None => Err(StatusCode::NOT_FOUND),
         },
         RETRY => match route.command.as_deref() {
-            Some(command) => owner
-                .retry_document(headers, client, &route.group, command, recovery)
+            Some(command) => {
+                async {
+                    let prepared = owner.prepare_request_document(
+                        headers,
+                        client,
+                        &route.group,
+                        command,
+                        recovery,
+                    )?;
+                    guard(&state.runtime, headers).await?;
+                    owner
+                        .retry_prepared_document(prepared)
+                        .await
+                        .map(|form| ui::Page::OwnRetry {
+                            group: form.original.group().as_uuid().to_string(),
+                            command: form.original.command_id().to_string(),
+                            proof: form.proof.as_str().to_owned(),
+                        })
+                }
                 .await
-                .map(|form| ui::Page::OwnRetry {
-                    group: form.original.group().as_uuid().to_string(),
-                    command: form.original.command_id().to_string(),
-                    proof: form.proof.as_str().to_owned(),
-                }),
+            }
             None => Err(StatusCode::NOT_FOUND),
         },
         _ => Err(StatusCode::NOT_FOUND),

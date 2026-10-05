@@ -3959,7 +3959,7 @@ pub fn build_router(mut state: AppState) -> Router {
                         state
                             .group_rest
                             .clone()
-                            .map(native_group_process::router)
+                            .map(|owner| native_group_process::router(owner, state.clone()))
                             .unwrap_or_default(),
                     )
                     .merge(native_payroll)
@@ -4346,6 +4346,11 @@ async fn native_account_page(
             can_logout,
             company_setup,
         }) => {
+            if state.group_rest.is_some()
+                && native_group_process::current_custody(state).await.is_err()
+            {
+                return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE);
+            }
             let (mut context, mut status) = match context {
                 NativeAccountContext::Empty => (ContextState::Empty, StatusCode::OK),
                 NativeAccountContext::Unavailable => {
