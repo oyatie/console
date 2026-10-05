@@ -7193,6 +7193,42 @@ def native_org_unit_closed_perimeter_capture_files():
     }
 
 
+def native_org_unit_account_actor_staging_files():
+    """Export reviewed closed staging sources without installing a profile."""
+    files = {}
+    for phase, digest in (
+        ('expansion', 'a8f7dfd2a8418871c18aac350d755cca84d9eb8e0bbea00b8508a8d0acf8180c'),
+        ('validation', 'fa7fccd48d7fd0875a1971ca8f4ce8bfc9f5328d9e53db8d39ec680e431198c9'),
+    ):
+        name = 'ops/native-org-unit/account-actor-' + phase + '-v1.sql'
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest:
+            raise SystemExit('Native OrgUnit Account actor source differs from reviewed bytes: ' + name)
+        files['ops/postgres-native-org-unit-account-actor-' + phase + '-v1-owner.sql'] = (
+            '-- Generated UNINSTALLED native OrgUnit Account actor ' + phase
+            + ' source; not a custody finalizer.\n'
+            '-- No phase profile, installation or serving readiness is asserted by this artifact.\n'
+            + '-- source: ' + name + '\n' + raw.decode('utf-8'))
+    for name, digest, output, capture in (
+        ('ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql',
+         '6be2e3d095d59bbdb9e1b932dac8da48bde261601455cdcd166c6f2a649e6010',
+         'ops/postgres-capture-native-org-unit-account-actor-closed76-v1-custody.sql',
+         native_org_unit_closed_perimeter_capture_files),
+        ('ops/postgres-capture-native-group-process-v1-custody.sql',
+         '3406bac381896fab4e9a1c079110d3dc770a9d89b0b564e7744034379f60cd3b',
+         'ops/postgres-capture-native-org-unit-account-actor-group83-v1-custody.sql',
+         native_group_process_capture_files),
+    ):
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest:
+            raise SystemExit('Native OrgUnit Account actor capture differs from reviewed bytes: ' + name)
+        query = capture()[name]
+        if query.encode('utf-8') != raw:
+            raise SystemExit('Native OrgUnit Account actor capture generation drift: ' + name)
+        files[output] = query
+    return files
+
+
 NATIVE_ORG_UNIT_CLOSED_PHASE_PAIRS = (
     ('plain',
      'de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a',
@@ -8034,7 +8070,9 @@ $native_group_process_navigation_custody$;
 
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-group-process-navigation-serving-custody'],
+    if arguments in (['--native-org-unit-account-actor-staging'],
+                     ['--native-org-unit-account-actor-staging', '--check'],
+                     ['--native-group-process-navigation-serving-custody'],
                      ['--native-group-process-navigation-serving-custody', '--check'],
                      ['--native-group-process-navigation-finalizer'],
                      ['--native-group-process-navigation-finalizer', '--check'],
@@ -8048,7 +8086,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-group-process-navigation-serving-custody':
+        if arguments[0] == '--native-org-unit-account-actor-staging':
+            files = native_org_unit_account_actor_staging_files()
+        elif arguments[0] == '--native-group-process-navigation-serving-custody':
             files = native_group_process_navigation_serving_custody_files()
         elif arguments[0] == '--native-group-process-navigation-finalizer':
             files = native_group_process_navigation_finalizer_files()
@@ -8075,7 +8115,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-account-actor-staging | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
