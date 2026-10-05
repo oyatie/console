@@ -231,7 +231,7 @@ async fn company_browser_journey_with_group_navigation(
     let captured_cookie = native_group_navigation_browser::CapturedCookie::default();
     let mut owned_browser_pid = None;
     let mut browser_seen_alive = false;
-    let outcome = std::panic::AssertUnwindSafe(async {
+    let outcome = Box::pin(std::panic::AssertUnwindSafe(async {
         let ready = browser_owner_event(&mut events).await;
         exact_keys(
             &ready,
@@ -594,7 +594,7 @@ async fn company_browser_journey_with_group_navigation(
             output.join("result.json").to_str()
         );
     })
-    .catch_unwind()
+    .catch_unwind())
     .await;
 
     // Even failed assertions close stdin so the owner-controlled browser driver
