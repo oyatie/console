@@ -26,8 +26,15 @@ async fn native_group_process_real_browser_adopt_reopen_suspend_replace(pool: Pg
     company_browser_journey_with_group_process(pool, false, false, true).await;
 }
 
+#[path = "native_group_navigation_browser.rs"]
+mod native_group_navigation_browser;
 #[path = "native_group_process_browser.rs"]
 mod native_group_process_browser;
+
+#[sqlx::test(migrations = false)]
+async fn native_group_navigation_held_real_browser_transport_fence(pool: PgPool) {
+    company_browser_journey_with_group_navigation(pool, false, false, false, true).await;
+}
 
 async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_entry: bool) {
     company_browser_journey_with_group_process(pool, policy_entry, people_entry, false).await;
@@ -38,6 +45,23 @@ async fn company_browser_journey_with_group_process(
     policy_entry: bool,
     people_entry: bool,
     group_process_entry: bool,
+) {
+    company_browser_journey_with_group_navigation(
+        pool,
+        policy_entry,
+        people_entry,
+        group_process_entry,
+        false,
+    )
+    .await;
+}
+
+async fn company_browser_journey_with_group_navigation(
+    pool: PgPool,
+    policy_entry: bool,
+    people_entry: bool,
+    group_process_entry: bool,
+    group_navigation_held: bool,
 ) {
     use futures::FutureExt;
     use std::process::Stdio;
@@ -77,7 +101,7 @@ async fn company_browser_journey_with_group_process(
         "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d"
     );
     policy_helpers.push((header_path, header_bytes));
-    if group_process_entry {
+    if group_process_entry || group_navigation_held {
         let path = driver.parent().unwrap().join("group_process_journey.cjs");
         assert!(
             std::fs::symlink_metadata(&path)
@@ -89,6 +113,21 @@ async fn company_browser_journey_with_group_process(
         assert_eq!(
             hex::encode(Sha256::digest(&bytes)),
             "65270aa5751360928133a24c6c562879cd1d421172a19dddd0276ddbf4b22871"
+        );
+        policy_helpers.push((path, bytes));
+    }
+    if group_navigation_held {
+        let path = driver.parent().unwrap().join("group_navigation_held.cjs");
+        assert!(
+            std::fs::symlink_metadata(&path)
+                .unwrap()
+                .file_type()
+                .is_file()
+        );
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            hex::encode(Sha256::digest(&bytes)),
+            native_group_navigation_browser::DRIVER_SHA256
         );
         policy_helpers.push((path, bytes));
     }
@@ -138,6 +177,9 @@ async fn company_browser_journey_with_group_process(
         "browser output must be a fresh owned directory"
     );
     if group_process_entry {
+        native_policy_startup_tests::prepare_native_group_navigation_browser_database(&pool).await;
+        seed_terms(&pool).await;
+    } else if group_navigation_held {
         native_policy_startup_tests::prepare_native_group_browser_database(&pool).await;
         seed_terms(&pool).await;
     } else if people_entry {
@@ -162,7 +204,9 @@ async fn company_browser_journey_with_group_process(
         .arg(&driver)
         .arg(address.port().to_string())
         .arg(&output)
-        .args(if group_process_entry {
+        .args(if group_navigation_held {
+            Some("group-navigation-held")
+        } else if group_process_entry {
             Some("group-process-entry")
         } else if people_entry {
             Some("people-entry")
@@ -184,6 +228,7 @@ async fn company_browser_journey_with_group_process(
     let mut shutdown = None;
     let mut state_to_close = None;
     let mut checkpoint_receipts = Vec::new();
+    let captured_cookie = native_group_navigation_browser::CapturedCookie::default();
     let mut owned_browser_pid = None;
     let mut browser_seen_alive = false;
     let outcome = std::panic::AssertUnwindSafe(async {
@@ -227,12 +272,23 @@ async fn company_browser_journey_with_group_process(
         auth.rp_id = "localhost".to_owned();
         auth.rp_origin = origin.to_owned();
         auth.cookie_secure = true;
-        let state = AppState::from_config(config)
+        let state = AppState::from_config(config.clone())
             .await
             .expect("real native browser app prerequisite");
         state_to_close = Some(state.clone());
+        let request_cookie = captured_cookie.clone();
         let router = build_router(state).layer(axum::middleware::from_fn(
-            |request: axum::extract::Request, next: axum::middleware::Next| async move {
+            move |request: axum::extract::Request, next: axum::middleware::Next| {
+                let request_cookie = request_cookie.clone();
+                async move {
+                if group_navigation_held && request.method() == axum::http::Method::GET
+                    && request.uri().path().starts_with("/groups/")
+                    && request.uri().path().ends_with("/identity/processes/new")
+                    && let Some(cookie) = request.headers().get(axum::http::header::COOKIE)
+                {
+                    let mut captured = request_cookie.lock().unwrap();
+                    if captured.is_none() { *captured = Some(cookie.clone()); }
+                }
                 if request.method() == axum::http::Method::POST
                     && request.uri().path().starts_with("/companies/")
                 {
@@ -245,6 +301,7 @@ async fn company_browser_journey_with_group_process(
                             && headers.get("sec-fetch-dest").is_some_and(|v| v == "document"));
                 }
                 next.run(request).await
+                }
             },
         ));
         let (stop, stopped) = tokio::sync::oneshot::channel();
@@ -415,6 +472,8 @@ async fn company_browser_journey_with_group_process(
                 "rolled-back Group navigation diagnostic changed durable state"
             );
         }
+        let group_form_started: OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
+            .fetch_one(&pool).await.unwrap();
         browser_owner_continue(&mut input, "COMPANY_REOPENED").await;
         if policy_entry {
             let ready = browser_owner_event(&mut events).await;
@@ -516,6 +575,12 @@ async fn company_browser_journey_with_group_process(
                 account, result.company, result.group).await;
             checkpoint_receipts.push("GROUP_PROCESS_AGGREGATE_VERIFIED");
         }
+        if group_navigation_held {
+            native_group_navigation_browser::observe(&pool,&mut input,&mut events,
+                &config,address,&captured_cookie,
+                account,result.company,result.group,&committed_state,group_form_started).await;
+            checkpoint_receipts.push("GROUP_NAVIGATION_HELD_VERIFIED");
+        }
         let final_event = browser_owner_event(&mut events).await;
         exact_keys(&final_event, &["kind", "status", "result_path"]);
         assert!(
@@ -561,7 +626,7 @@ async fn company_browser_journey_with_group_process(
             .iter()
             .all(|(path, original)| std::fs::read(path).is_ok_and(|bytes| &bytes == original));
     let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
+    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"group_navigation_held":group_navigation_held,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
     if output.is_dir() {
         std::fs::write(
             output.join("owner-receipt.json"),

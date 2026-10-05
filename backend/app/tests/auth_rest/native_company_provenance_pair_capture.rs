@@ -739,5 +739,8 @@ mod native_company_provenance_pair_capture {
     }
     include!("native_org_unit_closed_phase_capture.rs");
     #[cfg(feature = "test-browser")]
-    pub(in super::super) use native_org_unit_closed_finalizer_tests::prepare_native_group_browser_database;
+    pub(in super::super) use native_org_unit_closed_finalizer_tests::{
+        correct_native_group_browser_database, native_group_navigation_browser_metadata,
+        prepare_native_group_browser_database, prepare_native_group_navigation_browser_database,
+    };
 }

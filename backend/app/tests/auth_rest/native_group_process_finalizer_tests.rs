@@ -683,4 +683,6 @@ mod native_group_process_finalizer_tests {
 
     #[cfg(feature = "test-browser")]
     include!("native_group_process_browser_fixture.rs");
+    #[cfg(feature = "test-browser")]
+    include!("native_group_navigation_browser_fixture.rs");
 }

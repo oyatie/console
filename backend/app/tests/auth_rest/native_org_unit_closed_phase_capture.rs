@@ -1740,5 +1740,8 @@ mod native_org_unit_closed_finalizer_tests {
     include!("native_org_unit_closed_serving.rs");
     include!("native_group_process_finalizer_tests.rs");
     #[cfg(feature = "test-browser")]
-    pub(in super::super::super) use native_group_process_finalizer_tests::prepare_native_group_browser_database;
+    pub(in super::super::super) use native_group_process_finalizer_tests::{
+        correct_native_group_browser_database, native_group_navigation_browser_metadata,
+        prepare_native_group_browser_database, prepare_native_group_navigation_browser_database,
+    };
 }
