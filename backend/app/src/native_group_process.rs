@@ -100,6 +100,21 @@ async fn timeout_response(mut request: Request, next: Next) -> Response {
     }
     let head = request.method() == Method::HEAD;
     let recovery = RecoveryLocator::default();
+    // TEST MUTANT: query establishes a recovery locator before typed preparation.
+    let queried = request.uri().query().and_then(|query| {
+        query
+            .split('&')
+            .find_map(|pair| pair.strip_prefix("command_id="))
+    });
+    if let (Some(group), Some(command)) = (request.uri().path().split('/').nth(2), queried) {
+        if let (Ok(group), Ok(command)) =
+            (uuid::Uuid::parse_str(group), uuid::Uuid::parse_str(command))
+            && let Ok(group) = GroupId::from_uuid(group)
+            && let Ok(requested) = GroupProcessRouteSelectorV1::new(group, command)
+        {
+            recovery.retain_requested(requested);
+        }
+    }
     request.extensions_mut().insert(recovery.clone());
     let mut response = next.run(request).await;
     if response.status() == StatusCode::REQUEST_TIMEOUT {
