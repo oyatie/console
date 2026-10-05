@@ -925,7 +925,17 @@ async fn navigation_materialized_classifier_readonly_experiment(pool: PgPool, va
         "runtime_close_succeeded":runtime_close.is_ok(),"fresh_full_effect_readback_succeeded":restored.is_ok(),
         "historical_business_rows_present_in_fixture":true,"business_rows_exported":false,
         "performance_qualified":false,"serving_qualified":false,"production_qualified":false});
-    eprintln!("GROUP_NAVIGATION_CLASSIFIER_READONLY_EXPERIMENT {packet}");
+    {
+        let mut output = std::io::stderr().lock();
+        writeln!(
+            &mut output,
+            "GROUP_NAVIGATION_CLASSIFIER_READONLY_EXPERIMENT {packet}"
+        )
+        .expect("classifier experiment evidence write failed");
+        output
+            .flush()
+            .expect("classifier experiment evidence flush failed");
+    }
     assert!(
         runtime_rollback.is_ok(),
         "classifier experiment rollback failed"

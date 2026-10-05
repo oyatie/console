@@ -278,3 +278,110 @@ pub(in super::super::super::super) async fn native_group_navigation_browser_meta
     connection.close().await.unwrap();
     result
 }
+
+// Real serving deadline contract; the historical SQL oracle stays independent.
+#[sqlx::test(migrations = false)]
+async fn native_group_navigation_serving_readiness_500ms(pool: PgPool) {
+    // Keep borrowed historical preparation outside the proven correction task.
+    Box::pin(prepare_native_group_browser_database(&pool)).await;
+    let receipt = {
+        let mut correction = tokio::task::JoinSet::new();
+        let correction_pool = pool.clone();
+        correction
+            .spawn(async move { correct_native_group_browser_database(&correction_pool).await });
+        match correction
+            .join_next()
+            .await
+            .expect("owned Group correction task must exist")
+        {
+            Ok(receipt) => receipt,
+            Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
+            Err(_) => panic!("owned Group correction task unexpectedly cancelled"),
+        }
+    };
+    assert_eq!(receipt["confirmed"], true);
+
+    let mut admin = direct(&pool).await;
+    let mut read = sqlx::Connection::begin(&mut admin).await.unwrap();
+    let captured = AssertUnwindSafe(navigation_snapshot(read.as_mut(), true, 0))
+        .catch_unwind()
+        .await;
+    let rollback = read.rollback().await;
+    let close = admin.close().await;
+    let baseline = match captured {
+        Ok(baseline) => baseline,
+        Err(panic) => std::panic::resume_unwind(panic),
+    };
+    rollback.expect("readiness baseline transaction cleanup failed");
+    close.expect("readiness baseline connection cleanup failed");
+
+    let artifacts = Artifacts::new();
+    let key = SigningKey::random(&mut OsRng);
+    let mut config = account_browser_config(&pool, artifacts.root.clone(), &key);
+    config.request_timeout = std::time::Duration::from_millis(500);
+    let mut states = Vec::<AppState>::new();
+    let mut statuses = Vec::<StatusCode>::new();
+    let mut samples = Vec::new();
+    let outcome = AssertUnwindSafe(async {
+        for role in [console_app::AppRole::Api, console_app::AppRole::Worker] {
+            let mut fresh_config = config.clone();
+            fresh_config.role = role;
+            states.push(
+                AppState::from_config(fresh_config)
+                    .await
+                    .expect("fresh corrected navigation startup prerequisite"),
+            );
+            let started = std::time::Instant::now();
+            let status = ready_status(states.last().unwrap()).await;
+            let elapsed_millis = u64::try_from(started.elapsed().as_millis()).unwrap();
+            statuses.push(status);
+            samples.push(json!({"role":role.to_string(),"status":status.as_u16(),
+                "elapsed_millis":elapsed_millis}));
+            // A failed status must still leave the other role's routed evidence.
+            states.last().unwrap().shutdown_realtime().await;
+            states.pop();
+        }
+    })
+    .catch_unwind()
+    .await;
+    for state in &states {
+        state.shutdown_realtime().await;
+    }
+    drop(states);
+    drop(artifacts);
+
+    // Independently open a fresh complete catalog/row/ledger/tuple readback,
+    // including when readiness fails. Task/state drop is no DB-settlement proof.
+    let readback = AssertUnwindSafe(navigation_restored(&pool, &baseline, true, 0))
+        .catch_unwind()
+        .await;
+    {
+        let mut output = std::io::stderr().lock();
+        writeln!(
+            &mut output,
+            "GROUP_NAVIGATION_SERVING_READINESS_500MS {}",
+            json!({"request_timeout_millis":500,"variant":"plain",
+            "samples":samples,"expected_statuses":[200,200],
+            "startup_and_readiness_completed":outcome.is_ok(),
+            "temporary_states_shutdown_requested_and_dropped":true,
+            "fresh_complete_catalog_rows_ledger_tuple_unchanged":readback.is_ok(),
+            "metadata":navigation_browser_metadata(&baseline),
+            "browser_accepted":false,"production_qualified":false})
+        )
+        .expect("serving readiness evidence write failed");
+        output
+            .flush()
+            .expect("serving readiness evidence flush failed");
+    }
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+    if let Err(panic) = readback {
+        std::panic::resume_unwind(panic);
+    }
+    assert_eq!(
+        statuses,
+        [StatusCode::OK, StatusCode::OK],
+        "fresh API and Worker /readyz must succeed through the unchanged 500 ms deadline"
+    );
+}
