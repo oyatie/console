@@ -711,6 +711,14 @@ fn exact_version(
     assert_eq!(found.len(), 1);
     found[0].clone()
 }
+// PostgreSQL xid8 JSON is canonical unsigned decimal text; the frozen wire
+// codec is a positive u64. Both actual owner-closure assertions use this rule.
+fn assert_xid8_json_projection(database: &Value, wire: &Value) {
+    let xid = wire.as_u64().expect("exact unsigned xid8 field");
+    assert!(xid > 0);
+    assert_eq!(database, &json!(xid.to_string()));
+}
+
 fn assert_structured_closure(
     before: &BTreeMap<String, String>,
     after: &BTreeMap<String, String>,
@@ -784,11 +792,11 @@ fn assert_structured_closure(
             "designation_receipt_id",
             "designation_revision",
             "observed_group_revision",
-            "effect_xid",
             "effect_backend_pid",
         ] {
             assert_eq!(row[key], decoded[key]);
         }
+        assert_xid8_json_projection(&row["effect_xid"], &decoded["effect_xid"]);
     }
     assert_eq!(
         policy_columns(input, "accepted_policy"),
@@ -980,10 +988,8 @@ fn committed(
     }
     // PostgreSQL renders xid8 as JSON text; the frozen result codec uses u64BE.
     // Compare the full unsigned value exactly, leaving every other field typed.
-    let effect_xid = decoded["effect_xid"].as_u64().unwrap();
-    assert!(effect_xid > 0);
-    for row in [terminal, effect] {
-        assert_eq!(row["effect_xid"], json!(effect_xid.to_string()));
+    for row in [&terminal, &effect] {
+        assert_xid8_json_projection(&row["effect_xid"], &decoded["effect_xid"]);
     }
     let code = ["ADOPTED", "SUSPENDED", "REPLACED"][index];
     assert_eq!(decoded["terminal_code"], code);
@@ -1875,4 +1881,57 @@ async fn group_result_xid8_wire_matches_exact_postgresql_json_text(pool: PgPool)
         assert_eq!(wire, xid.to_be_bytes());
         assert_ne!(database_json, json!(xid));
     }
+}
+
+#[test]
+fn group_result_xid8_projection_rejects_noncanonical_or_mismatched_values() {
+    let rejects = |database: &Value, wire: &Value| {
+        std::panic::catch_unwind(|| assert_xid8_json_projection(database, wire)).is_err()
+    };
+    for xid in [
+        1_u64,
+        9_007_199_254_740_993,
+        i64::MAX as u64,
+        1_u64 << 63,
+        u64::MAX,
+    ] {
+        let text = xid.to_string();
+        let wire = json!(xid);
+        let database = json!(text);
+        assert_xid8_json_projection(&database, &wire);
+        let other = if xid == u64::MAX { xid - 1 } else { xid + 1 };
+        for corrupt in [
+            json!(xid),
+            json!(other.to_string()),
+            json!(format!("0{text}")),
+            json!(format!("+{text}")),
+            json!(format!("-{text}")),
+            json!(format!(" {text}")),
+            json!(format!("{text} ")),
+            json!(format!("{text}\n")),
+            json!(format!("{text}\r\n")),
+            json!(format!("{text}.0")),
+            json!(format!("{text}x")),
+            json!([text]),
+            json!({"value":text}),
+            json!(true),
+            Value::Null,
+        ] {
+            assert!(rejects(&corrupt, &wire));
+        }
+        for corrupt in [
+            json!(text),
+            json!(other),
+            json!(0),
+            json!(-1),
+            json!(1.0),
+            json!([xid]),
+            json!({"value":xid}),
+            json!(true),
+            Value::Null,
+        ] {
+            assert!(rejects(&database, &corrupt));
+        }
+    }
+    assert!(rejects(&json!("0"), &json!(0)));
 }
