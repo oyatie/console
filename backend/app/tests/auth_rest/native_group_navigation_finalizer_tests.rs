@@ -965,3 +965,525 @@ async fn navigation_observer_materialized_classifier_readonly_parity_and_alterna
 ) {
     navigation_materialized_classifier_readonly_experiment(pool, 1).await;
 }
+
+// Additive serving V2 parity. These are historical, business-populated metadata
+// fixtures, not fresh-bootstrap or real UI workflow acceptance. Missing serving
+// SQL is never included: its exact one-keyword bytes are derived from the pin.
+fn navigation_serving_parity_query() -> String {
+    navigation_finalizer_pins();
+    let marker = "), snapshots AS (\n";
+    let materialized = "), snapshots AS MATERIALIZED (\n";
+    assert_eq!(NAVIGATION_APP_STATE.matches(marker).count(), 1);
+    let query = NAVIGATION_APP_STATE.replacen(marker, materialized, 1);
+    assert_eq!(query.matches(materialized).count(), 1);
+    assert_eq!(
+        query.replacen(materialized, marker, 1),
+        NAVIGATION_APP_STATE
+    );
+    assert_eq!(
+        digest(&query),
+        "b7b46b958ed86fe032dda3202152995d0b8873beaa748d5e1f078b11396c498e"
+    );
+    query
+}
+
+async fn navigation_serving_parity_pair(
+    connection: &mut PgConnection,
+    candidate: &str,
+) -> (String, Option<String>, String, String, Option<bool>) {
+    sqlx::raw_sql(CLASSIFIER_SESSION)
+        .execute(&mut *connection)
+        .await
+        .unwrap();
+    let mut original = None;
+    for source in [NAVIGATION_APP_STATE, candidate] {
+        let body = source.strip_suffix(" AS state;\n").unwrap();
+        let query = format!(
+            "{body} AS state,(SELECT variant FROM matching_phase) AS variant,\
+            (SELECT snapshot::text FROM full83) AS snapshot_text,\
+            (SELECT snapshot_sha256 FROM full83) AS snapshot_sha256,\
+            (SELECT native_group_process_startup_rights_valid FROM full83) AS rights"
+        );
+        let observed: (String, Option<String>, String, String, Option<bool>) =
+            sqlx::query_as(sqlx::AssertSqlSafe(query))
+                .fetch_one(&mut *connection)
+                .await
+                .unwrap();
+        assert_eq!(
+            digest(&observed.2),
+            observed.3,
+            "exact full83 UTF-8 digest drift"
+        );
+        if let Some(expected) = &original {
+            assert_eq!(
+                &observed, expected,
+                "materialization changed state/variant/raw full83/rights"
+            );
+        } else {
+            original = Some(observed);
+        }
+    }
+    original.unwrap()
+}
+
+async fn navigation_serving_parity_login(
+    pool: &PgPool,
+    candidate: &str,
+    expected: (String, Option<String>),
+    expected_digest: &str,
+    expected_rights: bool,
+) -> Value {
+    let url = console_platform_test_support::login_test_database_url(
+        pool,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    );
+    let mut runtime = PgConnection::connect(&url)
+        .await
+        .unwrap_or_else(|_| panic!("serving parity actual Business LOGIN failed"));
+    drop(url);
+    let outcome = AssertUnwindSafe(async {
+        sqlx::raw_sql("BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            .execute(&mut runtime)
+            .await
+            .unwrap();
+        let identity: (String, String, String, String, String, bool) = sqlx::query_as(
+            "SELECT session_user::text,current_user::text,current_setting('role'),\
+             current_setting('transaction_isolation'),current_setting('transaction_read_only'),\
+             (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=session_user)",
+        )
+        .fetch_one(&mut runtime)
+        .await
+        .unwrap();
+        assert_eq!(
+            identity,
+            (
+                "console_rt".into(),
+                "console_rt".into(),
+                "none".into(),
+                "repeatable read".into(),
+                "on".into(),
+                false
+            )
+        );
+        let observed = navigation_serving_parity_pair(&mut runtime, candidate).await;
+        assert_eq!((observed.0.clone(), observed.1.clone()), expected);
+        assert_eq!(observed.3, expected_digest);
+        assert_eq!(observed.4, Some(expected_rights));
+        json!({"state":observed.0,"variant":observed.1,"full83_sha256":observed.3,
+            "rights":observed.4,"actual_business_login":true,"read_only":true,
+            "exact_snapshot_bytes_equal":true})
+    })
+    .catch_unwind()
+    .await;
+    let rollback = sqlx::raw_sql("ROLLBACK").execute(&mut runtime).await;
+    let close = runtime.close().await;
+    assert!(
+        rollback.is_ok() && close.is_ok(),
+        "serving parity LOGIN cleanup failed"
+    );
+    match outcome {
+        Ok(packet) => packet,
+        Err(panic) => std::panic::resume_unwind(panic),
+    }
+}
+
+async fn navigation_serving_parity_faults(
+    pool: &PgPool,
+    candidate: &str,
+    original: &NavigationRuntimeBaseline,
+    variant: usize,
+) -> Vec<Value> {
+    let mut packets = Vec::new();
+    for corrected in [false, true] {
+        let mut admin = direct(pool).await;
+        let mut tx = begin_protocol(&mut admin, &original.target).await;
+        let outcome = AssertUnwindSafe(async {
+            if corrected { navigation_finalize(tx.as_mut()).await; }
+            let healthy = navigation_snapshot(tx.as_mut(), corrected, variant).await;
+            let expected = navigation_serving_parity_pair(tx.as_mut(), candidate).await;
+            assert_eq!((expected.0.clone(), expected.1.clone()), navigation_phase(corrected, variant));
+            assert_eq!(expected.3, healthy.capture.sha256);
+            for fault in ["ledger_checksum", "ledger_success", "ledger_missing", "ledger_owner",
+                "navigation_source", "navigation_owner", "public_execute", "reserved_schema",
+                "startup_table_select"] {
+                sqlx::raw_sql("SAVEPOINT serving_parity_fault").execute(tx.as_mut()).await.unwrap();
+                let refusal = match fault {
+                    "ledger_checksum" | "ledger_success" | "ledger_missing" => {
+                        let statement = match fault {
+                            "ledger_checksum" => "UPDATE public._sqlx_migrations SET checksum=decode(repeat('00',48),'hex') WHERE version=231",
+                            "ledger_success" => "UPDATE public._sqlx_migrations SET success=false WHERE version=231",
+                            _ => "DELETE FROM public._sqlx_migrations WHERE version=231",
+                        };
+                        assert_eq!(sqlx::query(statement).execute(tx.as_mut()).await.unwrap().rows_affected(), 1);
+                        "native_group_process_navigation.migration_ledger_mismatch"
+                    }
+                    "ledger_owner" => {
+                        sqlx::raw_sql("ALTER TABLE public._sqlx_migrations OWNER TO console_account_owner")
+                            .execute(tx.as_mut()).await.unwrap();
+                        "native_group_process_navigation.migration_ledger_lock_missing"
+                    }
+                    "navigation_source" => {
+                        let definition: String = sqlx::query_scalar("SELECT pg_catalog.pg_get_functiondef($1::regprocedure)")
+                            .bind(NAVIGATION_IDENTITY).fetch_one(tx.as_mut()).await.unwrap();
+                        assert_eq!(definition.matches("$function$").count(), 2);
+                        let (body, suffix) = definition.rsplit_once("$function$").unwrap();
+                        sqlx::raw_sql(sqlx::AssertSqlSafe(format!("{body}\n-- serving parity source fault\n$function${suffix}")))
+                            .execute(tx.as_mut()).await.unwrap();
+                        "native_group_process_navigation.profile_mismatch"
+                    }
+                    "navigation_owner" => {
+                        sqlx::raw_sql("ALTER FUNCTION public.identity_native_group_process_navigation_candidates_v1(uuid,uuid,bytea) OWNER TO console_app")
+                            .execute(tx.as_mut()).await.unwrap();
+                        "native_group_process_navigation.profile_mismatch"
+                    }
+                    "public_execute" => {
+                        sqlx::raw_sql("GRANT EXECUTE ON FUNCTION public.identity_native_group_process_navigation_candidates_v1(uuid,uuid,bytea) TO PUBLIC")
+                            .execute(tx.as_mut()).await.unwrap();
+                        let actual: bool = sqlx::query_scalar("SELECT has_function_privilege('console_auth_startup',$1::regprocedure,'EXECUTE')")
+                            .bind(NAVIGATION_IDENTITY).fetch_one(tx.as_mut()).await.unwrap();
+                        assert!(actual, "real forbidden effective routine EXECUTE required");
+                        "native_group_process_navigation.profile_mismatch"
+                    }
+                    "reserved_schema" => {
+                        sqlx::raw_sql("CREATE SCHEMA identity_native_group_process_unreviewed")
+                            .execute(tx.as_mut()).await.unwrap();
+                        "native_group_process_navigation.profile_mismatch"
+                    }
+                    "startup_table_select" => {
+                        sqlx::raw_sql("GRANT SELECT ON public.org_units TO console_auth_startup")
+                            .execute(tx.as_mut()).await.unwrap();
+                        let actual: Option<bool> = sqlx::query_scalar("SELECT has_table_privilege('console_auth_startup','public.org_units','SELECT')")
+                            .fetch_one(tx.as_mut()).await.unwrap();
+                        assert_eq!(actual, Some(true), "real forbidden effective table SELECT required");
+                        "native_group_process_navigation.profile_mismatch"
+                    }
+                    _ => unreachable!(),
+                };
+                let faulty_catalog = catalog(tx.as_mut()).await;
+                let faulty_rows = rows(tx.as_mut()).await;
+                let faulty_tuple = navigation_tuple(tx.as_mut()).await;
+                assert!(faulty_catalog != healthy.catalog || faulty_rows != healthy.rows,
+                    "{fault} failed to alter the actual database");
+                let pair = navigation_serving_parity_pair(tx.as_mut(), candidate).await;
+                if fault.starts_with("ledger_") && fault != "ledger_owner" {
+                    // Catalog-only serving must retain historical classification.
+                    assert_eq!(pair, expected, "ledger values acquired a new serving oracle");
+                } else {
+                    assert_eq!((pair.0.clone(), pair.1.clone()),
+                        ("native_group_process_navigation.profile_mismatch".into(), None));
+                }
+                if fault == "startup_table_select" { assert_eq!(pair.4, Some(false)); }
+                bounds(tx.as_mut()).await;
+                sqlx::raw_sql("SAVEPOINT serving_parity_finalizer").execute(tx.as_mut()).await.unwrap();
+                navigation_refused(tx.as_mut(), refusal).await;
+                sqlx::raw_sql("ROLLBACK TO SAVEPOINT serving_parity_finalizer; RELEASE SAVEPOINT serving_parity_finalizer")
+                    .execute(tx.as_mut()).await.unwrap();
+                assert!(catalog(tx.as_mut()).await == faulty_catalog);
+                assert!(rows(tx.as_mut()).await == faulty_rows);
+                assert_eq!(navigation_tuple(tx.as_mut()).await, faulty_tuple);
+                assert_eq!(navigation_serving_parity_pair(tx.as_mut(), candidate).await, pair);
+                packets.push(json!({"corrected":corrected,"fault":fault,"state":pair.0,
+                    "variant":pair.1,"full83_sha256":pair.3,"rights":pair.4,
+                    "finalizer_refusal":refusal,"fault_readback_unchanged":true}));
+                sqlx::raw_sql("ROLLBACK TO SAVEPOINT serving_parity_fault; RELEASE SAVEPOINT serving_parity_fault")
+                    .execute(tx.as_mut()).await.unwrap();
+                assert!(catalog(tx.as_mut()).await == healthy.catalog);
+                assert!(rows(tx.as_mut()).await == healthy.rows);
+                assert!(applied_ledger(tx.as_mut()).await == healthy.ledger);
+                assert_eq!(navigation_tuple(tx.as_mut()).await, healthy.tuple);
+                assert_eq!(navigation_serving_parity_pair(tx.as_mut(), candidate).await, expected);
+            }
+            navigation_finalize(tx.as_mut()).await;
+            let accepted = navigation_snapshot(tx.as_mut(), true, variant).await;
+            assert!(accepted.rows == healthy.rows, "positive finalizer changed durable rows");
+            assert!(accepted.ledger == healthy.ledger, "positive finalizer changed the historical ledger");
+            navigation_finalize(tx.as_mut()).await;
+            assert_eq!(navigation_tuple(tx.as_mut()).await, accepted.tuple);
+        }).catch_unwind().await;
+        let rollback = tx.rollback().await;
+        let close = admin.close().await;
+        let restored = AssertUnwindSafe(navigation_restored(pool, original, false, variant))
+            .catch_unwind()
+            .await;
+        assert!(
+            rollback.is_ok() && close.is_ok(),
+            "serving parity fault cleanup failed"
+        );
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+        if let Err(panic) = restored {
+            std::panic::resume_unwind(panic);
+        }
+    }
+    packets
+}
+
+async fn navigation_serving_parity_admitted_roles(config: &AppConfig) -> Value {
+    let mut states = Vec::<AppState>::new();
+    let mut statuses = Vec::new();
+    let outcome = AssertUnwindSafe(async {
+        for role in [console_app::AppRole::Api, console_app::AppRole::Worker] {
+            let mut selected = config.clone();
+            selected.role = role;
+            states.push(
+                AppState::from_config(selected)
+                    .await
+                    .expect("known phase consumer startup"),
+            );
+            statuses.push(ready_status(states.last().unwrap()).await);
+        }
+    })
+    .catch_unwind()
+    .await;
+    for state in &states {
+        state.shutdown_realtime().await;
+    }
+    drop(states);
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+    assert_eq!(statuses, [StatusCode::OK, StatusCode::OK]);
+    json!({"api":200,"worker":200,"actual_configured_consumers":true})
+}
+
+async fn navigation_serving_parity_history(pool: PgPool, variant: usize) {
+    let sources = navigation_finalizer_pins();
+    let candidate = navigation_serving_parity_query();
+    let oracle = group_oracle();
+    let predecessor = Box::pin(predecessor(&pool, variant)).await;
+    let closed = Box::pin(group_closed_fixture(&pool, &predecessor, variant)).await;
+    let artifacts = Artifacts::new();
+    let key = SigningKey::random(&mut OsRng);
+    let config = account_browser_config(&pool, artifacts.root.clone(), &key);
+    let absent_outcome = AssertUnwindSafe(async {
+        let consumers = navigation_serving_parity_admitted_roles(&config).await;
+        let pair = navigation_serving_parity_login(
+            &pool,
+            &candidate,
+            ("native_group_process_navigation.absent".into(), None),
+            BEFORE83[variant],
+            false,
+        )
+        .await;
+        (consumers, pair)
+    })
+    .catch_unwind()
+    .await;
+    let absent_restored = AssertUnwindSafe(serving_restored(&pool, variant, &closed))
+        .catch_unwind()
+        .await;
+    if let Err(panic) = absent_restored {
+        std::panic::resume_unwind(panic);
+    }
+    let (absent_consumers, absent) = match absent_outcome {
+        Ok(packet) => packet,
+        Err(panic) => std::panic::resume_unwind(panic),
+    };
+
+    let mut admin = direct(&pool).await;
+    let mut tx = begin_protocol(&mut admin, &closed.target).await;
+    let installation = AssertUnwindSafe(async {
+        group_install_replay(tx.as_mut(), &closed, variant, &oracle).await;
+        navigation_snapshot(tx.as_mut(), false, variant).await
+    })
+    .catch_unwind()
+    .await;
+    let original = match installation {
+        Ok(original) => {
+            tx.commit().await.unwrap();
+            original
+        }
+        Err(panic) => {
+            tx.rollback().await.unwrap();
+            admin.close().await.unwrap();
+            serving_restored(&pool, variant, &closed).await;
+            std::panic::resume_unwind(panic)
+        }
+    };
+    admin.close().await.unwrap();
+    let predecessor_outcome = AssertUnwindSafe(async {
+        let pair = navigation_serving_parity_login(
+            &pool,
+            &candidate,
+            navigation_phase(false, variant),
+            INSTALLED83[variant],
+            true,
+        )
+        .await;
+        let consumers = navigation_serving_parity_admitted_roles(&config).await;
+        (pair, consumers)
+    })
+    .catch_unwind()
+    .await;
+    let prior_restored = AssertUnwindSafe(navigation_restored(&pool, &original, false, variant))
+        .catch_unwind()
+        .await;
+    if let Err(panic) = prior_restored {
+        std::panic::resume_unwind(panic);
+    }
+    let (prior, predecessor_consumers) = match predecessor_outcome {
+        Ok(packet) => packet,
+        Err(panic) => std::panic::resume_unwind(panic),
+    };
+    let faults = Box::pin(navigation_serving_parity_faults(
+        &pool, &candidate, &original, variant,
+    ))
+    .await;
+
+    let mut admin = direct(&pool).await;
+    let mut tx = begin_protocol(&mut admin, &original.target).await;
+    let correction = AssertUnwindSafe(async {
+        navigation_finalize(tx.as_mut()).await;
+        navigation_snapshot(tx.as_mut(), true, variant).await
+    })
+    .catch_unwind()
+    .await;
+    let corrected = match correction {
+        Ok(corrected) => {
+            tx.commit().await.unwrap();
+            corrected
+        }
+        Err(panic) => {
+            tx.rollback().await.unwrap();
+            admin.close().await.unwrap();
+            navigation_restored(&pool, &original, false, variant).await;
+            std::panic::resume_unwind(panic)
+        }
+    };
+    admin.close().await.unwrap();
+    let installed_outcome = AssertUnwindSafe(navigation_serving_parity_login(
+        &pool,
+        &candidate,
+        navigation_phase(true, variant),
+        NAVIGATION_CORRECTED83[variant],
+        true,
+    ))
+    .catch_unwind()
+    .await;
+    let installed_restored =
+        AssertUnwindSafe(navigation_restored(&pool, &corrected, true, variant))
+            .catch_unwind()
+            .await;
+    if let Err(panic) = installed_restored {
+        std::panic::resume_unwind(panic);
+    }
+    let installed = match installed_outcome {
+        Ok(packet) => packet,
+        Err(panic) => std::panic::resume_unwind(panic),
+    };
+
+    // Existing application composition supplies real runtime/command/auth LOGINs.
+    // Reuse the exact reversible table-ACL helper; function tuple is unchanged by
+    // this committed fault or its removal. Rolled-back source faults above do
+    // not pretend to be visible to a separate LOGIN or application pool.
+    let mut states = Vec::<AppState>::new();
+    let mut admin = direct(&pool).await;
+    let mut injected = false;
+    let consumer = AssertUnwindSafe(async {
+        for role in [console_app::AppRole::Api, console_app::AppRole::Worker] {
+            let mut selected = config.clone();
+            selected.role = role;
+            states.push(
+                AppState::from_config(selected)
+                    .await
+                    .expect("corrected actual consumer startup"),
+            );
+            assert_eq!(ready_status(states.last().unwrap()).await, StatusCode::OK);
+        }
+        injected = true;
+        serving_inject(&mut admin, &ServingCorruption::StartupTableSelect).await;
+        let actual: Option<bool> = sqlx::query_scalar(
+            "SELECT has_table_privilege('console_auth_startup','public.org_units','SELECT')",
+        )
+        .fetch_one(&mut admin)
+        .await
+        .unwrap();
+        assert_eq!(actual, Some(true));
+        let mut read = sqlx::Connection::begin(&mut admin).await.unwrap();
+        let faulty_catalog = catalog(read.as_mut()).await;
+        let faulty_rows = rows(read.as_mut()).await;
+        let faulty_ledger = applied_ledger(read.as_mut()).await;
+        let faulty_tuple = navigation_tuple(read.as_mut()).await;
+        let mismatch = navigation_serving_parity_pair(read.as_mut(), &candidate).await;
+        assert_eq!(
+            (mismatch.0, mismatch.1),
+            (
+                "native_group_process_navigation.profile_mismatch".into(),
+                None
+            )
+        );
+        assert_eq!(mismatch.4, Some(false));
+        read.rollback().await.unwrap();
+        for state in &states {
+            assert_eq!(ready_status(state).await, StatusCode::SERVICE_UNAVAILABLE);
+        }
+        for role in [console_app::AppRole::Api, console_app::AppRole::Worker] {
+            let mut selected = config.clone();
+            selected.role = role;
+            startup_refused(selected, "native_group_process.profile_mismatch").await;
+        }
+        let mut read = sqlx::Connection::begin(&mut admin).await.unwrap();
+        assert!(catalog(read.as_mut()).await == faulty_catalog);
+        assert!(rows(read.as_mut()).await == faulty_rows);
+        assert!(applied_ledger(read.as_mut()).await == faulty_ledger);
+        assert_eq!(navigation_tuple(read.as_mut()).await, faulty_tuple);
+        assert_eq!(faulty_tuple, corrected.tuple);
+        read.rollback().await.unwrap();
+        serving_remove(&mut admin, &ServingCorruption::StartupTableSelect).await;
+        injected = false;
+        navigation_restored(&pool, &corrected, true, variant).await;
+        for state in &states {
+            assert_eq!(ready_status(state).await, StatusCode::OK);
+        }
+    })
+    .catch_unwind()
+    .await;
+    // Restore the owned global ACL even after a failing consumer assertion.
+    if injected {
+        serving_remove(&mut admin, &ServingCorruption::StartupTableSelect).await;
+    }
+    let close = admin.close().await;
+    for state in &states {
+        state.shutdown_realtime().await;
+    }
+    drop(states);
+    drop(artifacts);
+    let restored = AssertUnwindSafe(navigation_restored(&pool, &corrected, true, variant))
+        .catch_unwind()
+        .await;
+    {
+        let mut output = std::io::stderr().lock();
+        writeln!(&mut output, "GROUP_NAVIGATION_SERVING_PARITY {}", json!({
+            "sources":sources,"candidate_sha256":digest(&candidate),"variant":if variant==0 {"plain"} else {"observer"},
+            "absent":absent,"predecessor":prior,"installed":installed,"faults":faults,
+            "absent_consumers":absent_consumers,"predecessor_consumers":predecessor_consumers,
+            "actual_api_worker_committed_acl_refusal":consumer.is_ok(),
+            "consumer_request_timeout_millis":u64::try_from(config.request_timeout.as_millis()).unwrap(),
+            "consumer_connection_close":close.is_ok(),"fresh_exact_restoration":restored.is_ok(),
+            "historical_business_populated_fixture":true,"business_rows_exported":false,
+            "browser_accepted":false,"performance_qualified":false,"production_qualified":false
+        })).unwrap();
+        output.flush().unwrap();
+    }
+    assert!(
+        close.is_ok(),
+        "serving parity consumer connection cleanup failed"
+    );
+    if let Err(panic) = consumer {
+        std::panic::resume_unwind(panic);
+    }
+    if let Err(panic) = restored {
+        std::panic::resume_unwind(panic);
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn navigation_serving_plain_phase_fault_parity_and_actual_consumer_refusal(pool: PgPool) {
+    Box::pin(navigation_serving_parity_history(pool, 0)).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn navigation_serving_observer_phase_fault_parity_and_actual_consumer_refusal(pool: PgPool) {
+    Box::pin(navigation_serving_parity_history(pool, 1)).await;
+}
