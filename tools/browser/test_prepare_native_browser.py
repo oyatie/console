@@ -27,15 +27,15 @@ PACKAGE_FILES = {
 }
 DRIVERS = {
     "account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
-    "company.cjs": "02535a1fc2d57196738a90c13ca94c7f99c8ef1f8ccad71696ec57b906c4e4a6",
+    "company.cjs": "83b89ad4b1cfe316596505b7cd452da4e53aba3c9fead82f0255b8f4f7335ed4",
     "company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
     "hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
 }
 COMPANIONS = {
     "native_header.cjs": "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d",
     "people_journey.cjs": "d69b37066e92f6c2d95d3475bad8f461969422cf07fb83a05252f77a23c27ecc",
-    "group_process_journey.cjs": "e8e23b11e75b5652358c500067c8cf62ed40aec964a18145d15f4bdb0fd35bf8",
-    "group_navigation_held.cjs": "2f45b8e0b6393cbe82c2e5745bf5489c99b4fca042e50f8de59cb2a2742524c5",
+    "group_process_journey.cjs": "a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f",
+    "group_navigation_held.cjs": "0c8b4d46a5ca248df5a5b08c0a1bf0da6c71b59049516e683389375d51794ca2",
     "policy_journey.cjs": "766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea",
     "recovery_controls.cjs": "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
 }

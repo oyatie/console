@@ -53,16 +53,18 @@ function validEvidence(result) {
   } catch {return false;}
 }
 
-async function retainLogoutPage({context,origin}) {
+async function retainLogoutPage({context,origin,configureResponseRetention}) {
   const page=await context.newPage();
   try {
+    const session=await context.newCDPSession(page);
+    await configureResponseRetention(session);
     const response=await page.goto(origin+'/account',{waitUntil:'domcontentloaded',timeout:8000});
     assert.equal(response.status(),200); assert.equal(response.request().redirectedFrom(),null);
     assert.equal(page.url(),origin+'/account');
     const control=page.getByRole('button',{name:'로그아웃',exact:true});
     assert.equal(await control.count(),1); assert.equal(await control.isVisible(),true);
     assert.equal(await page.locator('form[data-native-action="logout"]').count(),1);
-    return {page,evidence:{path:'/account',status:200,redirected:false,native_logout:true}};
+    return {page,session,evidence:{path:'/account',status:200,redirected:false,native_logout:true}};
   } catch (error) {await page.close();throw error;}
 }
 
@@ -181,6 +183,7 @@ async function runHeldJourney({page,context,group,company,account,retainedLogout
     !['__Host-console_account_session','__Host-console_account_refresh'].includes(cookie.name));
   assert.equal(result.logout_cookie_clear,true);result.real_ui_logout=true;
   await witness('GROUP_HELD_LOGGED_OUT');
+  await retainedLogout.session.detach();
   await logoutPage.close();assert.equal(validEvidence(result),true);return result;
 }
 module.exports={PHASES,validEvidence,retainLogoutPage,runHeldJourney};

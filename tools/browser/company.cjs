@@ -271,7 +271,7 @@ async function main(backendPort,out,mode){
   result.reflow_account_320=await reflow320();requireFact(result.reflow_account_320,'REFLOW_320');
   stage='registration_credentials_read';const credentials=await cdp.send('WebAuthn.getCredentials',{authenticatorId:auth.authenticatorId});stage='registration_credentials_verify';result.resident=credentials.credentials.length===1&&credentials.credentials[0].isResidentCredential===true&&credentials.credentials[0].rpId==='localhost'&&Buffer.from(credentials.credentials[0].userHandle,'base64').equals(handle);credentials.credentials.length=0;requireFact(result.resident,'RESIDENT');
   stage='registration_secret_check';const cookies=await secretFree();const access=cookies.find(c=>c.name==='__Host-console_account_session');const refresh=cookies.find(c=>c.name==='__Host-console_account_refresh');result.cookie_security=!!access&&!!refresh&&access.httpOnly&&refresh.httpOnly&&access.secure&&refresh.secure&&access.path==='/'&&refresh.path==='/'&&access.sameSite==='Lax'&&refresh.sameSite==='Strict';requireFact(result.cookie_security,'COOKIE_SECURITY');
-  if(result.group_navigation_held)retainedLogout=await require('./group_navigation_held.cjs').retainLogoutPage({context,origin});
+  if(result.group_navigation_held)retainedLogout=await require('./group_navigation_held.cjs').retainLogoutPage({context,origin,configureResponseRetention});
   stage='registration_checkpoint';await capture('03-account-enrolled.png');
   emit({kind:'CHECKPOINT',phase:'ENROLLED',account_id:account});
   requireFact(validCheckpointCommand(await receive(),'DESIGNATED'),'OWNER_PROTOCOL');result.checkpoints.push('ENROLLED');

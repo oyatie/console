@@ -72,6 +72,7 @@ async function runGroupProcessJourney({page, group, company, account, exchange, 
       await tabTo(link, 64);
       const waiting = page.waitForResponse(row => row.url() === origin + path && row.request().isNavigationRequest());
       await page.keyboard.press('Enter'); response = await waiting;
+      await page.waitForURL(origin + path, {waitUntil: 'domcontentloaded'});
     } else { await clearBrowserCache(); response = await page.goto(origin + path, {waitUntil: 'domcontentloaded'}); }
     assert.equal(page.url(), origin + path); assert.equal(response.status(), status);
     assert.equal(response.request().redirectedFrom(), null); await secretFree(); return response;

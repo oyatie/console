@@ -112,7 +112,7 @@ async fn company_browser_journey_with_group_navigation(
         let bytes = std::fs::read(&path).unwrap();
         assert_eq!(
             hex::encode(Sha256::digest(&bytes)),
-            "e8e23b11e75b5652358c500067c8cf62ed40aec964a18145d15f4bdb0fd35bf8"
+            "a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f"
         );
         policy_helpers.push((path, bytes));
     }
