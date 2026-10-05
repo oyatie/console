@@ -2,6 +2,7 @@
 """Behavior locks for the first-party Rust BUCK graph generator."""
 
 import ast
+import hashlib
 from unittest.mock import patch
 import importlib.util
 import inspect
@@ -48,6 +49,33 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             for path in package.glob(pattern)
         }
         self.assertIn((package / "Cargo.toml").resolve(), declared)
+
+    def test_private_group_navigation_finalizer_auth_rest_resource_is_complete(self) -> None:
+        target = "//ops:postgres-finalize-native-group-process-navigation-v1.sql"
+        relative = "ops/postgres-finalize-native-group-process-navigation-v1.sql"
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(config["external"].get(target), relative)
+        source = Path(GENERATOR.REPO) / relative
+        self.assertFalse(source.is_symlink(), "native finalizer must be a regular input")
+        self.assertTrue(source.is_file(), "native finalizer must exist before native execution")
+        self.assertEqual(
+            hashlib.sha256(source.read_bytes()).hexdigest(),
+            "4971a73e957da8dfe4f202aea3693d3d0ad0636b92a0a2785264c5d4f9d9fc70",
+        )
+        exports = []
+        for statement in ast.parse((Path(GENERATOR.REPO) / "ops/BUCK").read_text()).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id != "export_file":
+                continue
+            keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+            if "name" in keywords and ast.literal_eval(keywords["name"]) == source.name:
+                exports.append(keywords)
+        self.assertEqual(len(exports), 1, "finalizer needs one exact native ops export")
+        self.assertEqual(ast.literal_eval(exports[0]["visibility"]), ["PUBLIC"])
+        if "src" in exports[0]:
+            self.assertEqual(ast.literal_eval(exports[0]["src"]), source.name)
 
     def test_private_company_intake_guards_auth_rest_resources_are_complete(self) -> None:
         config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
