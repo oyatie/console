@@ -238,7 +238,7 @@ class NativeGroupNavigationFinalizerGeneration(unittest.TestCase):
 
     def test_pinned_execution_entry_locks_replay_and_common_postchecks(self):
         sql = self.finalizer()[FINALIZER]
-        outer = self.protocol(sql)
+        outer = compact(self.protocol(sql))
         # The SQL cannot establish these caller obligations through fake tuple
         # locks. Native target/role custody tests must exercise the real caller.
         header = sql.split('DO $native_group_process_navigation_custody$', 1)[0]
@@ -251,8 +251,7 @@ class NativeGroupNavigationFinalizerGeneration(unittest.TestCase):
                            'no fabricated pg_locks tuple proof',
                            'does not authorize production DDL or client exposure'):
             self.assertIn(obligation, documentation, obligation)
-        body = compact(sql[len(header):])
-        self.assertNotRegex(body, r"locktype\s*=\s*'tuple'|\bRETURN\b")
+        self.assertNotRegex(outer, r"locktype\s*=\s*'tuple'|\bRETURN\b")
         for forbidden in (r'\b(?:INSERT|UPDATE|DELETE|TRUNCATE|COPY)\b',
                           r'\b(?:GRANT|REVOKE|ALTER\s+(?:ROLE|OWNER)|SET\s+ROLE)\b',
                           r'\b(?:COMMIT|ROLLBACK)\b'):
