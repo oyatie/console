@@ -173,8 +173,12 @@ mod owner_interruption {
 
     // No DATABASE_URL configuration, credentials, business setup, migration,
     // custody profile, or technical role is used to authorize this injection.
-    // One connected disposable SQLx database pool is held, so the real owner
-    // awaits its FIRST acquisition and can execute no business SQL.
+    // Bind only the actual held Auth transport prerequisite through the existing
+    // composition method. The sole disposable pool is held, so the request's
+    // first acquisition blocks and no SQL or serving acceptance is claimed.
+    // Under live Auth-before-custody composition that acquisition is Auth;
+    // owner progress requires its separate mounted witness. Historical assertion
+    // diagnostics retain their bytes; assertions prove transport interruption.
     async fn fixture(test_pool: &PgPool) -> (AppState, PgPool) {
         let signing = SigningKey::random(&mut OsRng);
         let private = signing.to_pkcs8_pem(LineEnding::LF).unwrap().to_string();
@@ -206,7 +210,9 @@ mod owner_interruption {
             .connect_with(test_pool.connect_options().as_ref().clone())
             .await
             .unwrap();
-        let mut state = AppState::new(config, DatabaseDependency::Postgres(pool.clone())).unwrap();
+        let mut state = AppState::new(config, DatabaseDependency::Postgres(pool.clone()))
+            .unwrap()
+            .with_auth_database(pool.clone());
         let auth = state.auth_rest.as_ref().unwrap().clone();
         let config = state.config.auth_rest.as_ref().unwrap();
         let store = PgOrgStore::new(pool.clone()).with_native_account_policy(

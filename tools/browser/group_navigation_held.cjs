@@ -96,7 +96,7 @@ async function runHeldJourney({page,context,group,company,account,retainedLogout
   assert.equal(initial.status(),200);assert.equal(initial.request().redirectedFrom(),null);
   const form=page.getByRole('main').locator(`form[action="${base}/processes"]`);
   assert.equal(await form.count(),1);assert.equal(await form.isVisible(),true);
-  const controls=await form.evaluate(element=>({method:element.method,enctype:element.enctype,target:element.target,
+  const controls=await form.evaluate(element=>({method:Object.getOwnPropertyDescriptor(HTMLFormElement.prototype, 'method').get.call(element),enctype:element.enctype,target:element.target,
     keys:[...element.elements].filter(row=>row.name).map(row=>row.name),
     disabled:[...element.elements].filter(row=>row.name).some(row=>row.disabled),
     proof:[...element.elements].filter(row=>row.name==='csrf_proof').map(row=>({type:row.type,

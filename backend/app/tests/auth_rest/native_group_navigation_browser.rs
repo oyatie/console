@@ -11,7 +11,7 @@ use std::{
 
 pub(super) type CapturedCookie = Arc<Mutex<Option<HeaderValue>>>;
 pub(super) const DRIVER_SHA256: &str =
-    "b4c35cc23d2fe52ac596bb70e2e193f3f7411adccb7dd74a32b866130b8a8b76";
+    "8fc818bd52d612a427dc72a58edaf6ab8d9e5cb6529282612d7a2f26e6a37f87";
 
 struct Document {
     status: StatusCode,

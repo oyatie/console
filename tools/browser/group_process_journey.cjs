@@ -95,7 +95,7 @@ async function runGroupProcessJourney({page, group, company, account, exchange, 
     if (await found.count() !== 1 || !(await found.isVisible())) { const error = new Error('GROUP_PROCESS_FORM_MISSING'); error.code = 'GROUP_PROCESS_FORM_MISSING'; throw error; }
     const fields = await found.evaluate(element => {
       const controls = [...element.elements].filter(row => row.name);
-      return {method: element.method, enctype: element.enctype, target: element.target,
+      return {method: Object.getOwnPropertyDescriptor(HTMLFormElement.prototype, 'method').get.call(element), enctype: element.enctype, target: element.target,
         keys: controls.map(row => row.name), disabled: controls.some(row => row.disabled),
         named: controls.filter(row => row.name !== 'csrf_proof').map(row => [row.name, row.value]),
         proof: controls.filter(row => row.name === 'csrf_proof').map(row => ({type: row.type,
