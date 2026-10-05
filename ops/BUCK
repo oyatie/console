@@ -265,3 +265,7 @@ export_file(
     name = "postgres-finalize-native-group-process-v1.sql",
     visibility = ["PUBLIC"],
 )
+export_file(
+    name = "postgres-finalize-native-group-process-navigation-v1.sql",
+    visibility = ["PUBLIC"],
+)
