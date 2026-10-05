@@ -783,21 +783,8 @@ async fn navigation_materialized_classifier_readonly_experiment(pool: PgPool, va
         "b7b46b958ed86fe032dda3202152995d0b8873beaa748d5e1f078b11396c498e"
     );
 
-    // Owned task boundary avoids nesting the large frozen fixture in this leaf.
-    // Join immediately; neither fixture work nor its panic becomes detached.
-    let fixture_pool = pool.clone();
-    let mut fixture = tokio::task::JoinSet::new();
-    fixture.spawn(async move { navigation_transition_history(fixture_pool, variant).await });
-    match fixture
-        .join_next()
-        .await
-        .expect("owned navigation fixture task missing")
-    {
-        Ok(()) => {}
-        Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
-        Err(_) => panic!("owned navigation fixture task unexpectedly cancelled"),
-    }
-    assert!(fixture.is_empty());
+    // Heap-own the frozen fixture future without a spawned task's Send bound.
+    Box::pin(navigation_transition_history(pool.clone(), variant)).await;
 
     let mut admin = direct(&pool).await;
     let baseline_outcome = AssertUnwindSafe(async {
