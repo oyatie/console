@@ -724,7 +724,23 @@ pub(super) async fn observe(
             .status,
         StatusCode::OK
     );
-    let receipt = native_policy_startup_tests::correct_native_group_browser_database(pool).await;
+    let receipt = {
+        let mut correction = tokio::task::JoinSet::new();
+        let correction_pool = pool.clone();
+        correction.spawn(async move {
+            native_policy_startup_tests::correct_native_group_browser_database(&correction_pool)
+                .await
+        });
+        match correction
+            .join_next()
+            .await
+            .expect("owned Group correction task must exist")
+        {
+            Ok(receipt) => receipt,
+            Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
+            Err(_) => panic!("owned Group correction task unexpectedly cancelled"),
+        }
+    };
     assert_eq!(receipt["confirmed"], true);
     no_effects(pool, &form_rows).await;
     assert_eq!(
