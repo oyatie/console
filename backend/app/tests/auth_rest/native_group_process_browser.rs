@@ -1935,3 +1935,320 @@ fn group_result_xid8_projection_rejects_noncanonical_or_mismatched_values() {
     }
     assert!(rejects(&json!("0"), &json!(0)));
 }
+
+// Included in native_group_process_browser: reuse its private source-bound
+// immutable-input/result/layout/census oracles; no second seven-table oracle.
+const CORRECTION_PHASES: [&str; 15] = [
+    "GROUP_CORRECTION_ENTRY_READY",
+    "GROUP_CORRECTION_FORM_READY",
+    "GROUP_INVALID_READY",
+    "GROUP_INVALID_RETURNED",
+    "GROUP_CORRECTION_FOCUSED",
+    "GROUP_CORRECTED_READY",
+    "GROUP_CORRECTED_ADOPTED",
+    "GROUP_CORRECTED_REOPENED",
+    "GROUP_CORRECTED_CURRENT",
+    "GROUP_CORRECTED_DESIGNATION_REVOKE_READY",
+    "GROUP_CORRECTED_OWN_RECEIPT_AFTER_REVOKE",
+    "GROUP_CORRECTED_RETRY_FORM_READY",
+    "GROUP_CORRECTED_REPLAY_READY",
+    "GROUP_CORRECTED_REPLAYED",
+    "GROUP_CORRECTED_CURRENT_DENIED",
+];
+
+pub(super) async fn observe_invalid_form(
+    pool: &PgPool,
+    input: &mut tokio::process::ChildStdin,
+    events: &mut tokio::io::BufReader<tokio::process::ChildStdout>,
+    actor: Uuid,
+    company: Uuid,
+    group: Uuid,
+) {
+    let mut prior = all_rows(pool).await;
+    let mut issued: Option<Value> = None;
+    let mut invalid: Option<Value> = None;
+    let mut ready: Option<Value> = None;
+    let mut process: Option<Uuid> = None;
+    let mut original_result: Option<Value> = None;
+    let mut original_projection: Option<Value> = None;
+    let mut committed_count = 0;
+    let mut started: OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    for phase in CORRECTION_PHASES {
+        let event = browser_owner_event(events).await;
+        assert_eq!(event["kind"], "CHECKPOINT");
+        assert_eq!(event["phase"], phase);
+        assert_eq!(event["account_id"], json!(actor));
+        assert_eq!(event["org_id"], json!(company));
+        assert_eq!(event["group_id"], json!(group));
+        let now: OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
+            .fetch_one(pool)
+            .await
+            .unwrap();
+        let mut current = all_rows(pool).await;
+        let mut answer = json!({"phase":phase,"group":group,"company":company,"account":actor,
+            "owner_effects_verified":true,"observed_at_us":i64::try_from(now.unix_timestamp_nanos()/1000).unwrap()});
+        match phase {
+            "GROUP_CORRECTION_ENTRY_READY" => {
+                assert!(
+                    prior == current,
+                    "native Group entry changed any durable row"
+                );
+                for table in TABLES {
+                    assert!(
+                        rows(&current, table).is_empty(),
+                        "no prepopulated Group process truth"
+                    );
+                }
+                answer["policy_revision"] = json!(0);
+                answer["version"] = json!(0);
+                answer["head_revision"] = json!(0);
+            }
+            "GROUP_CORRECTION_FORM_READY" => {
+                assert!(
+                    policy_preflight_effects(&prior, &current, started, now),
+                    "form issue permits exactly one Auth proof admission, no business write"
+                );
+                let named = fields(&event);
+                let authority =
+                    policy_only_row(&current, "group_authority_heads", "group_id", &json!(group));
+                assert_eq!(
+                    named["expected_group_revision"],
+                    authority["revision"].as_u64().unwrap().to_string()
+                );
+                assert_eq!(
+                    named["expected_group_incarnation"],
+                    authority["incarnation"].as_str().unwrap()
+                );
+                assert_eq!(named["expected_group_identity_policy_revision"], "0");
+                process = Some(policy_uuid(&event["process_id"]));
+                assert_eq!(named["process_id"], process.unwrap().to_string());
+                issued = Some(event.clone());
+            }
+            "GROUP_INVALID_READY" => {
+                assert!(prior == current, "typed client input wrote any durable row");
+                let named = fields(&event);
+                let original = fields(issued.as_ref().unwrap());
+                for key in [
+                    "command_id",
+                    "process_id",
+                    "expected_group_revision",
+                    "expected_group_incarnation",
+                    "expected_group_identity_policy_revision",
+                    "expected_prior_process_revision",
+                ] {
+                    assert_eq!(
+                        named[key], original[key],
+                        "issued expectation identity changed"
+                    );
+                }
+                assert_eq!(event["command_id"], issued.as_ref().unwrap()["command_id"]);
+                assert_eq!(named["title"], "한".repeat(41));
+                assert_eq!(named["title"].len(), 123);
+                // All other content must pass the actual immutable-input oracle.
+                // Only a detached expected title is corrected, never browser/DB input.
+                let mut valid_control = event.clone();
+                for pair in valid_control["fields"].as_array_mut().unwrap() {
+                    if pair[0] == "title" {
+                        pair[1] = json!("입력을 수정하여 등록한 그룹 신원 확인 절차");
+                    }
+                }
+                let _ = expected_input(&valid_control, actor, group);
+                invalid = Some(event.clone());
+            }
+            "GROUP_INVALID_RETURNED" | "GROUP_CORRECTION_FOCUSED" => {
+                assert!(
+                    prior == current,
+                    "invalid POST/correction anchor changed any owner/global row"
+                );
+                let invalid = invalid.as_ref().unwrap();
+                assert_eq!(event["command_id"], invalid["command_id"]);
+                assert_eq!(event["process_id"], invalid["process_id"]);
+                assert_eq!(
+                    fields(&event),
+                    fields(invalid),
+                    "422/keyboard correction dropped original inputs or pins"
+                );
+                let command = policy_uuid(&event["command_id"]);
+                for table in [TABLES[4], TABLES[5], TABLES[6]] {
+                    assert!(
+                        !rows(&current, table)
+                            .iter()
+                            .any(|row| row["actor_account_id"] == json!(actor)
+                                && row["command_id"] == json!(command)),
+                        "invalid first submission minted phantom intake/effect/result"
+                    );
+                }
+            }
+            "GROUP_CORRECTED_READY" => {
+                assert!(
+                    prior == current,
+                    "correction created effects before real submit"
+                );
+                let mut expected = fields(invalid.as_ref().unwrap());
+                expected.insert(
+                    "title".into(),
+                    "입력을 수정하여 등록한 그룹 신원 확인 절차".into(),
+                );
+                assert_eq!(
+                    fields(&event),
+                    expected,
+                    "correction changed more than the focused title"
+                );
+                assert_eq!(event["command_id"], invalid.as_ref().unwrap()["command_id"]);
+                assert_eq!(event["process_id"], json!(process.unwrap()));
+                let _ = expected_input(&event, actor, group);
+                ready = Some(event.clone());
+            }
+            "GROUP_CORRECTED_ADOPTED" => {
+                let ready = ready
+                    .take()
+                    .expect("actual corrected keyboard submit preflight");
+                let source = source_descriptor();
+                let details = committed(
+                    &prior,
+                    &current,
+                    &event,
+                    &ready,
+                    &source,
+                    actor,
+                    group,
+                    process.unwrap(),
+                    0,
+                );
+                calibrate_census(
+                    &prior,
+                    &current,
+                    &event,
+                    &ready,
+                    &source,
+                    actor,
+                    group,
+                    process.unwrap(),
+                    0,
+                );
+                calibrate_fields_and_shared_digests(
+                    &prior,
+                    &current,
+                    &event,
+                    &ready,
+                    &source,
+                    actor,
+                    group,
+                    process.unwrap(),
+                    0,
+                );
+                let command = policy_uuid(&event["command_id"]);
+                assert_eq!(
+                    event["projection"]["intake_receipt_id"],
+                    selected(&current, TABLES[4], actor, command)["intake_receipt_id"],
+                    "historical intake receipt DOM differs from actual owning input"
+                );
+                original_result = Some(selected(&current, TABLES[6], actor, command));
+                original_projection = Some(event["projection"].clone());
+                for (key, value) in details.as_object().unwrap() {
+                    answer[key] = value.clone();
+                }
+                committed_count += 1;
+            }
+            "GROUP_CORRECTED_CURRENT" => {
+                assert!(
+                    prior == current,
+                    "current authorized Group read wrote durable state"
+                );
+                let head = scoped(&current, TABLES[2], group);
+                assert_eq!(head["process_id"], json!(process.unwrap()));
+                assert_eq!(head["head_revision"], 1);
+                assert_eq!(head["content_version"], 1);
+                assert_eq!(head["state"], "ACTIVE");
+                answer["version"] = head["content_version"].clone();
+                answer["head_revision"] = head["head_revision"].clone();
+            }
+            "GROUP_CORRECTED_DESIGNATION_REVOKE_READY" => {
+                assert!(
+                    prior == current,
+                    "revocation preparation wrote process data"
+                );
+                let existing = designation(pool, actor).await;
+                let operational = startup(pool).await;
+                let receipt = revoke(
+                    &operational,
+                    &existing,
+                    Uuid::new_v4(),
+                    1,
+                    "actual invalid-form correction receipt-retention control",
+                )
+                .await
+                .unwrap();
+                operational.close().await;
+                assert_eq!(receipt.1, 2);
+                assert!(!receipt.2);
+                current = all_rows(pool).await;
+                let allowed =
+                    BTreeSet::from(["deployment_operator_head", "deployment_operator_receipts"]);
+                for (table, prior_rows) in &prior {
+                    if !allowed.contains(table.as_str()) {
+                        assert!(
+                            prior_rows == &current[table],
+                            "restricted designation owner changed unrelated rows"
+                        );
+                    }
+                }
+            }
+            "GROUP_CORRECTED_RETRY_FORM_READY" => {
+                assert!(
+                    policy_preflight_effects(&prior, &current, started, now),
+                    "retry GET must only issue one proof admission, never replay work"
+                );
+            }
+            "GROUP_CORRECTED_REOPENED"
+            | "GROUP_CORRECTED_OWN_RECEIPT_AFTER_REVOKE"
+            | "GROUP_CORRECTED_REPLAY_READY"
+            | "GROUP_CORRECTED_REPLAYED"
+            | "GROUP_CORRECTED_CURRENT_DENIED" => {
+                assert!(
+                    prior == current,
+                    "receipt reopen/terminal replay/denied read wrote any durable row"
+                );
+                if [
+                    "GROUP_CORRECTED_REOPENED",
+                    "GROUP_CORRECTED_OWN_RECEIPT_AFTER_REVOKE",
+                ]
+                .contains(&phase)
+                {
+                    assert_eq!(event["projection"], *original_projection.as_ref().unwrap());
+                }
+            }
+            _ => panic!("unrecognized native correction checkpoint"),
+        }
+        if let Some(terminal) = &original_result {
+            assert_eq!(
+                selected(
+                    &current,
+                    TABLES[6],
+                    actor,
+                    policy_uuid(&terminal["command_id"])
+                ),
+                *terminal,
+                "original accepted terminal receipt changed after correction"
+            );
+        }
+        if let Some(process) = process {
+            answer["process"] = json!(process);
+        }
+        // Emit only identifiers and true no-effect/closure booleans, never rows,
+        // proof, cookies, credential snapshots or a whole-form/body digest.
+        eprintln!(
+            "GROUP_CORRECTION_OWNER_WITNESS {}",
+            json!({"phase":phase,
+            "group":group,"company":company,"account":actor,"owner_effects_verified":true})
+        );
+        prior = current;
+        started = now;
+        policy_browser_ack(input, phase, answer).await;
+    }
+    assert_eq!(committed_count, 1);
+    assert!(ready.is_none());
+}

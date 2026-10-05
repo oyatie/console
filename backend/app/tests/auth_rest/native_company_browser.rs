@@ -26,6 +26,11 @@ async fn native_group_process_real_browser_adopt_reopen_suspend_replace(pool: Pg
     company_browser_journey_with_group_process(pool, false, false, true).await;
 }
 
+#[sqlx::test(migrations = false)]
+async fn native_group_invalid_form_real_browser_correct_same_command_and_reopen(pool: PgPool) {
+    company_browser_journey_with_group_invalid_form(pool, false, false, false, false, true).await;
+}
+
 #[path = "native_group_navigation_browser.rs"]
 mod native_group_navigation_browser;
 #[path = "native_group_process_browser.rs"]
@@ -62,6 +67,25 @@ async fn company_browser_journey_with_group_navigation(
     people_entry: bool,
     group_process_entry: bool,
     group_navigation_held: bool,
+) {
+    company_browser_journey_with_group_invalid_form(
+        pool,
+        policy_entry,
+        people_entry,
+        group_process_entry,
+        group_navigation_held,
+        false,
+    )
+    .await;
+}
+
+async fn company_browser_journey_with_group_invalid_form(
+    pool: PgPool,
+    policy_entry: bool,
+    people_entry: bool,
+    group_process_entry: bool,
+    group_navigation_held: bool,
+    group_invalid_form: bool,
 ) {
     use futures::FutureExt;
     use std::process::Stdio;
@@ -101,7 +125,7 @@ async fn company_browser_journey_with_group_navigation(
         "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d"
     );
     policy_helpers.push((header_path, header_bytes));
-    if group_process_entry || group_navigation_held {
+    if group_process_entry || group_navigation_held || group_invalid_form {
         let path = driver.parent().unwrap().join("group_process_journey.cjs");
         assert!(
             std::fs::symlink_metadata(&path)
@@ -113,6 +137,24 @@ async fn company_browser_journey_with_group_navigation(
         assert_eq!(
             hex::encode(Sha256::digest(&bytes)),
             "a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f"
+        );
+        policy_helpers.push((path, bytes));
+    }
+    if group_invalid_form {
+        let path = driver
+            .parent()
+            .unwrap()
+            .join("group_invalid_form_journey.cjs");
+        assert!(
+            std::fs::symlink_metadata(&path)
+                .unwrap()
+                .file_type()
+                .is_file()
+        );
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            hex::encode(Sha256::digest(&bytes)),
+            "f301776ce4bcb9c7b5101baa4f4cab8c27c5dc633e277d17db2a89939b46a6dd"
         );
         policy_helpers.push((path, bytes));
     }
@@ -176,7 +218,7 @@ async fn company_browser_journey_with_group_navigation(
         output.is_absolute() && !output.exists(),
         "browser output must be a fresh owned directory"
     );
-    if group_process_entry {
+    if group_process_entry || group_invalid_form {
         native_policy_startup_tests::prepare_native_group_navigation_browser_database(&pool).await;
         seed_terms(&pool).await;
     } else if group_navigation_held {
@@ -204,7 +246,9 @@ async fn company_browser_journey_with_group_navigation(
         .arg(&driver)
         .arg(address.port().to_string())
         .arg(&output)
-        .args(if group_navigation_held {
+        .args(if group_invalid_form {
+            Some("group-invalid-form")
+        } else if group_navigation_held {
             Some("group-navigation-held")
         } else if group_process_entry {
             Some("group-process-entry")
@@ -575,6 +619,11 @@ async fn company_browser_journey_with_group_navigation(
                 account, result.company, result.group).await;
             checkpoint_receipts.push("GROUP_PROCESS_AGGREGATE_VERIFIED");
         }
+        if group_invalid_form {
+            native_group_process_browser::observe_invalid_form(&pool, &mut input, &mut events,
+                account, result.company, result.group).await;
+            checkpoint_receipts.push("GROUP_INVALID_FORM_CORRECTION_VERIFIED");
+        }
         if group_navigation_held {
             let observation = Box::pin(native_group_navigation_browser::observe(&pool,&mut input,&mut events,
                 &config,address,&captured_cookie,
@@ -628,7 +677,10 @@ async fn company_browser_journey_with_group_navigation(
             .iter()
             .all(|(path, original)| std::fs::read(path).is_ok_and(|bytes| &bytes == original));
     let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"group_navigation_held":group_navigation_held,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
+    let mut receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"group_navigation_held":group_navigation_held,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
+    if group_invalid_form {
+        receipt["group_invalid_form"] = json!(true);
+    }
     if output.is_dir() {
         std::fs::write(
             output.join("owner-receipt.json"),
