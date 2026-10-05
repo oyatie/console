@@ -965,7 +965,6 @@ fn committed(
     );
     for key in [
         "result_receipt_id",
-        "effect_xid",
         "effect_backend_pid",
         "execution_session_id",
         "account_security_generation",
@@ -975,9 +974,16 @@ fn committed(
         "terminal_code",
     ] {
         assert_eq!(terminal[key], decoded[key]);
-        if ["result_receipt_id", "effect_xid", "effect_backend_pid"].contains(&key) {
+        if ["result_receipt_id", "effect_backend_pid"].contains(&key) {
             assert_eq!(effect[key], decoded[key]);
         }
+    }
+    // PostgreSQL renders xid8 as JSON text; the frozen result codec uses u64BE.
+    // Compare the full unsigned value exactly, leaving every other field typed.
+    let effect_xid = decoded["effect_xid"].as_u64().unwrap();
+    assert!(effect_xid > 0);
+    for row in [terminal, effect] {
+        assert_eq!(row["effect_xid"], json!(effect_xid.to_string()));
     }
     let code = ["ADOPTED", "SUSPENDED", "REPLACED"][index];
     assert_eq!(decoded["terminal_code"], code);
@@ -1848,4 +1854,25 @@ pub(super) async fn observe(
     }
     assert_eq!(committed_count, 3);
     assert!(pending.is_none());
+}
+
+#[sqlx::test(migrations = false)]
+async fn group_result_xid8_wire_matches_exact_postgresql_json_text(pool: PgPool) {
+    for xid in [
+        1_u64,
+        9_007_199_254_740_993,
+        i64::MAX as u64,
+        1_u64 << 63,
+        u64::MAX,
+    ] {
+        let (database_json, wire): (Value, Vec<u8>) =
+            sqlx::query_as("SELECT to_jsonb($1::text::xid8), xid8send($1::text::xid8)")
+                .bind(xid.to_string())
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+        assert_eq!(database_json, json!(xid.to_string()));
+        assert_eq!(wire, xid.to_be_bytes());
+        assert_ne!(database_json, json!(xid));
+    }
 }

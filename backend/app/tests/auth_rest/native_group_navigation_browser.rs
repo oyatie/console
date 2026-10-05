@@ -835,8 +835,8 @@ pub(super) async fn observe(
             assert!(unchanged(&form_rows[table])==unchanged(&revoked[table]),"logout changed unrelated Account history");
             remainder.insert(table.into(),form_rows[table].clone());
         }
-        assert!(policy_preflight_effects(&form_rows,&remainder,logout_start,logout_finish),
-            "logout changed more than exact own revocation history and one CSRF admission");
+        assert!(group_logout_preflight_effects(&form_rows,&remainder,logout_start,logout_finish),
+            "logout changed more than exact own revocation history and one CSRF/logout admission pair each");
         auth_controls(pool,address,group,Some(&credential),&secrets).await;
         auth_controls(pool,address,group,None,&secrets).await;
         no_effects(pool,&revoked).await;

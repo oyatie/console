@@ -1871,6 +1871,18 @@ pub(crate) mod company_setup {
         started: OffsetDateTime,
         finished: OffsetDateTime,
     ) -> bool {
+        policy_limiter_endpoint_effects(before, after, started, finished, "account_csrf")
+    }
+
+    // The existing strict oracle body is shared without changing its CSRF caller.
+    // Callers supply only their fixed source-defined endpoint, never response data.
+    fn policy_limiter_endpoint_effects(
+        before: &BTreeMap<String, String>,
+        after: &BTreeMap<String, String>,
+        started: OffsetDateTime,
+        finished: OffsetDateTime,
+        endpoint: &str,
+    ) -> bool {
         let check = || -> Option<bool> {
             if started > finished || (finished - started).whole_seconds() > 30 {
                 return Some(false);
@@ -1890,7 +1902,7 @@ pub(crate) mod company_setup {
                 let mut expected = prior.clone();
                 for client in ["global", "ip:127.0.0.1"] {
                     let matches = |row: &Value| -> bool {
-                        row["endpoint"] == "account_csrf"
+                        row["endpoint"] == endpoint
                             && row["client_key"] == client
                             && row["window_start"]
                                 .as_str()
@@ -2012,6 +2024,298 @@ pub(crate) mod company_setup {
             next
         ));
         assert!(!policy_preflight_effects(&before, &changed, at, at));
+    }
+
+    // A real native UI logout issues one proof and one logout request. Keep
+    // complete business rows and unrelated limiter rows exact. Each fixed
+    // endpoint is checked independently against the same observed interval,
+    // allowing proof and logout to straddle a minute boundary.
+    fn group_logout_preflight_effects(
+        before: &BTreeMap<String, String>,
+        after: &BTreeMap<String, String>,
+        started: OffsetDateTime,
+        finished: OffsetDateTime,
+    ) -> bool {
+        let check = || -> Option<bool> {
+            let before_raw = before.get("auth_rate_limit")?;
+            let after_raw = after.get("auth_rate_limit")?;
+            let mut unaffected = before.clone();
+            unaffected.insert("auth_rate_limit".to_owned(), after_raw.clone());
+            if &unaffected != after {
+                return Some(false);
+            }
+            // Retain every original row byte; select fixed endpoint partitions
+            // without renaming endpoints or reconstructing counter values.
+            let split = |raw: &str| -> Option<(Vec<String>, Vec<String>, Vec<String>)> {
+                let rows: Vec<&serde_json::value::RawValue> = serde_json::from_str(raw).ok()?;
+                let mut csrf = Vec::new();
+                let mut logout = Vec::new();
+                let mut other = Vec::new();
+                for raw in rows {
+                    let row: Value = serde_json::from_str(raw.get()).ok()?;
+                    let endpoint = row.as_object()?.get("endpoint")?.as_str()?;
+                    match endpoint {
+                        "account_csrf" => csrf.push(raw.get().to_owned()),
+                        "account_logout" => logout.push(raw.get().to_owned()),
+                        _ => other.push(raw.get().to_owned()),
+                    }
+                }
+                Some((csrf, logout, other))
+            };
+            let prior = split(before_raw)?;
+            let actual = split(after_raw)?;
+            if prior.2 != actual.2 {
+                return Some(false);
+            }
+            let mut admitted_windows = Vec::new();
+            for (endpoint, old_rows, new_rows) in [
+                ("account_csrf", &prior.0, &actual.0),
+                ("account_logout", &prior.1, &actual.1),
+            ] {
+                let selected = |rows: &[String]| {
+                    BTreeMap::from([(
+                        "auth_rate_limit".to_owned(),
+                        format!("[{}]", rows.join(",")),
+                    )])
+                };
+                if !policy_limiter_endpoint_effects(
+                    &selected(old_rows),
+                    &selected(new_rows),
+                    started,
+                    finished,
+                    endpoint,
+                ) {
+                    return Some(false);
+                }
+                // The shared oracle proves exactly two changed rows in one
+                // endpoint window. Obtain that window from unaltered values.
+                let prior: Vec<Value> = old_rows
+                    .iter()
+                    .map(|raw| serde_json::from_str(raw).ok())
+                    .collect::<Option<_>>()?;
+                let retained: BTreeSet<_> = prior.iter().map(Value::to_string).collect();
+                let actual: Vec<Value> = new_rows
+                    .iter()
+                    .map(|raw| serde_json::from_str(raw).ok())
+                    .collect::<Option<_>>()?;
+                let changed: Vec<_> = actual
+                    .iter()
+                    .filter(|row| !retained.contains(&row.to_string()))
+                    .collect();
+                if changed.len() != 2 {
+                    return Some(false);
+                }
+                let at = OffsetDateTime::parse(
+                    changed[0]["window_start"].as_str()?,
+                    &time::format_description::well_known::Rfc3339,
+                )
+                .ok()?;
+                admitted_windows.push(at.unix_timestamp());
+            }
+            // The UI awaits proof before logout. This bounded fixture assumes
+            // aligned app/DB wall clocks with no backward step; a violation
+            // refuses acceptance instead of relaxing the exact effect census.
+            Some(admitted_windows[0] <= admitted_windows[1])
+        };
+        check() == Some(true)
+    }
+
+    #[test]
+    fn group_logout_effect_oracle_requires_two_exact_endpoint_pairs_and_unchanged_rows() {
+        let at = OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap();
+        let format = |at: OffsetDateTime| {
+            at.format(&time::format_description::well_known::Rfc3339)
+                .unwrap()
+        };
+        let rows = |csrf_at: OffsetDateTime, logout_at: OffsetDateTime, attempts: i64| {
+            let mut rows = Vec::new();
+            for (endpoint, at) in [("account_csrf", csrf_at), ("account_logout", logout_at)] {
+                for client in ["global", "ip:127.0.0.1"] {
+                    rows.push(json!({"client_key":client,"endpoint":endpoint,
+                        "window_start":format(at),"attempts":attempts}));
+                }
+            }
+            rows
+        };
+        let census = |rows: &[Value]| {
+            BTreeMap::from([
+                ("auth_rate_limit".to_owned(), json!(rows).to_string()),
+                (
+                    "business".to_owned(),
+                    "[{\"retained\":9007199254740993}]".to_owned(),
+                ),
+            ])
+        };
+        let before = census(&[]);
+        let admitted = rows(at, at, 1);
+        let after = census(&admitted);
+        assert!(group_logout_preflight_effects(&before, &after, at, at));
+        assert!(!policy_preflight_effects(&before, &after, at, at));
+        assert!(!group_logout_preflight_effects(&before, &before, at, at));
+        for index in 0..admitted.len() {
+            let mut missing = admitted.clone();
+            missing.remove(index);
+            assert!(!group_logout_preflight_effects(
+                &before,
+                &census(&missing),
+                at,
+                at
+            ));
+            let mut duplicated = admitted.clone();
+            duplicated.push(admitted[index].clone());
+            assert!(!group_logout_preflight_effects(
+                &before,
+                &census(&duplicated),
+                at,
+                at
+            ));
+            for (key, value) in [
+                ("endpoint", json!("account_refresh")),
+                ("client_key", json!("dev:unexpected")),
+                ("client_key", json!("ip:127.0.0.2")),
+                (
+                    "window_start",
+                    json!(format(at - time::Duration::minutes(1))),
+                ),
+                (
+                    "window_start",
+                    json!(format(at + time::Duration::minutes(1))),
+                ),
+                (
+                    "window_start",
+                    json!(format(at + time::Duration::nanoseconds(1))),
+                ),
+                ("window_start", json!("invalid")),
+                ("attempts", json!(0)),
+                ("attempts", json!(2)),
+                ("attempts", json!(-1)),
+                ("attempts", json!("1")),
+                ("attempts", Value::Null),
+                ("unexpected", json!(true)),
+            ] {
+                let mut corrupt = admitted.clone();
+                corrupt[index][key] = value;
+                assert!(!group_logout_preflight_effects(
+                    &before,
+                    &census(&corrupt),
+                    at,
+                    at
+                ));
+            }
+            for key in ["endpoint", "client_key", "window_start", "attempts"] {
+                let mut corrupt = admitted.clone();
+                corrupt[index].as_object_mut().unwrap().remove(key);
+                assert!(!group_logout_preflight_effects(
+                    &before,
+                    &census(&corrupt),
+                    at,
+                    at
+                ));
+            }
+        }
+        let incremented = census(&rows(at, at, 2));
+        assert!(group_logout_preflight_effects(&after, &incremented, at, at));
+        assert!(!group_logout_preflight_effects(
+            &before,
+            &incremented,
+            at,
+            at
+        ));
+        let mut no_increment = rows(at, at, 2);
+        no_increment[3]["attempts"] = json!(1);
+        assert!(!group_logout_preflight_effects(
+            &after,
+            &census(&no_increment),
+            at,
+            at
+        ));
+        let next = at + time::Duration::minutes(1);
+        let crossed = census(&rows(at, next, 1));
+        let start = next - time::Duration::seconds(1);
+        assert!(group_logout_preflight_effects(
+            &before, &crossed, start, next
+        ));
+        assert!(!group_logout_preflight_effects(&before, &crossed, at, at));
+        let reversed = census(&rows(next, at, 1));
+        assert!(!group_logout_preflight_effects(
+            &before, &reversed, start, next
+        ));
+        let mut split_pair = rows(at, next, 1);
+        split_pair[1]["window_start"] = json!(format(next));
+        assert!(!group_logout_preflight_effects(
+            &before,
+            &census(&split_pair),
+            start,
+            next
+        ));
+        assert!(!group_logout_preflight_effects(
+            &before,
+            &after,
+            at + time::Duration::seconds(1),
+            at
+        ));
+        assert!(!group_logout_preflight_effects(
+            &before,
+            &after,
+            at,
+            at + time::Duration::seconds(31)
+        ));
+        let retained = json!({"client_key":"global","endpoint":"account_login_start",
+            "window_start":format(at),"attempts":7});
+        let historical = json!({"client_key":"global","endpoint":"account_csrf",
+            "window_start":format(at - time::Duration::minutes(1)),"attempts":11});
+        let retained_before = census(&[retained.clone(), historical.clone()]);
+        let mut retained_after = vec![retained, historical];
+        retained_after.extend(admitted.clone());
+        assert!(group_logout_preflight_effects(
+            &retained_before,
+            &census(&retained_after),
+            at,
+            at
+        ));
+        for index in 0..2 {
+            let mut corrupt = retained_after.clone();
+            corrupt[index]["attempts"] = json!(12);
+            assert!(!group_logout_preflight_effects(
+                &retained_before,
+                &census(&corrupt),
+                at,
+                at
+            ));
+            let mut missing = retained_after.clone();
+            missing.remove(index);
+            assert!(!group_logout_preflight_effects(
+                &retained_before,
+                &census(&missing),
+                at,
+                at
+            ));
+        }
+        let overflow = census(&rows(at, at, i64::MAX));
+        assert!(!group_logout_preflight_effects(
+            &overflow, &overflow, at, at
+        ));
+        for raw in ["invalid", "null", "{}", "[null]", "[{\"endpoint\":1}]"] {
+            let mut malformed = after.clone();
+            malformed.insert("auth_rate_limit".into(), raw.into());
+            assert!(!group_logout_preflight_effects(&before, &malformed, at, at));
+            assert!(!group_logout_preflight_effects(&malformed, &after, at, at));
+        }
+        let mut changed = after.clone();
+        changed.insert(
+            "business".into(),
+            "[{\"retained\":9007199254740992}]".into(),
+        );
+        assert!(!group_logout_preflight_effects(&before, &changed, at, at));
+        changed = after.clone();
+        changed.remove("business");
+        assert!(!group_logout_preflight_effects(&before, &changed, at, at));
+        changed = after.clone();
+        changed.insert("unexpected_table".into(), "[]".into());
+        assert!(!group_logout_preflight_effects(&before, &changed, at, at));
+        changed = after.clone();
+        changed.remove("auth_rate_limit");
+        assert!(!group_logout_preflight_effects(&before, &changed, at, at));
     }
 
     mod native_policy_startup_tests {
