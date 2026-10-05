@@ -7887,6 +7887,26 @@ def native_group_process_navigation_custody_files():
     }
 
 
+def native_group_process_navigation_serving_custody_files():
+    historical = native_group_process_navigation_custody_files()
+    ops = 'ops/postgres-native-group-process-navigation-v1-custody-state.sql'
+    app = 'backend/app/src/native_group_process_navigation_v1_custody_state.sql'
+    if (set(historical) != {ops, app}
+            or not isinstance(historical[ops], str)
+            or historical[ops] != historical[app]
+            or hashlib.sha256(historical[ops].encode()).hexdigest()
+            != '6a7a721c434486582ffba11d79a818088c3f3a41b93248b4bb1504ecd484dc39'):
+        raise SystemExit('Native Group navigation serving requires the exact historical pair')
+    original = historical[ops]
+    before, after = '), snapshots AS (\n', '), snapshots AS MATERIALIZED (\n'
+    if original.count(before) != 1:
+        raise SystemExit('Native Group navigation serving snapshot boundary drift')
+    query = original.replace(before, after, 1)
+    if query.count(after) != 1 or query.replace(after, before, 1) != original:
+        raise SystemExit('Native Group navigation serving must preserve the exact snapshot inverse')
+    return {'backend/app/src/native_group_process_navigation_serving_v1_custody_state.sql': query}
+
+
 def native_group_process_navigation_finalizer_files():
     import re
     query = native_group_process_navigation_custody_files()[
@@ -8014,7 +8034,9 @@ $native_group_process_navigation_custody$;
 
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-group-process-navigation-finalizer'],
+    if arguments in (['--native-group-process-navigation-serving-custody'],
+                     ['--native-group-process-navigation-serving-custody', '--check'],
+                     ['--native-group-process-navigation-finalizer'],
                      ['--native-group-process-navigation-finalizer', '--check'],
                      ['--native-group-process-navigation-custody'],
                      ['--native-group-process-navigation-custody', '--check'],
@@ -8026,7 +8048,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-group-process-navigation-finalizer':
+        if arguments[0] == '--native-group-process-navigation-serving-custody':
+            files = native_group_process_navigation_serving_custody_files()
+        elif arguments[0] == '--native-group-process-navigation-finalizer':
             files = native_group_process_navigation_finalizer_files()
         elif arguments[0] == '--native-group-process-navigation-custody':
             files = native_group_process_navigation_custody_files()
@@ -8051,7 +8075,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:

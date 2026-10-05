@@ -78,7 +78,7 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
         .execute(&mut *transaction)
         .await?;
     let navigation: String = sqlx::query_scalar(include_str!(
-        "native_group_process_navigation_v1_custody_state.sql"
+        "native_group_process_navigation_serving_v1_custody_state.sql"
     ))
     .fetch_one(&mut *transaction)
     .await?;
