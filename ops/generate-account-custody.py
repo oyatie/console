@@ -7887,9 +7887,136 @@ def native_group_process_navigation_custody_files():
     }
 
 
+def native_group_process_navigation_finalizer_files():
+    import re
+    query = native_group_process_navigation_custody_files()[
+        'ops/postgres-native-group-process-navigation-v1-custody-state.sql']
+    if hashlib.sha256(query.encode()).hexdigest() != '6a7a721c434486582ffba11d79a818088c3f3a41b93248b4bb1504ecd484dc39':
+        raise SystemExit('Native Group navigation finalizer classifier differs from reviewed bytes')
+    raw = company_provenance_regular_path(
+        NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE, required=True).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != NATIVE_GROUP_PROCESS_NAVIGATION_SOURCE_SHA256:
+        raise SystemExit('Native Group navigation finalizer correction differs from reviewed bytes')
+    source = raw.decode('utf-8')
+    if '$native_group_process_navigation_source$' in source:
+        raise SystemExit('Native Group navigation finalizer correction delimiter collision')
+    # Reuse frozen source/complete231 validation and the original Group relation
+    # derivation. All83 already exist; this correction never installs Group7.
+    _, _, owner, migrations = native_group_process_custody_inputs()
+    relations = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS,
+        *NATIVE_DIRECTORY_ADDED_RELATIONS, 'org_unit_revisions', 'org_unit_source_bindings', 'org_units',
+        *re.findall(r'CREATE TABLE\s+public\.([a-z_0-9]+)\s*\(', owner)))
+    if len(relations) != 83 or len(set(relations)) != 83:
+        raise SystemExit('Native Group navigation finalizer relation roster differs')
+    required = native_org_unit_closed_values([(name,) for name in relations])
+    ledger = f"""IF (WITH expected_migrations(version,checksum) AS (
+{native_org_unit_closed_values(migrations)}
+ ) SELECT count(*)=231 AND bool_and(e.version IS NOT NULL AND m.version IS NOT NULL
+    AND m.success IS TRUE AND (encode(m.checksum,'hex')=e.checksum) IS TRUE) IS TRUE
+   FROM expected_migrations e FULL JOIN public._sqlx_migrations m ON m.version=e.version) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process_navigation.migration_ledger_mismatch'; END IF;"""
+    inspect = ('SELECT classified.state,classified.variant INTO observed_phase,variant_name FROM (\n'
+               + query.removesuffix(' AS state;\n')
+               + ' AS state,(SELECT variant FROM matching_phase) AS variant\n) classified;')
+    retained_locks = f"""IF locked_relations<>83 OR (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)=83 AND count(DISTINCT l.relation)=83
+   FROM required_relations required
+   JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+   JOIN pg_catalog.pg_locks l ON l.relation=c.oid
+   WHERE l.pid=pg_backend_pid() AND l.locktype='relation'
+    AND l.mode='AccessExclusiveLock' AND l.granted) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process_navigation.relation_locks_missing'; END IF;"""
+    bounds = '\n'.join(f""" IF (pg_catalog.current_setting('{name}') IS NOT NULL
+  AND (SELECT setting::bigint FROM pg_catalog.pg_settings WHERE name='{name}')
+      BETWEEN 1 AND {limit}) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process_navigation.entry_bounds_mismatch'; END IF;"""
+        for name, limit in (('lock_timeout', 1000), ('statement_timeout', 60000),
+                           ('idle_in_transaction_session_timeout', 30000), ('transaction_timeout', 120000)))
+    finalizer = f"""-- Generated isolated-fixture-only atomic Group navigation correction.
+-- Caller freezes/verifies actual database name/OID/system_identifier, owns the
+-- cluster schema/role maintenance lease, BEGINs READ COMMITTED, sets LOCAL
+-- search_path=pg_catalog,pg_temp, jit=off and positive bounded timeouts in a
+-- separate statement, locks the ledger SHARE and actual console_account_owner
+-- pg_authid row FOR UPDATE. Retain all locks through COMMIT/ROLLBACK. Role-row
+-- custody is a trusted caller obligation; no fabricated pg_locks tuple proof.
+-- This fixture protocol does not authorize production DDL or client exposure.
+DO $native_group_process_navigation_custody$
+DECLARE observed_phase text; variant_name text; expected_variant text;
+ relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user IS DISTINCT FROM current_user OR current_user<>'console_buck_admin'
+  OR (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) IS NOT TRUE
+  OR starts_with(current_database(),'_sqlx_test_') IS NOT TRUE
+  OR pg_catalog.current_setting('console.sqlx_test_bootstrap',true)
+      IS DISTINCT FROM 'buck-sqlx-superuser-v1' THEN
+  RAISE EXCEPTION 'native_group_process_navigation.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'
+  OR pg_catalog.current_setting('search_path') IS DISTINCT FROM 'pg_catalog, pg_temp'
+  OR pg_catalog.current_setting('jit') IS DISTINCT FROM 'off' THEN
+  RAISE EXCEPTION 'native_group_process_navigation.entry_settings_mismatch'; END IF;
+{bounds}
+ IF (SELECT count(*)=1 AND bool_and(c.oid IS NOT NULL AND c.oid>0
+      AND c.relkind='r' AND NOT c.relispartition AND r.rolname='console_app') IS TRUE
+     FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+     JOIN pg_catalog.pg_roles r ON r.oid=c.relowner
+     WHERE n.nspname='public' AND c.relname='_sqlx_migrations') IS NOT TRUE
+  OR (SELECT count(*)=1 FROM pg_catalog.pg_locks
+      WHERE pid=pg_backend_pid() AND locktype='relation'
+       AND relation=pg_catalog.to_regclass('public._sqlx_migrations')
+       AND mode='ShareLock' AND granted) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process_navigation.migration_ledger_lock_missing'; END IF;
+ {ledger}
+ IF (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)=83 AND count(DISTINCT c.oid)=83 AND count(DISTINCT n.oid)=1
+    AND bool_and(c.oid IS NOT NULL AND c.oid>0 AND c.relkind='r'
+        AND NOT c.relispartition AND n.nspname='public') IS TRUE
+   FROM required_relations required
+   LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   LEFT JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name) IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_group_process_navigation.profile_mismatch'; END IF;
+ locked_relations:=0;
+ FOR relation_name IN WITH required_relations(name) AS (
+{required}
+ ) SELECT c.relname::text FROM required_relations required
+   JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name
+   ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ {retained_locks}
+ {inspect}
+ IF (observed_phase IS DISTINCT FROM 'native_group_process_navigation.head_revision_required'
+     AND observed_phase IS DISTINCT FROM 'native_group_process_navigation.finalized') OR variant_name IS NULL THEN
+  RAISE EXCEPTION 'native_group_process_navigation.profile_mismatch'; END IF;
+ expected_variant:=variant_name;
+ IF observed_phase='native_group_process_navigation.head_revision_required' THEN
+  EXECUTE $native_group_process_navigation_source${source}$native_group_process_navigation_source$;
+ END IF;
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF observed_phase IS DISTINCT FROM 'native_group_process_navigation.finalized'
+  OR variant_name IS DISTINCT FROM expected_variant THEN
+  RAISE EXCEPTION 'native_group_process_navigation.profile_mismatch'; END IF;
+ {ledger}
+ {retained_locks}
+END
+$native_group_process_navigation_custody$;
+"""
+    return {'ops/postgres-finalize-native-group-process-navigation-v1.sql': finalizer}
+
+
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-group-process-navigation-custody'],
+    if arguments in (['--native-group-process-navigation-finalizer'],
+                     ['--native-group-process-navigation-finalizer', '--check'],
+                     ['--native-group-process-navigation-custody'],
                      ['--native-group-process-navigation-custody', '--check'],
                      ['--native-group-process-custody'], ['--native-group-process-custody', '--check'],
                      ['--native-group-process-capture'], ['--native-group-process-capture', '--check'],
@@ -7899,7 +8026,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-group-process-navigation-custody':
+        if arguments[0] == '--native-group-process-navigation-finalizer':
+            files = native_group_process_navigation_finalizer_files()
+        elif arguments[0] == '--native-group-process-navigation-custody':
             files = native_group_process_navigation_custody_files()
         elif arguments[0] == '--native-group-process-custody':
             files = native_group_process_custody_files()
@@ -7922,7 +8051,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
