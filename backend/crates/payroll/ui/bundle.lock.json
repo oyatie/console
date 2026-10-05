@@ -15,7 +15,7 @@
     "backend/crates/payroll/ui/src/native_account.rs": "771295aeda89afc63ad8137488b560ad537a46b848e554271870a26e28d7f5f9",
     "backend/crates/payroll/ui/src/native_group_process.css": "881597911cff33c21bd32569c6f51246f24042567ae1377612ad4a98a63d990c",
     "backend/crates/payroll/ui/src/native_group_process.rs": "6f0c5aff1a8f68ead1c810e2f7c44fc73c77ba8afddfd0fabe624e82fd1bd120",
-    "backend/crates/payroll/ui/src/native_group_process_tests.rs": "3b60306e6282b3038ee3253cc99b0b820afc8b876b827f6e0e77200346285e61",
+    "backend/crates/payroll/ui/src/native_group_process_tests.rs": "3ea44d033e5b5d9d58f74d72fc94fb7013f5d4458f7225139c9bcaa1cc776340",
     "backend/crates/payroll/ui/src/native_payroll.css": "e8d6648d516db9e26632a7482387c29a6350e2dd3f34541e7d2193827ed6fbfc",
     "backend/crates/payroll/ui/src/native_payroll.rs": "0e673022c1312fb8c0e6a40c1366f66df8184e70fbae31b0703d71e20dd25e30",
     "backend/crates/payroll/ui/src/native_payroll_tests.rs": "4524ad0c628426992b4e273a5dfedb4072aec8d90fe3f2c9da8054300ef9570c",
@@ -181,7 +181,7 @@
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "a31ce5ab46baea331fef0cdc17a03301d1b5ccf6054cae6ff73d1ab2bb79a5ec",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "e8b9e1a6734bf56be65ea6491f8c2fa315cc3682558d88c5f8e74fd9b93df9bc"
+    "source_snapshot_sha256": "d4dbdb446c57e522281120694dfc8e581c6d5776e7c0633ba634d69f1a31be4e"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",
