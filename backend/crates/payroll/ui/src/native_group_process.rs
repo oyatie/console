@@ -507,10 +507,14 @@ fn form(form: Form) -> AnyView {
                     </div>
                 </form>
     }.into_any();
+    let correction_target = errors
+        .first()
+        .map(|error| error.field)
+        .unwrap_or(if suspend { "reason" } else { "title" });
     let validation = invalid.then(|| {
         view! {<div class="group-validation" role="alert" tabindex="-1" autofocus>
             <h3>"입력 내용을 확인해 주세요"</h3><p>"이번 제출의 입력 내용을 확인해 주세요. 입력한 내용은 아래에 보존됩니다."</p>
-            <p><a href=request_path(&scope.group, &command)>"원래 요청 결과 확인"</a></p>
+            <p><a href=format!("#{correction_target}")>"입력 내용 수정으로 이동"</a></p>
             {form_error.map(|message|view! {<p>{message}</p>})}
             <ul>{errors.iter().map(|error|view! {<li><a href=format!("#{}",error.field)>{error.message}</a></li>}).collect_view()}</ul>
         </div>}.into_any()
