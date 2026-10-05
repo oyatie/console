@@ -763,3 +763,208 @@ async fn navigation_generated_entry_target_operator_settings_and_ledger_lock_ref
         std::panic::resume_unwind(panic);
     }
 }
+
+// External test-only experiment: corrected metadata fixtures contain historical
+// business rows. Scalar timings/plans retain the exact frozen SELECT projection;
+// parity alone exposes the existing full83 CTE. No serving claim is made.
+async fn navigation_materialized_classifier_readonly_experiment(pool: PgPool, variant: usize) {
+    let sources = navigation_finalizer_pins();
+    let marker = "), snapshots AS (\n";
+    let hinted_marker = "), snapshots AS MATERIALIZED (\n";
+    assert_eq!(NAVIGATION_APP_STATE.matches(marker).count(), 1);
+    let hinted = NAVIGATION_APP_STATE.replacen(marker, hinted_marker, 1);
+    assert_eq!(hinted.matches(hinted_marker).count(), 1);
+    assert_eq!(
+        hinted.replacen(hinted_marker, marker, 1),
+        NAVIGATION_APP_STATE
+    );
+    assert_eq!(
+        digest(&hinted),
+        "b7b46b958ed86fe032dda3202152995d0b8873beaa748d5e1f078b11396c498e"
+    );
+
+    // Owned task boundary avoids nesting the large frozen fixture in this leaf.
+    // Join immediately; neither fixture work nor its panic becomes detached.
+    let fixture_pool = pool.clone();
+    let mut fixture = tokio::task::JoinSet::new();
+    fixture.spawn(async move { navigation_transition_history(fixture_pool, variant).await });
+    match fixture
+        .join_next()
+        .await
+        .expect("owned navigation fixture task missing")
+    {
+        Ok(()) => {}
+        Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
+        Err(_) => panic!("owned navigation fixture task unexpectedly cancelled"),
+    }
+    assert!(fixture.is_empty());
+
+    let mut admin = direct(&pool).await;
+    let baseline_outcome = AssertUnwindSafe(async {
+        sqlx::raw_sql("BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            .execute(&mut admin)
+            .await
+            .unwrap();
+        navigation_snapshot(&mut admin, true, variant).await
+    })
+    .catch_unwind()
+    .await;
+    let baseline_rollback = sqlx::raw_sql("ROLLBACK").execute(&mut admin).await;
+    let baseline_close = admin.close().await;
+    assert!(
+        baseline_rollback.is_ok(),
+        "experiment baseline rollback failed"
+    );
+    assert!(
+        baseline_close.is_ok(),
+        "experiment baseline connection close failed"
+    );
+    let baseline = match baseline_outcome {
+        Ok(baseline) => baseline,
+        Err(panic) => std::panic::resume_unwind(panic),
+    };
+    navigation_restored(&pool, &baseline, true, variant).await;
+
+    let runtime_url = console_platform_test_support::login_test_database_url(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    );
+    let mut runtime = PgConnection::connect(&runtime_url)
+        .await
+        .unwrap_or_else(|_| panic!("classifier experiment Business LOGIN connection failed"));
+    drop(runtime_url);
+    let expected_phase = navigation_phase(true, variant);
+    let mut identity = Value::Null;
+    let mut parity = Vec::<Value>::new();
+    let mut samples = Vec::<Value>::new();
+    let mut plans = Vec::<Value>::new();
+    let comparison = AssertUnwindSafe(async {
+        sqlx::raw_sql("BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            .execute(&mut runtime).await
+            .unwrap_or_else(|_| panic!("classifier experiment read-only transaction failed"));
+        sqlx::raw_sql(CLASSIFIER_SESSION).execute(&mut runtime).await
+            .unwrap_or_else(|_| panic!("classifier experiment fixed session failed"));
+        identity = sqlx::query_scalar(
+            "SELECT jsonb_build_object(\
+                'database',current_database(),'database_oid',(SELECT oid::bigint FROM pg_catalog.pg_database WHERE datname=current_database()),\
+                'backend_pid',pg_backend_pid(),'session_user',session_user,'current_user',current_user,\
+                'role',current_setting('role'),'server_version',current_setting('server_version'),\
+                'server_version_num',current_setting('server_version_num'),'version',version(),\
+                'transaction_isolation',current_setting('transaction_isolation'),\
+                'transaction_read_only',current_setting('transaction_read_only'),\
+                'statement_timeout',current_setting('statement_timeout'),'jit',current_setting('jit'),\
+                'search_path',current_setting('search_path'),'row_security',current_setting('row_security'),\
+                'session_role_superuser',(SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=session_user),\
+                'session_role_bypassrls',(SELECT rolbypassrls FROM pg_catalog.pg_roles WHERE rolname=session_user))"
+        ).fetch_one(&mut runtime).await
+            .unwrap_or_else(|_| panic!("classifier experiment safe login metadata failed"));
+        assert_eq!(identity["database"], json!(baseline.target.database));
+        assert_eq!(identity["database_oid"], json!(baseline.target.database_oid));
+        assert_eq!(identity["session_user"], "console_rt");
+        assert_eq!(identity["current_user"], "console_rt");
+        assert_eq!(identity["role"], "none");
+        assert_eq!(identity["session_role_superuser"], false);
+        assert_eq!(identity["transaction_isolation"], "repeatable read");
+        assert_eq!(identity["transaction_read_only"], "on");
+        assert_eq!(identity["statement_timeout"], "3s");
+        assert_eq!(identity["jit"], "off");
+        assert_eq!(identity["search_path"], "pg_catalog, pg_temp");
+
+        // Do not serialize a second snapshot or time this changed projection.
+        // Each restricted-login snapshot must equal the owner-known exact bytes.
+        for (label, source) in [("original", NAVIGATION_APP_STATE), ("materialized", hinted.as_str())] {
+            let body = source.strip_suffix(" AS state;\n")
+                .expect("pinned navigation classifier terminator");
+            let projected = format!("{body} AS state,(SELECT variant FROM matching_phase) AS variant,(SELECT snapshot::text FROM full83) AS snapshot_text,(SELECT snapshot_sha256 FROM full83) AS snapshot_sha256");
+            let (state, matched_variant, text, sha256): (String, Option<String>, String, String) =
+                sqlx::query_as(sqlx::AssertSqlSafe(projected)).fetch_one(&mut runtime).await
+                    .unwrap_or_else(|_| panic!("classifier experiment full83 parity projection failed"));
+            assert_eq!((state.clone(), matched_variant.clone()), expected_phase);
+            assert!(text == baseline.capture.text, "restricted-login exact full83 snapshot changed");
+            assert_eq!(digest(&text), sha256, "raw PostgreSQL UTF-8 snapshot digest differs");
+            assert_eq!(sha256, baseline.capture.sha256);
+            assert_eq!(sha256, NAVIGATION_CORRECTED83[variant]);
+            parity.push(json!({"query":label,"state":state,"variant":matched_variant,
+                "full83_sha256":sha256,"exact_owner_snapshot_bytes_equal":true}));
+        }
+
+        // Four paired rounds balance first/second order without changing either
+        // scalar statement. Statement timeout remains the frozen three seconds.
+        for round in 0..4 {
+            let order = if round % 2 == 0 {
+                [("original", NAVIGATION_APP_STATE), ("materialized", hinted.as_str())]
+            } else {
+                [("materialized", hinted.as_str()), ("original", NAVIGATION_APP_STATE)]
+            };
+            for (position, (label, source)) in order.into_iter().enumerate() {
+                let started = Instant::now();
+                let result: Result<String, sqlx::Error> = sqlx::query_scalar(sqlx::AssertSqlSafe(source))
+                    .fetch_one(&mut runtime).await;
+                samples.push(json!({"round":round + 1,"position":position + 1,"query":label,
+                    "status":if result.is_ok() {"ok"} else {"query_error"},
+                    "state":result.as_ref().ok(),
+                    "elapsed_micros":u64::try_from(started.elapsed().as_micros()).unwrap()}));
+                let state = result.unwrap_or_else(|_| panic!("classifier experiment exact scalar sample failed"));
+                assert_eq!(state, expected_phase.0);
+            }
+        }
+        let plan_order = if variant == 0 {
+            [("original", NAVIGATION_APP_STATE), ("materialized", hinted.as_str())]
+        } else {
+            [("materialized", hinted.as_str()), ("original", NAVIGATION_APP_STATE)]
+        };
+        for (position, (label, source)) in plan_order.into_iter().enumerate() {
+            let plan: Value = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+                "EXPLAIN (ANALYZE, FORMAT JSON) {source}"
+            ))).fetch_one(&mut runtime).await
+                .unwrap_or_else(|_| panic!("classifier experiment exact scalar plan failed"));
+            plans.push(json!({"position":position + 1,"query":label,"plan":plan}));
+        }
+    }).catch_unwind().await;
+
+    // Always await both cleanup operations and exact fresh effect readback before
+    // asserting cleanup or rethrowing a semantic failure. Never export rows/text.
+    let runtime_rollback = sqlx::raw_sql("ROLLBACK").execute(&mut runtime).await;
+    let runtime_close = runtime.close().await;
+    let restored = AssertUnwindSafe(navigation_restored(&pool, &baseline, true, variant))
+        .catch_unwind()
+        .await;
+    let packet = json!({"sources":sources,"variant":expected_phase.1,
+        "original_source_sha256":digest(NAVIGATION_APP_STATE),"materialized_source_sha256":digest(&hinted),
+        "known_corrected83":NAVIGATION_CORRECTED83[variant],"login_and_session":identity,
+        "owner_target_system_identifier":baseline.target.system_identifier,
+        "parity":parity,"scalar_samples":samples,"exact_scalar_plans":plans,
+        "comparison_succeeded":comparison.is_ok(),"runtime_rollback_succeeded":runtime_rollback.is_ok(),
+        "runtime_close_succeeded":runtime_close.is_ok(),"fresh_full_effect_readback_succeeded":restored.is_ok(),
+        "historical_business_rows_present_in_fixture":true,"business_rows_exported":false,
+        "performance_qualified":false,"serving_qualified":false,"production_qualified":false});
+    eprintln!("GROUP_NAVIGATION_CLASSIFIER_READONLY_EXPERIMENT {packet}");
+    assert!(
+        runtime_rollback.is_ok(),
+        "classifier experiment rollback failed"
+    );
+    assert!(
+        runtime_close.is_ok(),
+        "classifier experiment connection close failed"
+    );
+    if let Err(panic) = comparison {
+        std::panic::resume_unwind(panic);
+    }
+    if let Err(panic) = restored {
+        std::panic::resume_unwind(panic);
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn navigation_plain_materialized_classifier_readonly_parity_and_alternating_samples(
+    pool: PgPool,
+) {
+    navigation_materialized_classifier_readonly_experiment(pool, 0).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn navigation_observer_materialized_classifier_readonly_parity_and_alternating_samples(
+    pool: PgPool,
+) {
+    navigation_materialized_classifier_readonly_experiment(pool, 1).await;
+}
