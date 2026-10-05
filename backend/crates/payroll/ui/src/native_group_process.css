@@ -21,6 +21,9 @@
 .group-field-error{color:var(--flag-ink);font-size:14px;margin:8px 0 0}.group-validation{margin:0 0 24px;padding:16px 18px;background:var(--flag);border:1px solid var(--flag-ink);border-radius:8px;color:var(--flag-ink)}
 .group-validation h3{margin:0 0 8px;font-size:17px}.group-validation ul{margin:12px 0 0;padding-left:22px}.group-validation a{display:inline-flex;align-items:center;min-height:44px;color:inherit}
 .group-submit{padding-top:20px;border-top:1px solid var(--line)}.group-submit .supporting{margin:0}.group-field,.group-validation{scroll-margin-top:24px}
+.native-group-workspace .group-field input,
+.native-group-workspace .group-field select,
+.native-group-workspace .group-field textarea{scroll-margin-top:24px}
 .group-receipt{max-width:920px}.group-empty .policy-button{margin-top:12px}
 @media(max-width:1150px){.native-group-workspace .group-workflow-layout{grid-template-columns:minmax(0,1fr)}.native-group-workspace .group-form-layout{grid-template-areas:"guide" "main"}.native-group-workspace .workflow-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:0 24px}}
 @media(max-width:680px){.native-group-workspace .workflow-guide{display:block}.native-group-workspace .record-meta{grid-template-columns:minmax(82px,.4fr) minmax(0,1fr);gap:10px}.native-group-workspace .policy-actions{align-items:stretch;flex-direction:column}.native-group-workspace .policy-actions .policy-button{width:100%}.group-fieldset{margin-bottom:28px}.group-fieldset legend{font-size:16px}.group-field textarea{min-height:128px}.group-history-heading{display:block}.group-history-heading span{display:block;margin-top:4px}}
