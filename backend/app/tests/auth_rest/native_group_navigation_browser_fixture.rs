@@ -158,10 +158,99 @@ pub(in super::super::super::super) async fn correct_native_group_browser_databas
     }
     drop(states);
     drop(artifacts);
-    match outcome {
+    let mut receipt = match outcome {
         Ok(receipt) => receipt,
         Err(panic) => std::panic::resume_unwind(panic),
-    }
+    };
+    // Test-only planning comparison on the exact corrected disposable target.
+    // Original fixture cleanup/readback is complete; this adds no serving claim.
+    let marker = "), snapshots AS (\n";
+    let hinted_marker = "), snapshots AS MATERIALIZED (\n";
+    assert_eq!(NAVIGATION_APP_STATE.matches(marker).count(), 1);
+    let hinted = NAVIGATION_APP_STATE.replacen(marker, hinted_marker, 1);
+    assert_eq!(
+        hinted.replacen(hinted_marker, marker, 1),
+        NAVIGATION_APP_STATE
+    );
+    let runtime_url = console_platform_test_support::login_test_database_url(
+        pool,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    );
+    let mut runtime = PgConnection::connect(&runtime_url)
+        .await
+        .unwrap_or_else(|_| panic!("classifier comparison Business LOGIN connection failed"));
+    let mut read = sqlx::Connection::begin(&mut runtime)
+        .await
+        .unwrap_or_else(|_| panic!("classifier comparison read transaction failed"));
+    let comparison = AssertUnwindSafe(async {
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
+            .execute(read.as_mut())
+            .await
+            .unwrap_or_else(|_| panic!("classifier comparison read-only snapshot failed"));
+        sqlx::raw_sql(CLASSIFIER_SESSION)
+            .execute(read.as_mut())
+            .await
+            .unwrap_or_else(|_| panic!("classifier comparison fixed session failed"));
+        let original_started = std::time::Instant::now();
+        let original_state: String = sqlx::query_scalar(NAVIGATION_APP_STATE)
+            .fetch_one(read.as_mut())
+            .await
+            .unwrap_or_else(|_| panic!("original classifier read-only comparison failed"));
+        let original_elapsed_millis =
+            u64::try_from(original_started.elapsed().as_millis()).unwrap();
+        let hinted_started = std::time::Instant::now();
+        let hinted_state: String = sqlx::query_scalar(sqlx::AssertSqlSafe(hinted.as_str()))
+            .fetch_one(read.as_mut())
+            .await
+            .unwrap_or_else(|_| panic!("materialized classifier read-only comparison failed"));
+        let hinted_elapsed_millis = u64::try_from(hinted_started.elapsed().as_millis()).unwrap();
+        let original_plan: Value = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+            "EXPLAIN (ANALYZE, FORMAT JSON) {NAVIGATION_APP_STATE}"
+        )))
+        .fetch_one(read.as_mut())
+        .await
+        .unwrap_or_else(|_| panic!("original classifier read-only plan failed"));
+        let hinted_plan: Value = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+            "EXPLAIN (ANALYZE, FORMAT JSON) {hinted}"
+        )))
+        .fetch_one(read.as_mut())
+        .await
+        .unwrap_or_else(|_| panic!("materialized classifier read-only plan failed"));
+        let metrics = json!({"original_elapsed_millis":original_elapsed_millis,
+            "materialized_elapsed_millis":hinted_elapsed_millis,
+            "original_source_sha256":digest(NAVIGATION_APP_STATE),
+            "materialized_source_sha256":digest(&hinted),
+            "original_state":original_state,"materialized_state":hinted_state,
+            "read_only":true,"statement_timeout_millis":3000,
+            "order":"original_then_materialized","performance_qualified":false,
+            "original_planning_millis":original_plan[0]["Planning Time"],
+            "original_execution_millis":original_plan[0]["Execution Time"],
+            "materialized_planning_millis":hinted_plan[0]["Planning Time"],
+            "materialized_execution_millis":hinted_plan[0]["Execution Time"]});
+        eprintln!(
+            "GROUP_CLASSIFIER_MATERIALIZED_DIAGNOSTIC {}",
+            json!({
+            "metrics":metrics,"original_explain_analyze":original_plan,
+            "materialized_explain_analyze":hinted_plan})
+        );
+        assert_eq!(original_state, hinted_state);
+        assert_eq!(original_state, "native_group_process_navigation.finalized");
+        metrics
+    })
+    .catch_unwind()
+    .await;
+    let rollback = read.rollback().await;
+    let close = runtime.close().await;
+    assert!(
+        rollback.is_ok() && close.is_ok(),
+        "classifier comparison cleanup failed"
+    );
+    let metrics = match comparison {
+        Ok(metrics) => metrics,
+        Err(panic) => std::panic::resume_unwind(panic),
+    };
+    receipt["classifier_materialized_experiment"] = metrics;
+    receipt
 }
 
 fn navigation_browser_metadata(candidate: &NavigationRuntimeBaseline) -> Value {
