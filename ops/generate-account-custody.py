@@ -7229,6 +7229,15 @@ def native_org_unit_account_actor_staging_files():
     return files
 
 
+def native_org_unit_account_actor_custody_capture_files():
+    """Export the reviewed read-only query without activating a profile."""
+    name = 'ops/native-org-unit/account-actor-custody-capture-v1.sql'
+    raw = company_provenance_regular_path(name, required=True).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != '8bc2865053c96df2c057145c8099857c71b11e422b2fa3e4408c7df0e5c77a2a':
+        raise SystemExit('Native OrgUnit Account actor complete capture source differs from reviewed bytes: ' + name)
+    return {'ops/postgres-capture-native-org-unit-account-actor-v1-custody.sql': raw.decode('utf-8')}
+
+
 NATIVE_ORG_UNIT_CLOSED_PHASE_PAIRS = (
     ('plain',
      'de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a',
@@ -8111,6 +8120,8 @@ def main():
                      ['--native-org-unit-closed-bounded-reader', '--check'],
                      ['--native-org-unit-account-actor-staging'],
                      ['--native-org-unit-account-actor-staging', '--check'],
+                     ['--native-org-unit-account-actor-capture'],
+                     ['--native-org-unit-account-actor-capture', '--check'],
                      ['--native-group-process-navigation-serving-custody'],
                      ['--native-group-process-navigation-serving-custody', '--check'],
                      ['--native-group-process-navigation-finalizer'],
@@ -8129,6 +8140,8 @@ def main():
             files = native_org_unit_closed_bounded_reader_files()
         elif arguments[0] == '--native-org-unit-account-actor-staging':
             files = native_org_unit_account_actor_staging_files()
+        elif arguments[0] == '--native-org-unit-account-actor-capture':
+            files = native_org_unit_account_actor_custody_capture_files()
         elif arguments[0] == '--native-group-process-navigation-serving-custody':
             files = native_group_process_navigation_serving_custody_files()
         elif arguments[0] == '--native-group-process-navigation-finalizer':
@@ -8156,7 +8169,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
