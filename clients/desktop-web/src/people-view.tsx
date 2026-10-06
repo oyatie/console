@@ -1,4 +1,3 @@
-import React from "react";
 import type {Page, PeopleRequest, PersonRecord, Registration, Scope} from "./people-projection";
 
 const directory = (company: string) => `/companies/${company}/people`;
