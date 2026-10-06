@@ -72343,7 +72343,7 @@
       }
     ],
     "cross_product_acceptance": [
-      "Real browser → authentication → current policy → owning transaction → durable effects → response → reopening.",
+      "Real supported desktop/mobile/web client → authentication → current policy → owning transaction → durable effects → response → reopening.",
       "Current revocation applies across SSR, hydration, search, previews, exports and resumable subscriptions.",
       "Same-person multiple Accounts cannot defeat required approval independence.",
       "Duplicate/stale/interrupted/unknown outcomes preserve acknowledged work and prevent duplicate effects.",

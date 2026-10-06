@@ -4,7 +4,7 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
 
 ## Release dependency order
 
-The first client release is the assembled full inventory in PRODUCT. Account setup and the first governed payroll journey are internal milestones. Every milestone includes working Leptos UI, owning use cases, persistence, security, operational recovery and acceptance evidence. No backend-only milestone is accepted. States and evidence are recorded only in `release_inventory` in [`../program/console-capability-registry.json`](../program/console-capability-registry.json); this document owns ordering, not a second status ledger.
+The first client release is the assembled full inventory in PRODUCT. Account setup and the first governed payroll journey are internal milestones. Every milestone includes working platform-appropriate client UI, owning use cases, persistence, security, operational recovery and acceptance evidence. No backend-only milestone is accepted. States and evidence are recorded only in `release_inventory` in [`../program/console-capability-registry.json`](../program/console-capability-registry.json); this document owns ordering, not a second status ledger.
 
 | Milestone | Deliverable | Exit condition |
 |---|---|---|
@@ -24,7 +24,9 @@ After shared contracts are established, people/payroll, communications and data-
 
 ## Immediate MVP sequence
 
-Per the owner's 2026-09-20 focus, complete Account/Company/current-policy prerequisites, then deliver the connected payroll, people, employment, organization and approval workflows with their native Leptos interfaces and recovery paths. These five are one MVP acceptance scope, drawing from milestones 1–5 above; none is optional. Buck2-native build and test convergence stays in this work. Continue the broader Foundry sequence after that MVP is accepted. Record capability states in the existing release inventory only; neither this ordering nor MVP acceptance closes the full release or authorizes exposure.
+Per the owner's 2026-09-20 focus, complete Account/Company/current-policy prerequisites, then deliver the connected payroll, people, employment, organization and approval workflows with their native-first interfaces and recovery paths. These five are one MVP acceptance scope, drawing from milestones 1–5 above; none is optional. Buck2-native build and test convergence stays in this work. Continue the broader Foundry sequence after that MVP is accepted. Record capability states in the existing release inventory only; neither this ordering nor MVP acceptance closes the full release or authorizes exposure.
+
+The 2026-10-07 client transition proceeds within this sequence: replace working journeys with Tauri/React desktop, React Native mobile and React web against the same Rust owners; qualify parity before retiring each Leptos consumer; remove its dependencies only when no consumers remain. UI, backend and safe retirement lanes may run concurrently in isolated roots against reviewed contracts. Native authentication, signing, deployment and device qualification are real prerequisites, not remote-webview or scaffold equivalence claims. The separate interim MVP product is outside this work.
 
 ## Baseline evidence and inherited gaps (not a second delivery sequence)
 
@@ -53,7 +55,7 @@ Per the owner's 2026-09-20 focus, complete Account/Company/current-policy prereq
 6. **Payroll**
    - Project the existing payroll writer without a second write path; preserve deterministic rounding, golden cases, immutable receipts, and payslip drafts.
    - Draft calculate is admitted. `payable`, Korea compliance conclusions, wage-statement legal sign-off, and payment execution remain **HOLD**.
-7. **Leptos acceptance surface**
+7. **Inherited Leptos acceptance surface (retained transition evidence)**
    - `Layer::Ui` is accepted (ADR-0041); first full-depth vertical is payroll execution.
    - GET `/` is mounted (#952). Contracts-backed authorized reads (#959): empty shell without `PayrollRunRead`; `data-run-*` from `PayrollRunSummary` required fields with it. Those runs are a Leptos `#[island]` (#962) hydrated by committed release WASM (#964). Empty shell still omits `/pkg/`.
    - Shipping screens are composed (#976). Payroll drill-through hrefs and empty-vs-denied SSR landed (#982). Persona real-backend E2E (ADR-0025 §4) on org/HR/payroll GET `/`, `/organization`, `/hr`, and `/payroll` landed (#978). Production exposure stays **HOLD**. Import/export is not the data-entry base except 자료실; the comms rail is delivery-sequenced after the first payroll increment and is not excluded from the product target.
