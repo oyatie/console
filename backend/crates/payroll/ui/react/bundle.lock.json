@@ -1,0 +1,43 @@
+{
+  "dependency_lock_sha256": "7693dedf40a4d9cc675fa50431e5f9ecae67695c8ef46bdddd4af48838f9a822",
+  "format": 1,
+  "inputs": {
+    ".buckconfig": "f0f78518c2da7050b34e26adf61ef7e526cd14054342139d57ad28ede0590698",
+    "BUCK": "83c25e6de38a9cc461877c52a5b7e403d29f9c3a905a040e5e2a7c8d87c193bd",
+    "backend/crates/payroll/ui/BUCK": "bdf537c1c8d89e69425c4f4833873c3064a0255e43effaafe2c9855bbc223e03",
+    "clients/desktop-web/BUCK": "e6f3c0cc6cce52abf080d10f3cee19108a914ff279872e0492e50f74f0e57a04",
+    "clients/desktop-web/dependencies.lock.bzl": "f7e8b19b4d5c3274b02696786fe2a3b173d105d0eb2518176d7416983e728e9c",
+    "clients/desktop-web/dependencies.lock.json": "923252d62073e328d1b947b7a55e9854ce03938ed334817b830289f565dd176b",
+    "clients/desktop-web/package.json": "9dc115ca600d79f0fe509d79cd040373661b6b99ac5f6b9d4dafd4921e3d1eaf",
+    "clients/desktop-web/src/people-guard.ts": "4376d8d629dadcddb2a410d2b009eba875e120409258ed20f9eb29e6c07485d1",
+    "clients/desktop-web/src/people-projection.ts": "9077e246dd90cab9ec5b6d70fea75152592aba154bb71003a5dcd7d946041c08",
+    "clients/desktop-web/src/people-view.tsx": "88236298b2e2c54425376a7f9d96556f750347586810c3f83da1632733629826",
+    "clients/desktop-web/src/people.css": "16fbb57ef0a01ad366b7907b1824109f3887c638ee3a984e3578c943dc546a5f",
+    "clients/desktop-web/src/people.tsx": "4755187292b05606ff2c6aa7778a0cac63ec8fed87e1b861eb677ad840d54193",
+    "clients/desktop-web/tsconfig.json": "1ecc3c38e332a8a65618a1f3658fd82b3584fc504f7b43850b57287cd51bb719",
+    "tools/buck/gen_first_party.py": "6f29b810441a632dcefa2635ba84ca7a63e822c728299a57556cfec5fc079e68",
+    "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
+    "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
+    "tools/ui/react.bzl": "c2907b49b5e629f22076fa6fd8ec1d20bedfa6c4f0e3fe3ba84b25d420c86c1c",
+    "tools/ui/react_bundle.py": "8222483c4bcb1482088cff51e75d3d5f5df85344e514211663294ea31f86e6ab"
+  },
+  "outputs": {
+    "people-guard.js": "d697d2288cf8588c09fb375545105349deb73eb1d6de9ac34bf43e26affad594",
+    "people.css": "be360b4ed8cbc18ec774d88e5ae5d54cbff0e6b94ba8f32532b2fea221e56b95",
+    "people.js": "df153b89823c892d9b59ea65003a2bcacff62cdada1439b92334d799472fac20"
+  },
+  "producer": {
+    "host": "darwin-arm64",
+    "kind": "buck2-native-react-people-v1",
+    "tools": {
+      "esbuild": "10b6243df618d374bb2d5c9cfbe7052e1405f6aa4e53a6164f11a91b9f2e1384",
+      "node": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"
+    },
+    "typecheck_sha256": "1fe59a6c73a13497519fc3fcca9042fa685b37434f5cf70d65c1afa2ae15b5a8",
+    "versions": {
+      "esbuild": "0.28.2",
+      "node": "26.7.0",
+      "typescript": "5.9.3"
+    }
+  }
+}
