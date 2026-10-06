@@ -4,6 +4,7 @@ mod command;
 pub use command::NativePolicyCommand;
 
 use super::business::{NativeBusinessOperationV1, PolicyAssignmentExpectationV1};
+use super::org_unit_business::NativeOrgUnitActionV1;
 use super::people_business::{DirectoryActionV1, NativePeoplePolicyCommandV1};
 use super::{
     AccountId, CompanyPolicyDecision, CompanyPolicyDecisionPort, CurrentNativeBootstrapAuthority,
@@ -31,6 +32,13 @@ pub enum NativePolicyWorkflowError {
 enum NativePolicyFamily {
     Payroll,
     People,
+    OrgUnit,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NativePolicyAction {
+    People(DirectoryActionV1),
+    OrgUnit(NativeOrgUnitActionV1),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,7 +47,7 @@ pub struct NativePolicyCommandRef {
     command_id: Uuid,
     operation: NativeBusinessOperationV1,
     family: NativePolicyFamily,
-    action: Option<DirectoryActionV1>,
+    action: Option<NativePolicyAction>,
 }
 
 impl NativePolicyCommandRef {
@@ -74,7 +82,7 @@ impl NativePolicyCommandRef {
             return Err(NativePolicyWorkflowError::InvalidInput);
         }
         selected.family = NativePolicyFamily::People;
-        selected.action = action;
+        selected.action = action.map(NativePolicyAction::People);
         Ok(selected)
     }
 
@@ -88,6 +96,13 @@ impl NativePolicyCommandRef {
                 action: None,
             },
             NativePolicyCommand::People(command) => Self::from_people_command(&command),
+            NativePolicyCommand::OrgUnit(command) => Self {
+                company: command.company(),
+                command_id: command.command_id(),
+                operation: command.operation(),
+                family: NativePolicyFamily::OrgUnit,
+                action: command.action().map(NativePolicyAction::OrgUnit),
+            },
         }
     }
 
@@ -97,7 +112,7 @@ impl NativePolicyCommandRef {
             command_id: command.command_id(),
             operation: command.operation(),
             family: NativePolicyFamily::People,
-            action: command.action(),
+            action: command.action().map(NativePolicyAction::People),
         }
     }
 
@@ -105,6 +120,7 @@ impl NativePolicyCommandRef {
         match self.family {
             NativePolicyFamily::Payroll => 1,
             NativePolicyFamily::People => 2,
+            NativePolicyFamily::OrgUnit => 3,
         }
     }
 
@@ -112,11 +128,15 @@ impl NativePolicyCommandRef {
         match self.family {
             NativePolicyFamily::Payroll => &super::business::MANIFEST,
             NativePolicyFamily::People => &super::people_business::MANIFEST,
+            NativePolicyFamily::OrgUnit => &super::org_unit_business::MANIFEST,
         }
     }
 
     pub const fn directory_action(&self) -> Option<DirectoryActionV1> {
-        self.action
+        match self.action {
+            Some(NativePolicyAction::People(action)) => Some(action),
+            None | Some(NativePolicyAction::OrgUnit(_)) => None,
+        }
     }
 
     fn action_resolved(&self) -> bool {
@@ -150,6 +170,17 @@ impl NativePolicyCommandRef {
     }
     pub const fn operation(&self) -> NativeBusinessOperationV1 {
         self.operation
+    }
+}
+
+// Codec availability is not store activation. Keep OrgUnit closed for every
+// store implementation until its owning transactions are independently admitted.
+fn ensure_active_policy_family(
+    selector: NativePolicyCommandRef,
+) -> Result<(), NativePolicyWorkflowError> {
+    match selector.family {
+        NativePolicyFamily::Payroll | NativePolicyFamily::People => Ok(()),
+        NativePolicyFamily::OrgUnit => Err(NativePolicyWorkflowError::Unavailable),
     }
 }
 
@@ -378,6 +409,7 @@ pub async fn native_policy_current<
     credentials: &S::Credentials,
     selector: NativePolicyCommandRef,
 ) -> Result<NativePolicyFormView, NativePolicyWorkflowError> {
+    ensure_active_policy_family(selector)?;
     if !selector.action_resolved() {
         return Err(NativePolicyWorkflowError::InvalidInput);
     }
@@ -438,6 +470,7 @@ async fn read_form<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + 
     request: NativePolicyScopeRequest<'_>,
 ) -> Result<NativePolicyForm<S::FormProof>, NativePolicyWorkflowError> {
     let selector = request.selector();
+    ensure_active_policy_family(selector)?;
     if !selector.action_resolved() {
         return Err(NativePolicyWorkflowError::InvalidInput);
     }
@@ -464,6 +497,7 @@ pub async fn accept_native_policy_command<
 ) -> Result<NativePolicyAcceptance, NativePolicyWorkflowError> {
     let input = input.into();
     let selector = NativePolicyCommandRef::from_command(&input);
+    ensure_active_policy_family(selector)?;
     let mut scope = store
         .lock(credentials, NativePolicyScopeRequest::Accept(&input))
         .await?;
@@ -492,6 +526,7 @@ pub async fn execute_native_policy_command<
     selector: NativePolicyCommandRef,
     trace: &TraceContext,
 ) -> Result<NativePolicyExecution, NativePolicyWorkflowError> {
+    ensure_active_policy_family(selector)?;
     let mut scope = store
         .lock(credentials, NativePolicyScopeRequest::Execute(selector))
         .await?;
@@ -514,6 +549,7 @@ pub async fn native_policy_command_status<
     credentials: &S::Credentials,
     selector: NativePolicyCommandRef,
 ) -> Result<NativePolicyStatus, NativePolicyWorkflowError> {
+    ensure_active_policy_family(selector)?;
     let mut scope = store
         .lock(credentials, NativePolicyScopeRequest::Status(selector))
         .await?;

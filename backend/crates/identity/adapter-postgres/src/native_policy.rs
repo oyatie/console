@@ -48,6 +48,11 @@ impl NativePolicyWorkflowStore for PgOrgStore {
         credentials: &'a Self::Credentials,
         request: NativePolicyScopeRequest<'a>,
     ) -> Result<Self::Scope<'a>, Error> {
+        // A decodable protocol must not reach the existing SQL owner until its
+        // exact catalog and transaction contract have been separately activated.
+        if !matches!(request.selector().codec_version(), 1 | 2) {
+            return Err(Error::Unavailable);
+        }
         let config = self.native_read_config().map_err(|_| Error::Unavailable)?;
         if !matches!(config.mode, NativeAccountMode::Policy { .. }) {
             return Err(Error::Unavailable);
@@ -395,7 +400,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
                 "native_company_policy_inputs_v1",
                 accepted.view.intake_receipt_id,
                 accepted.view.accepted_at,
-                accept_payload(&accepted, accepted.family),
+                accept_payload(&accepted, accepted.family)?,
             )
             .await?;
         }
@@ -441,7 +446,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
             {
                 return Err(Error::Unavailable);
             }
-            let mut payload = accept_payload(&accepted, terminal.family);
+            let mut payload = accept_payload(&accepted, terminal.family)?;
             let fields = payload.as_object_mut().ok_or(Error::Unavailable)?;
             fields.extend(json!({
                 "receipt_id": terminal.view.receipt_id,
@@ -465,6 +470,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
                 let stable_key = match input {
                     NativePolicyCommand::Payroll(_) => "pay_run",
                     NativePolicyCommand::People(_) => "person",
+                    NativePolicyCommand::OrgUnit(_) => return Err(Error::Unavailable),
                 };
                 match effect {
                     NativePolicyEffect::Installed { object_type_id } => self.append_audit(trace,
@@ -627,7 +633,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
     }
 }
 
-fn accept_payload(accepted: &rows::Accepted, session: Uuid) -> Value {
+fn accept_payload(accepted: &rows::Accepted, session: Uuid) -> Result<Value, Error> {
     let input = &accepted.view.input;
     let (protocol, operation) = match input {
         NativePolicyCommand::Payroll(command) => (
@@ -646,6 +652,7 @@ fn accept_payload(accepted: &rows::Accepted, session: Uuid) -> Value {
                 NativeBusinessOperationV1::Revoke => "RevokePeopleDirectoryV1",
             },
         ),
+        NativePolicyCommand::OrgUnit(_) => return Err(Error::Unavailable),
     };
     let mut payload = json!({ "protocol": protocol, "command_id": input.command_id(),
         "intake_receipt_id": accepted.view.intake_receipt_id, "operation": operation,
@@ -653,7 +660,7 @@ fn accept_payload(accepted: &rows::Accepted, session: Uuid) -> Value {
     if let NativePolicyCommand::People(command) = input {
         payload["action"] = json!(command.action().map(|action| action.as_str()));
     }
-    payload
+    Ok(payload)
 }
 fn operation_number(op: NativeBusinessOperationV1) -> i16 {
     match op {
