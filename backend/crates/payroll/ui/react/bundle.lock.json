@@ -11,15 +11,15 @@
     "clients/desktop-web/package.json": "9dc115ca600d79f0fe509d79cd040373661b6b99ac5f6b9d4dafd4921e3d1eaf",
     "clients/desktop-web/src/people-guard.ts": "4376d8d629dadcddb2a410d2b009eba875e120409258ed20f9eb29e6c07485d1",
     "clients/desktop-web/src/people-projection.ts": "9077e246dd90cab9ec5b6d70fea75152592aba154bb71003a5dcd7d946041c08",
-    "clients/desktop-web/src/people-view.tsx": "88236298b2e2c54425376a7f9d96556f750347586810c3f83da1632733629826",
+    "clients/desktop-web/src/people-view.tsx": "e69ff61c1108d482afaf79e6ac12968e402c4010ac2120ee16eaf16918ed3716",
     "clients/desktop-web/src/people.css": "16fbb57ef0a01ad366b7907b1824109f3887c638ee3a984e3578c943dc546a5f",
-    "clients/desktop-web/src/people.tsx": "4755187292b05606ff2c6aa7778a0cac63ec8fed87e1b861eb677ad840d54193",
+    "clients/desktop-web/src/people.tsx": "b7358c8a333e2210db2c938cd186238f809bfe4a41f55758032b67a9d9395ece",
     "clients/desktop-web/tsconfig.json": "1ecc3c38e332a8a65618a1f3658fd82b3584fc504f7b43850b57287cd51bb719",
     "tools/buck/gen_first_party.py": "6f29b810441a632dcefa2635ba84ca7a63e822c728299a57556cfec5fc079e68",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
-    "tools/ui/react.bzl": "c2907b49b5e629f22076fa6fd8ec1d20bedfa6c4f0e3fe3ba84b25d420c86c1c",
-    "tools/ui/react_bundle.py": "8222483c4bcb1482088cff51e75d3d5f5df85344e514211663294ea31f86e6ab"
+    "tools/ui/react.bzl": "47456a68291798cf0736f8edc0edeb024f0c51c59f9ad8471a42a459a21063ee",
+    "tools/ui/react_bundle.py": "7729dc0bdeb40d40a99e26b1208ea184273305f5e0e0fc33283f4ff9753f9e90"
   },
   "outputs": {
     "people-guard.js": "d697d2288cf8588c09fb375545105349deb73eb1d6de9ac34bf43e26affad594",
@@ -33,7 +33,7 @@
       "esbuild": "10b6243df618d374bb2d5c9cfbe7052e1405f6aa4e53a6164f11a91b9f2e1384",
       "node": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"
     },
-    "typecheck_sha256": "1fe59a6c73a13497519fc3fcca9042fa685b37434f5cf70d65c1afa2ae15b5a8",
+    "typecheck_sha256": "9a586327539e5c5dd91d76f87a177430ac06c40fa75d51dcec759af37b6628b2",
     "versions": {
       "esbuild": "0.28.2",
       "node": "26.7.0",
