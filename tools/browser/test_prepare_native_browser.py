@@ -27,14 +27,14 @@ PACKAGE_FILES = {
 }
 DRIVERS = {
     "account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
-    "company.cjs": "fe46ecb491482960893ef2624befb7c517bfd03b7643f45b53809b76bf746491",
+    "company.cjs": "10edae6d0f4d6f66ccf0cbe2d17eaba8cbbc977ede47b4b5fc94b3a201f7fcc2",
     "company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
     "hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
 }
 COMPANIONS = {
     "native_header.cjs": "915f37ffb3b7580202158ca23425e047e4587278aaaa5725687f9a6eb71a34c4",
     "people_journey.cjs": "051ccf6be53899a9b077df697e4fea36d7edacc38e8b8e2065ca37b5c52e098b",
-    "react_people_controls.cjs": "c86b159e1d27ae0f86cba8753b3f3661f1616b093d4e14e1a54e75651edfd3c7",
+    "react_people_controls.cjs": "81cf1e6397479a9dc5b22c51717da74bfd9d791d0260be02aa98b761588b98f7",
     "group_process_journey.cjs": "a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f",
     "group_invalid_form_journey.cjs": "f301776ce4bcb9c7b5101baa4f4cab8c27c5dc633e277d17db2a89939b46a6dd",
     "group_navigation_held.cjs": "0c8b4d46a5ca248df5a5b08c0a1bf0da6c71b59049516e683389375d51794ca2",

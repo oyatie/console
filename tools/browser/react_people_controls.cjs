@@ -30,16 +30,33 @@ async function snapshot(page) {
       selection_end: focus?.selectionEnd ?? null, scroll_x: scrollX, scroll_y: scrollY};
   });
 }
+// Diagnostic-only projection: fixed counts/enums/booleans, never form material.
+function reactControlFailureSnapshot() {
+  const probe = window.__consoleReactRenderProbe;
+  let guardCanPromote = null;
+  try { if (typeof window.__consolePeopleGuard?.canPromote === 'function') guardCanPromote = window.__consolePeopleGuard.canPromote() === true; } catch {}
+  const tag = document.activeElement?.tagName?.toLowerCase();
+  return {fallbackCount: document.querySelectorAll('#console-people-fallback').length,
+    reactMountCount: document.querySelectorAll('[data-console-react-people="mounted"]').length,
+    renderProbe: Number.isSafeInteger(probe) && probe >= 0 ? probe : null, guardCanPromote,
+    focusTag: ['html','body','a','button','input','summary','main','section','p'].includes(tag) ? tag : 'other',
+    scrollXNonzero: window.scrollX !== 0, scrollYNonzero: window.scrollY !== 0};
+}
 async function runReactControls({page, origin, company, account, expectDocument, exchange, capture, clearBrowserCache}) {
   const path = `/companies/${company}/people/new`, runtime = origin + '/assets/people.js';
   const cdp = await page.context().newCDPSession(page);
   const result = [];
   const initialViewport = page.viewportSize();
+  let diagnosticControl = 'none', diagnosticStep = 'start', failedStep = null, failedError = null;
   try {
     for (const name of CONTROL_NAMES) {
+      diagnosticControl = name; failedStep = null; failedError = null;
+      diagnosticStep = 'owner-ready';
       const ready = await exchange({phase: 'PEOPLE_REACT_CONTROL_READY', control_name: name});
       assert.equal(ready.owner_effects_verified, true);
+      diagnosticStep = 'clear-browser-cache';
       await clearBrowserCache();
+      diagnosticStep = 'viewport';
       await page.setViewportSize({width: 320, height: 400});
       let release, routing, injected;
       let before, imeEvents = 0, hits = 0, mutations = 0;
@@ -49,8 +66,10 @@ async function runReactControls({page, origin, company, account, expectDocument,
         if (name === 'delayed-ime-input' || name === 'delayed-scroll') {
           const pending = new Promise(resolve => { release = resolve; });
           routing = async route => { await pending; await route.continue(); };
+          diagnosticStep = 'install-delayed-route';
           await page.route(runtime, routing);
         } else if (name === 'failed-load') {
+          diagnosticStep = 'install-failed-load-route';
           routing = route => route.abort('failed'); await page.route(runtime, routing);
         } else {
           // A real DOM-render fault/focus event inside React's host rendering.
@@ -64,16 +83,21 @@ async function runReactControls({page, origin, company, account, expectDocument,
               }
               return original.call(this, tag, ...rest);
             }; })();`;
+          diagnosticStep = 'install-render-probe';
           injected = (await cdp.send('Page.addScriptToEvaluateOnNewDocument', {source})).identifier;
         }
         expectDocument('GET', path, 200, false);
+        diagnosticStep = 'document-navigation';
         const response = await page.goto(origin + path, {waitUntil: 'commit'});
         assert.equal(response.status(), 200);
+        diagnosticStep = 'ssr-response-check';
         assert.equal(await page.evaluate(html => !!new DOMParser().parseFromString(html, 'text/html')
           .querySelector('[data-console-react-people="mounted"]'), await response.text()), false);
         const form = page.locator('#console-people-fallback form[data-people-operation="prepare"]');
+        diagnosticStep = 'fallback-form-visible';
         await form.waitFor({state: 'visible'});
         if (name === 'delayed-ime-input') {
+          diagnosticStep = 'ime-listeners';
           await page.evaluate(() => {
             window.__consoleImeEvents = 0;
             for (const type of ['compositionstart', 'compositionupdate', 'compositionend']) {
@@ -81,50 +105,82 @@ async function runReactControls({page, origin, company, account, expectDocument,
             }
           });
           const input = form.locator('input[name="legal_name"]');
+          diagnosticStep = 'ime-focus';
           await input.click();
+          diagnosticStep = 'ime-compose';
           await cdp.send('Input.imeSetComposition', {text: '김하늘', selectionStart: 3, selectionEnd: 3});
+          diagnosticStep = 'ime-insert';
           await cdp.send('Input.insertText', {text: '김하늘 <연구 & 운영>'});
+          diagnosticStep = 'ime-selection';
           await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Shift+ArrowLeft');
+          diagnosticStep = 'ime-input-check';
           assert.equal(await input.inputValue(), '김하늘 <연구 & 운영>');
+          diagnosticStep = 'ime-trusted-events';
           imeEvents = await page.evaluate(() => window.__consoleImeEvents);
           assert.equal(imeEvents >= 2, true);
         } else if (name === 'delayed-scroll') {
+          diagnosticStep = 'scroll-wheel';
           await page.mouse.wheel(0, 200);
+          diagnosticStep = 'scroll-nonzero';
           await page.waitForFunction(() => scrollY > 0);
         }
+        diagnosticStep = 'snapshot-before';
         if (name.startsWith('delayed-')) before = await snapshot(page);
         if (release) release();
+        diagnosticStep = 'network-idle';
         await page.waitForLoadState('networkidle');
+        diagnosticStep = 'snapshot-after-load';
         if (!before) before = await snapshot(page);
         // A post-load paint cannot lose fallback state after an attempted mount.
+        diagnosticStep = 'paint-after-load';
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        diagnosticStep = 'snapshot-after-paint';
         const after = await snapshot(page);
         assert.equal(JSON.stringify(after) === JSON.stringify(before), true, 'React promotion discarded SSR working context');
+        diagnosticStep = 'mounted-count';
         assert.equal(await page.locator('[data-console-react-people="mounted"]').count(), 0);
+        diagnosticStep = 'fallback-count';
         assert.equal(await page.locator('#console-people-fallback').count(), 1);
+        diagnosticStep = 'prepare-form-count';
         assert.equal(await page.locator('form[data-people-operation="prepare"]').count(), 1);
         if (name === 'precommit-focus' || name === 'failed-render') {
+          diagnosticStep = 'render-probe-count';
           hits = await page.evaluate(() => window.__consoleReactRenderProbe);
           assert.equal(hits > 0, true, 'React render-fault control never reached real host rendering');
         }
         const command = before.fields.find(([key]) => key === 'command_id')?.[1];
+        diagnosticStep = 'owner-checked';
         const witness = await exchange({phase: 'PEOPLE_REACT_CONTROL_CHECKED', control_name: name, command_id: command});
         assert.equal(witness.owner_effects_verified, true);
         assert.equal(witness.company, company); assert.equal(witness.account, account);
         assert.equal(mutations, 0);
+        diagnosticStep = 'capture';
         await capture('react-people-' + name + '-320');
         result.push({name, command, form_sha256: crypto.createHash('sha256').update(JSON.stringify(before.fields)).digest('hex'),
           fallback_retained: true, form_preserved: true, focus_preserved: true, selection_preserved: true,
           scroll_preserved: true, no_mutation: true, react_mounted: false, owner_effects_verified: true,
           ime_events: imeEvents, scroll_y: before.scroll_y, render_probe_hits: hits});
+      } catch (error) {
+        failedStep = diagnosticStep; failedError = error; throw error;
       } finally {
         if (release) release();
+        diagnosticStep = 'cleanup-route';
         if (routing) await page.unroute(runtime, routing);
+        diagnosticStep = 'cleanup-render-probe';
         if (injected) await cdp.send('Page.removeScriptToEvaluateOnNewDocument', {identifier: injected});
         page.context().off('request', changed);
       }
     }
     assert.equal(validControlEvidence(result), true); return result;
+  } catch (error) {
+    const diagnostic = {kind: 'REACT_PEOPLE_CONTROL_FAILURE_DIAGNOSTIC_V1', diagnosticOnly: true,
+      controlName: diagnosticControl, awaitedStep: error === failedError ? failedStep : diagnosticStep,
+      fallbackCount: null, reactMountCount: null, renderProbe: null, guardCanPromote: null,
+      focusTag: 'unknown', scrollXNonzero: null, scrollYNonzero: null, collectionFailed: false};
+    try { Object.assign(diagnostic, await page.evaluate(reactControlFailureSnapshot)); }
+    catch { diagnostic.collectionFailed = true; }
+    try { Object.defineProperty(error, 'consoleReactControlDiagnostic', {value: diagnostic}); } catch {}
+    throw error;
   } finally {
     await cdp.detach();
     if (initialViewport) await page.setViewportSize(initialViewport);

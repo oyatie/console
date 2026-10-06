@@ -525,7 +525,7 @@ async function main(backendPort,out,mode){
   }
   requireFact(!result.relay_failure&&!result.tls_client_error,'TLS_RELAY_FAILED');requireFact(result.external_requests===0,'EXTERNAL_REQUEST');requireFact(completeObservations(result),'OBSERVATION_INCOMPLETE');
   await cdp.send('WebAuthn.removeVirtualAuthenticator',{authenticatorId:auth.authenticatorId});await cdp.detach();
- }catch(error){result.failure??={stage,code:publicError(error)};}
+ }catch(error){if(stage==='people_journey'&&error?.consoleReactControlDiagnostic?.kind==='REACT_PEOPLE_CONTROL_FAILURE_DIAGNOSTIC_V1')result.react_control_failure_diagnostic=error.consoleReactControlDiagnostic;result.failure??={stage,code:publicError(error)};}
  finally{clearTimeout(watchdog);await finish();}
 }
 module.exports={expectedNativeHeaders,completeNativeHeaders,validCompanyLayout,completeCompanyWorkspace,exactVisibleLink,completeNavigation,completePolicyPlan,expectedDocumentRows,completeDocumentsOriginal,completeMutationsOriginal,installFormControlsSafe,completeMutations,observeMutations,completeDocuments,observeDocuments,validOrigin,validCheckpointCommand,completeObservations,leafStatus,scrub,watchOwner,closeOwnedBrowser,certificateArgs,publicError,configureResponseRetention};
