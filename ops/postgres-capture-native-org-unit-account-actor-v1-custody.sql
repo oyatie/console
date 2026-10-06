@@ -3539,6 +3539,9 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  CASE WHEN t.tgisinternal AND a.native_valid IS TRUE AND ri.ri_valid IS TRUE THEN ri.flags ELSE NULL END AS ri_flags
  FROM checked_native a LEFT JOIN pg_catalog.pg_trigger t ON a.classid='pg_catalog.pg_trigger'::regclass AND t.oid=a.objid
  LEFT JOIN ri_maps ri ON (ri.classid,ri.objid,ri.objsubid)=(a.classid,a.objid,a.objsubid)
+), stable_role_addresses AS MATERIALIZED (
+ SELECT * FROM stable_addresses
+ WHERE classid='pg_catalog.pg_authid'::regclass AND objsubid=0
 ), row_type_valid AS (
  SELECT (count(*)=(SELECT count(*) FROM selected_relations) AND bool_and(
  r.reltype<>0 AND t.oid=r.reltype AND t.typrelid=r.oid AND t.typtype='c' AND t.typarray<>0
@@ -3569,8 +3572,8 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  CASE WHEN acl.grantee=0 THEN jsonb_build_object('type','ACL PUBLIC sentinel') ELSE grantee.address END::text COLLATE "C",
  acl.privilege_type COLLATE "C",acl.is_grantable)
  FROM pg_catalog.aclexplode(a.attacl) acl
- LEFT JOIN stable_addresses grantor ON (grantor.classid,grantor.objid,grantor.objsubid)=('pg_catalog.pg_authid'::regclass::oid,acl.grantor,0)
- LEFT JOIN stable_addresses grantee ON (grantee.classid,grantee.objid,grantee.objsubid)=('pg_catalog.pg_authid'::regclass::oid,acl.grantee,0)),'[]'::jsonb)) AS record,
+ LEFT JOIN stable_role_addresses grantor ON (grantor.classid,grantor.objid,grantor.objsubid)=('pg_catalog.pg_authid'::regclass::oid,acl.grantor,0)
+ LEFT JOIN stable_role_addresses grantee ON (grantee.classid,grantee.objid,grantee.objsubid)=('pg_catalog.pg_authid'::regclass::oid,acl.grantee,0)),'[]'::jsonb)) AS record,
  (col.valid AND rel.valid AND typ.valid AND (a.attcollation=0 OR coll.valid)
  AND NOT a.attisdropped AND (NOT a.atthasmissing AND a.attmissingval IS NULL
  OR a.atthasmissing AND a.attmissingval IS NOT NULL

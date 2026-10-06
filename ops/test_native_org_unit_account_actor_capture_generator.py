@@ -17,12 +17,12 @@ import test_native_org_unit_closed_bounded_reader_generator as bounded
 historical = bounded.historical
 ROOT, SCRIPT = historical.ROOT, historical.SCRIPT
 FIXTURE = 'ops/fixtures/native-org-unit-account-actor-capture-export-contract-v1.json'
-FIXTURE_SHA256 = '00ec2bf0897c4a343b7d6dc478fe22905ec18d165956aa426cd48e4f83d1d4f3'
+FIXTURE_SHA256 = '2e9a86873bd920c40c33f8ddeae8763deda19d51c83a384265326f2c4991fd40'
 ENTRY = 'native_org_unit_account_actor_custody_capture_files'
 MODE = '--native-org-unit-account-actor-capture'
 SOURCE = 'ops/native-org-unit/account-actor-custody-capture-v1.sql'
 OUTPUT = 'ops/postgres-capture-native-org-unit-account-actor-v1-custody.sql'
-SOURCE_SHA256 = '8bc2865053c96df2c057145c8099857c71b11e422b2fa3e4408c7df0e5c77a2a'
+SOURCE_SHA256 = '724a777fb7cac58a4adf987cc9d22f56ce3a5029dcd43e0e8a68ed0f97c63410'
 
 
 def inventory(root, *, strict=False):

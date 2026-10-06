@@ -10,7 +10,7 @@ mod native_org_unit_account_actor_complete_capture_measurements {
     const COMPLETE_EXPORT: &str = include_str!(
         "../../../../ops/postgres-capture-native-org-unit-account-actor-v1-custody.sql"
     );
-    const COMPLETE_SHA: &str = "8bc2865053c96df2c057145c8099857c71b11e422b2fa3e4408c7df0e5c77a2a";
+    const COMPLETE_SHA: &str = "724a777fb7cac58a4adf987cc9d22f56ce3a5029dcd43e0e8a68ed0f97c63410";
     const EXPANSION: &str = include_str!(
         "../../../../ops/postgres-native-org-unit-account-actor-expansion-v1-owner.sql"
     );
