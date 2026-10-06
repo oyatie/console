@@ -7233,7 +7233,7 @@ def native_org_unit_account_actor_custody_capture_files():
     """Export the reviewed read-only query without activating a profile."""
     name = 'ops/native-org-unit/account-actor-custody-capture-v1.sql'
     raw = company_provenance_regular_path(name, required=True).read_bytes()
-    if hashlib.sha256(raw).hexdigest() != '724a777fb7cac58a4adf987cc9d22f56ce3a5029dcd43e0e8a68ed0f97c63410':
+    if hashlib.sha256(raw).hexdigest() != 'f31c27207f3a9a5c7b1bf8c81149f679f2eec9abd5a14c1e72ca70a5b87f2eb9':
         raise SystemExit('Native OrgUnit Account actor complete capture source differs from reviewed bytes: ' + name)
     return {'ops/postgres-capture-native-org-unit-account-actor-v1-custody.sql': raw.decode('utf-8')}
 

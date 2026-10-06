@@ -3492,6 +3492,15 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  AND NOT starts_with(association_namespace,'pg_temp_') AND NOT starts_with(association_namespace,'pg_toast_temp_'))
  AND NOT EXISTS(SELECT 1 FROM unnest(native_names||native_args) part WHERE part IS NULL)) IS TRUE AS native_valid
  FROM reconstruction a
+), checked_constraint_addresses AS MATERIALIZED (
+ SELECT * FROM checked_native
+ WHERE classid='pg_catalog.pg_constraint'::regclass AND objsubid=0
+), checked_relation_addresses AS MATERIALIZED (
+ SELECT * FROM checked_native
+ WHERE classid='pg_catalog.pg_class'::regclass AND objsubid=0
+), checked_routine_addresses AS MATERIALIZED (
+ SELECT * FROM checked_native
+ WHERE classid='pg_catalog.pg_proc'::regclass AND objsubid=0
 ), ri_maps AS MATERIALIZED (
  SELECT a.classid,a.objid,a.objsubid,
  jsonb_build_object('type','foreign key RI trigger','foreign_key',fk.native_address,'on',onrel.native_address,
@@ -3523,11 +3532,11 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  LEFT JOIN pg_catalog.pg_constraint k ON k.oid=t.tgconstraint
  LEFT JOIN pg_catalog.pg_index i ON i.indexrelid=k.conindid
  LEFT JOIN pg_catalog.pg_proc p ON p.oid=t.tgfoid LEFT JOIN pg_catalog.pg_namespace pn ON pn.oid=p.pronamespace
- LEFT JOIN checked_native fk ON (fk.classid,fk.objid,fk.objsubid)=('pg_catalog.pg_constraint'::regclass::oid,k.oid,0)
- LEFT JOIN checked_native onrel ON (onrel.classid,onrel.objid,onrel.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.tgrelid,0)
- LEFT JOIN checked_native otherrel ON (otherrel.classid,otherrel.objid,otherrel.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.tgconstrrelid,0)
- LEFT JOIN checked_native idx ON (idx.classid,idx.objid,idx.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.tgconstrindid,0)
- LEFT JOIN checked_native routine ON (routine.classid,routine.objid,routine.objsubid)=('pg_catalog.pg_proc'::regclass::oid,t.tgfoid,0)
+ LEFT JOIN checked_constraint_addresses fk ON (fk.classid,fk.objid,fk.objsubid)=('pg_catalog.pg_constraint'::regclass::oid,k.oid,0)
+ LEFT JOIN checked_relation_addresses onrel ON (onrel.classid,onrel.objid,onrel.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.tgrelid,0)
+ LEFT JOIN checked_relation_addresses otherrel ON (otherrel.classid,otherrel.objid,otherrel.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.tgconstrrelid,0)
+ LEFT JOIN checked_relation_addresses idx ON (idx.classid,idx.objid,idx.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.tgconstrindid,0)
+ LEFT JOIN checked_routine_addresses routine ON (routine.classid,routine.objid,routine.objsubid)=('pg_catalog.pg_proc'::regclass::oid,t.tgfoid,0)
 ), stable_addresses AS MATERIALIZED (
  SELECT a.classid,a.objid,a.objsubid,
  CASE WHEN a.native_valid IS NOT TRUE THEN NULL
