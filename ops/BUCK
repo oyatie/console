@@ -314,3 +314,18 @@ export_file(
     name = "postgres-capture-native-org-unit-account-actor-v1-custody.sql",
     visibility = ["PUBLIC"],
 )
+# Unregistered V2 precursor and oracle: test prerequisites only.
+export_file(
+    name = "native-org-unit/account-actor-custody-capture-v2.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-v2-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "fixtures/native-org-unit-account-actor-capture-export-contract-v2.json",
+    visibility = ["PUBLIC"],
+)

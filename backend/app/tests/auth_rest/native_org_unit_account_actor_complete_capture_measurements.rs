@@ -2040,5 +2040,960 @@ SELECT (SELECT oid::text FROM pg_catalog.pg_type WHERE oid='pg_catalog.uuid[]'::
                 std::panic::resume_unwind(panic);
             }
         }
+        // V3 successor: fixed unregistered V2 candidate source, with the V1
+        // source/measurement/TOAST diagnostic bytes preserved above.
+        mod finite_relation_column_v3_successor_tests {
+            use super::*;
+
+            const DESIGN: &str = "c0c96a5d6c69fdb8b26a2d4c23666d46106ccb0cb54b8b171b995812b53ef1fc";
+            const CANDIDATE_INPUT: &str = include_str!(
+                "../../../../ops/native-org-unit/account-actor-custody-capture-v2.sql"
+            );
+            const CANDIDATE_EXPORT: &str = include_str!(
+                "../../../../ops/postgres-capture-native-org-unit-account-actor-v2-custody.sql"
+            );
+            const CANDIDATE_ORACLE: &str = include_str!(
+                "../../../../ops/fixtures/native-org-unit-account-actor-capture-export-contract-v2.json"
+            );
+            const COLUMN_TYPES: [&str; 6] = [
+                "table column",
+                "foreign table column",
+                "view column",
+                "materialized view column",
+                "composite type column",
+                "sequence column",
+            ];
+            const IS_COLUMN: &str = "classid='pg_catalog.pg_class'::regclass AND objsubid>0 AND native_type IN ('table column','foreign table column','view column','materialized view column','composite type column','sequence column')";
+
+            // Private inverse API namespace only. Neither original raw type nor
+            // source catalog/native/portable validity is changed by this helper.
+            const COLUMN_CTES: &str = r#"column_name_lookups AS MATERIALIZED (
+ SELECT t.*,ns.namespace_match_count,rel.relation_match_count,found.column_match_count,
+ found.observed_oid,found.observed_attnum
+ FROM column_inputs t LEFT JOIN LATERAL (
+  SELECT count(*) AS namespace_match_count FROM pg_catalog.pg_namespace n
+  WHERE n.nspname::text COLLATE "C"=t.input_names[1] COLLATE "C"
+ ) ns ON true LEFT JOIN LATERAL (
+  SELECT count(*) AS relation_match_count FROM pg_catalog.pg_class c
+  JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname::text COLLATE "C"=t.input_names[1] COLLATE "C" AND c.relname::text COLLATE "C"=t.input_names[2] COLLATE "C"
+ ) rel ON true LEFT JOIN LATERAL (
+  SELECT count(*) AS column_match_count,
+   (array_agg(c.oid ORDER BY c.oid,a.attnum))[1] AS observed_oid,
+   (array_agg(a.attnum ORDER BY c.oid,a.attnum))[1] AS observed_attnum
+  FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid
+  WHERE n.nspname::text COLLATE "C"=t.input_names[1] COLLATE "C" AND c.relname::text COLLATE "C"=t.input_names[2] COLLATE "C"
+   AND a.attname::text COLLATE "C"=t.input_names[3] COLLATE "C"
+ ) found ON true
+), column_found AS MATERIALIZED (
+ SELECT t.*,c.oid AS found_oid,c.relkind,n.nspname,c.relname,
+ a.attrelid,a.attnum,a.attname,a.attisdropped,a.atttypid,
+ CASE c.relkind WHEN 'r' THEN 'table column' WHEN 'p' THEN 'table column'
+  WHEN 'f' THEN 'foreign table column' WHEN 'v' THEN 'view column'
+  WHEN 'm' THEN 'materialized view column' WHEN 'c' THEN 'composite type column'
+  WHEN 'S' THEN 'sequence column' END AS catalog_type,
+ ARRAY[n.nspname::text,c.relname::text,a.attname::text] AS catalog_names
+ FROM column_name_lookups t LEFT JOIN pg_catalog.pg_class c
+ ON t.column_match_count=1 AND c.oid=t.observed_oid
+ LEFT JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+ LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attnum=t.observed_attnum
+), column_catalog_guards AS MATERIALIZED (
+ SELECT t.*,ARRAY[
+  (t.classid='pg_catalog.pg_class'::regclass AND t.objsubid>0
+   AND t.input_classid='pg_catalog.pg_class'::regclass AND t.input_objsubid>0) IS TRUE,
+  (t.input_names IS NOT NULL AND array_ndims(t.input_names)=1
+   AND array_lower(t.input_names,1)=1 AND cardinality(t.input_names)=3
+   AND t.input_args IS NOT NULL AND t.input_args=ARRAY[]::text[]
+   AND NOT EXISTS(SELECT 1 FROM unnest(t.input_names||t.input_args) part WHERE part IS NULL)) IS TRUE,
+  (t.namespace_match_count=1 AND t.relation_match_count=1 AND t.column_match_count=1) IS TRUE,
+  (t.catalog_type IS NOT NULL AND t.native_type=t.catalog_type AND t.input_type=t.catalog_type
+   AND t.relkind IN ('r','p','f','v','m','c','S') AND t.nspname IS NOT NULL
+   AND t.nspname NOT IN ('pg_temp','pg_toast') AND NOT starts_with(t.nspname,'pg_temp_')
+   AND NOT starts_with(t.nspname,'pg_toast_temp_')) IS TRUE,
+  (t.found_oid IS NOT NULL AND t.attrelid=t.found_oid AND t.attnum>0
+   AND NOT t.attisdropped AND t.atttypid<>0) IS TRUE,
+  ((t.classid,t.objid,t.objsubid)=('pg_catalog.pg_class'::regclass::oid,t.found_oid,t.attnum::integer)
+   AND (t.input_classid,t.input_objid,t.input_objsubid)=(t.classid,t.objid,t.objsubid)
+   AND t.native_names=t.catalog_names AND t.input_names=t.catalog_names
+   AND t.native_args=ARRAY[]::text[] AND t.input_args=t.native_args) IS TRUE
+ ] AS catalog_checks FROM column_found t
+), column_identification_inputs AS MATERIALIZED (
+ SELECT * FROM column_catalog_guards WHERE true=ALL(catalog_checks)
+), column_native_observations AS MATERIALIZED (
+ SELECT t.classid,t.objid,t.objsubid,ident.type AS found_native_type,
+ ident.object_names AS found_native_names,ident.object_args AS found_native_args
+ FROM column_identification_inputs t CROSS JOIN LATERAL
+ pg_catalog.pg_identify_object_as_address('pg_catalog.pg_class'::regclass::oid,t.found_oid,t.attnum::integer) ident
+), column_guard_witnesses AS MATERIALIZED (
+ SELECT t.*,o.found_native_type,o.found_native_names,o.found_native_args,
+ t.catalog_checks || ARRAY[(o.found_native_type=t.native_type AND o.found_native_type=t.input_type
+  AND o.found_native_names=t.native_names AND o.found_native_names=t.input_names
+  AND o.found_native_args=t.native_args AND o.found_native_args=t.input_args) IS TRUE] AS column_checks
+ FROM column_catalog_guards t LEFT JOIN column_native_observations o USING(classid,objid,objsubid)
+), column_function_inputs AS MATERIALIZED (
+ SELECT * FROM column_guard_witnesses WHERE true=ALL(column_checks)
+), column_function_observations AS MATERIALIZED (
+ SELECT t.classid,t.objid,t.objsubid,inverse.classid AS function_classid,
+ inverse.objid AS function_objid,inverse.objsubid AS function_objsubid
+ FROM column_function_inputs t CROSS JOIN LATERAL
+ pg_catalog.pg_get_object_address('table column',t.input_names,t.input_args) inverse
+), column_inverse AS MATERIALIZED (
+ SELECT t.*,
+ CASE WHEN (o.function_classid,o.function_objid,o.function_objsubid)=(t.classid,t.objid,t.objsubid)
+  THEN o.function_classid END AS inverse_classid,
+ CASE WHEN (o.function_classid,o.function_objid,o.function_objsubid)=(t.classid,t.objid,t.objsubid)
+  THEN o.function_objid END AS inverse_objid,
+ CASE WHEN (o.function_classid,o.function_objid,o.function_objsubid)=(t.classid,t.objid,t.objsubid)
+  THEN o.function_objsubid END AS inverse_objsubid,
+ jsonb_build_object('checks',to_jsonb(t.column_checks),'kind',t.relkind,
+  'namespace_count',t.namespace_match_count,'relation_count',t.relation_match_count,'column_count',t.column_match_count,
+  'found_tuple',jsonb_build_array('pg_catalog.pg_class'::regclass::oid::text,t.found_oid::text,t.attnum::integer),
+  'found_native',jsonb_build_object('type',t.found_native_type,'object_names',to_jsonb(t.found_native_names),'object_args',to_jsonb(t.found_native_args)),
+  'inverse_namespace','table column','function_tuple',jsonb_build_array(o.function_classid::text,o.function_objid::text,o.function_objsubid)) AS column_witness
+ FROM column_guard_witnesses t LEFT JOIN column_function_observations o USING(classid,objid,objsubid)
+)"#;
+
+            fn candidate_byte_pins(
+                input: &str,
+                export: &str,
+                oracle: &Value,
+            ) -> Result<(), String> {
+                if input != export
+                    || oracle["source_sha256"] != json!(digest(input))
+                    || oracle["source_bytes"].as_u64() != Some(input.len() as u64)
+                {
+                    return Err("stale/mismatched candidate source/export/oracle bytes".into());
+                }
+                Ok(())
+            }
+
+            fn candidate_source_pins() -> Value {
+                let old = complete_source_pins();
+                let oracle: Value = serde_json::from_str(CANDIDATE_ORACLE)
+                    .expect("PREREQUISITE: valid reviewed V2 oracle");
+                assert_eq!(
+                    oracle["schema"],
+                    "console.native_org_unit.account_actor_capture_export_contract.v2"
+                );
+                assert_eq!(oracle["design_sha256"], DESIGN);
+                assert_eq!(oracle["predecessor_source_sha256"], COMPLETE_SHA);
+                assert_eq!(
+                    oracle["predecessor_oracle_sha256"],
+                    "71223f87d2c3e6283e90ee1c20f63099faccc8876f2171dd9f8c012512170660"
+                );
+                assert_eq!(
+                    oracle["source"],
+                    "ops/native-org-unit/account-actor-custody-capture-v2.sql"
+                );
+                assert_eq!(
+                    oracle["output"],
+                    "ops/postgres-capture-native-org-unit-account-actor-v2-custody.sql"
+                );
+                assert_eq!(
+                    oracle["snapshot_schema"],
+                    "console.native_org_unit.account_actor_complete_capture.v2"
+                );
+                for field in [
+                    "phase_hashes_registered",
+                    "database_owner_accepted",
+                    "source_release_accepted",
+                    "MVP_accepted",
+                ] {
+                    assert_eq!(
+                        oracle[field], false,
+                        "PREREQUISITE: unregistered source/test custody only"
+                    );
+                }
+                candidate_byte_pins(CANDIDATE_INPUT, CANDIDATE_EXPORT, &oracle)
+                    .expect("PREREQUISITE: exact reviewed candidate bytes");
+                let mut stale = oracle.clone();
+                stale["source_sha256"] = json!("0".repeat(64));
+                assert!(candidate_byte_pins(CANDIDATE_INPUT, CANDIDATE_EXPORT, &stale).is_err());
+                let mut wrong_length = oracle.clone();
+                wrong_length["source_bytes"] = json!(CANDIDATE_INPUT.len() + 1);
+                assert!(
+                    candidate_byte_pins(CANDIDATE_INPUT, CANDIDATE_EXPORT, &wrong_length).is_err()
+                );
+                assert!(
+                    candidate_byte_pins(CANDIDATE_INPUT, &format!("{CANDIDATE_EXPORT} "), &oracle)
+                        .is_err()
+                );
+                assert_eq!(
+                    CANDIDATE_INPUT, CANDIDATE_EXPORT,
+                    "PREREQUISITE: exact source/export parity"
+                );
+                assert_eq!(oracle["source_sha256"], digest(CANDIDATE_INPUT));
+                assert_eq!(
+                    oracle["source_bytes"].as_u64(),
+                    Some(CANDIDATE_INPUT.len() as u64)
+                );
+                assert!(CANDIDATE_INPUT.ends_with(";\n"));
+                assert_eq!(
+                    CANDIDATE_INPUT
+                        .matches(
+                            "'schema','console.native_org_unit.account_actor_complete_capture.v2'"
+                        )
+                        .count(),
+                    1
+                );
+                for name in ["historical76", "historical83", "original73"] {
+                    let start = format!("{name}_query AS MATERIALIZED (\n SELECT * FROM (\n");
+                    let end = format!("\n ) frozen_{name}\n)");
+                    let extract = |source: &'static str| {
+                        assert_eq!(source.matches(&start).count(), 1);
+                        let after = source.split_once(&start).unwrap().1;
+                        assert_eq!(after.matches(&end).count(), 1);
+                        after.split_once(&end).unwrap().0
+                    };
+                    assert_eq!(
+                        extract(CANDIDATE_INPUT),
+                        extract(COMPLETE_INPUT),
+                        "historical body bytes changed: {name}"
+                    );
+                }
+                json!({"old":old,"candidate_oracle":oracle,"candidate_oracle_sha256":digest(CANDIDATE_ORACLE)})
+            }
+
+            fn candidate_prefix() -> &'static str {
+                const BOUNDARY: &str = "), row_type_valid AS (\n";
+                assert_eq!(CANDIDATE_INPUT.matches(BOUNDARY).count(), 1);
+                CANDIDATE_INPUT.split_once(BOUNDARY).unwrap().0
+            }
+
+            fn column_owner_audit_sql() -> String {
+                let original = toast_audit_sql();
+                assert_eq!(original.matches(complete_address_prefix()).count(), 1);
+                let query = original.replacen(complete_address_prefix(), candidate_prefix(), 1);
+                const ORDINARY: &str = r#"), ordinary_native_inverse_inputs AS MATERIALIZED (
+     SELECT * FROM toast_original_inputs WHERE
+     native_type IS DISTINCT FROM 'toast table' AND input_type IS DISTINCT FROM 'toast table'
+    )"#;
+                assert_eq!(query.matches(ORDINARY).count(), 1);
+                let replacement = format!(
+                    "), column_inputs AS MATERIALIZED (SELECT * FROM toast_original_inputs WHERE {IS_COLUMN}),\n{COLUMN_CTES}, ordinary_native_inverse_inputs AS MATERIALIZED (SELECT * FROM toast_original_inputs WHERE native_type IS DISTINCT FROM 'toast table' AND input_type IS DISTINCT FROM 'toast table' AND NOT ({IS_COLUMN}))"
+                );
+                let query = query.replace(ORDINARY, &replacement);
+                const OPEN: &str = ", inverse AS MATERIALIZED (\n     SELECT t.classid";
+                assert_eq!(query.matches(OPEN).count(), 1);
+                let query = query.replace(
+                    OPEN,
+                    ", toast_and_ordinary_inverse AS MATERIALIZED (\n     SELECT t.classid",
+                );
+                const END: &str = "pg_catalog.pg_get_object_address(t.native_type,t.native_names,t.native_args) inverse ON true\n    )";
+                assert_eq!(query.matches(END).count(), 1);
+                let query = query.replace(
+                    END,
+                    &format!(
+                        r#"{END}, inverse AS MATERIALIZED (
+ SELECT t.*,NULL::jsonb AS column_witness FROM toast_and_ordinary_inverse t
+ UNION ALL
+ SELECT c.classid,c.objid,c.objsubid,c.native_address,c.address,c.valid,c.ri_flags,
+ c.inverse_classid,c.inverse_objid,c.inverse_objsubid,NULL::jsonb,NULL::jsonb,NULL::jsonb,
+ NULL::bigint,NULL::bigint,NULL::bigint,NULL::bigint,NULL::bigint,NULL::bigint,c.column_witness
+ FROM column_inverse c
+)"#
+                    ),
+                );
+                const FIELD: &str = "'TOAST_incoming_canonical_count',incoming_canonical_count)";
+                assert_eq!(query.matches(FIELD).count(), 1);
+                query.replace(FIELD, "'TOAST_incoming_canonical_count',incoming_canonical_count,'COLUMN_witness',column_witness)")
+            }
+
+            async fn owner_audit(connection: &mut PgConnection) -> Value {
+                toast_audit_with(connection, column_owner_audit_sql(), json!([])).await
+            }
+
+            fn column_entry(e: &Value) -> bool {
+                e["tuple"][2].as_i64().is_some_and(|n| n > 0)
+                    && COLUMN_TYPES.iter().any(|kind| e["native"]["type"] == *kind)
+            }
+
+            fn checked_column(e: &Value) -> Result<(), String> {
+                let w = &e["COLUMN_witness"];
+                let expected_type = match w["kind"].as_str() {
+                    Some("r" | "p") => Some("table column"),
+                    Some("f") => Some("foreign table column"),
+                    Some("v") => Some("view column"),
+                    Some("m") => Some("materialized view column"),
+                    Some("c") => Some("composite type column"),
+                    Some("S") => Some("sequence column"),
+                    _ => None,
+                };
+                if expected_type.is_none()
+                    || e["native"]["type"].as_str() != expected_type
+                    || e["tuple"] != e["inverse_tuple"]
+                    || w["checks"] != json!(vec![true; 7])
+                    || w["namespace_count"] != 1
+                    || w["relation_count"] != 1
+                    || w["column_count"] != 1
+                    || w["found_tuple"] != e["tuple"]
+                    || w["function_tuple"] != e["tuple"]
+                    || w["found_native"] != e["native"]
+                    || w["inverse_namespace"] != "table column"
+                {
+                    return Err(
+                        "independent finite catalog/native/namespace inverse mismatch".into(),
+                    );
+                }
+                Ok(())
+            }
+
+            // The prerequisite deliberately does not assert the unresolved
+            // positive-column portable facts. No audit field is rewritten.
+            // Existing inverse_positive remains byte-identical and strict.
+            fn owner_inverse_prerequisite(audit: &Value) -> Result<(), String> {
+                census(audit)?;
+                let mut tuples = BTreeSet::new();
+                let mut columns = 0;
+                let mut toast = 0;
+                let mut expected_toast = BTreeSet::new();
+                for e in audit["inverse"].as_array().ok_or("missing inverse")? {
+                    if e["tuple"] != e["inverse_tuple"]
+                        || !tuples.insert(e["inverse_tuple"].to_string())
+                    {
+                        return Err("complete inverse tuple mismatch/collision".into());
+                    }
+                    if column_entry(e) {
+                        checked_column(e)?;
+                        columns += 1;
+                    } else if e["native"]["type"] == "toast table" {
+                        toast += 1;
+                        if e["TOAST_guards"] != json!(vec![true; 8])
+                            || e["TOAST_lookup_count"] != 1
+                            || e["TOAST_parent_global_count"] != 1
+                            || e["TOAST_parent_selected_count"] != 1
+                            || e["TOAST_internal_global_count"] != 1
+                            || e["TOAST_canonical_count"] != 1
+                            || e["TOAST_incoming_canonical_count"] != 1
+                            || !e["TOAST_expected"].is_object()
+                            || !expected_toast.insert(e["TOAST_expected"].to_string())
+                        {
+                            return Err("all eight retained TOAST inverse guards required".into());
+                        }
+                        for field in ["M", "I"] {
+                            if audit["scope"][field]
+                                .as_array()
+                                .ok_or("missing M/I")?
+                                .contains(&e["tuple"])
+                            {
+                                return Err("TOAST child metadata/incoming scope expansion".into());
+                            }
+                        }
+                    } else if e["valid"] != true || !e["portable"].is_object() {
+                        return Err("unrelated ordinary/RI/builtin identity prerequisite".into());
+                    }
+                }
+                if columns == 0 || toast == 0 {
+                    return Err("missing actual owner column/TOAST witness".into());
+                }
+                Ok(())
+            }
+
+            fn portable_columns_required(audit: &Value) -> Result<(), String> {
+                owner_inverse_prerequisite(audit)?;
+                for e in audit["inverse"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|e| column_entry(e))
+                {
+                    if e["valid"] != true
+                        || e["portable"] != e["native"]
+                        || !e["portable"].is_object()
+                    {
+                        return Err(format!(
+                            "actual positive column {} has valid={} portable={}",
+                            e["native"], e["valid"], e["portable"]
+                        ));
+                    }
+                }
+                Ok(())
+            }
+
+            const JSON_COLUMN_INPUTS: &str = r#"WITH column_json AS MATERIALIZED (
+ SELECT x,x->'native' AS native,
+ (x->'tuple'->>0)::oid AS classid,(x->'tuple'->>1)::oid AS objid,(x->'tuple'->>2)::integer AS objsubid
+ FROM jsonb_array_elements($1::jsonb) x
+), column_inputs AS MATERIALIZED (
+ SELECT classid,objid,objsubid,native AS native_address,native->>'type' AS native_type,
+ ARRAY(SELECT jsonb_array_elements_text(native->'object_names')) AS native_names,
+ ARRAY(SELECT jsonb_array_elements_text(native->'object_args')) AS native_args,
+ NULL::jsonb AS address,NULL::boolean AS valid,NULL::jsonb AS ri_flags,
+ CASE WHEN x ? 'input_classid' THEN (x->>'input_classid')::oid ELSE classid END AS input_classid,
+ CASE WHEN x ? 'input_objid' THEN (x->>'input_objid')::oid ELSE objid END AS input_objid,
+ CASE WHEN x ? 'input_objsubid' THEN (x->>'input_objsubid')::integer ELSE objsubid END AS input_objsubid,
+ CASE WHEN x ? 'input_type' THEN x->>'input_type' ELSE native->>'type' END AS input_type,
+ CASE WHEN x ? 'input_names' THEN CASE WHEN x->'input_names'='null'::jsonb THEN NULL
+ ELSE ARRAY(SELECT jsonb_array_elements_text(x->'input_names')) END
+ ELSE ARRAY(SELECT jsonb_array_elements_text(native->'object_names')) END AS input_names,
+ CASE WHEN x ? 'input_args' THEN CASE WHEN x->'input_args'='null'::jsonb THEN NULL
+ ELSE ARRAY(SELECT jsonb_array_elements_text(x->'input_args')) END
+ ELSE ARRAY(SELECT jsonb_array_elements_text(native->'object_args')) END AS input_args
+ FROM column_json
+)"#;
+
+            fn family_query(ctes: &str, inputs: &str) -> String {
+                format!(
+                    r#"{inputs},{ctes}
+SELECT jsonb_agg(jsonb_build_object('tuple',jsonb_build_array(classid::text,objid::text,objsubid),
+ 'native',native_address,'inverse_tuple',jsonb_build_array(inverse_classid::text,inverse_objid::text,inverse_objsubid),
+ 'COLUMN_witness',column_witness) ORDER BY classid,objid,objsubid)::text FROM column_inverse"#
+                )
+            }
+
+            async fn family_inverse(
+                connection: &mut PgConnection,
+                input: &Value,
+                ctes: &str,
+                inputs: &str,
+            ) -> Value {
+                sqlx::raw_sql(READER_SESSION)
+                    .execute(&mut *connection)
+                    .await
+                    .unwrap();
+                let started = Instant::now();
+                let raw: String = sqlx::query_scalar(sqlx::AssertSqlSafe(family_query(ctes, inputs)))
+                    .bind(sqlx::types::Json(input)).fetch_one(&mut *connection).await
+                    .expect("PREREQUISITE: actual finite column inverse must execute; SQL/timeout is not RED");
+                assert!(started.elapsed() <= Duration::from_secs(3));
+                serde_json::from_str(&raw).unwrap()
+            }
+
+            fn family_positive(audit: &Value) -> Result<(), String> {
+                let rows = audit.as_array().ok_or("missing seven-kind array")?;
+                if rows.len() != 7 {
+                    return Err("seven exact actual kind witnesses required".into());
+                }
+                let mut kinds = BTreeSet::new();
+                let mut tuples = BTreeSet::new();
+                for e in rows {
+                    checked_column(e)?;
+                    if !kinds.insert(e["COLUMN_witness"]["kind"].to_string())
+                        || !tuples.insert(e["tuple"].to_string())
+                    {
+                        return Err("duplicate catalog kind or tuple".into());
+                    }
+                }
+                let expected: BTreeSet<_> = ["r", "p", "f", "v", "m", "c", "S"]
+                    .into_iter()
+                    .map(|x| json!(x).to_string())
+                    .collect();
+                if kinds != expected {
+                    return Err("wrong finite catalog family".into());
+                }
+                Ok(())
+            }
+
+            async fn family_raw(connection: &mut PgConnection) -> Value {
+                let raw: String = sqlx::query_scalar(r#"WITH n AS (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname='org_column_v3_probe'),
+ c AS (SELECT oid FROM pg_catalog.pg_class WHERE relnamespace IN(SELECT oid FROM n))
+SELECT jsonb_build_object('namespace',(SELECT jsonb_agg(to_jsonb(x)||jsonb_build_object('xmin',x.xmin::text,'ctid',x.ctid::text) ORDER BY x.oid) FROM pg_catalog.pg_namespace x WHERE x.oid IN(SELECT oid FROM n)),
+ 'relations',(SELECT jsonb_agg((to_jsonb(x)-ARRAY['relpages','reltuples','relallvisible','relallfrozen','relfrozenxid','relminmxid'])||jsonb_build_object('xmin',x.xmin::text,'ctid',x.ctid::text) ORDER BY x.oid) FROM pg_catalog.pg_class x WHERE x.oid IN(SELECT oid FROM c)),
+ 'attributes',(SELECT jsonb_agg(to_jsonb(x)||jsonb_build_object('xmin',x.xmin::text,'ctid',x.ctid::text) ORDER BY x.attrelid,x.attnum) FROM pg_catalog.pg_attribute x WHERE x.attrelid IN(SELECT oid FROM c)),
+ 'types',(SELECT jsonb_agg(to_jsonb(x)||jsonb_build_object('xmin',x.xmin::text,'ctid',x.ctid::text) ORDER BY x.oid) FROM pg_catalog.pg_type x WHERE x.typnamespace IN(SELECT oid FROM n)),
+ 'dependencies',(SELECT jsonb_agg(to_jsonb(x)||jsonb_build_object('xmin',x.xmin::text,'ctid',x.ctid::text) ORDER BY to_jsonb(x)::text COLLATE "C",x.ctid) FROM pg_catalog.pg_depend x WHERE (x.classid='pg_catalog.pg_class'::regclass AND x.objid IN(SELECT oid FROM c)) OR (x.refclassid='pg_catalog.pg_class'::regclass AND x.refobjid IN(SELECT oid FROM c))))::text"#)
+                    .fetch_one(connection).await.unwrap();
+                serde_json::from_str(&raw).unwrap()
+            }
+
+            fn source_family_query() -> String {
+                const INPUT: &str = "), addresses(classid,objid,objsubid) AS MATERIALIZED (\n";
+                const NEXT: &str = "), type_format_inputs AS MATERIALIZED (\n";
+                let source = candidate_prefix();
+                assert_eq!(source.matches(INPUT).count(), 1);
+                assert_eq!(source.matches(NEXT).count(), 1);
+                let (before, input_and_after) = source.split_once(INPUT).unwrap();
+                let (_, after) = input_and_after.split_once(NEXT).unwrap();
+                // Only the addresses-input body receives genuinely observed
+                // isolated catalog tuples. The complete source prefix and all
+                // native/reconstruction/checked/RI/stable expressions and their
+                // real dependencies remain unchanged. This characterizes the
+                // finite seam, not full source scope or business-browser work.
+                format!(
+                    r#"{before}{INPUT}
+ SELECT (x->'tuple'->>0)::oid,(x->'tuple'->>1)::oid,(x->'tuple'->>2)::integer
+ FROM jsonb_array_elements($1::jsonb) x
+{NEXT}{after})
+SELECT jsonb_agg(jsonb_build_object(
+ 'tuple',jsonb_build_array(a.classid::text,a.objid::text,a.objsubid),
+ 'kind',c.relkind,'native',n.native_address,
+ 'expected_type',r.expected_type,'expected_names',to_jsonb(r.expected_names),
+ 'expected_args',to_jsonb(r.expected_args),'catalog_valid',r.catalog_valid,
+ 'native_valid',checked.native_valid,'valid',s.valid,'portable',s.address)
+ ORDER BY a.classid,a.objid,a.objsubid)::text
+FROM addresses a LEFT JOIN native_addresses n USING(classid,objid,objsubid)
+LEFT JOIN reconstruction r USING(classid,objid,objsubid)
+LEFT JOIN checked_native checked USING(classid,objid,objsubid)
+LEFT JOIN stable_addresses s USING(classid,objid,objsubid)
+LEFT JOIN pg_catalog.pg_class c ON a.classid='pg_catalog.pg_class'::regclass AND c.oid=a.objid"#
+                )
+            }
+
+            async fn source_family_observation(
+                connection: &mut PgConnection,
+                inputs: &Value,
+            ) -> Value {
+                sqlx::raw_sql(READER_SESSION)
+                    .execute(&mut *connection)
+                    .await
+                    .unwrap();
+                let started = Instant::now();
+                let raw: String = sqlx::query_scalar(sqlx::AssertSqlSafe(source_family_query()))
+                    .bind(sqlx::types::Json(inputs)).fetch_one(&mut *connection).await
+                    .expect("PREREQUISITE: pinned source seven-kind reconstruction must execute; SQL/timeout is not RED");
+                assert!(
+                    started.elapsed() <= Duration::from_secs(3),
+                    "PREREQUISITE: source seven-kind seam exceeded 3s"
+                );
+                serde_json::from_str(&raw).unwrap()
+            }
+
+            fn source_family_census(source: &Value, inverses: &Value) -> Result<(), String> {
+                family_positive(inverses)?;
+                let rows = source.as_array().ok_or("missing actual source family")?;
+                if rows.len() != 7 {
+                    return Err("source family must retain seven actual addresses".into());
+                }
+                let mut tuples = BTreeSet::new();
+                for row in rows {
+                    if !tuples.insert(row["tuple"].to_string()) {
+                        return Err("duplicate source family tuple".into());
+                    }
+                    let independent = inverses
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|e| e["tuple"] == row["tuple"])
+                        .ok_or("source row not in independently inverted family")?;
+                    if row["kind"] != independent["COLUMN_witness"]["kind"]
+                        || row["native"] != independent["native"]
+                    {
+                        return Err(
+                            "source/native/catalog witness differs from actual independent family"
+                                .into(),
+                        );
+                    }
+                    for field in ["catalog_valid", "native_valid", "valid"] {
+                        if !row[field].is_boolean() {
+                            return Err(format!("source family missing boolean {field}"));
+                        }
+                    }
+                    let object = row
+                        .as_object()
+                        .ok_or("source family row is not an object")?;
+                    for field in [
+                        "expected_type",
+                        "expected_names",
+                        "expected_args",
+                        "portable",
+                    ] {
+                        if !object.contains_key(field) {
+                            return Err(format!("source family omitted {field}"));
+                        }
+                    }
+                }
+                Ok(())
+            }
+
+            fn source_family_positive(source: &Value, inverses: &Value) -> Result<(), String> {
+                source_family_census(source, inverses)?;
+                for row in source.as_array().unwrap() {
+                    let independent = inverses
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|e| e["tuple"] == row["tuple"])
+                        .unwrap();
+                    if row["catalog_valid"] != true
+                        || row["native_valid"] != true
+                        || row["valid"] != true
+                        || row["expected_type"] != independent["native"]["type"]
+                        || row["expected_names"] != independent["native"]["object_names"]
+                        || row["expected_args"] != independent["native"]["object_args"]
+                        || row["portable"] != independent["native"]
+                        || !row["portable"].is_object()
+                    {
+                        return Err(format!(
+                            "actual source kind {} lacks exact native reconstruction/validity/portable identity: {}",
+                            row["kind"], row
+                        ));
+                    }
+                }
+                Ok(())
+            }
+
+            fn source_family_machinery_controls(inverses: &Value) {
+                family_positive(inverses)
+                    .expect("PREREQUISITE: actual seven-kind inverse before evidence controls");
+                // A separate normative evidence model, derived from genuine
+                // independent catalog/native/function observations. It is not
+                // a source observation and never qualifies the candidate.
+                let oracle_positive = Value::Array(inverses.as_array().unwrap().iter().map(|e| json!({
+                    "tuple":e["tuple"],"kind":e["COLUMN_witness"]["kind"],"native":e["native"],
+                    "expected_type":e["native"]["type"],"expected_names":e["native"]["object_names"],
+                    "expected_args":e["native"]["object_args"],"catalog_valid":true,"native_valid":true,
+                    "valid":true,"portable":e["native"]
+                })).collect());
+                source_family_positive(&oracle_positive, inverses)
+                    .expect("EVIDENCE_ONLY: uncorrupted seven-kind predicate model must pass");
+                for selected in 0..7 {
+                    for field in [
+                        "catalog_valid",
+                        "native_valid",
+                        "valid",
+                        "portable",
+                        "expected_type",
+                        "expected_names",
+                        "expected_args",
+                        "native",
+                    ] {
+                        let mut damaged = oracle_positive.clone();
+                        damaged[selected][field] =
+                            if ["catalog_valid", "native_valid", "valid"].contains(&field) {
+                                json!(false)
+                            } else {
+                                Value::Null
+                            };
+                        assert!(
+                            source_family_positive(&damaged, inverses).is_err(),
+                            "source predicate ignored {field} for actual kind {}",
+                            damaged[selected]["kind"]
+                        );
+                    }
+                }
+                let mut omitted = oracle_positive.clone();
+                omitted.as_array_mut().unwrap().pop();
+                assert!(source_family_positive(&omitted, inverses).is_err());
+                let mut duplicate = oracle_positive.clone();
+                duplicate[6] = duplicate[0].clone();
+                assert!(source_family_positive(&duplicate, inverses).is_err());
+                source_family_positive(&oracle_positive, inverses).unwrap();
+            }
+            async fn seven_kind_positive_and_controls(
+                connection: &mut PgConnection,
+            ) -> (Value, Value) {
+                let before = catalog(connection).await;
+                let ledger = applied_ledger(connection).await;
+                let business = complete_business(connection, false).await;
+                assert!(
+                    sqlx::query_scalar::<_, bool>(
+                        "SELECT to_regnamespace('org_column_v3_probe') IS NULL"
+                    )
+                    .fetch_one(&mut *connection)
+                    .await
+                    .unwrap()
+                );
+                sqlx::raw_sql("SAVEPOINT column_family")
+                    .execute(&mut *connection)
+                    .await
+                    .unwrap();
+                let mut observation = None;
+                let result = AssertUnwindSafe(async {
+                    sqlx::raw_sql(r#"CREATE SCHEMA org_column_v3_probe;
+CREATE TABLE org_column_v3_probe.source ("값" integer);
+CREATE TABLE org_column_v3_probe.partitioned_source ("값" integer) PARTITION BY RANGE("값");
+CREATE VIEW org_column_v3_probe.projection AS SELECT "값" FROM org_column_v3_probe.source;
+CREATE MATERIALIZED VIEW org_column_v3_probe.materialized_projection AS SELECT "값" FROM org_column_v3_probe.source WITH NO DATA;
+CREATE TYPE org_column_v3_probe.record_type AS ("값" integer);
+CREATE SEQUENCE org_column_v3_probe.sequence_value;
+CREATE EXTENSION IF NOT EXISTS file_fdw;
+CREATE SERVER org_column_v3_server FOREIGN DATA WRAPPER file_fdw;
+CREATE FOREIGN TABLE org_column_v3_probe.foreign_source ("값" integer) SERVER org_column_v3_server OPTIONS (filename '/dev/null', format 'csv');"#)
+                        .execute(&mut *connection).await.unwrap();
+                    let raw: String = sqlx::query_scalar(r#"SELECT jsonb_agg(jsonb_build_object('tuple',jsonb_build_array('pg_catalog.pg_class'::regclass::oid::text,c.oid::text,a.attnum::integer),
+ 'native',jsonb_build_object('type',ident.type,'object_names',to_jsonb(ident.object_names),'object_args',to_jsonb(ident.object_args))) ORDER BY c.oid)::text
+FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attnum=1 AND NOT a.attisdropped
+CROSS JOIN LATERAL pg_catalog.pg_identify_object_as_address('pg_catalog.pg_class'::regclass::oid,c.oid,a.attnum::integer) ident
+WHERE n.nspname='org_column_v3_probe' AND c.relkind IN('r','p','f','v','m','c','S')"#)
+                        .fetch_one(&mut *connection).await.unwrap();
+                    let inputs: Value = serde_json::from_str(&raw).unwrap();
+                    let baseline = family_inverse(connection, &inputs, COLUMN_CTES, JSON_COLUMN_INPUTS).await;
+                    family_positive(&baseline).expect("PREREQUISITE: seven actual catalog/native/function positives");
+                    let source = source_family_observation(connection, &inputs).await;
+                    source_family_census(&source, &baseline).expect("PREREQUISITE: actual pinned source seven-kind native/census observation");
+                    source_family_machinery_controls(&baseline);
+                    let saved = family_raw(connection).await;
+                    let selected = inputs.as_array().unwrap().iter().position(|x|x["native"]["type"]=="view column").unwrap();
+                    let selected_tuple = inputs[selected]["tuple"].clone();
+                    for (field,value) in [
+                        ("input_classid",json!("0")),("input_objid",json!("0")),
+                        ("input_objsubid",json!(0)),("input_objsubid",json!(-1)),
+                        ("input_type",json!("table column")),("input_type",Value::Null),
+                        ("input_names",Value::Null),("input_names",json!([])),
+                        ("input_names",json!(["org_column_v3_probe","projection"])),
+                        ("input_names",json!(["org_column_v3_probe","projection","값","extra"])),
+                        ("input_names",json!(["org_column_v3_probe","projection",null])),
+                        ("input_names",json!(["org_column_v3_probe","absent","값"])),
+                        ("input_names",json!(["absent","projection","값"])),
+                        ("input_args",Value::Null),("input_args",json!(["extra"])),("input_args",json!([null])),
+                    ] {
+                        let mut bad = inputs.clone(); bad[selected][field] = value;
+                        let refused = family_inverse(connection, &bad, COLUMN_CTES, JSON_COLUMN_INPUTS).await;
+                        assert_eq!(refused.as_array().unwrap().len(), 7);
+                        let e=refused.as_array().unwrap().iter().find(|e|e["tuple"]==selected_tuple).unwrap();
+                        assert!(checked_column(e).is_err(), "malformed input passed: {field}");
+                        assert_ne!(e["tuple"],e["inverse_tuple"],"no usable malformed inverse");
+                        assert_eq!(family_raw(connection).await,saved);
+                        assert_eq!(family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await,baseline);
+                    }
+                    for (from,to) in [
+                        ("count(*) AS column_match_count","count(*)+1 AS column_match_count"),
+                        ("(array_agg(c.oid ORDER BY c.oid,a.attnum))[1] AS observed_oid","t.input_objid AS observed_oid"),
+                    ] {
+                        assert_eq!(COLUMN_CTES.matches(from).count(),1);
+                        let corrupted=COLUMN_CTES.replace(from,to);
+                        let mut missing=inputs.clone(); missing[selected]["input_names"]=json!(["org_column_v3_probe","absent","값"]);
+                        let refused=family_inverse(connection,&missing,&corrupted,JSON_COLUMN_INPUTS).await;
+                        assert!(family_positive(&refused).is_err(),"lookup corruption hid missing catalog discovery");
+                        assert_eq!(family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await,baseline);
+                    }
+                    const NAMES: &str = "ELSE ARRAY(SELECT jsonb_array_elements_text(native->'object_names')) END AS input_names";
+                    assert_eq!(JSON_COLUMN_INPUTS.matches(NAMES).count(),1);
+                    for expression in ["array_fill('unused'::text,ARRAY[3],ARRAY[0])","array_fill('unused'::text,ARRAY[1,3])"] {
+                        let changed=JSON_COLUMN_INPUTS.replace(NAMES,&format!("ELSE {expression} END AS input_names"));
+                        let refused=family_inverse(connection,&inputs,COLUMN_CTES,&changed).await;
+                        assert_eq!(refused.as_array().unwrap().len(),7);
+                        assert!(family_positive(&refused).is_err(),"malformed SQL array shape passed");
+                        for entry in refused.as_array().unwrap() { assert_ne!(entry["tuple"],entry["inverse_tuple"]); }
+                        assert_eq!(family_raw(connection).await,saved);
+                        assert_eq!(family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await,baseline);
+                    }
+                    const NAME_FIND: &str = r#"SELECT count(*) AS column_match_count,
+   (array_agg(c.oid ORDER BY c.oid,a.attnum))[1] AS observed_oid,
+   (array_agg(a.attnum ORDER BY c.oid,a.attnum))[1] AS observed_attnum
+  FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid
+  WHERE n.nspname::text COLLATE "C"=t.input_names[1] COLLATE "C" AND c.relname::text COLLATE "C"=t.input_names[2] COLLATE "C"
+   AND a.attname::text COLLATE "C"=t.input_names[3] COLLATE "C""#;
+                    assert_eq!(COLUMN_CTES.matches(NAME_FIND).count(),1);
+                    let expected_oid_without_lookup=COLUMN_CTES.replace(NAME_FIND,"SELECT 1::bigint AS column_match_count,t.input_objid AS observed_oid,t.input_objsubid::smallint AS observed_attnum");
+                    let mut nonexistent_attribute=inputs.clone();
+                    nonexistent_attribute[selected]["input_names"]=json!(["org_column_v3_probe","projection","absent"]);
+                    let rejected=family_inverse(connection,&nonexistent_attribute,&expected_oid_without_lookup,JSON_COLUMN_INPUTS).await;
+                    assert!(family_positive(&rejected).is_err(),"fabricated lookup count and expected OID hid missing attribute discovery");
+                    let selected_entry=rejected.as_array().unwrap().iter().find(|e|e["tuple"]==selected_tuple).unwrap();
+                    assert_ne!(selected_entry["tuple"],selected_entry["inverse_tuple"]);
+                    let mut forged=baseline.clone();
+                    let chosen=forged.as_array_mut().unwrap().iter_mut().find(|e|e["tuple"]==selected_tuple).unwrap();
+                    chosen["COLUMN_witness"]["column_count"]=json!(0);
+                    chosen["inverse_tuple"]=chosen["tuple"].clone();
+                    assert!(family_positive(&forged).is_err(),"copied expected inverse hid omitted lookup");
+                    for mutation in [
+                        "UPDATE pg_catalog.pg_class SET relname='renamed_column_v3' WHERE oid=$1::text::oid AND $2::integer>0",
+                        "UPDATE pg_catalog.pg_class SET relkind='r' WHERE oid=$1::text::oid AND $2::integer>0",
+                        "UPDATE pg_catalog.pg_class SET relkind='i' WHERE oid=$1::text::oid AND $2::integer>0",
+                        "UPDATE pg_catalog.pg_class SET relnamespace='pg_catalog'::regnamespace WHERE oid=$1::text::oid AND $2::integer>0",
+                        "UPDATE pg_catalog.pg_attribute SET attname='renamed_column_v3' WHERE attrelid=$1::text::oid AND attnum=$2::integer",
+                        "UPDATE pg_catalog.pg_attribute SET attisdropped=true WHERE attrelid=$1::text::oid AND attnum=$2::integer",
+                        "UPDATE pg_catalog.pg_attribute SET atttypid=0 WHERE attrelid=$1::text::oid AND attnum=$2::integer",
+                    ] {
+                        sqlx::raw_sql("SAVEPOINT column_catalog_control").execute(&mut *connection).await.unwrap();
+                        let trial=AssertUnwindSafe(async {
+                            let count=sqlx::query(sqlx::AssertSqlSafe(mutation.to_owned()))
+                                .bind(selected_tuple[1].as_str().unwrap()).bind(selected_tuple[2].as_i64().unwrap() as i32)
+                                .execute(&mut *connection).await.unwrap().rows_affected();
+                            assert_eq!(count,1,"exact catalog mutation admission");
+                            let refused=family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await;
+                            assert_eq!(refused.as_array().unwrap().len(),7);
+                            let e=refused.as_array().unwrap().iter().find(|e|e["tuple"]==selected_tuple).unwrap();
+                            assert!(checked_column(e).is_err()); assert_ne!(e["tuple"],e["inverse_tuple"]);
+                        }).catch_unwind().await;
+                        sqlx::raw_sql("ROLLBACK TO SAVEPOINT column_catalog_control; RELEASE SAVEPOINT column_catalog_control").execute(&mut *connection).await.unwrap();
+                        assert_eq!(family_raw(connection).await,saved,"fresh complete raw/MVCC family restoration");
+                        assert_eq!(family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await,baseline);
+                        assert_eq!(source_family_observation(connection,&inputs).await,source,"fresh pinned source seven-kind restoration");
+                        if let Err(panic)=trial { std::panic::resume_unwind(panic); }
+                    }
+                    assert_eq!(applied_ledger(connection).await,ledger);
+                    assert_eq!(complete_business(connection,false).await,business);
+                    observation = Some((source, baseline));
+                }).catch_unwind().await;
+                sqlx::raw_sql(
+                    "ROLLBACK TO SAVEPOINT column_family; RELEASE SAVEPOINT column_family",
+                )
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+                assert!(
+                    sqlx::query_scalar::<_, bool>(
+                        "SELECT to_regnamespace('org_column_v3_probe') IS NULL"
+                    )
+                    .fetch_one(&mut *connection)
+                    .await
+                    .unwrap()
+                );
+                assert_eq!(
+                    catalog(connection).await,
+                    before,
+                    "catalog family rollback must restore existing custody"
+                );
+                assert_eq!(applied_ledger(connection).await, ledger);
+                assert_eq!(complete_business(connection, false).await, business);
+                if let Err(panic) = result {
+                    std::panic::resume_unwind(panic);
+                }
+                observation.expect(
+                    "PREREQUISITE: actual source family observation retained before rollback",
+                )
+            }
+
+            fn audit_machinery_controls(baseline: &Value) {
+                owner_inverse_prerequisite(baseline).unwrap();
+                for field in ["inverse", "objects"] {
+                    let mut omitted = baseline.clone();
+                    omitted[field].as_array_mut().unwrap().pop();
+                    assert!(owner_inverse_prerequisite(&omitted).is_err());
+                    let mut duplicate = baseline.clone();
+                    let copy = duplicate[field][0].clone();
+                    duplicate[field].as_array_mut().unwrap().push(copy);
+                    assert!(owner_inverse_prerequisite(&duplicate).is_err());
+                }
+                for field in ["ordinary_edges", "shared_edges"] {
+                    let mut changed = baseline.clone();
+                    let rows = changed[field].as_array_mut().unwrap();
+                    if rows.is_empty() {
+                        rows.push(Value::Null);
+                    } else {
+                        rows.pop();
+                    }
+                    assert!(
+                        owner_inverse_prerequisite(&changed).is_err(),
+                        "edge bag multiplicity must remain complete"
+                    );
+                }
+                let selected = baseline["inverse"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .position(column_entry)
+                    .unwrap();
+                for (field, value) in [
+                    ("inverse_tuple", Value::Null),
+                    ("COLUMN_witness", Value::Null),
+                ] {
+                    let mut bad = baseline.clone();
+                    bad["inverse"][selected][field] = value;
+                    assert!(owner_inverse_prerequisite(&bad).is_err());
+                }
+                // Evidence-only positive model. It leaves the actual
+                // source observation untouched and supplies no product pass.
+                // Every column in this independent model has its separately
+                // checked raw native address as the expected portable identity.
+                let mut oracle_positive = baseline.clone();
+                let columns: Vec<_> = oracle_positive["inverse"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, e)| column_entry(e))
+                    .map(|(i, _)| i)
+                    .collect();
+                for &index in &columns {
+                    oracle_positive["inverse"][index]["valid"] = json!(true);
+                    oracle_positive["inverse"][index]["portable"] =
+                        oracle_positive["inverse"][index]["native"].clone();
+                }
+                portable_columns_required(&oracle_positive)
+                    .expect("EVIDENCE_ONLY: uncorrupted owner column predicate model must pass");
+                inverse_positive(&oracle_positive)
+                    .expect("EVIDENCE_ONLY: predecessor strict predicate model must pass");
+                for &index in &columns {
+                    for field in ["valid", "portable"] {
+                        let mut bad = oracle_positive.clone();
+                        bad["inverse"][index][field] = if field == "valid" {
+                            json!(false)
+                        } else {
+                            Value::Null
+                        };
+                        assert!(
+                            portable_columns_required(&bad).is_err(),
+                            "successful inverse cannot confer portable validity"
+                        );
+                        assert!(
+                            inverse_positive(&bad).is_err(),
+                            "predecessor strict portability assertion must remain enforced"
+                        );
+                    }
+                }
+                portable_columns_required(&oracle_positive).unwrap();
+                inverse_positive(&oracle_positive).unwrap();
+            }
+
+            #[sqlx::test(migrations = false)]
+            async fn actor_complete_closed76_v3_finite_column_inverse_then_portable_validity(
+                pool: PgPool,
+            ) {
+                let sources = candidate_source_pins();
+                complete_fixture(&pool, CompleteFixtureFamily::Closed76, 0).await;
+                let mut admin = direct(&pool).await;
+                let expected_target = target(&mut admin).await;
+                let administrator:bool=sqlx::query_scalar("SELECT current_user=session_user AND (SELECT count(*)=1 AND bool_and(rolsuper) FROM pg_catalog.pg_roles WHERE rolname=current_user)")
+                    .fetch_one(&mut admin).await.unwrap();
+                assert!(
+                    administrator,
+                    "PREREQUISITE: actual administrator, no role switching"
+                );
+                let engine: i32 =
+                    sqlx::query_scalar("SELECT current_setting('server_version_num')::integer")
+                        .fetch_one(&mut admin)
+                        .await
+                        .unwrap();
+                assert_eq!(
+                    engine, 180004,
+                    "PREREQUISITE: pinned characterized PostgreSQL 18.4"
+                );
+                let mut tx = begin_protocol(&mut admin, &expected_target).await;
+                let original_ledger = applied_ledger(tx.as_mut()).await;
+                let original_rows = complete_business(tx.as_mut(), false).await;
+                let original_catalog = catalog(tx.as_mut()).await;
+                let mut baseline = None;
+                let result=AssertUnwindSafe(async {
+                    let (source_family, family_inverses)=seven_kind_positive_and_controls(tx.as_mut()).await;
+                    let actual=owner_audit(tx.as_mut()).await;
+                    owner_inverse_prerequisite(&actual).expect("PREREQUISITE: complete independent column/TOAST/native inverse positive before portable-validity RED");
+                    assert!(actual["inverse"].as_array().unwrap().iter().any(|e|column_entry(e) && e["native"]["type"]=="view column"),"PREREQUISITE: real selected owner view-column witness");
+                    audit_machinery_controls(&actual);
+                    assert_eq!(applied_ledger(tx.as_mut()).await,original_ledger);
+                    assert_eq!(complete_business(tx.as_mut(),false).await,original_rows);
+                    assert_eq!(catalog(tx.as_mut()).await,original_catalog);
+                    baseline=Some(actual.clone());
+                    writeln!(&mut std::io::stderr().lock(),"ORG_COLUMN_V3_INVERSE_PREREQUISITE {}",json!({
+                        "design_sha256":DESIGN,"sources":sources,"address_count":actual["address_count"],
+                        "actual_seven_kind_inverse_positive":true,"actual_pinned_seven_kind_source_observation":&source_family,
+                        "evidence_only_predicate_models":true,"source_family_predicate_corruptions":58,"malformed_input_controls":16,"SQL_array_shape_controls":2,"lookup_corruption_controls":4,"actual_catalog_controls":7,
+                        "all_eight_TOAST_guards_retained":true,"complete_inverse_raw_census":true,"source_flags_unchanged_by_helper":true,
+                        "semantic_column_validity_accepted":false,"TOAST_map_accepted":false,"full_PSV_packet_accepted":false,
+                        "database_owner_accepted":false,"MVP_accepted":false,"production_qualified":false})).unwrap();
+                    portable_columns_required(&actual)
+                        .and_then(|_| source_family_positive(&source_family, &family_inverses))
+                        .expect("COLUMN_V3_PORTABLE_VALIDITY_MISSING_OR_INVALID: actual finite positive columns must retain exact native portable identities");
+                }).catch_unwind().await;
+                tx.rollback()
+                    .await
+                    .expect("mandatory candidate diagnostic rollback");
+                assert!(matches_target(&mut admin, &expected_target).await);
+                let mut fresh = sqlx::Connection::begin(&mut admin).await.unwrap();
+                assert_eq!(applied_ledger(fresh.as_mut()).await, original_ledger);
+                assert_eq!(
+                    complete_business(fresh.as_mut(), false).await,
+                    original_rows
+                );
+                assert_eq!(catalog(fresh.as_mut()).await, original_catalog);
+                if let Some(before) = baseline {
+                    assert_eq!(
+                        owner_audit(fresh.as_mut()).await,
+                        before,
+                        "fresh raw/MVCC/census readback after semantic refusal"
+                    );
+                }
+                fresh.rollback().await.unwrap();
+                admin.close().await.unwrap();
+                if let Err(panic) = result {
+                    std::panic::resume_unwind(panic);
+                }
+            }
+        }
     }
 }
