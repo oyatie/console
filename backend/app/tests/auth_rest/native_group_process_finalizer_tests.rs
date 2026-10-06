@@ -680,6 +680,7 @@ mod native_group_process_finalizer_tests {
     }
     include!("native_group_navigation_correction_tests.rs");
     include!("native_group_navigation_finalizer_tests.rs");
+    include!("native_org_unit_account_actor_phase_measurements.rs");
 
     #[cfg(feature = "test-browser")]
     include!("native_group_process_browser_fixture.rs");

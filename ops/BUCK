@@ -269,3 +269,25 @@ export_file(
     name = "postgres-finalize-native-group-process-navigation-v1.sql",
     visibility = ["PUBLIC"],
 )
+
+# Uninstalled inputs for reviewed disposable OrgUnit actor-phase diagnostics.
+
+export_file(
+    name = "postgres-native-org-unit-account-actor-expansion-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-org-unit-account-actor-validation-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-closed76-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-group83-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
