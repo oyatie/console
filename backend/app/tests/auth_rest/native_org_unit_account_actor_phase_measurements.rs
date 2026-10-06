@@ -670,15 +670,19 @@ mod native_org_unit_account_actor_measurements {
         let old_attributes = before["attributes"].as_array().unwrap();
         let new_attributes = after["attributes"].as_array().unwrap();
         assert_eq!(new_attributes.len(), old_attributes.len() + 2);
+        let old_attribute_lookup: std::collections::HashSet<&Value> =
+            old_attributes.iter().collect();
+        let new_attribute_lookup: std::collections::HashSet<&Value> =
+            new_attributes.iter().collect();
         assert!(
             old_attributes
                 .iter()
-                .all(|old| new_attributes.contains(old)),
+                .all(|old| new_attribute_lookup.contains(old)),
             "existing attribute changed"
         );
         let added_attributes: Vec<_> = new_attributes
             .iter()
-            .filter(|new| !old_attributes.contains(new))
+            .filter(|new| !old_attribute_lookup.contains(new))
             .collect();
         assert_eq!(
             added_attributes
@@ -806,10 +810,16 @@ mod native_org_unit_account_actor_measurements {
         let old_defaults = before["defaults"].as_array().unwrap();
         let new_defaults = after["defaults"].as_array().unwrap();
         assert_eq!(new_defaults.len(), old_defaults.len() + 1);
-        assert!(old_defaults.iter().all(|row| new_defaults.contains(row)));
+        let old_default_lookup: std::collections::HashSet<&Value> = old_defaults.iter().collect();
+        let new_default_lookup: std::collections::HashSet<&Value> = new_defaults.iter().collect();
+        assert!(
+            old_defaults
+                .iter()
+                .all(|row| new_default_lookup.contains(row))
+        );
         let added_default = new_defaults
             .iter()
-            .find(|row| !old_defaults.contains(row))
+            .find(|row| !old_default_lookup.contains(row))
             .unwrap();
         // Emit before the next SQL call, including on an idle-expiry failure.
         eprintln!(
@@ -838,10 +848,16 @@ mod native_org_unit_account_actor_measurements {
         let old_comments = before["comments"].as_array().unwrap();
         let new_comments = after["comments"].as_array().unwrap();
         assert_eq!(new_comments.len(), old_comments.len() + 2);
-        assert!(old_comments.iter().all(|row| new_comments.contains(row)));
+        let old_comment_lookup: std::collections::HashSet<&Value> = old_comments.iter().collect();
+        let new_comment_lookup: std::collections::HashSet<&Value> = new_comments.iter().collect();
+        assert!(
+            old_comments
+                .iter()
+                .all(|row| new_comment_lookup.contains(row))
+        );
         let comments: Vec<_> = new_comments
             .iter()
-            .filter(|row| !old_comments.contains(row))
+            .filter(|row| !old_comment_lookup.contains(row))
             .collect();
         assert_eq!(
             comments
@@ -863,10 +879,14 @@ mod native_org_unit_account_actor_measurements {
         );
         let old_dependencies = before["dependencies"].as_array().unwrap();
         let new_dependencies = after["dependencies"].as_array().unwrap();
+        let old_dependency_lookup: std::collections::HashSet<&Value> =
+            old_dependencies.iter().collect();
+        let new_dependency_lookup: std::collections::HashSet<&Value> =
+            new_dependencies.iter().collect();
         assert!(
             old_dependencies
                 .iter()
-                .all(|row| new_dependencies.contains(row)),
+                .all(|row| new_dependency_lookup.contains(row)),
             "old dependency removed or changed"
         );
         eprintln!(
@@ -906,7 +926,7 @@ mod native_org_unit_account_actor_measurements {
         let additions_started = Instant::now();
         for dependency in new_dependencies
             .iter()
-            .filter(|row| !old_dependencies.contains(row))
+            .filter(|row| !old_dependency_lookup.contains(row))
         {
             let object = (
                 dependency["classid"].as_str().unwrap().to_owned(),
@@ -942,11 +962,13 @@ mod native_org_unit_account_actor_measurements {
             old_tuples.len() + 11,
             "only two attributes/four constraints/four RI triggers/one default may add tuples"
         );
+        let mut new_tuple_lookup: std::collections::HashMap<(&Value, &Value), &Value> =
+            std::collections::HashMap::with_capacity(new_tuples.len());
+        for row in new_tuples {
+            new_tuple_lookup.entry((&row[0], &row[1])).or_insert(row);
+        }
         for old in old_tuples {
-            let new = new_tuples
-                .iter()
-                .find(|new| new[0] == old[0] && new[1] == old[1])
-                .unwrap();
+            let new = new_tuple_lookup.get(&(&old[0], &old[1])).copied().unwrap();
             if old != new {
                 assert_eq!(old[0], "relation");
                 assert!(
@@ -1000,11 +1022,13 @@ mod native_org_unit_account_actor_measurements {
         let new_tuples = after.extra["tuples"].as_array().unwrap();
         assert_eq!(old_tuples.len(), new_tuples.len());
         let mut changed_tuples = BTreeSet::new();
+        let mut new_tuple_lookup: std::collections::HashMap<(&Value, &Value), &Value> =
+            std::collections::HashMap::with_capacity(new_tuples.len());
+        for row in new_tuples {
+            new_tuple_lookup.entry((&row[0], &row[1])).or_insert(row);
+        }
         for old in old_tuples {
-            let new = new_tuples
-                .iter()
-                .find(|new| new[0] == old[0] && new[1] == old[1])
-                .unwrap();
+            let new = new_tuple_lookup.get(&(&old[0], &old[1])).copied().unwrap();
             if new != old {
                 assert_eq!(old[0], "constraint");
                 assert!(
