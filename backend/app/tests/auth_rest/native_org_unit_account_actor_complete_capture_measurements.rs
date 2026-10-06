@@ -1272,4 +1272,773 @@ SELECT (SELECT oid::text FROM pg_catalog.pg_type WHERE oid='pg_catalog.uuid[]'::
         Navigation83,
         1
     );
+
+    // Adopted portable TOAST V2, test-only successor. V1 helpers stay unchanged.
+    mod portable_toast_v2_successor_tests {
+        use super::*;
+        use sqlx::Connection as _;
+        use std::io::Write as _;
+
+        const TOAST_V2_DESIGN: &str =
+            "075d904c3e5b4bdd6e8f1bae1dca6b1c891f6471b5598f018cc89be0fb572be0";
+        const OLD_INVERSE: &str = r#", inverse AS MATERIALIZED (
+ SELECT a.classid,a.objid,a.objsubid,n.native_address,s.address,s.valid,s.ri_flags,
+ inverse.classid AS inverse_classid,inverse.objid AS inverse_objid,inverse.objsubid AS inverse_objsubid
+ FROM addresses a JOIN native_addresses n USING(classid,objid,objsubid)
+ JOIN stable_addresses s USING(classid,objid,objsubid)
+ CROSS JOIN LATERAL pg_catalog.pg_get_object_address(n.native_type,n.native_names,n.native_args) inverse
+)"#;
+
+        // $1 is [] in the admitted audit. Controls may replace private original
+        // input components for one actual tuple; they do not rewrite catalogs,
+        // the portable map, or native/raw evidence. Lookup never selects an OID.
+        const CHECKED_INVERSE: &str = r#", toast_original_inputs AS MATERIALIZED (
+     SELECT a.classid,a.objid,a.objsubid,n.native_address,n.native_type,n.native_names,n.native_args,
+     c.catalog_valid,s.address,s.valid,s.ri_flags,
+     CASE WHEN o.patch ? 'classid' THEN (o.patch->>'classid')::oid ELSE a.classid END AS input_classid,
+     CASE WHEN o.patch ? 'objid' THEN (o.patch->>'objid')::oid ELSE a.objid END AS input_objid,
+     CASE WHEN o.patch ? 'objsubid' THEN (o.patch->>'objsubid')::integer ELSE a.objsubid END AS input_objsubid,
+     CASE WHEN o.patch ? 'type' THEN o.patch->>'type' ELSE n.native_type END AS input_type,
+     CASE WHEN o.patch ? 'names' THEN CASE WHEN o.patch->'names'='null'::jsonb THEN NULL ELSE
+      ARRAY(SELECT jsonb_array_elements_text(o.patch->'names')) END ELSE n.native_names END AS input_names,
+     CASE WHEN o.patch ? 'args' THEN CASE WHEN o.patch->'args'='null'::jsonb THEN NULL ELSE
+      ARRAY(SELECT jsonb_array_elements_text(o.patch->'args')) END ELSE n.native_args END AS input_args
+     FROM addresses a LEFT JOIN native_addresses n USING(classid,objid,objsubid)
+     LEFT JOIN checked_native c USING(classid,objid,objsubid)
+     LEFT JOIN stable_addresses s USING(classid,objid,objsubid)
+     LEFT JOIN LATERAL (
+      SELECT e->'patch' AS patch FROM jsonb_array_elements($1::jsonb) e
+      WHERE e->'tuple'=jsonb_build_array(a.classid::text,a.objid::text,a.objsubid)
+     ) o ON true
+    ), toast_inputs AS MATERIALIZED (
+     SELECT * FROM toast_original_inputs WHERE native_type='toast table' OR input_type='toast table'
+    ), toast_name_lookups AS MATERIALIZED (
+     SELECT t.*,found.lookup_count,found.observed_oid
+     FROM toast_inputs t LEFT JOIN LATERAL (
+      SELECT count(*) AS lookup_count,(array_agg(child.oid ORDER BY child.oid))[1] AS observed_oid
+      FROM pg_catalog.pg_class child JOIN pg_catalog.pg_namespace ns ON ns.oid=child.relnamespace
+      WHERE ns.nspname::text=t.input_names[1] AND child.relname::text=t.input_names[2]
+     ) found ON true
+    ), toast_found_children AS MATERIALIZED (
+     SELECT t.*,child.relname,child.relkind,child.relpersistence,child.relispartition,
+     child.reltoastrelid,child.relowner,ns.nspname,child.oid AS found_child_oid,
+     id.type AS found_type,id.object_names AS found_names,id.object_args AS found_args
+     FROM toast_name_lookups t LEFT JOIN pg_catalog.pg_class child
+     ON t.lookup_count=1 AND child.oid=t.observed_oid
+     LEFT JOIN pg_catalog.pg_namespace ns ON ns.oid=child.relnamespace
+     LEFT JOIN LATERAL pg_catalog.pg_identify_object_as_address(
+      'pg_catalog.pg_class'::regclass::oid,child.oid,0) id ON child.oid IS NOT NULL
+    ), toast_parent_lookups AS MATERIALIZED (
+     SELECT t.*,parents.global_parent_count,parents.parent_oid,selected.selected_parent_count,
+     owners.global_internal_count,canonical.canonical_count,bag.incoming_canonical_count
+     FROM toast_found_children t LEFT JOIN LATERAL (
+      SELECT count(*) AS global_parent_count,(array_agg(p.oid ORDER BY p.oid))[1] AS parent_oid
+      FROM pg_catalog.pg_class p WHERE p.reltoastrelid=t.found_child_oid
+     ) parents ON true LEFT JOIN LATERAL (
+      SELECT count(*) AS selected_parent_count FROM selected_relations p
+      WHERE p.reltoastrelid=t.found_child_oid
+     ) selected ON true LEFT JOIN LATERAL (
+      SELECT count(*) AS global_internal_count FROM pg_catalog.pg_depend d
+      WHERE d.classid='pg_catalog.pg_class'::regclass AND d.objid=t.found_child_oid AND d.deptype='i'
+     ) owners ON true LEFT JOIN LATERAL (
+      SELECT count(*) AS canonical_count FROM pg_catalog.pg_depend d
+      WHERE d.classid='pg_catalog.pg_class'::regclass AND d.objid=t.found_child_oid AND d.objsubid=0
+      AND d.refclassid='pg_catalog.pg_class'::regclass AND d.refobjid=parents.parent_oid
+      AND d.refobjsubid=0 AND d.deptype='i'
+     ) canonical ON true LEFT JOIN LATERAL (
+      SELECT count(*) AS incoming_canonical_count FROM ordinary_edges d
+      WHERE d.classid='pg_catalog.pg_class'::regclass AND d.objid=t.found_child_oid AND d.objsubid=0
+      AND d.refclassid='pg_catalog.pg_class'::regclass AND d.refobjid=parents.parent_oid
+      AND d.refobjsubid=0 AND d.deptype='i'
+     ) bag ON true
+    ), toast_parents AS MATERIALIZED (
+     SELECT t.*,p.oid AS found_parent_oid,p.relkind AS parent_relkind,p.relpersistence AS parent_persistence,
+     p.relispartition AS parent_partition,p.relowner AS parent_owner,p.reltoastrelid AS parent_toast,
+     cp.native_valid AS parent_native_valid,cp.native_address AS checked_parent_native,
+     cp.native_type AS checked_parent_type,cp.native_names AS checked_parent_names,
+     cp.native_args AS checked_parent_args,role.oid AS actual_owner_oid,
+     ident.type AS parent_type,ident.object_names AS parent_names,ident.object_args AS parent_args,
+     EXISTS(SELECT 1 FROM metadata_m m WHERE
+      (m.classid,m.objid,m.objsubid)=('pg_catalog.pg_class'::regclass::oid,p.oid,0)) AS parent_in_m,
+     EXISTS(SELECT 1 FROM incoming_i i WHERE
+      (i.classid,i.objid,i.objsubid)=('pg_catalog.pg_class'::regclass::oid,p.oid,0)) AS parent_in_i
+     FROM toast_parent_lookups t LEFT JOIN pg_catalog.pg_class p
+     ON t.global_parent_count=1 AND p.oid=t.parent_oid
+     LEFT JOIN checked_relation_addresses cp ON
+     (cp.classid,cp.objid,cp.objsubid)=('pg_catalog.pg_class'::regclass::oid,p.oid,0)
+     LEFT JOIN pg_catalog.pg_roles role ON role.oid=t.relowner
+     LEFT JOIN LATERAL pg_catalog.pg_identify_object_as_address(
+      'pg_catalog.pg_class'::regclass::oid,p.oid,0) ident ON p.oid IS NOT NULL
+    ), toast_eligible_parent_inputs AS MATERIALIZED (
+     SELECT * FROM toast_parents WHERE found_parent_oid IS NOT NULL
+     AND parent_relkind='r' AND parent_persistence='p' AND parent_partition=false
+     AND parent_native_valid IS TRUE AND checked_parent_type='table'
+     AND parent_type='table' AND parent_names=checked_parent_names AND parent_args=checked_parent_args
+     AND parent_names IS NOT NULL AND parent_args=ARRAY[]::text[]
+     AND NOT EXISTS(SELECT 1 FROM unnest(parent_names||parent_args) part WHERE part IS NULL)
+    ), toast_parent_native_inverses AS MATERIALIZED (
+     SELECT p.classid,p.objid,p.objsubid,
+     inverse.classid AS parent_inverse_classid,inverse.objid AS parent_inverse_oid,
+     inverse.objsubid AS parent_inverse_subid
+     FROM toast_eligible_parent_inputs p CROSS JOIN LATERAL
+     pg_catalog.pg_get_object_address(p.parent_type,p.parent_names,p.parent_args) inverse
+    ), toast_guard_witnesses AS MATERIALIZED (
+     SELECT t.*,
+     ARRAY[
+      (t.classid='pg_catalog.pg_class'::regclass AND t.objsubid=0
+       AND t.input_classid='pg_catalog.pg_class'::regclass AND t.input_objsubid=0
+       AND t.lookup_count=1 AND t.found_child_oid IS NOT NULL AND t.relkind='t'
+       AND t.relpersistence='p' AND t.relispartition=false AND t.nspname='pg_toast'
+       AND t.reltoastrelid=0) IS TRUE,
+      (t.native_type='toast table' AND t.input_type='toast table' AND t.catalog_valid IS TRUE
+       AND t.input_names IS NOT NULL AND array_ndims(t.input_names)=1 AND array_lower(t.input_names,1)=1
+       AND cardinality(t.input_names)=2 AND t.input_names=ARRAY[t.nspname::text,t.relname::text]
+       AND t.input_args IS NOT NULL AND t.input_args=ARRAY[]::text[]
+       AND NOT EXISTS(SELECT 1 FROM unnest(t.input_names||t.input_args) part WHERE part IS NULL)
+       AND t.found_type=t.input_type AND t.found_names=t.input_names AND t.found_args=t.input_args
+       AND t.found_child_oid=t.input_objid) IS TRUE,
+      (t.relname::text ~ '^pg_toast_[0-9]+$') IS TRUE,
+      (t.global_parent_count=1 AND t.selected_parent_count=1 AND t.parent_in_m AND t.parent_in_i
+       AND t.parent_toast=t.found_child_oid) IS TRUE,
+      (t.parent_relkind='r' AND t.parent_persistence='p' AND t.parent_partition=false
+       AND t.parent_native_valid IS TRUE AND t.parent_type='table'
+       AND t.parent_names IS NOT NULL AND t.parent_args=ARRAY[]::text[]
+       AND t.checked_parent_native=jsonb_build_object('type',t.parent_type,
+         'object_names',to_jsonb(t.parent_names),'object_args',to_jsonb(t.parent_args))
+       AND (pi.parent_inverse_classid,pi.parent_inverse_oid,pi.parent_inverse_subid)=
+         ('pg_catalog.pg_class'::regclass::oid,t.found_parent_oid,0)) IS TRUE,
+      (t.relowner=t.parent_owner AND t.actual_owner_oid=t.relowner) IS TRUE,
+      (t.global_internal_count=1 AND t.canonical_count=1 AND t.incoming_canonical_count=1) IS TRUE,
+      ((SELECT count(*) FROM native_addresses n WHERE
+        (n.classid,n.objid,n.objsubid)=(t.classid,t.objid,t.objsubid))=1
+       AND (SELECT count(*) FROM stable_addresses s WHERE
+        (s.classid,s.objid,s.objsubid)=(t.classid,t.objid,t.objsubid))=1) IS TRUE
+     ] AS toast_guards,
+     jsonb_build_object('type','table TOAST storage','parent',jsonb_build_object(
+      'type',t.parent_type,'object_names',to_jsonb(t.parent_names),'object_args',to_jsonb(t.parent_args))) AS expected_portable,
+     jsonb_build_array('pg_catalog.pg_class'::regclass::oid::text,t.found_parent_oid::text,0) AS parent_tuple
+     FROM toast_parents t LEFT JOIN toast_parent_native_inverses pi USING(classid,objid,objsubid)
+    ), ordinary_native_inverse_inputs AS MATERIALIZED (
+     SELECT * FROM toast_original_inputs WHERE
+     native_type IS DISTINCT FROM 'toast table' AND input_type IS DISTINCT FROM 'toast table'
+    ), inverse AS MATERIALIZED (
+     SELECT t.classid,t.objid,t.objsubid,t.native_address,t.address,t.valid,t.ri_flags,
+     CASE WHEN true=ALL(t.toast_guards) THEN 'pg_catalog.pg_class'::regclass::oid END AS inverse_classid,
+     CASE WHEN true=ALL(t.toast_guards) THEN t.found_child_oid END AS inverse_objid,
+     CASE WHEN true=ALL(t.toast_guards) THEN 0 END AS inverse_objsubid,
+     to_jsonb(t.toast_guards) AS toast_guard_checks,t.expected_portable,t.parent_tuple,t.lookup_count,
+     t.global_parent_count,t.selected_parent_count,t.global_internal_count,t.canonical_count,t.incoming_canonical_count
+     FROM toast_guard_witnesses t
+     UNION ALL
+     SELECT t.classid,t.objid,t.objsubid,t.native_address,t.address,t.valid,t.ri_flags,
+     inverse.classid,inverse.objid,inverse.objsubid,NULL::jsonb,NULL::jsonb,NULL::jsonb,NULL::bigint,
+     NULL::bigint,NULL::bigint,NULL::bigint,NULL::bigint,NULL::bigint
+     FROM ordinary_native_inverse_inputs t LEFT JOIN LATERAL
+     pg_catalog.pg_get_object_address(t.native_type,t.native_names,t.native_args) inverse ON true
+    )"#;
+
+        fn toast_audit_sql() -> String {
+            let original = complete_inverse_sql();
+            assert_eq!(original.matches(OLD_INVERSE).count(), 1);
+            let query = original.replace(OLD_INVERSE, CHECKED_INVERSE);
+            const END: &str = "'RI_flags',ri_flags)";
+            assert_eq!(query.matches(END).count(), 1);
+            let query = query.replace(END, "'RI_flags',ri_flags,'TOAST_guards',toast_guard_checks,\
+                    'TOAST_expected',expected_portable,'TOAST_parent_tuple',parent_tuple,\
+                    'TOAST_lookup_count',lookup_count,'TOAST_parent_global_count',global_parent_count,\
+                    'TOAST_parent_selected_count',selected_parent_count,'TOAST_internal_global_count',global_internal_count,\
+                    'TOAST_canonical_count',canonical_count,'TOAST_incoming_canonical_count',incoming_canonical_count)");
+            const COUNT: &str = "'address_count',(SELECT count(*) FROM addresses),";
+            assert_eq!(query.matches(COUNT).count(), 1);
+            query.replace(COUNT, r#"'address_count',(SELECT count(*) FROM addresses),
+     'scope',jsonb_build_object(
+      'M',(SELECT jsonb_agg(jsonb_build_array(classid::text,objid::text,objsubid) ORDER BY classid,objid,objsubid) FROM metadata_m),
+      'I',(SELECT jsonb_agg(jsonb_build_array(classid::text,objid::text,objsubid) ORDER BY classid,objid,objsubid) FROM incoming_i),
+      'addresses',(SELECT jsonb_agg(jsonb_build_array(classid::text,objid::text,objsubid) ORDER BY classid,objid,objsubid) FROM addresses),
+      'selected_relations',(SELECT jsonb_agg(jsonb_build_object('oid',oid::text,'name',relname,'toast',reltoastrelid::text)
+        ORDER BY oid) FROM selected_relations),
+      'ordinary_edge_count',(SELECT count(*) FROM ordinary_edges),
+      'shared_edge_count',(SELECT count(*) FROM shared_edges)),"#)
+        }
+
+        async fn toast_audit_with(
+            connection: &mut PgConnection,
+            query: String,
+            overrides: Value,
+        ) -> Value {
+            sqlx::raw_sql(READER_SESSION)
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+            let start = Instant::now();
+            let raw: String = sqlx::query_scalar(sqlx::AssertSqlSafe(query))
+                    .bind(sqlx::types::Json(overrides))
+                    .fetch_one(&mut *connection)
+                    .await
+                    .expect("PREREQUISITE: checked catalog inverse must execute; SQL/build/schema/permission/timeout is not semantic TOAST RED");
+            assert!(
+                start.elapsed() <= Duration::from_secs(3),
+                "PREREQUISITE: focused address audit exceeded 3s"
+            );
+            serde_json::from_str(&raw).unwrap()
+        }
+
+        async fn toast_audit(connection: &mut PgConnection) -> Value {
+            toast_audit_with(connection, toast_audit_sql(), json!([])).await
+        }
+
+        fn census(audit: &Value) -> Result<(), String> {
+            let count = audit["address_count"]
+                .as_u64()
+                .ok_or("missing address count")? as usize;
+            if count == 0 {
+                return Err("empty address census".into());
+            }
+            let mut keys = Vec::new();
+            for field in ["inverse", "objects"] {
+                let entries = audit[field].as_array().ok_or(format!("missing {field}"))?;
+                let actual: BTreeSet<_> = entries.iter().map(|e| e["tuple"].to_string()).collect();
+                if entries.len() != count || actual.len() != count {
+                    return Err(format!("{field} cardinality/uniqueness"));
+                }
+                keys.push(actual);
+            }
+            let scope = audit["scope"]["addresses"]
+                .as_array()
+                .ok_or("missing original addresses")?;
+            let scope_keys: BTreeSet<_> = scope.iter().map(Value::to_string).collect();
+            if scope.len() != count
+                || scope_keys.len() != count
+                || keys[0] != scope_keys
+                || keys[1] != scope_keys
+            {
+                return Err("omitted or changed address/raw endpoint".into());
+            }
+            for (raw, count_key) in [
+                ("ordinary_edges", "ordinary_edge_count"),
+                ("shared_edges", "shared_edge_count"),
+            ] {
+                if audit[raw].as_array().ok_or(format!("missing {raw}"))?.len() as u64
+                    != audit["scope"][count_key]
+                        .as_u64()
+                        .ok_or(format!("missing {count_key}"))?
+                {
+                    return Err(format!("{raw} bag multiplicity"));
+                }
+            }
+            Ok(())
+        }
+
+        fn inverse_positive(audit: &Value) -> Result<(), String> {
+            census(audit)?;
+            let mut inverses = BTreeSet::new();
+            let mut expected = BTreeSet::new();
+            let mut toast_count = 0;
+            for e in audit["inverse"].as_array().unwrap() {
+                if e["tuple"] != e["inverse_tuple"]
+                    || !inverses.insert(e["inverse_tuple"].to_string())
+                {
+                    return Err("independent inverse tuple mismatch/collision".into());
+                }
+                if e["native"]["type"] == "toast table" {
+                    toast_count += 1;
+                    if e["TOAST_guards"] != json!(vec![true; 8])
+                        || e["TOAST_lookup_count"] != 1
+                        || e["TOAST_parent_global_count"] != 1
+                        || e["TOAST_parent_selected_count"] != 1
+                        || e["TOAST_internal_global_count"] != 1
+                        || e["TOAST_canonical_count"] != 1
+                        || e["TOAST_incoming_canonical_count"] != 1
+                        || !e["TOAST_expected"].is_object()
+                        || !expected.insert(e["TOAST_expected"].to_string())
+                    {
+                        return Err("checked TOAST inverse/parent/owner/edge precondition".into());
+                    }
+                    // These generated storage children remain endpoint-only.
+                    for field in ["M", "I"] {
+                        if audit["scope"][field]
+                            .as_array()
+                            .unwrap()
+                            .contains(&e["tuple"])
+                        {
+                            return Err("TOAST child expanded metadata/incoming scope".into());
+                        }
+                    }
+                } else if e["valid"] != true || !e["portable"].is_object() {
+                    return Err("ordinary/RI/builtin identity changed or refused".into());
+                }
+            }
+            if toast_count == 0 {
+                return Err("no real TOAST fixture witness".into());
+            }
+            Ok(())
+        }
+
+        fn semantic_positive(audit: &Value) -> Result<(), String> {
+            inverse_positive(audit)?;
+            let mut portable = BTreeSet::new();
+            for e in audit["inverse"].as_array().unwrap() {
+                if e["valid"] != true
+                    || !e["portable"].is_object()
+                    || !portable.insert(e["portable"].to_string())
+                {
+                    return Err("unresolved/duplicate stable identity".into());
+                }
+                if e["native"]["type"] == "toast table" && e["portable"] != e["TOAST_expected"] {
+                    return Err(
+                        "TOAST semantic identity differs from independent actual-parent inverse"
+                            .into(),
+                    );
+                }
+            }
+            Ok(())
+        }
+
+        fn machinery_controls(baseline: &Value) {
+            inverse_positive(baseline)
+                .expect("PREREQUISITE: true inverse positive before injected evidence faults");
+            // Evidence-only positive; this does not accept a product capture.
+            let mut oracle_positive = baseline.clone();
+            for entry in oracle_positive["inverse"].as_array_mut().unwrap() {
+                if entry["native"]["type"] == "toast table" {
+                    entry["portable"] = entry["TOAST_expected"].clone();
+                    entry["valid"] = json!(true);
+                }
+            }
+            semantic_positive(&oracle_positive)
+                .expect("private expected-map oracle positive must actually pass");
+            for fault in ["NULL_map", "wrong_type", "map_collision", "omitted_TOAST"] {
+                let mut damaged = oracle_positive.clone();
+                let indices: Vec<_> = damaged["inverse"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, entry)| entry["native"]["type"] == "toast table")
+                    .map(|(index, _)| index)
+                    .collect();
+                assert!(
+                    indices.len() >= 2,
+                    "PREREQUISITE: two real storage identity witnesses"
+                );
+                match fault {
+                    "NULL_map" => damaged["inverse"][indices[0]]["portable"] = Value::Null,
+                    "wrong_type" => {
+                        damaged["inverse"][indices[0]]["portable"]["type"] = json!("table")
+                    }
+                    "map_collision" => {
+                        damaged["inverse"][indices[0]]["portable"] =
+                            damaged["inverse"][indices[1]]["portable"].clone()
+                    }
+                    "omitted_TOAST" => {
+                        damaged["inverse"]
+                            .as_array_mut()
+                            .unwrap()
+                            .remove(indices[0]);
+                    }
+                    _ => unreachable!(),
+                }
+                assert!(
+                    semantic_positive(&damaged).is_err(),
+                    "corrupted map evidence accepted: {fault}"
+                );
+            }
+
+            for field in ["inverse", "objects", "ordinary_edges", "shared_edges"] {
+                let entries = baseline[field].as_array().unwrap();
+                assert!(
+                    !entries.is_empty(),
+                    "PREREQUISITE: nonempty corruption witness {field}"
+                );
+                let mut omitted = baseline.clone();
+                omitted[field].as_array_mut().unwrap().pop();
+                assert!(
+                    census(&omitted).is_err(),
+                    "omitted evidence accepted: {field}"
+                );
+                let mut duplicate = baseline.clone();
+                duplicate[field]
+                    .as_array_mut()
+                    .unwrap()
+                    .push(entries[0].clone());
+                assert!(
+                    census(&duplicate).is_err(),
+                    "duplicate evidence accepted: {field}"
+                );
+            }
+            let mut changed = baseline.clone();
+            changed["inverse"][0]["inverse_tuple"][1] = json!("0");
+            assert!(
+                inverse_positive(&changed).is_err(),
+                "copied expected inverse accepted"
+            );
+            let mut missing = baseline.clone();
+            let toast = missing["inverse"]
+                .as_array_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|e| e["native"]["type"] == "toast table")
+                .unwrap();
+            toast["TOAST_guards"][5] = json!(false);
+            assert!(
+                inverse_positive(&missing).is_err(),
+                "owner guard omitted from oracle"
+            );
+            let mut dropped = baseline.clone();
+            dropped["scope"]["addresses"].as_array_mut().unwrap().pop();
+            assert!(census(&dropped).is_err(), "omitted endpoint accepted");
+        }
+
+        async fn platform_refusals(connection: &mut PgConnection, child: &Value) {
+            let names: Vec<String> = child["native"]["object_names"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap().to_owned())
+                .collect();
+            for (kind, code) in [("toast table", "22023"), ("table", "42809")] {
+                sqlx::raw_sql("SAVEPOINT toast_platform_probe")
+                    .execute(&mut *connection)
+                    .await
+                    .unwrap();
+                let result = sqlx::query(
+                    "SELECT * FROM pg_catalog.pg_get_object_address($1,$2::text[],ARRAY[]::text[])",
+                )
+                .bind(kind)
+                .bind(&names)
+                .fetch_all(&mut *connection)
+                .await;
+                let error = result.expect_err(
+                    "pinned unsupported TOAST platform inverse unexpectedly became usable",
+                );
+                assert_eq!(
+                    error.as_database_error().and_then(|e| e.code()).as_deref(),
+                    Some(code)
+                );
+                sqlx::raw_sql("ROLLBACK TO SAVEPOINT toast_platform_probe; RELEASE SAVEPOINT toast_platform_probe")
+                        .execute(&mut *connection).await.unwrap();
+            }
+        }
+
+        async fn original_input_controls(
+            connection: &mut PgConnection,
+            baseline: &Value,
+            child: &Value,
+        ) {
+            let tuple = child["tuple"].clone();
+            let names = child["native"]["object_names"].clone();
+            let cases = [
+                (
+                    "missing raw name",
+                    json!({"names":["pg_toast","pg_toast_999999999999999999999999999999"]}),
+                ),
+                (
+                    "missing raw namespace",
+                    json!({"names":["console_absent_toast_namespace",names[1]]}),
+                ),
+                ("alias namespace", json!({"names":["pg_catalog",names[1]]})),
+                (
+                    "extra native name",
+                    json!({"names":[names[0],names[1],"extra"]}),
+                ),
+                ("partial native names", json!({"names":[names[0]]})),
+                ("NULL name part", json!({"names":[names[0],null]})),
+                ("NULL names", json!({"names":null})),
+                ("nonempty arguments", json!({"args":["extra"]})),
+                ("NULL argument part", json!({"args":[null]})),
+                ("NULL arguments", json!({"args":null})),
+                ("native type disagreement", json!({"type":"table"})),
+                ("wrong original tuple", json!({"objid":"0"})),
+                ("wrong class", json!({"classid":"0"})),
+                ("positive subobject", json!({"objsubid":1})),
+                ("negative subobject", json!({"objsubid":-1})),
+            ];
+            for (name, patch) in cases {
+                let audit = toast_audit_with(
+                    connection,
+                    toast_audit_sql(),
+                    json!([{"tuple":tuple,"patch":patch}]),
+                )
+                .await;
+                census(&audit)
+                    .expect("private input fault must retain every original address/raw record");
+                assert!(
+                    inverse_positive(&audit).is_err(),
+                    "private inverse input accepted: {name}"
+                );
+                assert_eq!(audit["objects"], baseline["objects"]);
+                assert_eq!(audit["scope"], baseline["scope"]);
+            }
+            // Deliberately corrupt the test lookup: return a copied expected OID
+            // without discovering a name. Exact re-identification must still refuse.
+            const FIND: &str = r#"SELECT count(*) AS lookup_count,(array_agg(child.oid ORDER BY child.oid))[1] AS observed_oid
+      FROM pg_catalog.pg_class child JOIN pg_catalog.pg_namespace ns ON ns.oid=child.relnamespace
+      WHERE ns.nspname::text=t.input_names[1] AND child.relname::text=t.input_names[2]"#;
+            let query = toast_audit_sql();
+            assert_eq!(query.matches(FIND).count(), 1);
+            let forged = query.replace(
+                FIND,
+                "SELECT 1::bigint AS lookup_count,t.input_objid AS observed_oid",
+            );
+            let rejected = toast_audit_with(
+                connection,
+                forged,
+                json!([{"tuple":tuple,
+                    "patch":{"names":["pg_toast","pg_toast_999999999999999999999999999999"]}}]),
+            )
+            .await;
+            assert!(
+                inverse_positive(&rejected).is_err(),
+                "expected-OID fabrication bypassed independent re-identification"
+            );
+            let duplicate = query.replace(FIND,r#"SELECT count(*) AS lookup_count,(array_agg(child.oid ORDER BY child.oid))[1] AS observed_oid
+      FROM (SELECT c.oid,c.relnamespace,c.relname FROM pg_catalog.pg_class c
+       UNION ALL SELECT c.oid,c.relnamespace,c.relname FROM pg_catalog.pg_class c) child
+      JOIN pg_catalog.pg_namespace ns ON ns.oid=child.relnamespace
+      WHERE ns.nspname::text=t.input_names[1] AND child.relname::text=t.input_names[2]"#);
+            let rejected = toast_audit_with(connection, duplicate, json!([])).await;
+            census(&rejected).unwrap();
+            assert!(
+                inverse_positive(&rejected).is_err(),
+                "ambiguous lookup accepted or deduplicated"
+            );
+            assert_eq!(
+                toast_audit(connection).await,
+                *baseline,
+                "input/lookup corruption changed actual state"
+            );
+        }
+
+        async fn catalog_control(
+            connection: &mut PgConnection,
+            baseline: &Value,
+            child: &Value,
+            name: &str,
+            mutation: &str,
+            expected_rows: u64,
+            expected_guard: usize,
+        ) {
+            bounds(connection).await;
+            sqlx::raw_sql("SAVEPOINT toast_catalog_control")
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+            let result = AssertUnwindSafe(async {
+                let rows = sqlx::query(sqlx::AssertSqlSafe(mutation.to_owned()))
+                    .bind(child["tuple"][1].as_str().unwrap())
+                    .bind(child["TOAST_parent_tuple"][1].as_str().unwrap())
+                    .execute(&mut *connection)
+                    .await
+                    .expect("PREREQUISITE: exact administrator catalog mutation must execute")
+                    .rows_affected();
+                assert_eq!(rows, expected_rows, "mutation row-count admission: {name}");
+                let original_names = if name == "malformed generated name" {
+                    json!(["pg_toast", "console_toast_malformed"])
+                } else {
+                    child["native"]["object_names"].clone()
+                };
+                let audit = toast_audit_with(
+                    connection,
+                    toast_audit_sql(),
+                    json!([{"tuple":child["tuple"],
+                        "patch":{"type":child["native"]["type"],"names":original_names,
+                        "args":child["native"]["object_args"]}}]),
+                )
+                .await;
+                census(&audit).expect("catalog fault must retain complete address/raw census");
+                let actual = audit["inverse"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|e| e["tuple"] == child["tuple"])
+                    .expect("catalog fault omitted the original child endpoint");
+                assert_eq!(
+                    actual["TOAST_guards"][expected_guard], false,
+                    "guard {expected_guard} accepted {name}"
+                );
+                assert_ne!(
+                    actual["inverse_tuple"], actual["tuple"],
+                    "catalog fault gained usable inverse: {name}"
+                );
+                assert!(
+                    actual["valid"] != true && actual["portable"].is_null(),
+                    "invalid storage got map fallback: {name}"
+                );
+            })
+            .catch_unwind()
+            .await;
+            sqlx::raw_sql(
+                "ROLLBACK TO SAVEPOINT toast_catalog_control; RELEASE SAVEPOINT toast_catalog_control",
+            )
+            .execute(&mut *connection)
+            .await
+            .expect("mandatory catalog control savepoint recovery");
+            assert_eq!(
+                toast_audit(connection).await,
+                *baseline,
+                "fresh raw/native/census readback failed: {name}"
+            );
+            if let Err(panic) = result {
+                std::panic::resume_unwind(panic);
+            }
+        }
+
+        async fn noninternal_edge_control(
+            connection: &mut PgConnection,
+            baseline: &Value,
+            child: &Value,
+        ) {
+            bounds(connection).await;
+            sqlx::raw_sql("SAVEPOINT toast_noninternal_control")
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+            let result = AssertUnwindSafe(async {
+                let inserted = sqlx::query("INSERT INTO pg_catalog.pg_depend \
+                    SELECT classid,objid,objsubid,refclassid,refobjid,refobjsubid,'n' \
+                    FROM pg_catalog.pg_depend WHERE classid='pg_catalog.pg_class'::regclass \
+                    AND objid=$1::text::oid AND objsubid=0 AND refclassid='pg_catalog.pg_class'::regclass \
+                    AND refobjid=$2::text::oid AND refobjsubid=0 AND deptype='i'")
+                    .bind(child["tuple"][1].as_str().unwrap()).bind(child["TOAST_parent_tuple"][1].as_str().unwrap())
+                    .execute(&mut *connection).await.unwrap().rows_affected();
+                assert_eq!(inserted,1,"exact one real noninternal incoming edge admission");
+                let extra=toast_audit(connection).await;
+                inverse_positive(&extra).expect("noninternal edge must preserve canonical storage inverse");
+                assert_eq!(extra["inverse"],baseline["inverse"]);
+                assert_eq!(extra["objects"],baseline["objects"]);
+                for field in ["M","I","addresses","selected_relations","shared_edge_count"] {
+                    assert_eq!(extra["scope"][field],baseline["scope"][field]);
+                }
+                assert_eq!(extra["ordinary_edges"].as_array().unwrap().len(),baseline["ordinary_edges"].as_array().unwrap().len()+1);
+                let mut bag:BTreeMap<String,usize>=BTreeMap::new();
+                for row in extra["ordinary_edges"].as_array().unwrap() { *bag.entry(row.to_string()).or_default()+=1; }
+                for row in baseline["ordinary_edges"].as_array().unwrap() {
+                    let copies=bag.get_mut(&row.to_string()).expect("lost prior raw/MVCC edge");
+                    assert!(*copies>0); *copies-=1;
+                }
+                assert_eq!(bag.values().sum::<usize>(),1,"exact one-row bag delta");
+                // Keep a genuine incoming edge while deleting the canonical one,
+                // so endpoint disappearance cannot mask guard-seven refusal.
+                let removed=sqlx::query("DELETE FROM pg_catalog.pg_depend \
+                    WHERE classid='pg_catalog.pg_class'::regclass AND objid=$1::text::oid \
+                    AND objsubid=0 AND refclassid='pg_catalog.pg_class'::regclass \
+                    AND refobjid=$2::text::oid AND refobjsubid=0 AND deptype='i'")
+                    .bind(child["tuple"][1].as_str().unwrap()).bind(child["TOAST_parent_tuple"][1].as_str().unwrap())
+                    .execute(&mut *connection).await.unwrap().rows_affected();
+                assert_eq!(removed,1,"exact missing canonical ownership admission");
+                let refused=toast_audit(connection).await;
+                census(&refused).unwrap();
+                assert_eq!(refused["scope"]["addresses"],baseline["scope"]["addresses"]);
+                let observed=refused["inverse"].as_array().unwrap().iter().find(|e|e["tuple"]==child["tuple"]).unwrap();
+                assert_eq!(observed["TOAST_guards"][6],false);
+                assert_ne!(observed["inverse_tuple"],observed["tuple"]);
+                assert!(observed["valid"]!=true && observed["portable"].is_null());
+            }).catch_unwind().await;
+            sqlx::raw_sql("ROLLBACK TO SAVEPOINT toast_noninternal_control; RELEASE SAVEPOINT toast_noninternal_control")
+                .execute(&mut *connection).await.unwrap();
+            assert_eq!(
+                toast_audit(connection).await,
+                *baseline,
+                "noninternal/missing-internal rollback failed exact raw/MVCC restoration"
+            );
+            if let Err(panic) = result {
+                std::panic::resume_unwind(panic);
+            }
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn actor_complete_closed76_toast_v2_catalog_inverse_then_semantic_map(pool: PgPool) {
+            let sources = complete_source_pins();
+            complete_fixture(&pool, CompleteFixtureFamily::Closed76, 0).await;
+            let mut admin = direct(&pool).await;
+            let expected_target = target(&mut admin).await;
+            let administrator:bool=sqlx::query_scalar("SELECT current_user=session_user AND \
+                (SELECT count(*)=1 AND bool_and(rolsuper) FROM pg_catalog.pg_roles WHERE rolname=current_user)")
+                .fetch_one(&mut admin).await.unwrap();
+            assert!(
+                administrator,
+                "PREREQUISITE: private inverse requires the actual administrator, without role switching"
+            );
+            let engine: i32 =
+                sqlx::query_scalar("SELECT current_setting('server_version_num')::integer")
+                    .fetch_one(&mut admin)
+                    .await
+                    .unwrap();
+            assert_eq!(
+                engine, 180004,
+                "PREREQUISITE: exact characterized PostgreSQL 18.4 required"
+            );
+            let mut tx = begin_protocol(&mut admin, &expected_target).await;
+            let baseline = toast_audit(tx.as_mut()).await;
+            // THIS IS A PREREQUISITE, separate from the intended semantic RED.
+            inverse_positive(&baseline).expect("PREREQUISITE: genuine checked-catalog TOAST positive plus unchanged ordinary/RI/builtin inverse");
+            let child = baseline["inverse"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|e| e["native"]["type"] == "toast table")
+                .unwrap()
+                .clone();
+            let original_ledger = applied_ledger(tx.as_mut()).await;
+            let original_rows = complete_business(tx.as_mut(), false).await;
+            let result=AssertUnwindSafe(async {
+                    platform_refusals(tx.as_mut(),&child).await;
+                    assert_eq!(toast_audit(tx.as_mut()).await,baseline,"platform probe recovery changed raw custody");
+                    machinery_controls(&baseline);
+                    original_input_controls(tx.as_mut(),&baseline,&child).await;
+                    for (name,mutation,guard) in [
+                        ("wrong child relkind","UPDATE pg_catalog.pg_class SET relkind='r' WHERE oid=$1::text::oid AND $2::text::oid>0",0),
+                        ("unlogged child","UPDATE pg_catalog.pg_class SET relpersistence='u' WHERE oid=$1::text::oid AND $2::text::oid>0",0),
+                        ("partitioned child","UPDATE pg_catalog.pg_class SET relispartition=true WHERE oid=$1::text::oid AND $2::text::oid>0",0),
+                        ("recursive child storage","UPDATE pg_catalog.pg_class SET reltoastrelid=oid WHERE oid=$1::text::oid AND $2::text::oid>0",0),
+                        ("namespace alias","UPDATE pg_catalog.pg_class SET relnamespace='pg_catalog'::regnamespace WHERE oid=$1::text::oid AND $2::text::oid>0",0),
+                        ("malformed generated name","UPDATE pg_catalog.pg_class SET relname='console_toast_malformed' WHERE oid=$1::text::oid AND $2::text::oid>0",2),
+                        ("missing child owner","UPDATE pg_catalog.pg_class SET relowner=0 WHERE oid=$1::text::oid AND $2::text::oid>0",5),
+                        ("owner mismatch","UPDATE pg_catalog.pg_class SET relowner=(SELECT oid FROM pg_catalog.pg_roles WHERE rolname=CASE WHEN relowner=(SELECT oid FROM pg_catalog.pg_roles WHERE rolname='console_app') THEN 'console_account_owner' ELSE 'console_app' END) WHERE oid=$1::text::oid AND $2::text::oid>0",5),
+                        ("no parent","UPDATE pg_catalog.pg_class SET reltoastrelid=0 WHERE oid=$2::text::oid AND $1::text::oid>0",3),
+                        ("wrong parent kind","UPDATE pg_catalog.pg_class SET relkind='v' WHERE oid=$2::text::oid AND $1::text::oid>0",4),
+                        ("unlogged parent","UPDATE pg_catalog.pg_class SET relpersistence='u' WHERE oid=$2::text::oid AND $1::text::oid>0",4),
+                        ("partitioned parent","UPDATE pg_catalog.pg_class SET relispartition=true WHERE oid=$2::text::oid AND $1::text::oid>0",4),
+                        ("wrong internal dependency type","UPDATE pg_catalog.pg_depend SET deptype='n' WHERE classid='pg_catalog.pg_class'::regclass AND objid=$1::text::oid AND objsubid=0 AND refclassid='pg_catalog.pg_class'::regclass AND refobjid=$2::text::oid AND refobjsubid=0 AND deptype='i'",6),
+                        ("duplicate internal dependency","INSERT INTO pg_catalog.pg_depend SELECT * FROM pg_catalog.pg_depend WHERE classid='pg_catalog.pg_class'::regclass AND objid=$1::text::oid AND objsubid=0 AND refclassid='pg_catalog.pg_class'::regclass AND refobjid=$2::text::oid AND refobjsubid=0 AND deptype='i'",6),
+                    ] {
+                        catalog_control(tx.as_mut(),&baseline,&child,name,mutation,1,guard).await;
+                    }
+                    noninternal_edge_control(tx.as_mut(),&baseline,&child).await;
+                    assert_eq!(applied_ledger(tx.as_mut()).await,original_ledger);
+                    assert_eq!(complete_business(tx.as_mut(),false).await,original_rows);
+                    let after=toast_audit(tx.as_mut()).await;
+                    assert_eq!(after,baseline,"all controls must restore exact M/I/addresses/raw/MVCC/edge bags");
+                    writeln!(&mut std::io::stderr().lock(),"ORG_TOAST_V2_INVERSE_PREREQUISITE {}",json!({
+                        "design_sha256":TOAST_V2_DESIGN,"sources":sources,"address_count":baseline["address_count"],
+                        "toast_count":baseline["inverse"].as_array().unwrap().iter().filter(|e|e["native"]["type"]=="toast table").count(),
+                        "catalog_controls":15,"original_input_controls":15,"lookup_corruption_controls":2,
+                        "complete_raw_inverse_census":true,"all_eight_inverse_guards_positive":true,
+                        "semantic_map_accepted":false,"full_PSV_packet_accepted":false,
+                        "database_owner_accepted":false,"mvp_accepted":false,"production_qualified":false})).unwrap();
+                    // First and sole intended product RED: absent semantic map.
+                    semantic_positive(&after).expect("TOAST_V2_SEMANTIC_MAP_MISSING_OR_INVALID: actual parent-derived identity required for every admitted TOAST address");
+                }).catch_unwind().await;
+            tx.rollback()
+                .await
+                .expect("mandatory complete diagnostic rollback");
+            assert!(matches_target(&mut admin, &expected_target).await);
+            let mut fresh = sqlx::Connection::begin(&mut admin).await.unwrap();
+            assert_eq!(
+                toast_audit(fresh.as_mut()).await,
+                baseline,
+                "fresh transaction rollback readback"
+            );
+            assert_eq!(applied_ledger(fresh.as_mut()).await, original_ledger);
+            assert_eq!(
+                complete_business(fresh.as_mut(), false).await,
+                original_rows
+            );
+            fresh.rollback().await.unwrap();
+            admin.close().await.unwrap();
+            if let Err(panic) = result {
+                std::panic::resume_unwind(panic);
+            }
+        }
+    }
 }
