@@ -18,7 +18,7 @@ class ReactResolutionTests(unittest.TestCase):
     def setUp(self):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
-        self.root = Path(directory.name)
+        self.root = Path(directory.name).resolve()
         self.workspace = self.root / 'workspace'
         self.inputs = {}
         for name in ['people.tsx', 'people-guard.ts', 'people.css']:
