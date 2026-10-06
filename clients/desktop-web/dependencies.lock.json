@@ -1,0 +1,143 @@
+{
+  "format": 1,
+  "versions": {
+    "node": "26.7.0",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
+  },
+  "hosts": {
+    "darwin-arm64": {
+      "node": {
+        "url": "https://nodejs.org/dist/v26.7.0/node-v26.7.0-darwin-arm64.tar.gz",
+        "sha256": "7ee659a7768e641bbfd5360940660b8e8fd0052f77488f365562bac522fc15d4",
+        "strip_prefix": "node-v26.7.0-darwin-arm64",
+        "executable_sha256": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"
+      },
+      "esbuild": {
+        "package": "@esbuild/darwin-arm64",
+        "executable_sha256": "10b6243df618d374bb2d5c9cfbe7052e1405f6aa4e53a6164f11a91b9f2e1384"
+      }
+    },
+    "linux-x64": {
+      "node": {
+        "url": "https://nodejs.org/dist/v26.7.0/node-v26.7.0-linux-x64.tar.xz",
+        "sha256": "982aa24dd8be4c889c6a8ab337ddff3b0896645b20f4239356e80552c16277ee",
+        "strip_prefix": "node-v26.7.0-linux-x64",
+        "executable_sha256": "ad19784f7e90ba789a099eccba77ede8dc90a778c424f1c10a70fed3ff903fdc"
+      },
+      "esbuild": {
+        "package": "@esbuild/linux-x64",
+        "executable_sha256": "e1698a3d5c6c0798fee4fd3b5cc816651f460c63d390a7a26ea4beb0b1884100"
+      }
+    }
+  },
+  "packages": [
+    {
+      "name": "react",
+      "version": "19.3.0",
+      "archive": "react-19.3.0.tgz",
+      "sha256": "5a4024110c49476e1538a70fd65b9e59d038fcc280b78eb933c24e10453afbf9",
+      "integrity": "sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==",
+      "dependencies": {},
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/react/-/react-19.3.0.tgz",
+      "strip_prefix": "package"
+    },
+    {
+      "name": "react-dom",
+      "version": "19.3.0",
+      "archive": "react-dom-19.3.0.tgz",
+      "sha256": "dbeffb1e6cdbbbba07f799da4635333d0e20c210a32278dded85441ec4cb6a17",
+      "integrity": "sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==",
+      "dependencies": {
+        "scheduler": "^0.28.0"
+      },
+      "peerDependencies": {
+        "react": "^19.3.0"
+      },
+      "url": "https://registry.npmjs.org/react-dom/-/react-dom-19.3.0.tgz",
+      "strip_prefix": "package"
+    },
+    {
+      "name": "scheduler",
+      "version": "0.28.0",
+      "archive": "scheduler-0.28.0.tgz",
+      "sha256": "302995d590e3c0a11eeb40d1d0f299c1df1800135d599d85cdd5faeb614f32d6",
+      "integrity": "sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==",
+      "dependencies": {},
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.28.0.tgz",
+      "strip_prefix": "package"
+    },
+    {
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.28.2",
+      "archive": "esbuild-darwin-arm64-0.28.2.tgz",
+      "sha256": "1980cde09749094452b20d36ff267585ccb3f72749c7bc97291cd9996ccf5a2a",
+      "integrity": "sha512-n4KqkOQrraxHJcgjM1RvwbigfQKIKJVpM7xp+KsxiyUSrRdIXnt73VhrPAx0fV44hgfmIVKjxMN9J1t5jySVkw==",
+      "dependencies": {},
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.28.2.tgz",
+      "strip_prefix": "package"
+    },
+    {
+      "name": "@esbuild/linux-x64",
+      "version": "0.28.2",
+      "archive": "esbuild-linux-x64-0.28.2.tgz",
+      "sha256": "9573bb2233aab0f9ea7647d5cca9726113cc1768de61d66b17267f4db84488f6",
+      "integrity": "sha512-4xTZr1FUmSoQW4XIWmit3tzQrUTZM+N3P0XV8xROKYF50XfI7xeO90+1bZvNwxIufQ9hDQVRJH5YhgPVF8A/HQ==",
+      "dependencies": {},
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.2.tgz",
+      "strip_prefix": "package"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "archive": "typescript-5.9.3.tgz",
+      "sha256": "10e108c9cf7d5f2879053dff18515fb405abf2ccef63eaaf017d9c571687a1d3",
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+      "dependencies": {},
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/typescript/-/typescript-5.9.3.tgz",
+      "strip_prefix": "package"
+    },
+    {
+      "name": "@types/react",
+      "version": "19.2.14",
+      "archive": "types-react-19.2.14.tgz",
+      "sha256": "ee0dcf538b40d1c94d6cb344d5316721d655bc4859b1dbebaed5df8db86db9d2",
+      "integrity": "sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==",
+      "dependencies": {
+        "csstype": "^3.2.2"
+      },
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/@types/react/-/react-19.2.14.tgz",
+      "strip_prefix": "react"
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "19.2.3",
+      "archive": "types-react-dom-19.2.3.tgz",
+      "sha256": "01766931e7f616e61d59ddaedfa23869e8d0df4641245d70ecbad2b415bf0d4b",
+      "integrity": "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==",
+      "dependencies": {},
+      "peerDependencies": {
+        "@types/react": "^19.2.0"
+      },
+      "url": "https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.3.tgz",
+      "strip_prefix": "react-dom"
+    },
+    {
+      "name": "csstype",
+      "version": "3.2.3",
+      "archive": "csstype-3.2.3.tgz",
+      "sha256": "f3501f8ee1c73f7568fecb22c11231162c0467e59262461da5579519307427a3",
+      "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
+      "dependencies": {},
+      "peerDependencies": {},
+      "url": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+      "strip_prefix": "package"
+    }
+  ]
+}

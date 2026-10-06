@@ -6,3 +6,12 @@
     )
     for source in ["build-payroll-wasm.sh", "wasm_bundle.py", "hydration.bzl", "BUCK"]
 ]
+
+[
+    export_file(
+        name = "react-" + source,
+        src = source,
+        visibility = ["PUBLIC"],
+    )
+    for source in ["react.bzl", "react_bundle.py"]
+]

@@ -159,6 +159,7 @@ RESOURCE_CONFIG = {
         # and the composed document.
         "external": {
             ":console-payroll-ui-validated-bundle": "backend/crates/payroll/ui/pkg",
+            "//clients/desktop-web:people-validated-bundle": "backend/crates/payroll/ui/react",
             "//backend/crates/payroll/rest:crate-openapi-tree":
                 "backend/crates/payroll/rest/openapi",
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
@@ -1996,6 +1997,19 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
         "",
     ]
     if name == "console-payroll-ui":
+        out += [
+            "export_file(",
+            '    name = "react-build-recipe",',
+            '    src = "BUCK",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "export_file(",
+            '    name = "react-assets",',
+            '    src = "react",',
+            '    mode = "reference",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+        ]
         out.insert(2, 'load("//tools/ui:hydration.bzl", "hydration_snapshot", "hydration_bundle", "hydration_validate", "hydration_inputs")')
         with open(os.path.join(REPO, "third-party/rust/hydrate/root-dependencies.json")) as root_file:
             hydrate_deps = json.load(root_file)

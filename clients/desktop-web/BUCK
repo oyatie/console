@@ -1,0 +1,94 @@
+load(":dependencies.lock.bzl", "LOCK")
+load("//tools/ui:react.bzl", "react_bundle", "react_tool", "react_typecheck", "react_validate")
+
+[
+    http_archive(
+        name = "npm-" + package["name"].replace("@", "").replace("/", "-"),
+        urls = [package["url"]],
+        sha256 = package["sha256"],
+        strip_prefix = package["strip_prefix"],
+    )
+    for package in LOCK["packages"]
+]
+
+[
+    http_archive(
+        name = "node-" + host,
+        urls = [pin["node"]["url"]],
+        sha256 = pin["node"]["sha256"],
+        strip_prefix = pin["node"]["strip_prefix"],
+    )
+    for host, pin in LOCK["hosts"].items()
+]
+
+config_setting(
+    name = "macos-arm64",
+    constraint_values = ["prelude//os/constraints:macos", "prelude//cpu/constraints:arm64"],
+)
+
+# Missing verified hosts fail selection; these are not release-platform claims.
+react_tool(
+    name = "node",
+    archive = select({
+        ":macos-arm64": ":node-darwin-arm64",
+        "toolchains//:linux-x86_64": ":node-linux-x64",
+    }),
+    path = "bin/node",
+)
+
+react_tool(
+    name = "esbuild",
+    archive = select({
+        ":macos-arm64": ":npm-esbuild-darwin-arm64",
+        "toolchains//:linux-x86_64": ":npm-esbuild-linux-x64",
+    }),
+    path = "bin/esbuild",
+)
+
+_SOURCES = {source[4:]: source for source in glob(["src/**/*.ts", "src/**/*.tsx", "src/**/*.css"])}
+_PACKAGES = {package["name"]: ":npm-" + package["name"].replace("@", "").replace("/", "-")
+             for package in LOCK["packages"] if not package["name"].startswith("@esbuild/")}
+_INPUTS = {"clients/desktop-web/src/" + name: source for name, source in _SOURCES.items()}
+_INPUTS.update({"clients/desktop-web/" + name: name
+                for name in ["BUCK", "dependencies.lock.json", "dependencies.lock.bzl", "package.json", "tsconfig.json"]})
+_INPUTS.update({
+    ".buckconfig": "//:hydration-.buckconfig",
+    "BUCK": "//:hydration-BUCK",
+    "tools/buck2": "//:hydration-tools-buck2",
+    "tools/ui/BUCK": "//tools/ui:hydration-BUCK",
+    "tools/ui/react.bzl": "//tools/ui:react-react.bzl",
+    "tools/ui/react_bundle.py": "//tools/ui:react-react_bundle.py",
+    "tools/buck/gen_first_party.py": "//tools/buck:hydration-gen_first_party.py",
+    "backend/crates/payroll/ui/BUCK": "//backend/crates/payroll/ui:react-build-recipe",
+})
+
+react_typecheck(
+    name = "people-typecheck",
+    sources = _SOURCES,
+    packages = _PACKAGES,
+    tsconfig = "tsconfig.json",
+    package = "package.json",
+    node = ":node",
+    visibility = ["PUBLIC"],
+)
+
+react_bundle(
+    name = "people-bundle",
+    sources = _SOURCES,
+    packages = _PACKAGES,
+    tsconfig = "tsconfig.json",
+    package = "package.json",
+    node = ":node",
+    esbuild = ":esbuild",
+    typecheck = ":people-typecheck",
+    inputs = _INPUTS,
+    visibility = ["PUBLIC"],
+)
+
+react_validate(
+    name = "people-validated-bundle",
+    inputs = _INPUTS,
+    native_candidate = ":people-bundle",
+    committed = "//backend/crates/payroll/ui:react-assets",
+    visibility = ["PUBLIC"],
+)
