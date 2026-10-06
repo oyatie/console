@@ -154,6 +154,31 @@ function certificateArgs(files){return ['req','-new','-x509','-newkey','ec','-pk
 
 function installFormControlsSafe(f){return f.enctype==='application/x-www-form-urlencoded'&&f.target===''&&[...f.elements].filter(e=>e.tagName!=='FIELDSET').length===4&&[...f.elements].filter(e=>e.tagName==='BUTTON'&&e.type==='submit'&&!e.name&&!e.matches(':disabled')&&!e.hasAttribute('formaction')&&!e.hasAttribute('formmethod')&&!e.hasAttribute('formenctype')&&!e.hasAttribute('formtarget')).length===1&&[...f.ownerDocument.querySelectorAll('input[type="image" i]')].every(e=>e.form!==f);}
 
+// Diagnostic observation only: fixed states/booleans, never text, IDs or values.
+function companyEntryDiagnosticSnapshot(){
+ const state=(selector,attribute,allowed)=>{
+  const elements=document.querySelectorAll(selector);
+  if(elements.length===0)return 'absent';
+  if(elements.length!==1)return 'multiple';
+  const value=elements[0].getAttribute(attribute);
+  return allowed.includes(value)?value:'other';
+ };
+ const active=document.activeElement;
+ const tag=active?.tagName?.toLowerCase();
+ const role=active?.getAttribute('role');
+ const style=active?getComputedStyle(active):null;
+ return {account_state:state('[data-account-state]','data-account-state',['active','anonymous']),
+  context_state:state('[data-context-state]','data-context-state',['empty','populated','unavailable']),
+  focus:{document_has_focus:document.hasFocus(),
+   tag:['html','body','a','button','input','summary','main','section','p'].includes(tag)?tag:'other',
+   role:['link','button','checkbox','textbox','main','heading','status','alert'].includes(role)?role:role===null?'none':'other',
+   canonical_setup_href:active?.tagName==='A'&&active.getAttribute('href')==='/account/companies/new',
+   rendered:!!active&&active.getClientRects().length>0&&style.display!=='none'&&!['hidden','collapse'].includes(style.visibility),
+   disabled:!!active&&active.matches(':disabled'),
+   focus_visible:!!active&&active.matches(':focus-visible'),
+   tab_index:!active?'absent':active.tabIndex<0?'negative':active.tabIndex===0?'zero':'positive'}};
+}
+
 async function main(backendPort,out,mode){
  requireFact(mode===undefined||mode==='policy-entry'||mode==='people-entry'||mode==='group-process-entry'||mode==='group-navigation-held'||mode==='group-invalid-form','PREREQUISITE');
  requireFact(/^\d+$/.test(backendPort)&&Number(backendPort)>0&&Number(backendPort)<=65535&&path.isAbsolute(out),'PREREQUISITE');
@@ -239,9 +264,28 @@ async function main(backendPort,out,mode){
    return document.activeElement===element&&element.matches(':focus-visible')&&rect.width>0&&rect.height>0&&rect.left>=0&&rect.right<=innerWidth+1&&rect.top>=0&&rect.bottom<=innerHeight+1&&style.outlineStyle!=='none'&&parseFloat(style.outlineWidth)>=2&&style.outlineColor!=='transparent'&&!/rgba\([^)]*,\s*0\)/.test(style.outlineColor);
   });}
   async function tabTo(locator,maxTabs=12){
+   const diagnostic=stage==='company_entry'&&maxTabs===16?(result.company_entry_diagnostic={
+    kind:'COMPANY_ENTRY_KEYBOARD_DIAGNOSTIC_V1',diagnostic_only:true,max_tabs:maxTabs,
+    link_count:null,setup_visible:null,setup_href_exact:null,before:null,focus_trace:[],
+    screenshot:'diagnostic-company-entry-after-designated.png',screenshot_captured:false,collection_failed:false}):null;
+   async function observe(step){
+    if(!diagnostic)return;
+    try{const snapshot=await page.evaluate(companyEntryDiagnosticSnapshot);
+     if(step===0)diagnostic.before=snapshot;else diagnostic.focus_trace.push({step,...snapshot.focus});
+    }catch{diagnostic.collection_failed=true;}
+   }
+   if(diagnostic){
+    try{diagnostic.link_count=await locator.count();
+     if(diagnostic.link_count===1){diagnostic.setup_visible=await locator.isVisible();diagnostic.setup_href_exact=(await locator.getAttribute('href'))==='/account/companies/new';}
+    }catch{diagnostic.collection_failed=true;}
+    await observe(0);
+    try{await page.screenshot({path:path.join(out,diagnostic.screenshot),fullPage:true});diagnostic.screenshot_captured=true;}
+    catch{diagnostic.collection_failed=true;}
+   }
    requireFact(await locator.count()===1,'KEYBOARD_DISCOVERY');
    for(let count=0;count<maxTabs;count++){
     await page.keyboard.press('Tab');
+    if(diagnostic)await observe(count+1);
     if(await locator.evaluate(element=>document.activeElement===element)){requireFact(await focusVisible(locator),'KEYBOARD_FOCUS');return;}
    }
    requireFact(false,'KEYBOARD_DISCOVERY');
