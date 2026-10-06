@@ -7923,6 +7923,43 @@ def native_group_process_navigation_custody_files():
     }
 
 
+def native_org_unit_closed_bounded_reader_files():
+    """Derive fixed read-only planner boundaries without changing history."""
+    capture = native_org_unit_closed_perimeter_capture_files()
+    custody = native_org_unit_closed_perimeter_custody_files()
+    capture_name = 'ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql'
+    state_name = 'ops/postgres-native-org-unit-closed-perimeter-v1-custody-state.sql'
+    app_name = 'backend/app/src/native_org_unit_closed_perimeter_v1_custody_state.sql'
+    if (not isinstance(capture, dict) or set(capture) != {
+            capture_name, 'ops/postgres-native-org-unit-closed-perimeter-v1-owner.sql'}
+            or not isinstance(custody, dict) or set(custody) != {
+                state_name, app_name, 'ops/postgres-finalize-native-org-unit-closed-perimeter-v1.sql'}
+            or any(not isinstance(value, str) or not value
+                   for value in (*capture.values(), *custody.values()))
+            or custody[state_name] != custody[app_name]):
+        raise SystemExit('Native OrgUnit bounded reader requires the exact historical rosters and pair')
+    before, after = '), snapshots AS (\n', '), snapshots AS MATERIALIZED (\n'
+    files = {}
+    for source, output, original, expected_sha256, count in (
+        (capture_name, 'ops/postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql',
+         capture[capture_name], '6be2e3d095d59bbdb9e1b932dac8da48bde261601455cdcd166c6f2a649e6010', 1),
+        (state_name, 'ops/postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql',
+         custody[state_name], '670564ce4a107746d8f50d316014b4aca763af0335d9c38a01fcfa23ec9e46dc', 2),
+        (app_name, 'backend/app/src/native_org_unit_closed_perimeter_v1_bounded_custody_state.sql',
+         custody[app_name], '670564ce4a107746d8f50d316014b4aca763af0335d9c38a01fcfa23ec9e46dc', 2),
+    ):
+        raw = company_provenance_regular_path(source, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected_sha256 or raw != original.encode():
+            raise SystemExit('Native OrgUnit bounded reader historical source differs: ' + source)
+        if original.count(before) != count or after in original:
+            raise SystemExit('Native OrgUnit bounded reader snapshot boundary drift: ' + source)
+        query = original.replace(before, after)
+        if query.count(after) != count or query.replace(after, before) != original:
+            raise SystemExit('Native OrgUnit bounded reader must preserve every historical byte: ' + source)
+        files[output] = query
+    return files
+
+
 def native_group_process_navigation_serving_custody_files():
     historical = native_group_process_navigation_custody_files()
     ops = 'ops/postgres-native-group-process-navigation-v1-custody-state.sql'
@@ -8070,7 +8107,9 @@ $native_group_process_navigation_custody$;
 
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-org-unit-account-actor-staging'],
+    if arguments in (['--native-org-unit-closed-bounded-reader'],
+                     ['--native-org-unit-closed-bounded-reader', '--check'],
+                     ['--native-org-unit-account-actor-staging'],
                      ['--native-org-unit-account-actor-staging', '--check'],
                      ['--native-group-process-navigation-serving-custody'],
                      ['--native-group-process-navigation-serving-custody', '--check'],
@@ -8086,7 +8125,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-org-unit-account-actor-staging':
+        if arguments[0] == '--native-org-unit-closed-bounded-reader':
+            files = native_org_unit_closed_bounded_reader_files()
+        elif arguments[0] == '--native-org-unit-account-actor-staging':
             files = native_org_unit_account_actor_staging_files()
         elif arguments[0] == '--native-group-process-navigation-serving-custody':
             files = native_group_process_navigation_serving_custody_files()
@@ -8115,7 +8156,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-account-actor-staging | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
