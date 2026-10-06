@@ -20,8 +20,8 @@ def _typecheck_impl(ctx):
     workspace = _workspace(ctx)
     output = ctx.actions.declare_output("typecheck.tsbuildinfo")
     ctx.actions.run(
-        cmd_args(ctx.attrs.node[RunInfo], workspace.project("node_modules/typescript/lib/tsc.js"),
-                 "--project", workspace.project("tsconfig.json"), "--incremental", "--tsBuildInfoFile", output.as_output()),
+        cmd_args(ctx.attrs.node[RunInfo], cmd_args(workspace, format = "{}/node_modules/typescript/lib/tsc.js"),
+                 "--project", cmd_args(workspace, format = "{}/tsconfig.json"), "--incremental", "--tsBuildInfoFile", output.as_output()),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
         category = "react_typecheck",
     )
@@ -44,9 +44,9 @@ def _bundle_impl(ctx):
     guard = ctx.actions.declare_output("people-guard.js")
     common = cmd_args(ctx.attrs.esbuild[RunInfo], "--bundle", "--minify", "--platform=browser",
                       "--target=es2022", "--preserve-symlinks", "--legal-comments=inline",
-                      cmd_args("--tsconfig=", workspace.project("tsconfig.json"), delimiter = ""))
+                      cmd_args(workspace, format = "--tsconfig={}/tsconfig.json"))
     ctx.actions.run(
-        cmd_args(common, workspace.project("src/people.tsx"), "--format=esm", "--jsx=automatic",
+        cmd_args(common, cmd_args(workspace, format = "{}/src/people.tsx"), "--format=esm", "--jsx=automatic",
                  '--define:process.env.NODE_ENV="production"',
                  cmd_args("--outfile=", javascript.as_output(), delimiter = ""), hidden = [stylesheet.as_output()]),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
@@ -54,7 +54,7 @@ def _bundle_impl(ctx):
         identifier = "people",
     )
     ctx.actions.run(
-        cmd_args(common, workspace.project("src/people-guard.ts"), "--format=iife",
+        cmd_args(common, cmd_args(workspace, format = "{}/src/people-guard.ts"), "--format=iife",
                  cmd_args("--outfile=", guard.as_output(), delimiter = "")),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
         category = "react_bundle",
