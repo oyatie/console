@@ -1974,3 +1974,6 @@ fn policy_browser_wire_expectation_matches_independent_frozen_vectors() {
         }
     }
 }
+
+#[path = "native_account_company_handoff_browser.rs"]
+mod native_account_company_handoff_browser;

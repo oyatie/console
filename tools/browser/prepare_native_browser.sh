@@ -42,7 +42,9 @@ for entry in \
   group_invalid_form_journey:f301776ce4bcb9c7b5101baa4f4cab8c27c5dc633e277d17db2a89939b46a6dd \
   group_navigation_held:0c8b4d46a5ca248df5a5b08c0a1bf0da6c71b59049516e683389375d51794ca2 \
   policy_journey:766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea \
-  recovery_controls:fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6; do
+  recovery_controls:fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6 \
+  account-company-handoff:c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d \
+  account_company_handoff:2f27087e5f060e6c086bf3b5336c038b10a4b5d15d49aa1d818567e1b1855a68; do
   cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"
   verify_sha "${stage}/${entry%%:*}.cjs" "${entry#*:}"
 done
@@ -76,7 +78,7 @@ const drivers = {
   CONSOLE_COMPANY_PREVIEW_BROWSER: 'company-preview',
   CONSOLE_HYDRATION_BROWSER: 'hydration',
 };
-const companions = ['native_header', 'people_journey', 'react_people_controls', 'group_process_journey', 'group_invalid_form_journey', 'group_navigation_held', 'policy_journey', 'recovery_controls'];
+const companions = ['native_header', 'people_journey', 'react_people_controls', 'group_process_journey', 'group_invalid_form_journey', 'group_navigation_held', 'policy_journey', 'recovery_controls', 'account-company-handoff', 'account_company_handoff'];
 const digests = {
   package: hash('runtime/package.json'), lock: hash('runtime/package-lock.json'),
   browsers: hash('runtime/node_modules/playwright-core/browsers.json'),
