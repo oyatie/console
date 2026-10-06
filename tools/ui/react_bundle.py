@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Custody for declared native People assets; never a product compiler."""
+"""Custody for fixed native React profiles; never a product compiler."""
 import argparse
 import hashlib
 import json
@@ -12,9 +12,24 @@ import tempfile
 CLIENT = "clients/desktop-web"
 COMMITTED = "backend/crates/payroll/ui/react"
 OUTPUTS = ("people.js", "people.css", "people-guard.js")
+ACCOUNT_CONTROLLER = "backend/crates/payroll/ui/src/native_account.js"
 RECIPES = (".buckconfig", "BUCK", "tools/buck2", "tools/ui/BUCK", "tools/ui/react.bzl",
            "tools/ui/react_bundle.py", "tools/buck/gen_first_party.py", "backend/crates/payroll/ui/BUCK",
            *(CLIENT + "/" + name for name in ("BUCK", "dependencies.lock.json", "dependencies.lock.bzl", "package.json", "tsconfig.json")))
+
+
+def profile_outputs(profile):
+    if not isinstance(profile, str) or profile not in ("people", "account"):
+        raise ValueError("Unsupported fixed React profile")
+    return OUTPUTS if profile == "people" else ("account.js", "account.css", "account-guard.js")
+
+
+def profile_inputs(inputs, profile):
+    profile_outputs(profile)
+    if profile == "account":
+        controller = inputs.get(ACCOUNT_CONTROLLER)
+        if controller is None or controller.is_symlink() or not controller.is_file():
+            raise ValueError("Missing regular declared Account controller")
 
 
 def digest(data):
@@ -44,7 +59,8 @@ def closed(value, keys):
     return isinstance(value, dict) and set(value) == set(keys)
 
 
-def verify(record, inputs, outputs, lock, typecheck=None):
+def verify(record, inputs, outputs, lock, typecheck=None, profile="people"):
+    profile_inputs(inputs, profile)
     if not closed(record, ["format", "inputs", "outputs", "dependency_lock_sha256", "producer"]):
         return ["Invalid React record shape"]
     failures = []
@@ -59,7 +75,7 @@ def verify(record, inputs, outputs, lock, typecheck=None):
     producer = record["producer"]
     if not closed(producer, ["kind", "host", "tools", "versions", "typecheck_sha256"]):
         return failures + ["Invalid native React producer shape"]
-    if producer["kind"] != "buck2-native-react-people-v1" or not sha(producer["typecheck_sha256"]):
+    if producer["kind"] != "buck2-native-react-" + profile + "-v1" or not sha(producer["typecheck_sha256"]):
         failures.append("Missing native compiler/typecheck proof")
     host = producer["host"]
     pin = lock["hosts"].get(host) if isinstance(host, str) else None
@@ -87,36 +103,39 @@ def load(path):
         raise ValueError("Missing or invalid React input record") from error
 
 
-def output_paths(directory):
-    return {name: directory / name for name in OUTPUTS}
+def output_paths(directory, profile="people"):
+    return {name: directory / name for name in profile_outputs(profile)}
 
 
-def validate_native(candidate, inputs, lock):
-    if set(p.name for p in candidate.iterdir()) != {*OUTPUTS, "bundle.lock.json", "typecheck.tsbuildinfo"}:
+def validate_native(candidate, inputs, lock, profile="people"):
+    if set(p.name for p in candidate.iterdir()) != {*profile_outputs(profile), "bundle.lock.json", "typecheck.tsbuildinfo"}:
         raise ValueError("Unexpected or missing native React files")
     record = load(candidate / "bundle.lock.json")
-    failures = verify(record, inputs, output_paths(candidate), lock, candidate / "typecheck.tsbuildinfo")
+    failures = verify(record, inputs, output_paths(candidate, profile), lock, candidate / "typecheck.tsbuildinfo", profile)
     if failures:
         raise ValueError("; ".join(failures))
     return record
 
 
-def validate_pair(candidate, committed, inputs, lock):
-    native = validate_native(candidate, inputs, lock)
-    if set(p.name for p in committed.iterdir()) != {*OUTPUTS, "bundle.lock.json"}:
+def validate_pair(candidate, committed, inputs, lock, profile="people"):
+    native = validate_native(candidate, inputs, lock, profile)
+    if set(p.name for p in committed.iterdir()) != {*profile_outputs(profile), "bundle.lock.json"}:
         raise ValueError("Unexpected or missing committed React files")
     recorded = load(committed / "bundle.lock.json")
-    failures = verify(recorded, inputs, output_paths(committed), lock)
+    failures = verify(recorded, inputs, output_paths(committed, profile), lock, profile=profile)
     if failures or native["outputs"] != recorded["outputs"]:
         raise ValueError("Committed React bundle differs from declared native compilation: " + "; ".join(failures))
 
 
-def checkout_inputs(root):
+def checkout_inputs(root, profile="people"):
     sources = [p for p in (root / CLIENT / "src").rglob("*") if p.is_file()]
     if not sources or any(p.is_symlink() or p.suffix not in [".ts", ".tsx", ".css"] for p in sources):
         raise ValueError("Undeclared or missing React source")
     inputs = {name: root / name for name in RECIPES}
     inputs.update({p.relative_to(root).as_posix(): p for p in sources})
+    if profile == "account":
+        inputs[ACCOUNT_CONTROLLER] = root / ACCOUNT_CONTROLLER
+    profile_inputs(inputs, profile)
     return inputs
 
 
@@ -131,7 +150,11 @@ def lock_projection(lock):
 def declared_inputs(path):
     inputs = {name: Path(source) for name, source in load(path).items()}
     lock = load(inputs[CLIENT + "/dependencies.lock.json"])
-    if inputs[CLIENT + "/dependencies.lock.bzl"].read_text() != lock_projection(lock):
+    try:
+        projection = inputs[CLIENT + "/dependencies.lock.bzl"].read_text()
+    except (OSError, KeyError) as error:
+        raise ValueError("Missing Buck archive pin projection") from error
+    if projection != lock_projection(lock):
         raise ValueError("Buck archive pins differ from canonical dependency lock")
     return inputs, lock
 
@@ -181,6 +204,9 @@ def validate_metafile(path, workspace, sources, packages, outputs, entry):
 
 
 def validate_resolution(args, inputs, lock):
+    profile = getattr(args, "profile", "people")
+    outputs = profile_outputs(profile)
+    profile_inputs(inputs, profile)
     try:
         workspace = normalized_path(args.workspace)
         declared = load(args.packages)
@@ -205,16 +231,20 @@ def validate_resolution(args, inputs, lock):
                 if not staged.is_relative_to(workspace / "src"):
                     raise ValueError("Invalid declared React source path")
                 sources[staged] = source.resolve(strict=True)
-        output = {name: (args.compiled / name).resolve(strict=True) for name in OUTPUTS}
+        if profile == "account" and set(p.name for p in args.compiled.iterdir()) != {*outputs, "typecheck.tsbuildinfo"}:
+            raise ValueError("Unexpected or missing compiled Account files")
+        output = {name: (args.compiled / name).resolve(strict=True) for name in outputs}
         validate_metafile(args.runtime_metafile, workspace, sources, packages,
-                          [output["people.js"], output["people.css"]], "people.tsx")
+                          [output[outputs[0]], output[outputs[1]]], profile + ".tsx")
         validate_metafile(args.guard_metafile, workspace, sources, packages,
-                          [output["people-guard.js"]], "people-guard.ts")
+                          [output[outputs[2]]], profile + "-guard.ts")
     except (OSError, RuntimeError, KeyError, TypeError) as error:
         raise ValueError("Missing or invalid React resolution inputs") from error
 
 
 def record_bundle(args):
+    profile = getattr(args, "profile", "people")
+    outputs = profile_outputs(profile)
     inputs, lock = declared_inputs(args.inputs)
     validate_resolution(args, inputs, lock)
     tools = {"node": file_hash(args.node), "esbuild": file_hash(args.esbuild)}
@@ -222,39 +252,45 @@ def record_bundle(args):
              if all(tools[tool] == pin[tool]["executable_sha256"] for tool in tools)]
     if len(hosts) != 1:
         raise ValueError("Native compiler executable does not match one pinned host")
-    record = {"format": 1, "inputs": hashes(inputs), "outputs": hashes(output_paths(args.compiled)),
+    record = {"format": 1, "inputs": hashes(inputs), "outputs": hashes(output_paths(args.compiled, profile)),
               "dependency_lock_sha256": digest(canonical(lock)),
-              "producer": {"kind": "buck2-native-react-people-v1", "host": hosts[0], "tools": tools,
+              "producer": {"kind": "buck2-native-react-" + profile + "-v1", "host": hosts[0], "tools": tools,
                            "versions": lock["versions"], "typecheck_sha256": file_hash(args.compiled / "typecheck.tsbuildinfo")}}
-    failures = verify(record, inputs, output_paths(args.compiled), lock, args.compiled / "typecheck.tsbuildinfo")
+    failures = verify(record, inputs, output_paths(args.compiled, profile), lock, args.compiled / "typecheck.tsbuildinfo", profile)
     if failures:
         raise ValueError("; ".join(failures))
     args.out_dir.mkdir(parents=True)
-    for name in [*OUTPUTS, "typecheck.tsbuildinfo"]:
+    for name in [*outputs, "typecheck.tsbuildinfo"]:
         shutil.copyfile(args.compiled / name, args.out_dir / name)
     (args.out_dir / "bundle.lock.json").write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
 
 
-def publish(candidate, root):
-    inputs, lock = checkout_inputs(root), checkout_lock(root)
-    record = validate_native(candidate, inputs, lock)
-    destination = root / COMMITTED
+def publish(candidate, root, profile="people"):
+    outputs = profile_outputs(profile)
+    # Preserve the legacy call shape used by existing People consumers.
+    inputs = checkout_inputs(root) if profile == "people" else checkout_inputs(root, profile)
+    lock = checkout_lock(root)
+    record = validate_native(candidate, inputs, lock, profile)
+    destination = root / (COMMITTED if profile == "people" else "backend/crates/payroll/ui/react-account")
     destination.mkdir(parents=True, exist_ok=True)
-    for name in OUTPUTS:
+    for name in outputs:
         shutil.copyfile(candidate / name, destination / name)
     # A changed source or partial copy never receives a current manifest.
-    failures = verify(record, checkout_inputs(root), output_paths(destination), checkout_lock(root))
+    current = checkout_inputs(root) if profile == "people" else checkout_inputs(root, profile)
+    failures = verify(record, current, output_paths(destination, profile), checkout_lock(root), profile=profile)
     if failures:
         raise ValueError("; ".join(failures))
     with tempfile.NamedTemporaryFile(dir=destination, prefix=".bundle-", delete=False) as temporary:
         temporary.write((candidate / "bundle.lock.json").read_bytes())
     Path(temporary.name).replace(destination / "bundle.lock.json")
-    validate_pair(candidate, destination, checkout_inputs(root), checkout_lock(root))
+    current = checkout_inputs(root) if profile == "people" else checkout_inputs(root, profile)
+    validate_pair(candidate, destination, current, checkout_lock(root), profile)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=["record", "validate", "publish", "generate"])
+    parser.add_argument("--profile", choices=["people", "account"], default="people")
     for name in ["inputs", "compiled", "node", "esbuild", "out-dir", "candidate", "committed", "root",
                  "workspace", "packages", "runtime-metafile", "guard-metafile"]:
         parser.add_argument("--" + name, type=Path)
@@ -263,12 +299,12 @@ def main():
         record_bundle(args)
     elif args.mode == "validate":
         inputs, lock = declared_inputs(args.inputs)
-        validate_pair(args.candidate, args.committed, inputs, lock)
+        validate_pair(args.candidate, args.committed, inputs, lock, args.profile)
         args.out_dir.mkdir(parents=True)
-        for name in OUTPUTS:
+        for name in profile_outputs(args.profile):
             shutil.copyfile(args.candidate / name, args.out_dir / name)
     elif args.mode == "publish":
-        publish(args.candidate, args.root)
+        publish(args.candidate, args.root, args.profile)
     else:
         path = args.root / CLIENT / "dependencies.lock.bzl"
         path.write_text(lock_projection(checkout_lock(args.root)))
