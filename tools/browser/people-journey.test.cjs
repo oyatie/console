@@ -3,10 +3,11 @@
 // provision business records; they cannot qualify the actual browser journey.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {expectedNativeHeaders, completeNativeHeaders, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME} = require('./people_journey.cjs');
+const {expectedNativeHeaders, completeNativeHeaders, validEvidence, expectedDocuments, expectedMountPaths, deniedProjectionSafe, PHASES, LEGAL_NAME} = require('./people_journey.cjs');
 const {completeDocuments, completeMutations, observeDocuments, observeMutations} = require('./company.cjs');
 const {EventEmitter} = require('node:events');
 const {expectedDenialHeaders, completeDenialHeaders} = require('./people_journey.cjs');
+const {CONTROL_NAMES, validControlEvidence, DECODER_CONTROLS, validDecoderEvidence, sameActions, validStorageEvidence, STORAGE_METHODS} = require('./react_people_controls.cjs');
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 // Classifier-only positive record; never published as browser acceptance evidence.
 // Synthetic classifier witness only; never used by the real DOM collector.
@@ -40,8 +41,12 @@ function headerWitness(expected) {
       title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
       routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true, sections: sectionWitness(expected)})),
     enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
-    values_preserved: true, location_preserved: true, no_product_script: true,
-    unique_ids: true, network_requests: 0};
+    values_preserved: true, location_preserved: true, no_product_script: expected.clientScriptContract === undefined,
+    ...(expected.clientScriptContract === undefined ? {} : {script_evidence: {guard_before_body: true, scripts: [
+      {attributes: [['src', '/assets/people-guard.js']]},
+      {attributes: [['id', 'console-people-bootstrap'], ['type', 'application/json']]},
+      {attributes: [['src', '/assets/people.js'], ['type', 'module']]},
+    ]}}), unique_ids: true, network_requests: 0};
 }
 
 function evidence() {
@@ -64,6 +69,21 @@ function evidence() {
   r.header_origin = 'https://localhost:1234';
   r.native_headers = expectedNativeHeaders(r).map(headerWitness);
   r.denied_headers = expectedDenialHeaders(r).map(headerWitness);
+  r.screenshots.push(...CONTROL_NAMES.map(name => 'react-people-' + name + '-320.png'));
+  r.react_controls = CONTROL_NAMES.map((name, i) => ({name, command: uuid(100 + i), form_sha256: 'a'.repeat(64),
+    fallback_retained: true, form_preserved: true, focus_preserved: true, selection_preserved: true,
+    scroll_preserved: true, no_mutation: true, react_mounted: false, owner_effects_verified: true,
+    ime_events: 3, scroll_y: 200, render_probe_hits: 1}));
+  r.react_decoder_controls = Object.entries(DECODER_CONTROLS).flatMap(([group, controls]) => controls.map((c, i) => ({
+    group, name: c.name, command: group === 'terminal' ? r.command : group === 'directory' ? null : uuid(200 + i), react_mounted: c.mounted,
+    fallback_retained: !c.mounted, rejection_status: !c.mounted, runtime_http_200: true, runtime_sha256: 'b'.repeat(64),
+    original_bootstrap_sha256: 'c'.repeat(64), fallback_sha256: 'd'.repeat(64), original_response_unchanged: true,
+    no_mutation: true, owner_effects_verified: true, current_context_preserved: true, no_business_storage: true, outside_action_control_verified: true, global_actions_preserved: !c.mounted,
+    hostile_text_only: c.name === 'hostile-text', exact_large_revision: c.name === 'large-revision-string', exact_scalar_limits: c.name === 'unicode-scalar-boundary', nullable_record_rendered: c.name === 'nullable-record-fields', no_actionable_form: group === 'terminal',
+  })));
+  r.screenshots.push(...r.react_decoder_controls.map(c => `react-people-decoder-${c.group}-${c.name}-320.png`));
+  r.react_mounts = expectedMountPaths(r);
+  r.persistent_storage_observer = {product_operations:0,positive_controls:1,installed_documents:1,state_preserved:true,methods_verified:[...STORAGE_METHODS],injected_write_detections:2,injection_methods_verified:['storage:removeItem','storage:setItem']};
   return r;
 }
 test('positive People evidence control', () => assert.equal(validEvidence(evidence()), true));
@@ -81,7 +101,7 @@ test('missing screenshot refused', () => { const r = evidence(); r.screenshots.p
 test('unobserved permission loss refused', () => { const r = evidence(); r.create_revoked = 'true'; assert.equal(validEvidence(r), false); });
 test('document plan binds exact command, record and action identities', () => {
   const r = evidence(), rows = expectedDocuments(r);
-  assert.equal(rows.length, 46);
+  assert.equal(rows.length, 110);
   assert.equal(rows.filter(x => x.method === 'POST').length, 7);
   assert.equal(rows.filter(x => x.redirected).length, 7);
   assert.equal(rows.filter(x => x.status === 404).length, 6);
@@ -107,7 +127,7 @@ function aggregate() {
   r.posts = Object.fromEntries(paths.map(path => [path, 1])); return r;
 }
 test('combined census positive control', () => { const r = aggregate(); assert.equal(completeDocuments(r), true); assert.equal(completeMutations(r), true); });
-for (let i = 0; i < 46; i++) test(`missing People document ${i} refused`, () => {
+for (let i = 0; i < 110; i++) test(`missing People document ${i} refused`, () => {
   const r = aggregate(); r.documents.splice(12 + i, 1); assert.equal(completeDocuments(r), false);
 });
 test('document observer binds the complete planned search query and refuses extra keys', () => {
@@ -241,3 +261,54 @@ for (const [history, count] of [['native_headers', 5], ['denied_headers', 2]]) {
     }
   }
 }
+
+// New independent positive/corruption controls for explicit React execution and failures.
+test('React script evidence cannot silently claim script-free', () => { const r=evidence(); r.native_headers[0].no_product_script=true; assert.equal(validEvidence(r),false); });
+test('injected extra script refused', () => { const r=evidence(); r.native_headers[0].script_evidence.scripts.push({attributes:[['src','/assets/extra.js']]}); assert.equal(validEvidence(r),false); });
+test('inline executable script refused', () => { const r=evidence(); r.native_headers[0].script_evidence.scripts[1].attributes.pop(); assert.equal(validEvidence(r),false); });
+test('missing React mount observation refused', () => { const r=evidence(); r.react_mounts.pop(); assert.equal(validEvidence(r),false); });
+for(const name of CONTROL_NAMES) {
+  test(`missing React failure control ${name} refused`,()=>{const r=evidence();r.react_controls=r.react_controls.filter(row=>row.name!==name);assert.equal(validEvidence(r),false);});
+  test(`unverified React failure control ${name} refused`,()=>{const r=evidence();r.react_controls.find(row=>row.name===name).owner_effects_verified=false;assert.equal(validEvidence(r),false);});
+}
+test('zero real IME events refused',()=>{const r=evidence();r.react_controls[0].ime_events=0;assert.equal(validControlEvidence(r.react_controls),false);});
+test('render failure that never reached React refused',()=>{const r=evidence();r.react_controls[4].render_probe_hits=0;assert.equal(validControlEvidence(r.react_controls),false);});
+test('fallback controls cannot create business effects',()=>{const r=evidence();r.react_controls[0].no_mutation=false;assert.equal(validControlEvidence(r.react_controls),false);});
+
+for (const [group, controls] of Object.entries(DECODER_CONTROLS)) for (const c of controls) {
+  test(`missing real decoder control ${group}/${c.name} refused`, () => {
+    const r=evidence(); r.react_decoder_controls=r.react_decoder_controls.filter(x=>!(x.group===group&&x.name===c.name));
+    assert.equal(validEvidence(r),false);
+  });
+  test(`unverified decoder owner census ${group}/${c.name} refused`, () => {
+    const r=evidence();r.react_decoder_controls.find(x=>x.group===group&&x.name===c.name).owner_effects_verified=false;
+    assert.equal(validEvidence(r),false);
+  });
+}
+for (const flag of ['runtime_http_200','original_response_unchanged','no_mutation','current_context_preserved','no_business_storage']) {
+  test(`decoder evidence requires ${flag}`,()=>{const r=evidence();r.react_decoder_controls[1][flag]=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+}
+test('decoder negative control cannot mount',()=>{const r=evidence();r.react_decoder_controls[1].react_mounted=true;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('decoder rejection must expose fixed accessible status',()=>{const r=evidence();r.react_decoder_controls[1].rejection_status=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('decoder fallback must survive rejection',()=>{const r=evidence();r.react_decoder_controls[1].fallback_retained=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('decoder baseline must prove real mount first',()=>{const r=evidence();r.react_decoder_controls[0].react_mounted=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('decoder controls require identical actually served runtime bytes',()=>{const r=evidence();r.react_decoder_controls[1].runtime_sha256='e'.repeat(64);assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('hostile text control requires literal rendering witness',()=>{const r=evidence();r.react_decoder_controls.find(x=>x.name==='hostile-text').hostile_text_only=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('large exact revisions cannot silently round',()=>{const r=evidence();r.react_decoder_controls.find(x=>x.name==='large-revision-string').exact_large_revision=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('terminal controls cannot introduce actionable forms',()=>{const r=evidence();r.react_decoder_controls.find(x=>x.group==='terminal').no_actionable_form=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+
+test('supplementary Unicode limits require exact scalar-value witness',()=>{const r=evidence();r.react_decoder_controls.find(x=>x.name==='unicode-scalar-boundary').exact_scalar_limits=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('nullable record fields require visible fallback names',()=>{const r=evidence();r.react_decoder_controls.find(x=>x.name==='nullable-record-fields').nullable_record_rendered=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+
+for(const flag of ['outside_action_control_verified','global_actions_preserved'])test(`decoder action observation requires ${flag}`,()=>{const r=evidence();r.react_decoder_controls[1][flag]=false;assert.equal(validDecoderEvidence(r.react_decoder_controls),false);});
+test('global action census positive control refuses added outside-fallback form',()=>{const before=['<form action="/real/requests">owned</form>'];assert.equal(sameActions(before,before),true);assert.equal(sameActions(before,[...before,'<form hidden action="/real/requests">injected</form>']),false);});
+test('global action census refuses hidden changed controls',()=>assert.equal(sameActions(['<button>owned</button>'],['<button hidden>changed</button>']),false));
+test('global action census refuses omitted evidence',()=>assert.equal(sameActions(undefined,undefined),false));
+test('positive persistent storage evidence control',()=>assert.equal(validStorageEvidence(evidence().persistent_storage_observer),true));
+for(const field of ['positive_controls','installed_documents'])test(`persistent storage observer requires ${field}`,()=>{const r=evidence();r.persistent_storage_observer[field]=0;assert.equal(validEvidence(r),false);});
+test('persistent storage writes are refused through the complete journey',()=>{const r=evidence();r.persistent_storage_observer.product_operations=1;assert.equal(validEvidence(r),false);});
+test('changed browser store state is refused',()=>{const r=evidence();r.persistent_storage_observer.state_preserved=false;assert.equal(validEvidence(r),false);});
+for(const method of STORAGE_METHODS)test(`storage observer positive control requires ${method}`,()=>{const r=evidence();r.persistent_storage_observer.methods_verified=r.persistent_storage_observer.methods_verified.filter(x=>x!==method);assert.equal(validEvidence(r),false);});
+
+test('pending observer control must detect unrelated product write',()=>{const r=evidence();r.persistent_storage_observer.injected_write_detections=0;assert.equal(validEvidence(r),false);});
+test('pending observer control must classify both transient writes as product',()=>{const r=evidence();r.persistent_storage_observer.injection_methods_verified=['storage:setItem'];assert.equal(validEvidence(r),false);});

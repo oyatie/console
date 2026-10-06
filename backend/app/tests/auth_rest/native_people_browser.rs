@@ -3,7 +3,9 @@
 use super::*;
 
 pub(super) const DRIVER_SHA256: &str =
-    "d69b37066e92f6c2d95d3475bad8f461969422cf07fb83a05252f77a23c27ecc";
+    "051ccf6be53899a9b077df697e4fea36d7edacc38e8b8e2065ca37b5c52e098b";
+pub(super) const CONTROL_DRIVER_SHA256: &str =
+    "c86b159e1d27ae0f86cba8753b3f3661f1616b093d4e14e1a54e75651edfd3c7";
 const NAME: &str = "김하늘 <연구 & 운영>";
 const NUMBER: &str = "UI-사람-001";
 const PHASES: &[&str] = &[
@@ -518,6 +520,80 @@ pub(super) async fn observe(
     let mut ready: Option<Value> = None;
     let mut accepted: Option<Value> = None;
     let mut employee = None;
+    const REACT_CONTROLS: [&str; 5] = [
+        "delayed-ime-input",
+        "delayed-scroll",
+        "precommit-focus",
+        "failed-load",
+        "failed-render",
+    ];
+    const REGISTRATION_DECODER_CONTROLS: [&str; 31] = [
+        "unmodified",
+        "invalid-json",
+        "unknown-version",
+        "extra-envelope-field",
+        "unknown-page-kind",
+        "extra-page-field",
+        "extra-scope-field",
+        "invalid-scope-boolean",
+        "malformed-company-id",
+        "nil-company-id",
+        "uppercase-company-id",
+        "malformed-command-id",
+        "malformed-expectation-id",
+        "numeric-revision",
+        "noncanonical-revision",
+        "large-revision-string",
+        "unicode-scalar-boundary",
+        "unicode-scalar-overflow",
+        "oversized-name",
+        "oversized-number",
+        "extra-form-field",
+        "extra-expectation-field",
+        "invalid-nullable-field",
+        "invalid-proof-type",
+        "registration-conflict-valid",
+        "registration-conflict-extra-field",
+        "request-not-visible-valid",
+        "request-not-visible-extra-field",
+        "uncertain-valid",
+        "uncertain-extra-field",
+        "hostile-text",
+    ];
+    const TERMINAL_DECODER_CONTROLS: [&str; 13] = [
+        "unmodified",
+        "unknown-outcome-kind",
+        "extra-terminal-field",
+        "terminal-proof-injection",
+        "rejected-valid",
+        "rejected-proof-injection",
+        "conflicting-valid",
+        "conflicting-proof-injection",
+        "cancelled-valid",
+        "cancelled-proof-injection",
+        "expired-valid",
+        "expired-proof-injection",
+        "malformed-terminal-id",
+    ];
+    const DIRECTORY_DECODER_CONTROLS: [&str; 11] = [
+        "unmodified",
+        "nullable-record-fields",
+        "oversized-record-collection",
+        "malformed-record-id",
+        "extra-record-field",
+        "numeric-record-revision",
+        "invalid-record-nullable-field",
+        "invalid-after-cursor",
+        "unsafe-next-href",
+        "detail-valid",
+        "detail-extra-field",
+    ];
+    let mut decoder_next = [0_usize; 3];
+    let mut decoder_ready = false;
+    let mut decoder_restored = [false; 3];
+    let mut control_next = 0;
+    let mut control_ready = false;
+    let mut controls_restored = false;
     while next < PHASES.len() {
         let event = browser_owner_event(events).await;
         assert_eq!(
@@ -536,6 +612,135 @@ pub(super) async fn observe(
         if phase == "PEOPLE_READY" {
             assert_eq!(next, 0);
             assert!(ready.is_none() && current == prior);
+        } else if phase == "PEOPLE_REACT_CONTROL_READY" {
+            assert_eq!(PHASES[next], "PEOPLE_REGISTRATION_OPENED");
+            assert!(ready.is_none() && !control_ready && !controls_restored);
+            assert_eq!(event["control_name"], REACT_CONTROLS[control_next]);
+            assert!(current == prior, "React control setup changed durable rows");
+            control_ready = true;
+        } else if phase == "PEOPLE_REACT_CONTROL_CHECKED" {
+            assert_eq!(PHASES[next], "PEOPLE_REGISTRATION_OPENED");
+            assert!(ready.is_none() && control_ready && !controls_restored);
+            assert_eq!(event["control_name"], REACT_CONTROLS[control_next]);
+            policy_uuid(&event["command_id"]);
+            assert!(
+                policy_preflight_effects(&prior, &current, at, now),
+                "React fallback control must issue exactly one form proof and no business effects"
+            );
+            control_next += 1;
+            control_ready = false;
+        } else if phase == "PEOPLE_REACT_CONTROLS_RESTORED" {
+            assert_eq!(PHASES[next], "PEOPLE_REGISTRATION_OPENED");
+            assert!(ready.is_none() && !control_ready && !controls_restored);
+            assert_eq!(control_next, REACT_CONTROLS.len());
+            audited(
+                &prior,
+                &current,
+                account,
+                company,
+                &["people.directory.read"],
+            );
+            assert!(
+                additions(&prior, &current, &[("audit_events", 1)]).unwrap() == prior,
+                "React controls restoration changed other state"
+            );
+            controls_restored = true;
+        } else if matches!(
+            phase,
+            "PEOPLE_REACT_DECODER_READY"
+                | "PEOPLE_REACT_DECODER_CHECKED"
+                | "PEOPLE_REACT_DECODER_RESTORED"
+        ) {
+            let group = event["decoder_group"].as_str().unwrap();
+            let (index, names, expected_phase) = match group {
+                "registration" => (
+                    0,
+                    REGISTRATION_DECODER_CONTROLS.as_slice(),
+                    "PEOPLE_REGISTRATION_OPENED",
+                ),
+                "terminal" => (
+                    1,
+                    TERMINAL_DECODER_CONTROLS.as_slice(),
+                    "PEOPLE_RECEIPT_REOPENED",
+                ),
+                "directory" => (
+                    2,
+                    DIRECTORY_DECODER_CONTROLS.as_slice(),
+                    "PEOPLE_SEARCH_MATCH",
+                ),
+                _ => panic!("unknown decoder control group"),
+            };
+            assert_eq!(PHASES[next], expected_phase);
+            assert!(ready.is_none() && controls_restored && !decoder_restored[index]);
+            if phase == "PEOPLE_REACT_DECODER_READY" {
+                assert!(!decoder_ready);
+                assert_eq!(event["control_name"], names[decoder_next[index]]);
+                assert!(
+                    current == prior,
+                    "decoder control setup changed durable rows"
+                );
+                decoder_ready = true;
+            } else if phase == "PEOPLE_REACT_DECODER_CHECKED" {
+                assert!(decoder_ready);
+                assert_eq!(event["control_name"], names[decoder_next[index]]);
+                if index != 2 {
+                    policy_uuid(&event["command_id"]);
+                } else {
+                    assert!(event["command_id"].is_null());
+                }
+                if index == 0 {
+                    assert!(
+                        policy_preflight_effects(&prior, &current, at, now),
+                        "decoder registration GET must issue exactly one form proof and no business effects"
+                    );
+                } else if index == 2 {
+                    audited(
+                        &prior,
+                        &current,
+                        account,
+                        company,
+                        &["people.directory.read"],
+                    );
+                    assert!(
+                        additions(&prior, &current, &[("audit_events", 1)]).unwrap() == prior,
+                        "decoder directory GET changed other state"
+                    );
+                } else {
+                    assert!(accepted.is_some() && employee.is_some());
+                    assert_eq!(
+                        event["command_id"],
+                        accepted.as_ref().unwrap()["command_id"]
+                    );
+                    assert!(
+                        current == prior,
+                        "terminal decoder GET changed durable state"
+                    );
+                }
+                decoder_next[index] += 1;
+                decoder_ready = false;
+            } else {
+                assert!(!decoder_ready);
+                assert_eq!(decoder_next[index], names.len());
+                if index == 0 || index == 2 {
+                    audited(
+                        &prior,
+                        &current,
+                        account,
+                        company,
+                        &["people.directory.read"],
+                    );
+                    assert!(
+                        additions(&prior, &current, &[("audit_events", 1)]).unwrap() == prior,
+                        "decoder registration restoration changed other state"
+                    );
+                } else {
+                    assert!(
+                        current == prior,
+                        "terminal decoder restoration changed durable state"
+                    );
+                }
+                decoder_restored[index] = true;
+            }
         } else if phase == "PEOPLE_ACTION_READY" {
             assert!(ready.is_none());
             assert_eq!(event["action_phase"], PHASES[next]);
@@ -745,6 +950,18 @@ pub(super) async fn observe(
         policy_browser_ack(input, phase, witness).await;
     }
     assert!(ready.is_none() && accepted.is_some() && employee.is_some());
+    assert_eq!(control_next, REACT_CONTROLS.len());
+    assert!(controls_restored && !control_ready);
+    assert_eq!(
+        decoder_next,
+        [
+            REGISTRATION_DECODER_CONTROLS.len(),
+            TERMINAL_DECODER_CONTROLS.len(),
+            DIRECTORY_DECODER_CONTROLS.len()
+        ]
+    );
+    assert_eq!(decoder_restored, [true; 3]);
+    assert!(!decoder_ready);
 }
 
 #[test]

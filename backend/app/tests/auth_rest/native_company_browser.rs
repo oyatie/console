@@ -122,7 +122,7 @@ async fn company_browser_journey_with_group_invalid_form(
     let header_bytes = std::fs::read(&header_path).unwrap();
     assert_eq!(
         hex::encode(Sha256::digest(&header_bytes)),
-        "daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d"
+        "915f37ffb3b7580202158ca23425e047e4587278aaaa5725687f9a6eb71a34c4"
     );
     policy_helpers.push((header_path, header_bytes));
     if group_process_entry || group_navigation_held || group_invalid_form {
@@ -208,6 +208,19 @@ async fn company_browser_journey_with_group_invalid_form(
         assert_eq!(
             hex::encode(Sha256::digest(&bytes)),
             native_people_browser::DRIVER_SHA256
+        );
+        policy_helpers.push((path, bytes));
+        let path = driver.parent().unwrap().join("react_people_controls.cjs");
+        assert!(
+            std::fs::symlink_metadata(&path)
+                .unwrap()
+                .file_type()
+                .is_file()
+        );
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            hex::encode(Sha256::digest(&bytes)),
+            native_people_browser::CONTROL_DRIVER_SHA256
         );
         policy_helpers.push((path, bytes));
     }

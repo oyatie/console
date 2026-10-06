@@ -4,6 +4,7 @@
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const {assertNativeHeader, validHeaderEvidence} = require('./native_header.cjs');
+const {CONTROL_NAMES, runReactControls, validControlEvidence, DECODER_CONTROLS, runDecoderControls, validDecoderEvidence, startStorageObserver, validStorageEvidence} = require('./react_people_controls.cjs');
 const PHASES = Object.freeze(['PEOPLE_INSTALLED', 'PEOPLE_READ_GRANTED', 'PEOPLE_READ_ONLY',
   'PEOPLE_CREATE_GRANTED', 'PEOPLE_DIRECTORY_CREATE_READY', 'PEOPLE_REGISTRATION_OPENED',
   'PEOPLE_WORKSPACE_REOPENED', 'PEOPLE_REGISTRATION_REOPENED', 'PEOPLE_PREPARED', 'PEOPLE_PENDING_REOPENED', 'PEOPLE_COMMITTED',
@@ -40,7 +41,7 @@ function expectedNativeHeaders(r) {
       {label: '사람과 조직', landmark: '사람과 조직 탐색', paths: [...(read ? [d] : []), ...(create ? [d + '/new'] : [])]},
       {label: '관리', landmark: '회사 관리', paths: [w, w + '/policy']},
     ];
-    return {phase, url: r.header_origin + path,
+    return {phase, url: r.header_origin + path, clientScriptContract: 'react-people-v1',
       paths: [...base, ...(read ? [d] : []), ...(create ? [d + '/new'] : [])], currentPath,
       locationPath, groups: {desktop: groups(), mobile: groups()}, boundTitle: true};
   };
@@ -82,6 +83,14 @@ function validEvidence(r) {
     id(r.company); id(r.account); id(r.command); id(r.employee); id(r.person);
     assert.equal(completeNativeHeaders(r), true);
     assert.equal(completeDenialHeaders(r), true);
+    assert.equal(validControlEvidence(r.react_controls), true);
+    for (const name of CONTROL_NAMES) assert.equal(r.screenshots.filter(path => path === 'react-people-' + name + '-320.png').length, 1);
+    assert.equal(validDecoderEvidence(r.react_decoder_controls), true);
+    assert.equal(validStorageEvidence(r.persistent_storage_observer), true);
+    for (const control of r.react_decoder_controls.filter(x=>x.group==='terminal')) assert.equal(control.command, r.command);
+    for (const [group, controls] of Object.entries(DECODER_CONTROLS)) for (const control of controls)
+      assert.equal(r.screenshots.filter(path => path === `react-people-decoder-${group}-${control.name}-320.png`).length, 1);
+    assert.deepEqual(r.react_mounts, expectedMountPaths(r));
     assert.equal(r.employee, r.person);
     assert.deepEqual(r.checkpoints.map(x => x.phase), PHASES);
     assert.equal(r.mutations.length, 7);
@@ -117,7 +126,7 @@ function validEvidence(r) {
   } catch { return false; }
 }
 
-function expectedDocuments(r) {
+function documentPlan(r) {
   const p = `/companies/${r.company}/policy/people-directory`, d = `/companies/${r.company}/people`;
   const w = `/companies/${r.company}`, request = d + `/requests/${r.command}`, detail = d + '/' + r.employee;
   const match = searchPath(d, EMPLOYEE_NUMBER), miss = searchPath(d, NONMATCHING_NUMBER);
@@ -125,25 +134,40 @@ function expectedDocuments(r) {
   const action = (index, destination) => [{method: 'POST', path: r.mutations[index].path, status: 303, redirected: false},
     {method: 'GET', path: destination, status: 200, redirected: true}];
   const receipt = (kind, index) => p + `/requests/${kind}/${r.mutations[index].command}`;
-  return [get(p + '/install'), ...action(0, receipt('install', 0)), get(p + '/read/grant'),
+  const rows = [get(p + '/install'), ...action(0, receipt('install', 0)), get(p + '/read/grant'),
     ...action(1, receipt('grant', 1)), get(d), get(d + '/new', 404), get(w), get(p + '/create/grant'),
     ...action(2, receipt('grant', 2)), get(d), get(d + '/new'), get(w), get(d + '/new'),
     ...action(3, request), get(request),
-    ...action(4, request), get(request), get(detail), get(detail), get(d),
+    ...action(4, request), ...DECODER_CONTROLS.terminal.map(c => ({...get(request), _react_mount: c.mounted})),
+    get(request), get(request), get(detail), get(detail), get(d),
+    ...DECODER_CONTROLS.directory.map(c => ({...get(d), _react_mount:c.mounted})), get(d),
     get(match), get(detail), get(detail), get(match), get(miss), get(d),
     get(w), get(p + '/read/revoke'),
     ...action(5, receipt('revoke', 5)), get(d, 404), get(detail, 404), get(match, 404), get(request), get(w), get(p + '/create/revoke'),
     ...action(6, receipt('revoke', 6)), get(w), get(d + '/new', 404), get(request, 404)];
+  const insertion = rows.findIndex(row => row.path === receipt('grant', 2)) + 2;
+  rows.splice(insertion, 0, ...CONTROL_NAMES.map(() => ({...get(d + '/new'), _react_mount: false})), get(d),
+    ...DECODER_CONTROLS.registration.map(c => ({...get(d + '/new'), _react_mount: c.mounted})), get(d));
+  return rows;
+}
+function expectedDocuments(r) {
+  return documentPlan(r).map(({_react_mount, ...row}) => row);
+}
+function expectedMountPaths(r) {
+  return documentPlan(r).filter(row => row._react_mount !== false && row.method === 'GET' && row.status === 200 &&
+    /^\/companies\/[^/]+\/people(?:[/?]|$)/.test(row.path)).map(row => row.path);
 }
 
 async function runPeopleJourney({page, company, companyName, account, exchange, capture, tabTo,
   expectDocument, expectMutation, secretFree, clearBrowserCache}) {
   id(company); id(account);
+  const storageObserver = await startStorageObserver(page);
+  try {
   const origin = new URL(page.url()).origin;
   const workspace = `/companies/${company}`;
   const directory = workspace + '/people';
   const policy = workspace + '/policy/people-directory';
-  const result = {company, account, checkpoints: [], mutations: [], screenshots: [],
+  const result = {company, account, checkpoints: [], mutations: [], screenshots: [], react_mounts: [],
     header_origin: origin, native_headers: [], denied_headers: []};
   async function header(phase) {
     const expected = expectedNativeHeaders(result).filter(row => row.phase === phase);
@@ -180,6 +204,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   }
   let pendingPath, detailPath;
   async function noBusinessStorage() {
+    await storageObserver.check();
     assert.equal(await page.evaluate(({name, number}) => {
       const data = JSON.stringify({local: Object.entries(localStorage), session: Object.entries(sessionStorage)});
       return !data.includes(name) && !data.includes(number);
@@ -190,6 +215,18 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     assert.equal(reply.phase, phase); assert.equal(reply.company, company); assert.equal(reply.account, account);
     assert.equal(reply.owner_effects_verified, true);
     result.checkpoints.push(reply); return reply;
+  }
+  async function mounted(path, response) {
+    if (!/^\/companies\/[^/]+\/people(?:[/?]|$)/.test(path)) return;
+    const marker = page.locator('[data-console-react-people="mounted"]');
+    try { await marker.waitFor({state: 'visible', timeout: 15000}); }
+    catch { throw Object.assign(new Error('REACT_PEOPLE_MOUNT_MISSING'), {code: 'REACT_PEOPLE_MOUNT_MISSING'}); }
+    assert.equal(await marker.count(), 1);
+    assert.equal(await page.locator('#console-people-fallback').count(), 0);
+    if (response) assert.equal(await page.evaluate(html => !!new DOMParser().parseFromString(html, 'text/html')
+      .querySelector('[data-console-react-people="mounted"]'), await response.text()), false,
+      'SSR must not fabricate the client mount witness in any HTML attribute encoding');
+    result.react_mounts.push(path);
   }
   async function open(path, status = 200, link) {
     expectDocument('GET', path, status, false);
@@ -213,6 +250,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
         result.command, result.employee, result.person].filter(Boolean)), true);
       assert.equal(await page.locator('form,[data-people-record],[data-people-command]').count(), 0);
     }
+    if (status === 200) await mounted(path, response);
     return response;
   }
   async function requestView(outcome) {
@@ -283,6 +321,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     const response = await waiting;
     await page.waitForURL(origin + path);
     assert.equal(response.status(), 200); assert.equal(response.request().redirectedFrom(), null);
+    await mounted(path, response);
     assert.deepEqual([...new URL(page.url()).searchParams], [['employee_number', number]]);
     searchPolicy(response);
     assert.equal(await page.locator('form[method="get"] input[name="employee_number"]').inputValue(), number);
@@ -315,6 +354,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     assert.deepEqual([...sent].filter(([name]) => name !== 'csrf_proof').sort(), fields);
     assert.equal(Buffer.byteLength(raw), Math.min(Buffer.byteLength(raw), 8192));
     await page.waitForURL(origin + recovery);
+    if (recovery.startsWith(directory + '/requests/')) await mounted(recovery);
     result.mutations.push({path, command, status: response.status(), body_sha256: crypto.createHash('sha256').update(raw).digest('hex')});
     const w = await witness(phase, {command_id: command, ...values});
     return {command, path: recovery, witness: w};
@@ -366,7 +406,20 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await emptyCreate.count(), 1);
   assert.equal(await emptyCreate.getAttribute('href'), directory + '/new');
   await witness('PEOPLE_DIRECTORY_CREATE_READY');
-  await open(directory + '/new', 200, emptyCreate);
+  result.react_controls = await runReactControls({page, origin, company, account,
+    expectDocument, exchange, capture: async name => { await capture(name); result.screenshots.push(name + '.png'); }, clearBrowserCache});
+  expectDocument('GET', directory, 200, false);
+  const restored = await page.goto(origin + directory);
+  assert.equal(restored.status(), 200); await mounted(directory, restored);
+  const restoredWitness = await exchange({phase: 'PEOPLE_REACT_CONTROLS_RESTORED'});
+  assert.equal(restoredWitness.owner_effects_verified, true);
+  result.react_decoder_controls = await runDecoderControls({page, origin, company, account, group: 'registration',
+    expectDocument, exchange, capture: async name => { await capture(name); result.screenshots.push(name + '.png'); }, clearBrowserCache, mounted});
+  expectDocument('GET', directory, 200, false);
+  const decoderRestored = await page.goto(origin + directory);
+  assert.equal(decoderRestored.status(), 200); await mounted(directory, decoderRestored);
+  assert.equal((await exchange({phase: 'PEOPLE_REACT_DECODER_RESTORED', decoder_group: 'registration'})).owner_effects_verified, true);
+  await open(directory + '/new', 200, page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}));
   await witness('PEOPLE_REGISTRATION_OPENED');
   await open(workspace);
   await shot('people-workspace-next-task', 1440);
@@ -392,6 +445,13 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     () => pendingPath, 'PEOPLE_COMMITTED');
   result.employee = id(committed.witness.employee_id); result.person = id(committed.witness.person_id);
   await requestView('committed');
+  result.react_decoder_controls.push(...await runDecoderControls({page, origin, company, account, group: 'terminal', command: result.command,
+    expectDocument, exchange, capture: async name => { await capture(name); result.screenshots.push(name + '.png'); }, clearBrowserCache, mounted}));
+  expectDocument('GET', pendingPath, 200, false);
+  const terminalRestored = await page.goto(origin + pendingPath);
+  assert.equal(terminalRestored.status(), 200); await mounted(pendingPath, terminalRestored);
+  assert.equal((await exchange({phase: 'PEOPLE_REACT_DECODER_RESTORED', decoder_group: 'terminal'})).owner_effects_verified, true);
+  await requestView('committed');
   await open(pendingPath); await requestView('committed');
   await witness('PEOPLE_RECEIPT_REOPENED', {command_id: result.command}); result.receipt_reopened = true;
   detailPath = directory + '/' + result.employee;
@@ -406,6 +466,12 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await entry.getByRole('link', {name: LEGAL_NAME, exact: true}).getAttribute('href'), detailPath);
   assert.equal(await entry.getByText(EMPLOYEE_NUMBER, {exact: true}).isVisible(), true);
   await witness('PEOPLE_LIST');
+  result.react_decoder_controls.push(...await runDecoderControls({page, origin, company, account, group:'directory',
+    expectDocument, exchange, capture: async name => { await capture(name); result.screenshots.push(name + '.png'); }, clearBrowserCache, mounted}));
+  expectDocument('GET', directory, 200, false);
+  const directoryDecoderRestored = await page.goto(origin + directory);
+  assert.equal(directoryDecoderRestored.status(),200); await mounted(directory,directoryDecoderRestored);
+  assert.equal((await exchange({phase:'PEOPLE_REACT_DECODER_RESTORED',decoder_group:'directory'})).owner_effects_verified,true);
   const matchPath = await search(EMPLOYEE_NUMBER, '', true);
   const match = page.locator(`[data-people-record="${result.employee}"]`);
   assert.equal(await page.locator('[data-people-record]').count(), 1);
@@ -463,6 +529,8 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await witness('PEOPLE_RECEIPT_DENIED'); result.create_revoked = true;
   await noBusinessStorage(); result.no_local_business_storage = true;
   result.keyboard = true; result.reflow_320 = true;
+  result.persistent_storage_observer = await storageObserver.evidence();
   assert.equal(validEvidence(result), true); return result;
+  } finally { await storageObserver.stop(); }
 }
-module.exports = {expectedNativeHeaders, completeNativeHeaders, expectedDenialHeaders, completeDenialHeaders, runPeopleJourney, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};
+module.exports = {expectedNativeHeaders, completeNativeHeaders, expectedDenialHeaders, completeDenialHeaders, runPeopleJourney, validEvidence, expectedDocuments, expectedMountPaths, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};

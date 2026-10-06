@@ -95,6 +95,24 @@ function collectSectionSnapshot(header) {
   };
 }
 
+// Explicit authored contract; never infer script permission from the observed DOM.
+function expectedPeopleScripts(expected) {
+  assert.equal(expected.clientScriptContract, 'react-people-v1');
+  assert.match(new URL(expected.url).pathname,
+    /^\/companies\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/people(?:\/.*)?$/);
+  return {guard_before_body: true, scripts: [
+    {attributes: [['src', '/assets/people-guard.js']]},
+    {attributes: [['id', 'console-people-bootstrap'], ['type', 'application/json']]},
+    {attributes: [['src', '/assets/people.js'], ['type', 'module']]},
+  ]};
+}
+function collectPeopleScripts() {
+  const scripts = [...document.querySelectorAll('script')];
+  const guard = scripts.find(script => script.getAttribute('src') === '/assets/people-guard.js');
+  return {guard_before_body: !!guard && !!(guard.compareDocumentPosition(document.body) & Node.DOCUMENT_POSITION_FOLLOWING),
+    scripts: scripts.map(script => ({attributes: [...script.attributes].map(a => [a.name, a.value]).sort((a,b) => a[0].localeCompare(b[0]))}))};
+}
+
 function validHeaderEvidence(record, expected) {
   try {
     assert.equal(record.kind, 'REAL_NATIVE_HEADER_BROWSER_CHECK');
@@ -121,7 +139,14 @@ function validHeaderEvidence(record, expected) {
       }
     }
     for (const key of ['enter_opened', 'space_closed', 'closed_focus_safe', 'resize_focus_safe',
-      'values_preserved', 'location_preserved', 'no_product_script', 'unique_ids']) assert.equal(record[key], true);
+      'values_preserved', 'location_preserved', 'unique_ids']) assert.equal(record[key], true);
+    if (expected.clientScriptContract === undefined) {
+      assert.equal(record.no_product_script, true);
+      assert.equal(Object.hasOwn(record, 'script_evidence'), false);
+    } else {
+      assert.equal(record.no_product_script, false);
+      assert.deepEqual(record.script_evidence, expectedPeopleScripts(expected));
+    }
     assert.equal(record.network_requests, 0);
     return true;
   } catch { return false; }
@@ -256,14 +281,20 @@ async function assertNativeHeader(page, tabTo, expected) {
     // Compare booleans only: snapshots may contain hiddenproofs; never printthem.
     assert.equal(before === after, true, 'navigation changed formstate');
     assert.equal(page.url() === expected.url, true);
-    assert.equal(await page.locator('script').count(), 0);
+    const scriptCount = await page.locator('script').count();
+    if (expected.clientScriptContract === undefined) {
+      assert.equal(scriptCount, 0);
+    } else {
+      record.script_evidence = await page.evaluate(collectPeopleScripts);
+      assert.deepEqual(record.script_evidence, expectedPeopleScripts(expected));
+    }
     assert.equal(await page.evaluate(() => {
       const ids = [...document.querySelectorAll('[id]')].map(e => e.id);
       return ids.length === new Set(ids).size;
     }), true);
     Object.assign(record, {enter_opened: true, space_closed: true, closed_focus_safe: true,
       resize_focus_safe: true, values_preserved: true, location_preserved: true,
-      no_product_script: true, unique_ids: true, network_requests: requests});
+      no_product_script: scriptCount === 0, unique_ids: true, network_requests: requests});
     assert.equal(validHeaderEvidence(record, expected), true);
     return record;
   } finally {

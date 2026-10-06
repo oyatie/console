@@ -32,11 +32,12 @@ verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d19
 verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
 for entry in \
   account:3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d \
-  company:989ddc255dc363b2bad8f1539394648d2d76e9abdd24fbf1398492ca2936c43e \
+  company:6be39909f2f5a948024a05122ad4930984912fe760b6673e756098a044e63967 \
   company-preview:a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90 \
   hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c \
-  native_header:daca9128cb95419be34e6dc76be93d3216d9c56dad86cf95d4c60333b924649d \
-  people_journey:d69b37066e92f6c2d95d3475bad8f461969422cf07fb83a05252f77a23c27ecc \
+  native_header:915f37ffb3b7580202158ca23425e047e4587278aaaa5725687f9a6eb71a34c4 \
+  people_journey:051ccf6be53899a9b077df697e4fea36d7edacc38e8b8e2065ca37b5c52e098b \
+  react_people_controls:c86b159e1d27ae0f86cba8753b3f3661f1616b093d4e14e1a54e75651edfd3c7 \
   group_process_journey:a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f \
   group_invalid_form_journey:f301776ce4bcb9c7b5101baa4f4cab8c27c5dc633e277d17db2a89939b46a6dd \
   group_navigation_held:0c8b4d46a5ca248df5a5b08c0a1bf0da6c71b59049516e683389375d51794ca2 \
@@ -75,7 +76,7 @@ const drivers = {
   CONSOLE_COMPANY_PREVIEW_BROWSER: 'company-preview',
   CONSOLE_HYDRATION_BROWSER: 'hydration',
 };
-const companions = ['native_header', 'people_journey', 'group_process_journey', 'group_invalid_form_journey', 'group_navigation_held', 'policy_journey', 'recovery_controls'];
+const companions = ['native_header', 'people_journey', 'react_people_controls', 'group_process_journey', 'group_invalid_form_journey', 'group_navigation_held', 'policy_journey', 'recovery_controls'];
 const digests = {
   package: hash('runtime/package.json'), lock: hash('runtime/package-lock.json'),
   browsers: hash('runtime/node_modules/playwright-core/browsers.json'),
