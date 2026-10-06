@@ -253,6 +253,80 @@ class ReactResolutionTests(unittest.TestCase):
                 self.supply(**{name: meta})
                 self.refuse()
 
+    def test_parent_traversal_cannot_substitute_a_different_actual_file(self):
+        roots = json.loads(self.args.packages.read_text())
+        for name in ['react', 'scheduler']:
+            actual = self.write('declared/packages/' + name + '-0/package/index.js',
+                                '/* declared separate ' + name + ' archive */').parent
+            staged = self.workspace / 'node_modules' / name
+            staged.unlink()
+            staged.symlink_to(actual, target_is_directory=True)
+            roots[name] = str(actual)
+        self.args.packages.write_text(json.dumps(roots))
+        self.assertEqual(len(roots), 7)
+        self.supply()
+        bundle.record_bundle(self.args)
+        self.assertEqual(bundle.validate_native(self.args.out_dir, self.inputs, self.lock)['format'], 1)
+
+        def distinct_existing_identity(raw, canonical):
+            actual = raw.resolve(strict=True)
+            normalized = Path(os.path.abspath(raw)).resolve(strict=True)
+            self.assertTrue(actual.is_file())
+            self.assertTrue(normalized.is_file())
+            self.assertNotEqual(actual, normalized)
+            self.assertEqual(normalized, canonical.resolve(strict=True))
+            self.assertNotEqual(actual.read_bytes(), normalized.read_bytes())
+            return str(raw)
+
+        self.write('declared/packages/react-0/scheduler/index.js', '/* undeclared archive sibling */')
+        scheduler = str(self.workspace / 'node_modules/scheduler/index.js')
+        raw_input = self.workspace / 'node_modules/react/../scheduler/index.js'
+        traversal = distinct_existing_identity(raw_input, Path(scheduler))
+        self.assertFalse(any(raw_input.resolve(strict=True).is_relative_to(Path(root).resolve())
+                             for root in roots.values()))
+        cases = []
+        changed = copy.deepcopy(self.runtime)
+        changed['inputs'][traversal] = changed['inputs'].pop(scheduler)
+        self.assertNotIn(scheduler, changed['inputs'])
+        cases.append(('input-key', 'runtime', changed))
+        changed = copy.deepcopy(self.runtime)
+        changed['inputs'][str(self.workspace / 'node_modules/react-dom/index.js')]['imports'][0]['path'] = traversal
+        cases.append(('input-import', 'runtime', changed))
+        javascript = str((self.args.compiled / 'people.js').resolve())
+        changed = copy.deepcopy(self.runtime)
+        changed['outputs'][javascript]['imports'] = [{'path': traversal, 'kind': 'import-statement'}]
+        cases.append(('output-import', 'runtime', changed))
+        changed = copy.deepcopy(self.runtime)
+        contributions = changed['outputs'][javascript]['inputs']
+        contributions[traversal] = contributions.pop(scheduler)
+        self.assertNotIn(scheduler, contributions)
+        cases.append(('output-contribution', 'runtime', changed))
+
+        anchor = self.write('undeclared-outputs/anchor/index.js', '/* undeclared output anchor */').parent
+        (self.args.compiled / 'alias').symlink_to(anchor, target_is_directory=True)
+        for name, bundle_name in [('people.css', 'runtime'), ('people-guard.js', 'guard')]:
+            self.write('undeclared-outputs/' + name, '/* undeclared emitted ' + name + ' */')
+            raw_output = self.args.compiled / 'alias' / '..' / name
+            output_traversal = distinct_existing_identity(raw_output, self.args.compiled / name)
+            changed = copy.deepcopy(getattr(self, bundle_name))
+            canonical = str((self.args.compiled / name).resolve())
+            changed['outputs'][output_traversal] = changed['outputs'].pop(canonical)
+            self.assertNotIn(canonical, changed['outputs'])
+            cases.append(('output-key-' + name, bundle_name, changed))
+
+        anchor = self.write('undeclared-sources/anchor/index.js', '/* undeclared source anchor */').parent
+        (self.workspace / 'src/alias').symlink_to(anchor, target_is_directory=True)
+        self.write('undeclared-sources/people.tsx', '/* undeclared entry point */')
+        raw_entry = self.workspace / 'src/alias/../people.tsx'
+        changed = copy.deepcopy(self.runtime)
+        changed['outputs'][javascript]['entryPoint'] = distinct_existing_identity(
+            raw_entry, self.workspace / 'src/people.tsx')
+        cases.append(('entry-point', 'runtime', changed))
+        for label, bundle_name, meta in cases:
+            with self.subTest(identity=label):
+                self.supply(**{bundle_name: meta})
+                self.refuse()
+
 
 if __name__ == '__main__':
     unittest.main()
