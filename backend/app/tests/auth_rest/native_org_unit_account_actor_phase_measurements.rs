@@ -639,6 +639,7 @@ mod native_org_unit_account_actor_measurements {
     }
 
     fn actor_expansion_catalog_delta(before: &Value, after: &Value) {
+        let comparison_started = Instant::now();
         let old_relations = actor_catalog_records(before, "relations", "oid");
         let new_relations = actor_catalog_records(after, "relations", "oid");
         assert_eq!(
@@ -775,6 +776,21 @@ mod native_org_unit_account_actor_measurements {
             old_other, new_other,
             "any unrelated security/source/ACL/routine metadata change is refused"
         );
+        eprintln!(
+            "ORG_ACCOUNT_ACTOR_COMPARISON {}",
+            json!({
+                "schema":"console.native_org_unit.account_actor_comparison_observation.v1",
+                "function":"actor_expansion_catalog_delta","region":"complete_catalog_comparison",
+                "elapsed_us":comparison_started.elapsed().as_micros(),
+                "old_relations":before["relations"].as_array().unwrap().len(),
+                "new_relations":after["relations"].as_array().unwrap().len(),
+                "old_attributes":old_attributes.len(),"new_attributes":new_attributes.len(),
+                "old_constraints":before["constraints"].as_array().unwrap().len(),
+                "new_constraints":after["constraints"].as_array().unwrap().len(),
+                "old_triggers":before["triggers"].as_array().unwrap().len(),
+                "new_triggers":after["triggers"].as_array().unwrap().len()
+            })
+        );
     }
 
     async fn actor_extra_expansion_delta(
@@ -782,6 +798,7 @@ mod native_org_unit_account_actor_measurements {
         before: &Value,
         after: &Value,
     ) {
+        let defaults_started = Instant::now();
         assert_eq!(
             after["types"], before["types"],
             "no type metadata change is declared"
@@ -794,6 +811,16 @@ mod native_org_unit_account_actor_measurements {
             .iter()
             .find(|row| !old_defaults.contains(row))
             .unwrap();
+        // Emit before the next SQL call, including on an idle-expiry failure.
+        eprintln!(
+            "ORG_ACCOUNT_ACTOR_COMPARISON {}",
+            json!({
+                "schema":"console.native_org_unit.account_actor_comparison_observation.v1",
+                "function":"actor_extra_expansion_delta","region":"defaults_before_sql",
+                "elapsed_us":defaults_started.elapsed().as_micros(),
+                "old_defaults":old_defaults.len(),"new_defaults":new_defaults.len()
+            })
+        );
         let expected_default: (String,i16,String)=sqlx::query_as(
             "SELECT n.nspname||'.'||c.relname,a.adnum,pg_catalog.pg_get_expr(a.adbin,a.adrelid,false) \
              FROM pg_catalog.pg_attrdef a JOIN pg_catalog.pg_class c ON c.oid=a.adrelid \
@@ -807,6 +834,7 @@ mod native_org_unit_account_actor_measurements {
                 "'USER'::text".into()
             )
         );
+        let membership_started = Instant::now();
         let old_comments = before["comments"].as_array().unwrap();
         let new_comments = after["comments"].as_array().unwrap();
         assert_eq!(new_comments.len(), old_comments.len() + 2);
@@ -841,6 +869,16 @@ mod native_org_unit_account_actor_measurements {
                 .all(|row| new_dependencies.contains(row)),
             "old dependency removed or changed"
         );
+        eprintln!(
+            "ORG_ACCOUNT_ACTOR_COMPARISON {}",
+            json!({
+                "schema":"console.native_org_unit.account_actor_comparison_observation.v1",
+                "function":"actor_extra_expansion_delta","region":"comments_dependencies_before_sql",
+                "elapsed_us":membership_started.elapsed().as_micros(),
+                "old_comments":old_comments.len(),"new_comments":new_comments.len(),
+                "old_dependencies":old_dependencies.len(),"new_dependencies":new_dependencies.len()
+            })
+        );
         // Every new dependent object is one of the declared default, four
         // constraints (including NOT NULL), four RI triggers or two columns.
         let allowed:Vec<(String,String)> = sqlx::query_as(
@@ -865,6 +903,7 @@ mod native_org_unit_account_actor_measurements {
                 .fetch_one(&mut *connection)
                 .await
                 .unwrap();
+        let additions_started = Instant::now();
         for dependency in new_dependencies
             .iter()
             .filter(|row| !old_dependencies.contains(row))
@@ -881,11 +920,21 @@ mod native_org_unit_account_actor_measurements {
                 "undeclared dependency addition"
             );
         }
+        eprintln!(
+            "ORG_ACCOUNT_ACTOR_COMPARISON {}",
+            json!({
+                "schema":"console.native_org_unit.account_actor_comparison_observation.v1",
+                "function":"actor_extra_expansion_delta","region":"dependency_additions_before_sql",
+                "elapsed_us":additions_started.elapsed().as_micros(),
+                "old_dependencies":old_dependencies.len(),"new_dependencies":new_dependencies.len()
+            })
+        );
         let changed_relations:Vec<i64>=sqlx::query_scalar(
             "SELECT oid::bigint FROM pg_catalog.pg_class WHERE oid IN \
              ('public.org_unit_revisions'::regclass,'public.ont_action_command_receipts'::regclass)")
             .fetch_all(&mut *connection).await.unwrap();
         assert_eq!(changed_relations.len(), 2);
+        let tuples_started = Instant::now();
         let old_tuples = before["tuples"].as_array().unwrap();
         let new_tuples = after["tuples"].as_array().unwrap();
         assert_eq!(
@@ -906,9 +955,19 @@ mod native_org_unit_account_actor_measurements {
                 );
             }
         }
+        eprintln!(
+            "ORG_ACCOUNT_ACTOR_COMPARISON {}",
+            json!({
+                "schema":"console.native_org_unit.account_actor_comparison_observation.v1",
+                "function":"actor_extra_expansion_delta","region":"complete_tuple_comparison",
+                "elapsed_us":tuples_started.elapsed().as_micros(),
+                "old_tuples":old_tuples.len(),"new_tuples":new_tuples.len()
+            })
+        );
     }
 
     fn actor_validation_delta(before: &ActorMeasurementBaseline, after: &ActorMeasurementBaseline) {
+        let comparison_started = Instant::now();
         let mut expected = before.catalog.1.clone();
         let mut changed = BTreeSet::new();
         for constraint in expected["constraints"].as_array_mut().unwrap() {
@@ -963,6 +1022,723 @@ mod native_org_unit_account_actor_measurements {
         assert_eq!(after.ledger, before.ledger);
         assert_eq!(after.native_census, before.native_census);
         assert_eq!(after.target, before.target);
+        eprintln!(
+            "ORG_ACCOUNT_ACTOR_COMPARISON {}",
+            json!({
+                "schema":"console.native_org_unit.account_actor_comparison_observation.v1",
+                "function":"actor_validation_delta","region":"complete_validation_comparison",
+                "elapsed_us":comparison_started.elapsed().as_micros(),
+                "old_constraints":before.catalog.1["constraints"].as_array().unwrap().len(),
+                "new_constraints":after.catalog.1["constraints"].as_array().unwrap().len(),
+                "old_tuples":old_tuples.len(),"new_tuples":new_tuples.len()
+            })
+        );
+    }
+
+    // Pure comparator inputs below are independent assertion controls, not
+    // database/business fixtures or custody evidence. Every case calls the
+    // existing comparison boundary; no replacement index is tested here.
+    #[test]
+    fn actor_expansion_catalog_membership_controls() {
+        let before = json!({
+            "relations": [
+                {"oid":"1","relname":"org_unit_revisions","relnatts":10,"relchecks":0},
+                {"oid":"2","relname":"ont_action_command_receipts","relnatts":13,"relchecks":1},
+                {"oid":"3","relname":"company_actors","relnatts":4,"relchecks":0}
+            ],
+            "attributes": [{"attrelid":"1","attname":"kept","attnum":1,
+                "atttypid":"25","metadata":{"left":1,"right":2}}],
+            "constraints": [{"oid":"10","conname":"kept_constraint","convalidated":true}],
+            "triggers": [{"oid":"20","tgname":"kept_trigger","tgenabled":"O"}],
+            "unrelated_metadata": {"source":"retained","acl":["retained"]}
+        });
+        let after = json!({
+            "relations": [
+                {"oid":"1","relname":"org_unit_revisions","relnatts":12,"relchecks":1},
+                {"oid":"2","relname":"ont_action_command_receipts","relnatts":13,"relchecks":2},
+                {"oid":"3","relname":"company_actors","relnatts":4,"relchecks":0}
+            ],
+            "attributes": [
+                {"attrelid":"1","attname":"kept","attnum":1,"atttypid":"25",
+                    "metadata":{"left":1,"right":2}},
+                {"attrelid":"1","attname":"actor_kind","attnum":11,"atttypid":"25"},
+                {"attrelid":"1","attname":"actor_account_id","attnum":12,"atttypid":"2950"}
+            ],
+            "constraints": [
+                {"oid":"10","conname":"kept_constraint","convalidated":true},
+                {"oid":"11","conname":"ont_action_receipts_actor_protocol_v2","convalidated":false},
+                {"oid":"12","conname":"org_unit_revisions_actor_protocol_v1","convalidated":false},
+                {"oid":"13","conname":"org_unit_revisions_native_actor_v1","convalidated":false},
+                {"oid":"14","conname":"org_unit_revisions_actor_kind_not_null","convalidated":true}
+            ],
+            "triggers": [
+                {"oid":"20","tgname":"kept_trigger","tgenabled":"O"},
+                {"oid":"21","tgconstraint":"13","tgenabled":"O","tgisinternal":true,
+                    "tgdeferrable":false,"tginitdeferred":false,"tgrelid":"3","tgtype":9},
+                {"oid":"22","tgconstraint":"13","tgenabled":"O","tgisinternal":true,
+                    "tgdeferrable":false,"tginitdeferred":false,"tgrelid":"3","tgtype":17},
+                {"oid":"23","tgconstraint":"13","tgenabled":"O","tgisinternal":true,
+                    "tgdeferrable":false,"tginitdeferred":false,"tgrelid":"1","tgtype":5},
+                {"oid":"24","tgconstraint":"13","tgenabled":"O","tgisinternal":true,
+                    "tgdeferrable":false,"tginitdeferred":false,"tgrelid":"1","tgtype":17}
+            ],
+            "unrelated_metadata": {"source":"retained","acl":["retained"]}
+        });
+        let accepts = |old: &Value, new: &Value| {
+            std::panic::catch_unwind(|| actor_expansion_catalog_delta(old, new)).is_ok()
+        };
+        assert!(
+            accepts(&before, &after),
+            "independent allowed catalog control"
+        );
+
+        let mut reordered = after.clone();
+        reordered["attributes"].as_array_mut().unwrap().reverse();
+        assert!(
+            accepts(&before, &reordered),
+            "attribute iteration order is not identity"
+        );
+        let mut key_order = after.clone();
+        key_order["attributes"][0] = serde_json::from_str(
+            r#"{"metadata":{"right":2,"left":1},"atttypid":"25","attnum":1,"attname":"kept","attrelid":"1"}"#,
+        ).unwrap();
+        assert!(
+            accepts(&before, &key_order),
+            "full Value equality ignores object key order"
+        );
+
+        let mut duplicate_before = before.clone();
+        let mut duplicate_after = after.clone();
+        duplicate_before["attributes"]
+            .as_array_mut()
+            .unwrap()
+            .push(before["attributes"][0].clone());
+        duplicate_after["attributes"]
+            .as_array_mut()
+            .unwrap()
+            .push(before["attributes"][0].clone());
+        assert!(
+            accepts(&duplicate_before, &duplicate_after),
+            "raw duplicate counts remain +2"
+        );
+        duplicate_after["attributes"].as_array_mut().unwrap().pop();
+        assert!(
+            !accepts(&duplicate_before, &duplicate_after),
+            "set cardinality cannot replace raw count"
+        );
+
+        let mut distinct_before = before.clone();
+        let mut distinct_after = after.clone();
+        let mut same_selectors = before["attributes"][0].clone();
+        same_selectors["metadata"]["left"] = json!(9);
+        distinct_before["attributes"]
+            .as_array_mut()
+            .unwrap()
+            .push(same_selectors.clone());
+        distinct_after["attributes"]
+            .as_array_mut()
+            .unwrap()
+            .push(same_selectors);
+        assert!(
+            accepts(&distinct_before, &distinct_after),
+            "same identity fields do not deduplicate full rows"
+        );
+        distinct_after["attributes"].as_array_mut().unwrap().pop();
+        distinct_after["attributes"]
+            .as_array_mut()
+            .unwrap()
+            .push(before["attributes"][0].clone());
+        assert!(
+            !accepts(&distinct_before, &distinct_after),
+            "changed full row is not retained by partial equality"
+        );
+
+        for (label, field, replacement) in [
+            (
+                "attribute_metadata",
+                "attributes",
+                json!({"attrelid":"1","attname":"kept","attnum":1,
+                "atttypid":"25","metadata":{"left":9,"right":2}}),
+            ),
+            (
+                "relation_metadata",
+                "relations",
+                json!({"oid":"1","relname":"org_unit_revisions","relnatts":12,"relchecks":2}),
+            ),
+            (
+                "constraint_metadata",
+                "constraints",
+                json!({"oid":"10","conname":"kept_constraint","convalidated":false}),
+            ),
+            (
+                "trigger_metadata",
+                "triggers",
+                json!({"oid":"20","tgname":"kept_trigger","tgenabled":"D"}),
+            ),
+        ] {
+            let mut changed = after.clone();
+            changed[field][0] = replacement;
+            assert!(
+                !accepts(&before, &changed),
+                "full catalog corruption must refuse: {label}"
+            );
+        }
+        let mut missing = after.clone();
+        missing["attributes"][0]["attname"] = json!("missing_kept_attribute");
+        assert!(
+            !accepts(&before, &missing),
+            "missing original full attribute refuses"
+        );
+        let mut unrelated = after.clone();
+        unrelated["unrelated_metadata"]["acl"] = json!(["broader"]);
+        assert!(
+            !accepts(&before, &unrelated),
+            "unrelated catalog metadata remains exact"
+        );
+    }
+
+    #[test]
+    fn actor_validation_tuple_controls() {
+        // Equality sentinels only: no database, row writer or custody claim.
+        let before = ActorMeasurementBaseline {
+            target: Target {
+                database: "pure-comparison-control".into(),
+                database_oid: 1,
+                system_identifier: "1".into(),
+            },
+            capture: Capture {
+                text: String::new(),
+                sha256: String::new(),
+                rights: false,
+                snapshot: Value::Null,
+            },
+            catalog: (
+                String::new(),
+                json!({"constraints":[
+                    {"oid":"101","conname":"ont_action_receipts_actor_protocol_v2","convalidated":false},
+                    {"oid":"102","conname":"org_unit_revisions_actor_protocol_v1","convalidated":false},
+                    {"oid":"103","conname":"org_unit_revisions_native_actor_v1","convalidated":false}
+                ]}),
+            ),
+            extra: json!({"types":[],"defaults":[],"comments":[],"dependencies":[],"tuples":[
+                ["constraint",101,"old-a","(1,1)"],
+                ["constraint",102,"old-b","(1,2)"],
+                ["constraint",103,"old-c","(1,3)"],
+                ["attribute",201,"retained","(2,1)"]
+            ]}),
+            rows: BTreeMap::new(),
+            ledger: json!({"retained":true}),
+            native_census: json!({"retained":true}),
+        };
+        let mut after = before.clone();
+        after.catalog.1 = json!({"constraints":[
+            {"oid":"101","conname":"ont_action_receipts_actor_protocol_v2","convalidated":true},
+            {"oid":"102","conname":"org_unit_revisions_actor_protocol_v1","convalidated":true},
+            {"oid":"103","conname":"org_unit_revisions_native_actor_v1","convalidated":true}
+        ]});
+        after.extra["tuples"] = json!([
+            ["constraint", 101, "new-a", "(3,1)"],
+            ["constraint", 102, "new-b", "(3,2)"],
+            ["constraint", 103, "new-c", "(3,3)"],
+            ["attribute", 201, "retained", "(2,1)"]
+        ]);
+        let accepts = |old: &ActorMeasurementBaseline, new: &ActorMeasurementBaseline| {
+            std::panic::catch_unwind(|| actor_validation_delta(old, new)).is_ok()
+        };
+        assert!(
+            accepts(&before, &after),
+            "three complete constraint-tuple transitions"
+        );
+        let mut reordered = after.clone();
+        reordered.extra["tuples"].as_array_mut().unwrap().reverse();
+        assert!(
+            accepts(&before, &reordered),
+            "lookup retains original old-array iteration"
+        );
+        for slot in [2, 3] {
+            let mut changed = after.clone();
+            changed.extra["tuples"][3][slot] = json!("corrupted");
+            assert!(
+                !accepts(&before, &changed),
+                "unchanged tuple field {slot} cannot be omitted from equality"
+            );
+        }
+        let mut missing = after.clone();
+        missing.extra["tuples"][3][1] = json!(999);
+        assert!(!accepts(&before, &missing), "missing exact key refuses");
+        let mut extra = after.clone();
+        extra.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!(["unused", 900, "x", "y"]));
+        assert!(!accepts(&before, &extra), "raw tuple counts remain equal");
+        let mut no_transition = after.clone();
+        no_transition.extra["tuples"][1] = before.extra["tuples"][1].clone();
+        assert!(
+            !accepts(&before, &no_transition),
+            "each validated constraint requires a changed tuple"
+        );
+
+        let mut duplicate_before = before.clone();
+        let mut duplicate_after = after.clone();
+        duplicate_before.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .push(before.extra["tuples"][3].clone());
+        let bad_duplicate = json!(["attribute", 201, "corrupted", "(2,1)"]);
+        duplicate_after.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .push(bad_duplicate.clone());
+        assert!(
+            accepts(&duplicate_before, &duplicate_after),
+            "first matching duplicate wins over later corruption"
+        );
+        duplicate_after.extra["tuples"][3] = bad_duplicate;
+        duplicate_after.extra["tuples"][4] = before.extra["tuples"][3].clone();
+        assert!(
+            !accepts(&duplicate_before, &duplicate_after),
+            "first corruption refuses despite later equal duplicate"
+        );
+
+        let distinct = json!([
+            ["ab","c","first","(4,1)"], ["a","bc","second","(4,2)"],
+            ["attribute",1,"number","(4,3)"], ["attribute","1","string","(4,4)"],
+            [{"left":1,"right":2},{"key":1},"object","(4,5)"],
+            ["relation",1,"same_oid_other_kind","(4,6)"]
+        ]);
+        let mut distinct_before = before.clone();
+        let mut distinct_after = after.clone();
+        distinct_before.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .extend(distinct.as_array().unwrap().iter().cloned());
+        distinct_after.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .extend(distinct.as_array().unwrap().iter().cloned());
+        distinct_after.extra["tuples"][8][0] =
+            serde_json::from_str(r#"{"right":2,"left":1}"#).unwrap();
+        assert!(
+            accepts(&distinct_before, &distinct_after),
+            "pair boundaries, JSON kinds and object key order stay exact"
+        );
+        distinct_after.extra["tuples"][5][2] = json!("corrupted");
+        assert!(
+            !accepts(&distinct_before, &distinct_after),
+            "distinct-key corruption is not hidden by collapsed keys"
+        );
+
+        // Pinned serde_json has distinct Eq for integer/float zero, but the
+        // numeric hash input is zero for both. This proves the collision witness;
+        // verdicts below still invoke the real tuple comparator, not an index.
+        use std::hash::{Hash as _, Hasher as _};
+        let integer_key = json!(["numeric_hash_collision", 0]);
+        let float_key = json!(["numeric_hash_collision", 0.0]);
+        assert_ne!(integer_key, float_key);
+        let mut integer_hash = std::collections::hash_map::DefaultHasher::new();
+        let mut float_hash = std::collections::hash_map::DefaultHasher::new();
+        (&integer_key[0], &integer_key[1]).hash(&mut integer_hash);
+        (&float_key[0], &float_key[1]).hash(&mut float_hash);
+        assert_eq!(integer_hash.finish(), float_hash.finish());
+        let collisions = json!([
+            ["numeric_hash_collision", 0, "integer", "(5,1)"],
+            ["numeric_hash_collision", 0.0, "float", "(5,2)"]
+        ]);
+        let mut collision_before = before.clone();
+        let mut collision_after = after.clone();
+        collision_before.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .extend(collisions.as_array().unwrap().iter().cloned());
+        collision_after.extra["tuples"]
+            .as_array_mut()
+            .unwrap()
+            .extend(collisions.as_array().unwrap().iter().cloned());
+        assert!(
+            accepts(&collision_before, &collision_after),
+            "hash collisions retain distinct full Value keys"
+        );
+        collision_after.extra["tuples"][5][2] = json!("corrupted");
+        assert!(
+            !accepts(&collision_before, &collision_after),
+            "a colliding-key full-row corruption still refuses"
+        );
+
+        for malformed in [json!(null), json!({}), json!([]), json!([null])] {
+            let mut old = before.clone();
+            let mut new = after.clone();
+            old.extra["tuples"]
+                .as_array_mut()
+                .unwrap()
+                .push(malformed.clone());
+            new.extra["tuples"]
+                .as_array_mut()
+                .unwrap()
+                .push(malformed.clone());
+            assert!(
+                accepts(&old, &new),
+                "existing Null selectors accept a fully equal malformed row: {malformed}"
+            );
+            let other = if malformed == json!(null) {
+                json!([])
+            } else {
+                json!(null)
+            };
+            new.extra["tuples"][4] = other;
+            assert!(
+                !accepts(&old, &new),
+                "same Null selectors do not authorize unequal full rows"
+            );
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn actor_extra_expansion_membership_and_tuple_controls(pool: PgPool) {
+        // Reuse the retained disposable fixture and the existing owner sequence.
+        // Existing twelve full-catalog journeys and all their oracles stay intact.
+        // This compact control leaf does not qualify those journeys or startup.
+        #[derive(Clone, Copy, Debug)]
+        enum ExpectedRefusal {
+            ConditionAssertion,
+            EqualityAssertion,
+            MissingTuple,
+            Exact(&'static str),
+        }
+        let matches_refusal = |payload: &(dyn std::any::Any + Send), expected: ExpectedRefusal| {
+            let message = payload
+                .downcast_ref::<String>()
+                .map(String::as_str)
+                .or_else(|| payload.downcast_ref::<&str>().copied());
+            let Some(message) = message else {
+                return false;
+            };
+            // A failed query/client Result is never a comparator refusal, even
+            // if its error text embeds a valid assertion/custom-message prefix.
+            if message.contains("called `Result::unwrap()`") {
+                return false;
+            }
+            match expected {
+                ExpectedRefusal::ConditionAssertion => message.starts_with("assertion failed: "),
+                ExpectedRefusal::EqualityAssertion => {
+                    message.starts_with("assertion `left == right` failed\n")
+                        || message.starts_with("assertion `left == right` failed: ")
+                }
+                ExpectedRefusal::MissingTuple => {
+                    message == "called `Option::unwrap()` on a `None` value"
+                }
+                ExpectedRefusal::Exact(expected) => message == expected,
+            }
+        };
+        let classifier_controls: Vec<(&str, Box<dyn std::any::Any + Send>, ExpectedRefusal, bool)> = vec![
+            (
+                "condition_string",
+                Box::new(String::from("assertion failed: retained_membership")),
+                ExpectedRefusal::ConditionAssertion,
+                true,
+            ),
+            (
+                "condition_str",
+                Box::new("assertion failed: retained_membership"),
+                ExpectedRefusal::ConditionAssertion,
+                true,
+            ),
+            (
+                "equality",
+                Box::new("assertion `left == right` failed: retained tuple\n  left: 1\n right: 2"),
+                ExpectedRefusal::EqualityAssertion,
+                true,
+            ),
+            (
+                "missing_tuple",
+                Box::new("called `Option::unwrap()` on a `None` value"),
+                ExpectedRefusal::MissingTuple,
+                true,
+            ),
+            (
+                "retained_dependency",
+                Box::new("old dependency removed or changed"),
+                ExpectedRefusal::Exact("old dependency removed or changed"),
+                true,
+            ),
+            (
+                "undeclared_dependency",
+                Box::new(String::from("undeclared dependency addition")),
+                ExpectedRefusal::Exact("undeclared dependency addition"),
+                true,
+            ),
+            (
+                "different_custom_assertion",
+                Box::new("undeclared dependency addition"),
+                ExpectedRefusal::Exact("old dependency removed or changed"),
+                false,
+            ),
+            (
+                "result_embedded_condition",
+                Box::new(
+                    "called `Result::unwrap()` on an `Err` value: Database(assertion failed: injected)",
+                ),
+                ExpectedRefusal::ConditionAssertion,
+                false,
+            ),
+            (
+                "result_embedded_equality",
+                Box::new(
+                    "called `Result::unwrap()` on an `Err` value: Database(assertion `left == right` failed)",
+                ),
+                ExpectedRefusal::EqualityAssertion,
+                false,
+            ),
+            (
+                "result_embedded_option",
+                Box::new(
+                    "called `Result::unwrap()` on an `Err` value: called `Option::unwrap()` on a `None` value",
+                ),
+                ExpectedRefusal::MissingTuple,
+                false,
+            ),
+            (
+                "result_embedded_custom",
+                Box::new(
+                    "called `Result::unwrap()` on an `Err` value: old dependency removed or changed",
+                ),
+                ExpectedRefusal::Exact("old dependency removed or changed"),
+                false,
+            ),
+            (
+                "assertion_embedded_result",
+                Box::new("assertion failed: called `Result::unwrap()` on an `Err` value: Client"),
+                ExpectedRefusal::ConditionAssertion,
+                false,
+            ),
+            (
+                "client_embedded_assertion",
+                Box::new("client error: assertion failed: injected"),
+                ExpectedRefusal::ConditionAssertion,
+                false,
+            ),
+            (
+                "sql_embedded_assertion",
+                Box::new("SQL error: assertion `left == right` failed"),
+                ExpectedRefusal::EqualityAssertion,
+                false,
+            ),
+            (
+                "unknown_text",
+                Box::new("unknown failure with assertion text"),
+                ExpectedRefusal::ConditionAssertion,
+                false,
+            ),
+            (
+                "unknown_payload",
+                Box::new(17u64),
+                ExpectedRefusal::ConditionAssertion,
+                false,
+            ),
+            (
+                "option_trailing_error",
+                Box::new("called `Option::unwrap()` on a `None` value: SQL/client failure"),
+                ExpectedRefusal::MissingTuple,
+                false,
+            ),
+            (
+                "wrong_assertion_category",
+                Box::new("assertion failed: retained_membership"),
+                ExpectedRefusal::EqualityAssertion,
+                false,
+            ),
+            (
+                "invalid_equality_prefix",
+                Box::new("assertion `left == right` failedUnexpected SQL/client text"),
+                ExpectedRefusal::EqualityAssertion,
+                false,
+            ),
+        ];
+        let classifier_control_count = classifier_controls.len();
+        for (label, payload, expected, accepted) in classifier_controls {
+            assert_eq!(
+                matches_refusal(payload.as_ref(), expected),
+                accepted,
+                "refusal classifier control: {label}"
+            );
+        }
+        let family = ActorFixtureFamily::Closed76;
+        let original = actor_fixture(&pool, family, 0).await;
+        let mut admin = direct(&pool).await;
+        let mut transaction = begin_protocol(&mut admin, &original.target).await;
+        let outcome = AssertUnwindSafe(async {
+            actor_phase_locks(transaction.as_mut(), true).await;
+            bounds(transaction.as_mut()).await;
+            let started = Instant::now();
+            sqlx::raw_sql(ACTOR_EXPANSION).execute(transaction.as_mut()).await.unwrap();
+            assert!(started.elapsed() <= Duration::from_secs(60));
+            actor_declared_schema(transaction.as_mut(), false).await;
+            sqlx::raw_sql("SET CONSTRAINTS ALL IMMEDIATE").execute(transaction.as_mut()).await.unwrap();
+            let staged = actor_extra(transaction.as_mut()).await;
+            let revision_oid = original.catalog.1["relations"].as_array().unwrap().iter()
+                .find(|row| row["relname"] == "org_unit_revisions").unwrap()["oid"].clone();
+            let default = staged["defaults"].as_array().unwrap().iter()
+                .find(|row| row["adrelid"] == revision_oid && row["adnum"] == 11).unwrap().clone();
+            let retained_default = original.extra["defaults"].as_array().unwrap().first().unwrap().clone();
+            assert_ne!(retained_default["oid"], default["oid"]);
+            let retained_comment = original.extra["comments"].as_array().unwrap().first().unwrap().clone();
+            let comments: Vec<_> = staged["comments"].as_array().unwrap().iter()
+                .filter(|row| row["objoid"] == revision_oid && matches!(row["objsubid"].as_i64(), Some(11 | 12)))
+                .cloned().collect();
+            assert_eq!(comments.len(), 2);
+            let retained_dependency = original.extra["dependencies"].as_array().unwrap().first().unwrap().clone();
+            let added_dependency = staged["dependencies"].as_array().unwrap().iter()
+                .find(|row| row["objid"] == default["oid"]).unwrap().clone();
+            let before = json!({"types":[],"defaults":[retained_default],"comments":[retained_comment],
+                "dependencies":[retained_dependency],"tuples":[["attribute",7,"retained","(1,1)"]]});
+            let mut tuples = vec![json!(["attribute",7,"retained","(1,1)"])];
+            tuples.extend((0..11).map(|n| json!(["unselected_addition",n,"added","(2,1)"])));
+            let after = json!({"types":[],"defaults":[retained_default,default],
+                "comments":[retained_comment,comments[0],comments[1]],
+                "dependencies":[retained_dependency,added_dependency],"tuples":tuples});
+            let mut controls = vec![("allowed_actual_owner_metadata", before.clone(), after.clone(), None)];
+
+            let mut reordered = after.clone();
+            for field in ["defaults","comments","dependencies","tuples"] {
+                reordered[field].as_array_mut().unwrap().reverse();
+            }
+            controls.push(("array_reordering", before.clone(), reordered, None));
+            let mut object_order = after.clone();
+            for field in ["defaults","comments","dependencies"] {
+                let object = object_order[field][0].as_object().unwrap();
+                let mut reordered_object = serde_json::Map::new();
+                for (key, value) in object.iter().rev() { reordered_object.insert(key.clone(), value.clone()); }
+                object_order[field][0] = Value::Object(reordered_object);
+            }
+            controls.push(("full_row_object_order", before.clone(), object_order, None));
+            for field in ["defaults","comments","dependencies"] {
+                let mut changed = after.clone();
+                changed[field][0]["retained_full_row_control"] = json!("corruption");
+                controls.push((match field { "defaults" => "default_full_row", "comments" => "comment_full_row", _ => "dependency_full_row" },
+                    before.clone(), changed, Some(match field {
+                        "defaults" | "comments" => ExpectedRefusal::ConditionAssertion,
+                        _ => ExpectedRefusal::Exact("old dependency removed or changed"),
+                    })));
+                let mut old = before.clone();
+                let mut new = after.clone();
+                old[field].as_array_mut().unwrap().push(before[field][0].clone());
+                new[field].as_array_mut().unwrap().push(before[field][0].clone());
+                controls.push((match field { "defaults" => "default_raw_duplicates", "comments" => "comment_raw_duplicates", _ => "dependency_raw_duplicates" }, old, new, None));
+            }
+            for field in ["defaults","comments","tuples"] {
+                let mut changed = after.clone();
+                changed[field].as_array_mut().unwrap().pop();
+                controls.push((match field { "defaults" => "default_raw_count", "comments" => "comment_raw_count", _ => "tuple_raw_count" },
+                    before.clone(), changed, Some(ExpectedRefusal::EqualityAssertion)));
+            }
+            let mut wrong_default = retained_default.clone();
+            wrong_default["distinct_full_row_control"] = json!(true);
+            let mut duplicate_default_before = before.clone();
+            duplicate_default_before["defaults"] = json!([retained_default,retained_default]);
+            let mut default_first = after.clone();
+            default_first["defaults"] = json!([retained_default,default,wrong_default]);
+            controls.push(("first_added_default_selected", duplicate_default_before.clone(), default_first.clone(), None));
+            default_first["defaults"] = json!([retained_default,wrong_default,default]);
+            controls.push(("first_wrong_default_refuses", duplicate_default_before, default_first, Some(ExpectedRefusal::EqualityAssertion)));
+            let mut comment_changed = after.clone();
+            comment_changed["comments"][1]["description"] = json!("undeclared comment");
+            controls.push(("declared_comment_value", before.clone(), comment_changed, Some(ExpectedRefusal::EqualityAssertion)));
+            let mut forbidden_dependency = after.clone();
+            forbidden_dependency["dependencies"][1]["objid"] = json!("0");
+            controls.push(("undeclared_dependency_object", before.clone(), forbidden_dependency,
+                Some(ExpectedRefusal::Exact("undeclared dependency addition"))));
+
+            for slot in [2,3] {
+                let mut changed = after.clone();
+                changed["tuples"][0][slot] = json!("corrupted");
+                controls.push((if slot == 2 { "tuple_xmin" } else { "tuple_ctid" }, before.clone(), changed, Some(ExpectedRefusal::EqualityAssertion)));
+            }
+            let mut missing = after.clone();
+            missing["tuples"][0][1] = json!(999);
+            controls.push(("missing_tuple_match", before.clone(), missing, Some(ExpectedRefusal::MissingTuple)));
+            let bad = json!(["attribute",7,"corrupted","(1,1)"]);
+            let mut duplicate = after.clone();
+            duplicate["tuples"][1] = bad.clone();
+            controls.push(("first_matching_duplicate_selected", before.clone(), duplicate.clone(), None));
+            duplicate["tuples"][0] = bad;
+            duplicate["tuples"][1] = before["tuples"][0].clone();
+            controls.push(("first_matching_corruption_refuses", before.clone(), duplicate, Some(ExpectedRefusal::EqualityAssertion)));
+            let mut duplicate_tuple_before = before.clone();
+            let mut duplicate_tuple_after = after.clone();
+            duplicate_tuple_before["tuples"].as_array_mut().unwrap().push(before["tuples"][0].clone());
+            duplicate_tuple_after["tuples"].as_array_mut().unwrap().push(before["tuples"][0].clone());
+            controls.push(("tuple_raw_duplicates", duplicate_tuple_before, duplicate_tuple_after, None));
+
+            let distinct = json!([
+                ["ab","c","first","(4,1)"], ["a","bc","second","(4,2)"],
+                ["attribute",1,"number","(4,3)"], ["attribute","1","string","(4,4)"],
+                [{"left":1,"right":2},{"key":1},"object","(4,5)"],
+                ["relation",1,"same_oid_other_kind","(4,6)"]
+            ]);
+            let mut distinct_before = before.clone();
+            let mut distinct_after = after.clone();
+            distinct_before["tuples"].as_array_mut().unwrap().extend(distinct.as_array().unwrap().iter().cloned());
+            distinct_after["tuples"].as_array_mut().unwrap().extend(distinct.as_array().unwrap().iter().cloned());
+            distinct_after["tuples"][16][0] = serde_json::from_str(r#"{"right":2,"left":1}"#).unwrap();
+            controls.push(("pair_boundaries_json_kinds_object_order", distinct_before.clone(), distinct_after.clone(), None));
+            distinct_after["tuples"][13][2] = json!("corrupted");
+            controls.push(("distinct_key_corruption", distinct_before, distinct_after, Some(ExpectedRefusal::EqualityAssertion)));
+            use std::hash::{Hash as _, Hasher as _};
+            let integer_key = json!(["numeric_hash_collision",0]);
+            let float_key = json!(["numeric_hash_collision",0.0]);
+            assert_ne!(integer_key, float_key);
+            let mut integer_hash = std::collections::hash_map::DefaultHasher::new();
+            let mut float_hash = std::collections::hash_map::DefaultHasher::new();
+            (&integer_key[0], &integer_key[1]).hash(&mut integer_hash);
+            (&float_key[0], &float_key[1]).hash(&mut float_hash);
+            assert_eq!(integer_hash.finish(), float_hash.finish());
+            let collisions = json!([
+                ["numeric_hash_collision",0,"integer","(5,1)"],
+                ["numeric_hash_collision",0.0,"float","(5,2)"]
+            ]);
+            let mut collision_before = before.clone();
+            let mut collision_after = after.clone();
+            collision_before["tuples"].as_array_mut().unwrap().extend(collisions.as_array().unwrap().iter().cloned());
+            collision_after["tuples"].as_array_mut().unwrap().extend(collisions.as_array().unwrap().iter().cloned());
+            controls.push(("hash_collision_distinct_keys", collision_before.clone(), collision_after.clone(), None));
+            collision_after["tuples"][13][2] = json!("corrupted");
+            controls.push(("hash_collision_full_row_corruption", collision_before, collision_after, Some(ExpectedRefusal::EqualityAssertion)));
+            for malformed in [json!(null),json!({}),json!([]),json!([null])] {
+                let mut old = before.clone();
+                let mut new = after.clone();
+                old["tuples"].as_array_mut().unwrap().push(malformed.clone());
+                new["tuples"].as_array_mut().unwrap().push(malformed.clone());
+                controls.push(("equal_malformed_null_selectors", old.clone(), new.clone(), None));
+                new["tuples"][12] = if malformed == json!(null) { json!([]) } else { json!(null) };
+                controls.push(("unequal_malformed_null_selectors", old, new, Some(ExpectedRefusal::EqualityAssertion)));
+            }
+            let control_count = controls.len();
+            for (label, old, new, expected) in controls {
+                // Positive calls bracket each corruption: a query/session error
+                // cannot masquerade as a semantic refusal or poison later cases.
+                actor_extra_expansion_delta(transaction.as_mut(), &before, &after).await;
+                let observed = AssertUnwindSafe(actor_extra_expansion_delta(transaction.as_mut(), &old, &new))
+                    .catch_unwind().await;
+                assert_eq!(observed.is_ok(), expected.is_none(), "frozen extra-expansion outcome: {label}");
+                if let Some(expected) = expected {
+                    assert!(matches_refusal(observed.as_ref().err().unwrap().as_ref(), expected),
+                        "exact comparator refusal required for {label}: {expected:?}; SQL/client/unknown failure is not proof");
+                }
+                actor_extra_expansion_delta(transaction.as_mut(), &before, &after).await;
+            }
+            eprintln!("ORG_ACCOUNT_ACTOR_COMPARISON_CONTROLS {}", json!({
+                "schema":"console.native_org_unit.account_actor_comparison_controls.v1",
+                "function":"actor_extra_expansion_delta","controls_executed":control_count,
+                "classifier_controls_executed":classifier_control_count,
+                "business_fixture_created":false,"complete_capture_accepted":false
+            }));
+        }).catch_unwind().await;
+        transaction.rollback().await.unwrap();
+        admin.close().await.unwrap();
+        actor_restored(&pool, &original, family, false).await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
     }
 
     async fn actor_dormant_refusals(connection: &mut PgConnection) -> Value {
