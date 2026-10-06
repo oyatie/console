@@ -8625,6 +8625,217 @@ mod account_browser {
             "both proof and access deadlines must be exercised"
         );
     }
+    // Native-auth V2 first-boundary correction: this predecessor has no native
+    // grant admission. Only the closed transport contract is tested here.
+    // Actual registration owners run; SoftPasskey/terms are security fixtures,
+    // never UI-created business data, native packaging or browser acceptance.
+    mod native_account_pkce_request_closed {
+        use super::*;
+
+        const PATH: &str = "/api/v2/auth/native/requests";
+
+        async fn raw_post(app: &Fixture, path: &str, body: Value) -> Response {
+            let mut req = Request::builder()
+                .method("POST")
+                .uri(path)
+                .header(header::CONTENT_TYPE, "application/json")
+                // Installed-app transport: no manufactured browser credentials,
+                // Origin or Fetch Metadata. This is still an HTTP owner fixture.
+                .body(Body::from(serde_json::to_vec(&body).unwrap()))
+                .unwrap();
+            req.extensions_mut().insert(ConnectInfo(
+                "127.0.0.1:41000".parse::<SocketAddr>().unwrap(),
+            ));
+            let (parts, body) = app.service.clone().oneshot(req).await.unwrap().into_parts();
+            Response {
+                status: parts.status,
+                headers: parts.headers,
+                bytes: to_bytes(body, 4096).await.unwrap().to_vec(),
+                sent_secrets: Vec::new(),
+            }
+        }
+
+        fn closed(response: &Response) {
+            response.error(StatusCode::SERVICE_UNAVAILABLE, "authority_unavailable");
+            for name in [
+                "cache-control",
+                "pragma",
+                "content-type",
+                "x-content-type-options",
+            ] {
+                assert_eq!(response.headers.get_all(name).iter().count(), 1);
+            }
+            assert_eq!(response.headers[header::CONTENT_TYPE], "application/json");
+            assert_eq!(response.headers[header::X_CONTENT_TYPE_OPTIONS], "nosniff");
+            for name in [
+                "location",
+                "access-control-allow-credentials",
+                "access-control-allow-origin",
+            ] {
+                assert!(
+                    !response.headers.contains_key(name),
+                    "closed native grant header"
+                );
+            }
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn native_account_pkce_request_is_closed_without_native_admission(pool: PgPool) {
+            let app = fixture(&pool).await;
+            let (attempt, cookies) = enrolled(&app).await;
+            assert_committed(&pool, &attempt).await;
+            let before = native_extension_rows(&pool).await;
+            // The real fixture supplies Account browser/RP/transport inputs,
+            // never native-client registry or native producer activation. This
+            // remains closed even if a later compatible catalog is installed.
+
+            // Prove real Account and strict browser transport work before the RED.
+            let me = request(&app, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
+            projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
+            me.private();
+            request(
+                &app,
+                "GET",
+                "/api/v2/accounts/me",
+                &Cookies::default(),
+                None,
+                &[],
+            )
+            .await
+            .error(StatusCode::UNAUTHORIZED, "authentication_invalid");
+            request(
+                &app,
+                "GET",
+                "/api/v2/accounts/me",
+                &cookies,
+                None,
+                &[("Authorization", &format!("Bearer {}", cookies.0[ACCESS]))],
+            )
+            .await
+            .error(StatusCode::BAD_REQUEST, "ambiguous_credentials");
+            assert_legacy_denials(
+                legacy_read_responses(&app, &cookies.0[ACCESS]).await,
+                &[&cookies.0[ACCESS], &cookies.0[REFRESH]],
+            )
+            .await;
+            assert!(
+                native_extension_rows_equal(&before, &native_extension_rows(&pool).await),
+                "working Account/legacy controls changed durable authentication state"
+            );
+
+            // Defeat a broad fallback returning503 for every unknown auth path.
+            let unrelated =
+                raw_post(&app, "/api/v2/auth/native/unregistered-control", json!({})).await;
+            assert_eq!(
+                unrelated.status,
+                StatusCode::NOT_FOUND,
+                "unregistered-path control must reach the actual router fallback"
+            );
+
+            // These public-client/callback bytes are a proposed isolated desktop
+            // registration, NOT a claim that this predecessor has registered it.
+            // No new config key/module/schema or global environment is injected.
+            let input = json!({
+                "request_id": Uuid::new_v4(),
+                "client_id": "console.desktop.v1",
+                "redirect_uri": "http://127.0.0.1:42137/account/native/callback",
+                "code_challenge": URL_SAFE_NO_PAD.encode(Sha256::digest([61_u8; 32])),
+                "code_challenge_method": "S256",
+                "state": URL_SAFE_NO_PAD.encode([72_u8; 32]),
+            });
+            let response = raw_post(&app, PATH, input.clone()).await;
+            assert!(
+                native_extension_rows_equal(&before, &native_extension_rows(&pool).await),
+                "closed native request changed existing identities, credentials or history"
+            );
+            assert_eq!(
+                response.status,
+                StatusCode::SERVICE_UNAVAILABLE,
+                "NATIVE_ACCOUNT_PKCE_REQUEST_CLOSED_TRANSPORT_MISSING: unavailable native admission must refuse without granting a session"
+            );
+            closed(&response);
+            // No request/family grant is established by this result. Retrying a
+            // closed request must not accidentally activate or manufacture one.
+            closed(&raw_post(&app, PATH, input).await);
+            assert!(
+                native_extension_rows_equal(&before, &native_extension_rows(&pool).await),
+                "retry of closed native request changed existing authentication state"
+            );
+        }
+
+        #[test]
+        fn native_account_pkce_closed_transport_oracle_rejects_grants_and_missing_evidence() {
+            fn sample() -> Response {
+                let mut headers = http::HeaderMap::new();
+                for (name, value) in [
+                    ("cache-control", "no-store"),
+                    ("pragma", "no-cache"),
+                    ("content-type", "application/json"),
+                    ("x-content-type-options", "nosniff"),
+                ] {
+                    headers.insert(
+                        http::HeaderName::from_bytes(name.as_bytes()).unwrap(),
+                        http::HeaderValue::from_static(value),
+                    );
+                }
+                Response {
+                    status: StatusCode::SERVICE_UNAVAILABLE,
+                    headers,
+                    bytes: serde_json::to_vec(&json!({"error": {
+                        "code": "authority_unavailable", "message": "Authority is unavailable."
+                    }}))
+                    .unwrap(),
+                    sent_secrets: Vec::new(),
+                }
+            }
+            // Synthetic envelope bytes test the oracle, never service behavior.
+            closed(&sample());
+            let mut corruptions = Vec::new();
+            for status in [
+                StatusCode::OK,
+                StatusCode::NOT_FOUND,
+                StatusCode::NOT_IMPLEMENTED,
+            ] {
+                let mut r = sample();
+                r.status = status;
+                corruptions.push(r);
+            }
+            for name in ["set-cookie", "location", "access-control-allow-origin"] {
+                let mut r = sample();
+                r.headers.insert(
+                    http::HeaderName::from_bytes(name.as_bytes()).unwrap(),
+                    http::HeaderValue::from_static("test-only-invalid"),
+                );
+                corruptions.push(r);
+            }
+            let mut missing = sample();
+            missing.headers.remove(header::CACHE_CONTROL);
+            corruptions.push(missing);
+            let mut duplicate = sample();
+            duplicate.headers.append(
+                header::CONTENT_TYPE,
+                http::HeaderValue::from_static("application/json"),
+            );
+            corruptions.push(duplicate);
+            let mut disclosure = sample();
+            let mut value: Value = serde_json::from_slice(&disclosure.bytes).unwrap();
+            value["access_token"] = json!("test-only-forbidden-field");
+            disclosure.bytes = serde_json::to_vec(&value).unwrap();
+            corruptions.push(disclosure);
+            assert_eq!(
+                corruptions.len(),
+                9,
+                "all independent envelope corruptions are exercised"
+            );
+            for response in corruptions {
+                assert!(
+                    std::panic::catch_unwind(|| closed(&response)).is_err(),
+                    "corrupted refusal evidence passed the oracle"
+                );
+            }
+        }
+    }
+
     include!("auth_rest/native_refresh_cases.rs");
     include!("auth_rest/deployment_operator_designation.rs");
     include!("auth_rest/native_startup_profile.rs");
