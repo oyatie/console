@@ -665,6 +665,39 @@ mod ssr {
         )
     }
 
+    async fn people_js() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_bytes!("../react/people.js").as_slice(),
+        )
+    }
+
+    async fn people_guard_js() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_bytes!("../react/people-guard.js").as_slice(),
+        )
+    }
+
+    async fn people_css() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/css; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_bytes!("../react/people.css").as_slice(),
+        )
+    }
+
     async fn workspace_css() -> impl IntoResponse {
         (
             [
@@ -695,6 +728,9 @@ mod ssr {
         S: Clone + Send + Sync + 'static,
     {
         Router::new()
+            .route("/assets/people.js", get(people_js))
+            .route("/assets/people-guard.js", get(people_guard_js))
+            .route("/assets/people.css", get(people_css))
             .route("/assets/native-account.js", get(native_account_js))
             .route("/assets/native-account.css", get(native_account_css))
             .route("/assets/workspace.css", get(workspace_css))

@@ -3,6 +3,7 @@
 use super::native_workspace_header::{self, NavigationMode};
 use leptos::prelude::*;
 
+#[derive(serde::Serialize)]
 pub struct Scope {
     pub company: String,
     pub company_name: Option<String>,
@@ -13,6 +14,7 @@ pub struct Scope {
     pub policy_link: bool,
 }
 
+#[derive(serde::Serialize)]
 pub struct Record {
     pub employee_id: String,
     pub person_id: String,
@@ -24,6 +26,7 @@ pub struct Record {
 
 /// Expected registrations select the exact state reviewed with the form.
 /// They are checked by the owner again; hidden fields are not authority.
+#[derive(serde::Serialize)]
 pub struct Expectations {
     pub company_epoch: String,
     pub object_type_id: String,
@@ -34,6 +37,7 @@ pub struct Expectations {
     pub employee_number_property_id: String,
 }
 
+#[derive(serde::Serialize)]
 pub struct Registration {
     pub command: String,
     pub proof: String,
@@ -45,6 +49,7 @@ pub struct Registration {
     pub form_error: Option<&'static str>,
 }
 
+#[derive(serde::Serialize)]
 pub struct Request {
     pub command: String,
     pub legal_name: String,
@@ -56,6 +61,8 @@ pub struct Request {
     pub outcome: Outcome,
 }
 
+#[derive(serde::Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Outcome {
     Pending {
         proof: String,
@@ -76,6 +83,8 @@ pub enum Outcome {
     Expired,
 }
 
+#[derive(serde::Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Page {
     Directory {
         scope: Scope,
@@ -463,11 +472,52 @@ pub fn render(page: Page) -> String {
 
 #[cfg(feature = "ssr")]
 pub fn document(page: Page, status: axum::http::StatusCode) -> axum::response::Response {
-    let mut response = super::ssr::private_document(
-        render(page),
-        status,
-        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
-    );
+    #[derive(serde::Serialize)]
+    struct Projection<'a> {
+        version: u8,
+        page: &'a Page,
+    }
+    // Encode the exact borrowed authorized projection before render consumes it.
+    // Failed serialization keeps the functional SSR document, never partial data.
+    let projection = (!matches!(&page, Page::Refused | Page::Unavailable))
+        .then(|| {
+            serde_json::to_string(&Projection {
+                version: 1,
+                page: &page,
+            })
+        })
+        .and_then(Result::ok);
+    let mut html = render(page);
+    let script_source = if let Some(projection) = projection {
+        let projection = projection
+            .replace('&', "\\u0026")
+            .replace('<', "\\u003c")
+            .replace('>', "\\u003e")
+            .replace('\u{2028}', "\\u2028")
+            .replace('\u{2029}', "\\u2029");
+        html = html.replacen(
+            "</head>",
+            "<link rel=\"stylesheet\" href=\"/assets/people.css\"/><script src=\"/assets/people-guard.js\"></script></head>",
+            1,
+        );
+        if let Some(body_start) = html
+            .find("<body")
+            .and_then(|start| html[start..].find('>').map(|end| start + end + 1))
+        {
+            html.insert_str(body_start, "<div id=\"console-people-fallback\">");
+            html = html.replacen(
+                "</body>",
+                &format!(
+                    "</div><script id=\"console-people-bootstrap\" type=\"application/json\">{projection}</script><script src=\"/assets/people.js\" type=\"module\"></script></body>"
+                ),
+                1,
+            );
+        }
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    } else {
+        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    };
+    let mut response = super::ssr::private_document(html, status, script_source);
     response.headers_mut().insert(
         axum::http::header::REFERRER_POLICY,
         axum::http::HeaderValue::from_static("same-origin"),
