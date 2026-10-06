@@ -12,7 +12,14 @@ declare global {
 const fallback = document.getElementById("console-people-fallback");
 const bootstrap = document.getElementById("console-people-bootstrap");
 const guard = window.__consolePeopleGuard;
-if (fallback && bootstrap && guard?.canPromote()) {
+function untouched(): boolean {
+  return !!fallback && !!guard?.canPromote()
+    // A pending native autofocus belongs to validation/conflict recovery.
+    && !fallback.querySelector("[autofocus]")
+    // UA autofill/history restoration can change a value without an event.
+    && [...fallback.querySelectorAll<HTMLInputElement>("input")].every(input => input.value === input.defaultValue);
+}
+if (fallback && bootstrap && guard && untouched()) {
   let page: Page | undefined;
   try {
     // Decode everything before creating any new actionable DOM.
@@ -23,9 +30,11 @@ if (fallback && bootstrap && guard?.canPromote()) {
     status.setAttribute("data-console-people-render-status", "invalid-projection");
     status.className = "people-render-status";
     status.textContent = "화면을 표시하지 못했습니다. 현재 내용을 유지합니다.";
-    fallback.querySelector("main")?.append(status);
+    // Keep the complete authorized fallback byte-for-byte intact, including
+    // its form controls. This sibling is an informational status only.
+    fallback.before(status);
   }
-  if (page && guard.canPromote()) {
+  if (page && untouched()) {
     const approvedPage = page;
     const host = document.createElement("div");
     host.setAttribute("data-console-people-root", "");
@@ -39,7 +48,7 @@ if (fallback && bootstrap && guard?.canPromote()) {
       // Commit into a detached host. A fault or interaction during host creation
       // leaves the entire existing document, including inputs and selection.
       flushSync(() => root!.render(<PeopleView page={approvedPage}/>));
-      if (!failed && host.querySelector('[data-console-react-people="mounted"]') && guard.canPromote() && fallback.isConnected) {
+      if (!failed && host.querySelector('[data-console-react-people="mounted"]') && untouched() && fallback.isConnected) {
         fallback.replaceWith(host);
       } else {
         root.unmount();

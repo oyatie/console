@@ -2,7 +2,7 @@
    grammar apply to the React view and retained server-rendered fallback. */
 body.native-people-workspace {
   --canvas:#f2f4f7; --surface:#fff; --ink:#141a21; --muted:#566475;
-  --line:#dbe1e8; --control-border:#8593a3; --accent:#f6b521;
+  --line:#dbe1e8; --control-border:#8593a3; --accent:#815000;
   --chip:#ecfdf5; --chip-ink:#065f46; --flag:#fef2f2; --flag-ink:#b91c1c;
   font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
   font-size:15px; line-height:1.65; word-break:keep-all; overflow-wrap:anywhere;
@@ -48,7 +48,7 @@ body.native-people-workspace {
 .native-people-workspace .record-meta dt {color:var(--muted)}
 .native-people-workspace .record-meta dd {margin:0;min-width:0;overflow-wrap:anywhere}
 .native-people-workspace .people-validation {background:#fef2f2;border-color:#b91c1c}
-.people-render-status {padding:16px;border:1px solid #b8810d;border-radius:8px;background:#fffbeb;color:#78350f;margin-top:20px}
+.people-render-status {grid-column:1/-1;padding:16px;border:1px solid #b8810d;border-radius:8px;background:#fffbeb;color:#78350f;margin:16px 24px}
 @media(max-width:1100px) {
   .native-people-workspace main {padding:28px 24px 48px}
 }

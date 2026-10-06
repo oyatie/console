@@ -68,8 +68,10 @@ function id(value: unknown): string {
   return result;
 }
 function revision(value: unknown): string {
-  const result = text(value, 20, 1);
-  if (!/^(0|[1-9][0-9]*)$/.test(result)) reject();
+  // The owning People expectations/records use positive u64 values bounded
+  // by PostgreSQL bigint. Compare decimal bytes, never floating point.
+  const result = text(value, 19, 1);
+  if (!/^[1-9][0-9]*$/.test(result) || (result.length === 19 && result > "9223372036854775807")) reject();
   return result;
 }
 function bool(value: unknown): boolean {
