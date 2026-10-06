@@ -944,5 +944,329 @@ mod native_business_session {
         runtime.close().await;
     }
 
+    // Private-source SQL proof only. Existing owner registration creates the
+    // fixture Accounts; SoftPasskey/browser and serving-bridge limits remain.
+    mod current_terms_source {
+        use super::*;
+        use console_platform_auth::account::{
+            AccountHistoricalConsent, account_now_in_tx, account_terms_registration_head_in_tx,
+            ensure_account_session_fresh_in_tx,
+        };
+        use console_platform_provisioning::{AccountTermsArtifacts, AccountTermsItem};
+        use sqlx::{Column, Row};
+
+        type Acceptance = (String, Vec<u8>, Uuid, i64, Vec<u8>, Uuid, OffsetDateTime);
+        type TransactionIdentity = (String, i32, String, String, String);
+
+        async fn original_acceptances(pool: &PgPool, account: Uuid) -> Vec<Acceptance> {
+            sqlx::query_as(
+                "SELECT terms_kind,content_sha256,terms_release_receipt_id,
+                        terms_release_revision,terms_manifest_sha256,security_event_id,accepted_at
+                 FROM public.account_terms_acceptances WHERE account_id=$1
+                 ORDER BY terms_kind COLLATE \"C\" LIMIT 9",
+            )
+            .bind(account)
+            .fetch_all(pool)
+            .await
+            .unwrap()
+        }
+
+        async fn identity(tx: &mut Transaction<'_, Postgres>) -> TransactionIdentity {
+            sqlx::query_as(
+                "SELECT current_database()::text,pg_catalog.pg_backend_pid(),
+                        pg_catalog.pg_current_xact_id()::text,current_user::text,
+                        current_setting('transaction_isolation')",
+            )
+            .fetch_one(&mut **tx)
+            .await
+            .unwrap()
+        }
+
+        // Independent complete fixture oracle, never derived from surviving SQL
+        // rows. The existing real artifact routes verify the entire registered
+        // bundle; these readbacks additionally hash its actual fixture files.
+        // This does not expose or qualify the future retained serving adapter.
+        async fn verified_bundle(
+            app: &Fixture,
+        ) -> ([u8; 32], Vec<String>, Vec<Vec<u8>>, AccountTermsArtifacts) {
+            assert_retained_artifacts(app).await;
+            let manifest_bytes =
+                std::fs::read(app._artifacts.root.join("fixtures/manifest.json")).unwrap();
+            assert!(manifest_bytes == fixture_file("fixtures/manifest.json"));
+            let digest: [u8; 32] = Sha256::digest(&manifest_bytes).into();
+            assert!(hex::encode(digest) == MANIFEST_DIGEST);
+            let manifest: Value = serde_json::from_slice(&manifest_bytes).unwrap();
+            assert!(manifest["format_version"] == 1 && manifest["fixture_only"] == true);
+            let index_bytes =
+                std::fs::read(app._artifacts.root.join("fixtures/artifact-index.json")).unwrap();
+            assert!(index_bytes == fixture_file("fixtures/artifact-index.json"));
+            let index: Value = serde_json::from_slice(&index_bytes).unwrap();
+            let mut all = BTreeMap::new();
+            for item in manifest["items"].as_array().unwrap() {
+                assert!(item["required"] == true);
+                let expected = item["content_sha256"].as_str().unwrap();
+                let entry = index["content"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|entry| entry["sha256"] == expected)
+                    .unwrap();
+                let path = entry["path"].as_str().unwrap();
+                let bytes = std::fs::read(app._artifacts.root.join(path)).unwrap();
+                assert!(bytes == fixture_file(path));
+                let content: [u8; 32] = Sha256::digest(&bytes).into();
+                assert!(hex::encode(content) == expected);
+                let kind = item["terms_kind"].as_str().unwrap().to_owned();
+                assert!(all.insert(kind, content).is_none());
+            }
+            assert!(all.len() == 2 && index["content"].as_array().unwrap().len() == 2);
+            let kinds: Vec<_> = all.keys().cloned().collect();
+            let content: Vec<_> = all.values().map(|digest| digest.to_vec()).collect();
+            let artifacts = AccountTermsArtifacts::new(
+                digest,
+                all.into_iter()
+                    .map(|(terms_kind, content_sha256)| AccountTermsItem {
+                        terms_kind,
+                        content_sha256,
+                    })
+                    .collect(),
+            )
+            .unwrap();
+            (digest, kinds, content, artifacts)
+        }
+
+        // Independent reference codec from the adopted frozen byte contract.
+        // SQL returns evidence rows, not a production Rust batch/codec result.
+        fn reference_batch(
+            receipt: Uuid,
+            revision: i64,
+            manifest: &[u8],
+            items: &[Acceptance],
+        ) -> Vec<u8> {
+            let mut bytes = b"console.account.current-terms-acceptance\0\0\x01".to_vec();
+            assert_eq!(bytes.len(), 43);
+            assert!(!receipt.is_nil() && revision > 0 && manifest.len() == 32);
+            bytes.extend_from_slice(receipt.as_bytes());
+            bytes.extend_from_slice(&(revision as u64).to_be_bytes());
+            bytes.extend_from_slice(manifest);
+            assert!((1..=8).contains(&items.len()));
+            bytes.push(items.len() as u8);
+            assert_eq!(bytes.len(), 100);
+            let mut previous: Option<&str> = None;
+            for item in items {
+                assert!((1..=64).contains(&item.0.len()) && item.0.is_ascii());
+                assert!(previous.is_none_or(|kind| kind.as_bytes() < item.0.as_bytes()));
+                assert!(item.1.len() == 32 && !item.2.is_nil() && item.3 > 0);
+                assert!(item.4.as_slice() == manifest && !item.5.is_nil());
+                let nanos = item.6.unix_timestamp_nanos();
+                assert_eq!(nanos.rem_euclid(1000), 0);
+                let micros = i64::try_from(nanos / 1000).unwrap();
+                bytes.push(item.0.len() as u8);
+                bytes.extend_from_slice(item.0.as_bytes());
+                bytes.extend_from_slice(&item.1);
+                bytes.extend_from_slice(item.2.as_bytes());
+                bytes.extend_from_slice(&(item.3 as u64).to_be_bytes());
+                bytes.extend_from_slice(item.5.as_bytes());
+                bytes.extend_from_slice(&micros.to_be_bytes());
+                previous = Some(&item.0);
+            }
+            assert!(bytes.len() <= 1260);
+            bytes
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn native_current_terms_source_same_manifest_preserves_actual_acceptance(
+            pool: PgPool,
+        ) {
+            let (app, key) = signed_fixture(&pool).await;
+            let (attempt, cookies) = enrolled(&app).await;
+            let (other, _) = enrolled(&app).await;
+            assert_committed(&pool, &attempt).await;
+            assert_committed(&pool, &other).await;
+            assert_no_company_identity(&pool, attempt.account).await;
+            let original = original_acceptances(&pool, attempt.account).await;
+            assert_eq!(original.len(), 2);
+            assert!(original.iter().all(|item| {
+                item.2 == Uuid::parse_str(RECEIPT).unwrap()
+                    && item.3 == 1
+                    && hex::encode(&item.4) == MANIFEST_DIGEST
+            }));
+            let old_head: (Uuid, i64, Vec<u8>) = sqlx::query_as(
+                "SELECT release_receipt_ref,revision,manifest_sha256
+                 FROM public.account_terms_head WHERE id=1",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert!(old_head.0 == Uuid::parse_str(RECEIPT).unwrap() && old_head.1 == 1);
+            let old_batch = reference_batch(old_head.0, old_head.1, &old_head.2, &original);
+            // Data-only fixture publication, never publisher authority or CAS proof.
+            let (published, revision) = seed_next_terms_head(&pool, MANIFEST_DIGEST).await;
+            assert!(published != old_head.0 && revision == 2);
+            let before = inventory(&pool, None).await;
+            let (verifier, ttl) = verification(&app, &key);
+            let mut tx = pool.begin().await.unwrap();
+            // Explicit migration-administrator owner-chain fixture; no serving
+            // LOGIN membership/role switch/grant or browser authority is claimed.
+            sqlx::query("SET LOCAL ROLE console_account_owner")
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let retained_identity = identity(&mut tx).await;
+            assert!(
+                retained_identity.0.starts_with("_sqlx_test_")
+                    && retained_identity.3 == "console_account_owner"
+                    && retained_identity.4 == "read committed"
+            );
+            let session = current(&mut tx, &verifier, &cookies.0[ACCESS], ttl).await;
+            assert!(session.account_id == attempt.account);
+            let head = account_terms_registration_head_in_tx(&mut tx)
+                .await
+                .unwrap();
+            assert!(
+                head.release_receipt_id == published
+                    && head.revision == revision
+                    && head.manifest_sha256 == old_head.2
+            );
+            let (manifest, kinds, content, artifacts) = verified_bundle(&app).await;
+            assert!(manifest.as_slice() == head.manifest_sha256.as_slice());
+            let historical = AccountHistoricalConsent {
+                manifest_sha256: original[0].4.clone().try_into().unwrap(),
+                items: original
+                    .iter()
+                    .map(|item| (item.0.clone(), item.1.clone().try_into().unwrap()))
+                    .collect(),
+            };
+            artifacts.require_historical_consent(&historical).unwrap();
+            ensure_account_session_fresh_in_tx(&mut tx, &session)
+                .await
+                .unwrap();
+            assert!(retained_identity == identity(&mut tx).await);
+            let source_exists: bool = sqlx::query_scalar(
+                "SELECT pg_catalog.to_regprocedure('public.account_current_terms_acceptance_source_v2(uuid,uuid,bigint,bytea,text[],bytea[],bytea,text[],bytea[])') IS NOT NULL",
+            )
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+            let earliest = account_now_in_tx(&mut tx).await.unwrap();
+            let result = sqlx::query(
+                "SELECT * FROM public.account_current_terms_acceptance_source_v2(
+                    $1::uuid,$2::uuid,$3::bigint,$4::bytea,$5::text[],$6::bytea[],
+                    $7::bytea,$8::text[],$9::bytea[]) LIMIT 9",
+            )
+            .bind(attempt.account)
+            .bind(head.release_receipt_id)
+            .bind(head.revision)
+            .bind(&head.manifest_sha256)
+            .bind(&kinds)
+            .bind(&content)
+            .bind(manifest.as_slice())
+            .bind(&kinds)
+            .bind(&content)
+            .fetch_all(&mut *tx)
+            .await;
+            let rows = match result {
+                Ok(rows) => rows,
+                Err(error) => {
+                    let code = error
+                        .as_database_error()
+                        .and_then(|error| error.code())
+                        .map(|code| code.into_owned());
+                    tx.rollback().await.unwrap();
+                    assert!(
+                        before == inventory(&pool, None).await,
+                        "source refusal changed fixture state"
+                    );
+                    assert!(original == original_acceptances(&pool, attempt.account).await);
+                    drop(app);
+                    pool.close().await;
+                    assert!(
+                        !source_exists && code.as_deref() == Some("42883"),
+                        "CURRENT_TERMS_SOURCE_UNEXPECTED_REFUSAL: prerequisite or installed-source failure; SQLSTATE={}",
+                        code.as_deref().unwrap_or("none")
+                    );
+                    panic!(
+                        "CURRENT_TERMS_SOURCE_MISSING: exact nine-argument final SQL boundary reached; SQLSTATE42883; zero effects verified"
+                    );
+                }
+            };
+            assert!(source_exists, "exact source identity must exist on success");
+            let latest = ensure_account_session_fresh_in_tx(&mut tx, &session)
+                .await
+                .unwrap();
+            assert!(retained_identity == identity(&mut tx).await);
+            assert_eq!(
+                rows.len(),
+                original.len(),
+                "source must preserve the complete real original set"
+            );
+            let columns = [
+                "outcome",
+                "account_id",
+                "current_release_receipt_id",
+                "current_release_revision",
+                "current_manifest_sha256",
+                "terms_kind",
+                "content_sha256",
+                "accepted_release_receipt_id",
+                "accepted_release_revision",
+                "accepted_manifest_sha256",
+                "security_event_id",
+                "accepted_at",
+                "observed_at",
+            ];
+            let mut projected = Vec::new();
+            let mut observation = None;
+            for row in &rows {
+                assert!(row.columns().iter().map(|column| column.name()).eq(columns));
+                assert!(row.get::<String, _>("outcome") == "ACCEPTED");
+                assert!(row.get::<Uuid, _>("account_id") == attempt.account);
+                assert!(row.get::<Uuid, _>("current_release_receipt_id") == published);
+                assert!(row.get::<i64, _>("current_release_revision") == revision);
+                assert!(row.get::<Vec<u8>, _>("current_manifest_sha256") == head.manifest_sha256);
+                let observed = row.get::<OffsetDateTime, _>("observed_at");
+                assert!(observed >= earliest && observed <= latest);
+                assert!(observation.is_none_or(|previous| previous == observed));
+                observation = Some(observed);
+                projected.push((
+                    row.get::<String, _>("terms_kind"),
+                    row.get::<Vec<u8>, _>("content_sha256"),
+                    row.get::<Uuid, _>("accepted_release_receipt_id"),
+                    row.get::<i64, _>("accepted_release_revision"),
+                    row.get::<Vec<u8>, _>("accepted_manifest_sha256"),
+                    row.get::<Uuid, _>("security_event_id"),
+                    row.get::<OffsetDateTime, _>("accepted_at"),
+                ));
+            }
+            assert!(
+                projected == original,
+                "same-manifest republish must never relabel original evidence"
+            );
+            let expected = reference_batch(published, revision, &head.manifest_sha256, &original);
+            let actual = reference_batch(
+                rows[0].get("current_release_receipt_id"),
+                rows[0].get("current_release_revision"),
+                &rows[0].get::<Vec<u8>, _>("current_manifest_sha256"),
+                &projected,
+            );
+            assert!(actual == expected && actual[100..] == old_batch[100..]);
+            assert!(actual[..100] != old_batch[..100]);
+            assert!(Sha256::digest(&actual) == Sha256::digest(&expected));
+            assert!(Sha256::digest(&actual) != Sha256::digest(&old_batch));
+            ensure_account_session_fresh_in_tx(&mut tx, &session)
+                .await
+                .unwrap();
+            tx.commit().await.unwrap();
+            assert!(
+                before == inventory(&pool, None).await,
+                "committed read created or changed native/business state"
+            );
+            assert!(original == original_acceptances(&pool, attempt.account).await);
+            assert_no_company_identity(&pool, attempt.account).await;
+            drop(app);
+            pool.close().await;
+        }
+    }
+
     include!("native_business_session_catalog.rs");
 }
