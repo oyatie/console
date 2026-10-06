@@ -86,6 +86,7 @@ fn encode(fields: &[(String, String)]) -> Vec<u8> {
 fn set(fields: &mut [(String, String)], key: &str, value: &str) {
     fields.iter_mut().find(|(name, _)| name == key).unwrap().1 = value.into();
 }
+#[allow(unreachable_patterns)]
 fn parsed_command(target: Target, pairs: &[(String, String)]) -> NativeCompanyBusinessCommandV1 {
     match parse(company(), target, &encode(pairs)) {
         Ok(parsed) => match parsed.input {
@@ -93,6 +94,7 @@ fn parsed_command(target: Target, pairs: &[(String, String)]) -> NativeCompanyBu
             Input::Command(NativePolicyCommand::People(_)) => {
                 panic!("Payroll parser admitted a People command")
             }
+            Input::Command(_) => panic!("Payroll parser admitted an unexpected policy family"),
             Input::Retry(_) => panic!("command unexpectedly became retry"),
         },
         Err(_) => panic!("valid command form rejected"),

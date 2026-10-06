@@ -462,3 +462,54 @@ fn org_unit_codec3_three_actions_remain_pairwise_distinct() {
         }
     }
 }
+
+#[test]
+fn org_unit_codec3_request_refs_preserve_family_and_distinct_actions() {
+    use super::workflow::{NativePolicyCommandRef, NativePolicyWorkflowError};
+
+    let literals = org_unit_codec3_positive_literals();
+    let mut references = Vec::new();
+    for literal in &literals {
+        let bytes = org_unit_codec3_literal_bytes(literal["hex"].as_str().unwrap());
+        let (decoded_actor, decoded) = NativePolicyCommand::decode(3, &bytes)
+            .expect("ORG_UNIT_CODEC3_REQUEST_REF: exact reviewed literal rejected");
+        org_unit_codec3_assert_positive(literal, decoded_actor, &decoded);
+        let reference = NativePolicyCommandRef::from_command(&decoded);
+        assert_eq!(reference.codec_version(), 3);
+        assert_eq!(reference.manifest_digest(), decoded.manifest_digest());
+        assert_eq!(reference.company(), decoded.company());
+        assert_eq!(reference.command_id(), decoded.command_id());
+        assert_eq!(reference.operation(), decoded.operation());
+        assert_eq!(reference.directory_action(), None);
+        assert_eq!(reference.resolve(reference), Ok(reference));
+        references.push(reference);
+    }
+    assert_eq!(references.len(), 10);
+
+    for operation_offset in 0..3 {
+        let selected = [
+            references[1 + operation_offset],
+            references[4 + operation_offset],
+            references[7 + operation_offset],
+        ];
+        for (left, right) in [(0, 1), (0, 2), (1, 2)] {
+            let left = selected[left];
+            let right = selected[right];
+            assert_eq!(left.company(), right.company());
+            assert_eq!(left.command_id(), right.command_id());
+            assert_eq!(left.operation(), right.operation());
+            assert_ne!(
+                left, right,
+                "request reference collapsed distinct Organization actions"
+            );
+            assert_eq!(
+                left.resolve(right),
+                Err(NativePolicyWorkflowError::Unavailable)
+            );
+            assert_eq!(
+                right.resolve(left),
+                Err(NativePolicyWorkflowError::Unavailable)
+            );
+        }
+    }
+}

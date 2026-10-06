@@ -250,6 +250,7 @@ mod native_people_policy_mixed_owner_proposal {
             }) => {
                 expected.push(("policy_assignment_revisions", 1));
                 if assignment_revision_before.is_none() {
+                    #[allow(unreachable_patterns)]
                     let fields = match &input {
                         NativePolicyCommand::Payroll(_) => 18,
                         NativePolicyCommand::People(c)
@@ -258,6 +259,9 @@ mod native_people_policy_mixed_owner_proposal {
                             6
                         }
                         NativePolicyCommand::People(_) => 2,
+                        _ => panic!(
+                            "mixed Payroll/People oracle received an unexpected policy family"
+                        ),
                     };
                     expected.extend([
                         ("policy_roles", 1),

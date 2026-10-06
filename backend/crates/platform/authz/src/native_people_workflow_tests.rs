@@ -333,3 +333,135 @@ fn people_submit_keeps_original_union_bytes_and_releases_a_before_same_family_b(
     assert_eq!(store.events(), events);
     store.drained();
 }
+
+// Pure codec3 scope fence from the adopted Organization V12 design appendix,
+// SHA256 c26751c6a49b759de50ee9e9dd42c7255b2403d1c874673f7b51b91d23dd3086.
+// These exact literals add no catalog installation or active Organization owner.
+#[test]
+fn org_unit_codec3_is_unavailable_before_every_policy_store_entry() {
+    let literals = [
+        (
+            "install",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415801",
+        ),
+        (
+            "Read_grant_new",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb41580201444444444444444484444444444444440000065c8c51ee1c00",
+        ),
+        (
+            "Read_grant_replace",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415802014444444444444444844444444444444401000000000000000155555555555545558555555555555555000000000000000900065c8c51ee1c00",
+        ),
+        (
+            "Read_revoke",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415803010000000000000001555555555555455585555555555555550000000000000009",
+        ),
+        (
+            "CreateSite_grant_new",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb41580202444444444444444484444444444444440000065c8c51ee1c00",
+        ),
+        (
+            "CreateSite_grant_replace",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415802024444444444444444844444444444444401000000000000000155555555555545558555555555555555000000000000000900065c8c51ee1c00",
+        ),
+        (
+            "CreateSite_revoke",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415803020000000000000001555555555555455585555555555555550000000000000009",
+        ),
+        (
+            "CorrectSiteName_grant_new",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb41580203444444444444444484444444444444440000065c8c51ee1c00",
+        ),
+        (
+            "CorrectSiteName_grant_replace",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415802034444444444444444844444444444444401000000000000000155555555555545558555555555555555000000000000000900065c8c51ee1c00",
+        ),
+        (
+            "CorrectSiteName_revoke",
+            "636f6e736f6c652e636f6d70616e792e6f72672d756e69742d706f6c6963790000031111111111114111811111111111111133333333333343338333333333333333222222222222422282222222222222220000000000000007e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb415803030000000000000001555555555555455585555555555555550000000000000009",
+        ),
+    ];
+    assert_eq!(literals.len(), 10);
+    let mut checked = 0;
+    for (name, literal) in literals {
+        let bytes = hex::decode(literal).unwrap();
+        let (_, command) = NativePolicyCommand::decode(3, &bytes)
+            .expect("ORG_UNIT_CODEC3_NO_STORE: exact reviewed literal rejected");
+        let selected = NativePolicyCommandRef::from_command(&command);
+        assert_eq!(selected.codec_version(), 3);
+        assert_eq!(selected.manifest_digest(), command.manifest_digest());
+        for mode in MODES {
+            let mut store = Store::new(vec![]);
+            store.expected_selector = selected;
+            let policy = Policy::new(&store);
+            let trace = TraceContext::generate();
+            let result = match mode {
+                Mode::Current => {
+                    ready(native_policy_current(&store, &policy, &(), selected)).map(|_| ())
+                }
+                Mode::Form => ready(native_policy_form(&store, &policy, &(), selected)).map(|_| ()),
+                Mode::ValidationForm => ready(native_policy_validation_form(
+                    &store,
+                    &policy,
+                    &(),
+                    selected,
+                ))
+                .map(|_| ()),
+                Mode::Accept => ready(accept_native_policy_command(
+                    &store,
+                    &policy,
+                    &(),
+                    &command,
+                    &trace,
+                ))
+                .map(|_| ()),
+                Mode::Execute => ready(execute_native_policy_command(
+                    &store,
+                    &policy,
+                    &(),
+                    selected,
+                    &trace,
+                ))
+                .map(|_| ()),
+                Mode::Status => {
+                    ready(native_policy_command_status(&store, &policy, &(), selected)).map(|_| ())
+                }
+            };
+            assert_eq!(
+                result,
+                Err(NativePolicyWorkflowError::Unavailable),
+                "codec-only {name} reached {mode:?}"
+            );
+            assert!(
+                store.events().is_empty(),
+                "codec-only {name} reached {mode:?} store or policy"
+            );
+            assert!(store.history.lock().unwrap().input_bytes.is_empty());
+            store.drained();
+            checked += 1;
+        }
+        let mut store = Store::new(vec![]);
+        store.expected_selector = selected;
+        let policy = Policy::new(&store);
+        let result = ready(submit_native_policy_command(
+            &store,
+            &policy,
+            &(),
+            &command,
+            &TraceContext::generate(),
+        ));
+        assert_eq!(
+            result.map(|_| ()),
+            Err(NativePolicyWorkflowError::Unavailable),
+            "codec-only {name} reached submit"
+        );
+        assert!(
+            store.events().is_empty(),
+            "codec-only {name} reached submit store or policy"
+        );
+        assert!(store.history.lock().unwrap().input_bytes.is_empty());
+        store.drained();
+        checked += 1;
+    }
+    assert_eq!(checked, 70);
+}
