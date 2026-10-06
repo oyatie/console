@@ -107,3 +107,23 @@ rust_test(
         "//third-party/rust:wasm-bindgen",
     ],
 )
+
+rust_test(
+    name = "console-payroll-ui-itest-react_people",
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", ["tests/react_people.rs"]),
+    crate = "react_people",
+    edition = "2024",
+    crate_root = "backend/crates/payroll/ui/tests/react_people.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/ui"},
+    labels = ["owner.backend.crates.payroll.ui", "domain.payroll", "test.integration", "resource.none"],
+    features = ["islands", "ssr"],
+    deps = [
+        "//third-party/rust:axum",
+        "//third-party/rust:leptos",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:wasm-bindgen",
+        ":console-payroll-ui",
+    ],
+)

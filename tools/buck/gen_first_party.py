@@ -340,6 +340,9 @@ TEST_RESOURCE_REQUIREMENTS = {
         # which is the point: the rendered keys are checked against the real
         # contract, not against a copy.
         'unit': 'none',
+        'integration': {
+            'tests/react_people.rs': 'none',
+        },
     },
     'console-app': {
         'unit': 'none',
