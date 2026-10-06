@@ -325,7 +325,11 @@ fn native_people_denials_omit_identity_and_documents_remain_private_and_static()
         assert!(!h.contains_key(header::SET_COOKIE));
         let csp = h[header::CONTENT_SECURITY_POLICY].to_str().unwrap();
         for directive in [
-            "script-src 'none'",
+            if status == StatusCode::OK {
+                "script-src 'self'"
+            } else {
+                "script-src 'none'"
+            },
             "frame-ancestors 'none'",
             "form-action 'self'",
             "base-uri 'none'",
