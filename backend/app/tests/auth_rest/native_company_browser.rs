@@ -79,112 +79,55 @@ async fn company_browser_journey_with_group_navigation(
     .await;
 }
 
-async fn company_browser_journey_with_group_invalid_form(
+fn company_browser_journey_with_group_invalid_form(
     pool: PgPool,
     policy_entry: bool,
     people_entry: bool,
     group_process_entry: bool,
     group_navigation_held: bool,
     group_invalid_form: bool,
-) {
-    use futures::FutureExt;
-    use std::process::Stdio;
-    // Explicit local evidence prerequisites, never a silently skipped browser test.
-    let driver = PathBuf::from(
-        std::env::var_os("CONSOLE_COMPANY_BROWSER_DRIVER")
-            .expect("reviewed browser driver required"),
-    );
-    let expected =
-        std::env::var("CONSOLE_COMPANY_BROWSER_SHA256").expect("reviewed driver SHA256 required");
-    assert!(
-        driver.is_absolute()
-            && !std::fs::symlink_metadata(&driver)
-                .unwrap()
-                .file_type()
-                .is_symlink()
-    );
-    let driver_bytes = std::fs::read(&driver).unwrap();
-    assert_eq!(
-        hex::encode(Sha256::digest(&driver_bytes)),
-        expected,
-        "reviewed browser source differs"
-    );
-    // Source-bound companion helpers are regular files in the same fresh stage.
-    let mut policy_helpers = Vec::new();
-    // Required in all three modes, including the first mounted Company home.
-    let header_path = driver.parent().unwrap().join("native_header.cjs");
-    assert!(
-        std::fs::symlink_metadata(&header_path)
-            .unwrap()
-            .file_type()
-            .is_file()
-    );
-    let header_bytes = std::fs::read(&header_path).unwrap();
-    assert_eq!(
-        hex::encode(Sha256::digest(&header_bytes)),
-        "915f37ffb3b7580202158ca23425e047e4587278aaaa5725687f9a6eb71a34c4"
-    );
-    policy_helpers.push((header_path, header_bytes));
-    if group_process_entry || group_navigation_held || group_invalid_form {
-        let path = driver.parent().unwrap().join("group_process_journey.cjs");
+) -> impl std::future::Future<Output = ()> {
+    Box::pin(async move {
+        use futures::FutureExt;
+        use std::process::Stdio;
+        // Explicit local evidence prerequisites, never a silently skipped browser test.
+        let driver = PathBuf::from(
+            std::env::var_os("CONSOLE_COMPANY_BROWSER_DRIVER")
+                .expect("reviewed browser driver required"),
+        );
+        let expected = std::env::var("CONSOLE_COMPANY_BROWSER_SHA256")
+            .expect("reviewed driver SHA256 required");
         assert!(
-            std::fs::symlink_metadata(&path)
+            driver.is_absolute()
+                && !std::fs::symlink_metadata(&driver)
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+        );
+        let driver_bytes = std::fs::read(&driver).unwrap();
+        assert_eq!(
+            hex::encode(Sha256::digest(&driver_bytes)),
+            expected,
+            "reviewed browser source differs"
+        );
+        // Source-bound companion helpers are regular files in the same fresh stage.
+        let mut policy_helpers = Vec::new();
+        // Required in all three modes, including the first mounted Company home.
+        let header_path = driver.parent().unwrap().join("native_header.cjs");
+        assert!(
+            std::fs::symlink_metadata(&header_path)
                 .unwrap()
                 .file_type()
                 .is_file()
         );
-        let bytes = std::fs::read(&path).unwrap();
+        let header_bytes = std::fs::read(&header_path).unwrap();
         assert_eq!(
-            hex::encode(Sha256::digest(&bytes)),
-            "a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f"
+            hex::encode(Sha256::digest(&header_bytes)),
+            "915f37ffb3b7580202158ca23425e047e4587278aaaa5725687f9a6eb71a34c4"
         );
-        policy_helpers.push((path, bytes));
-    }
-    if group_invalid_form {
-        let path = driver
-            .parent()
-            .unwrap()
-            .join("group_invalid_form_journey.cjs");
-        assert!(
-            std::fs::symlink_metadata(&path)
-                .unwrap()
-                .file_type()
-                .is_file()
-        );
-        let bytes = std::fs::read(&path).unwrap();
-        assert_eq!(
-            hex::encode(Sha256::digest(&bytes)),
-            "f301776ce4bcb9c7b5101baa4f4cab8c27c5dc633e277d17db2a89939b46a6dd"
-        );
-        policy_helpers.push((path, bytes));
-    }
-    if group_navigation_held {
-        let path = driver.parent().unwrap().join("group_navigation_held.cjs");
-        assert!(
-            std::fs::symlink_metadata(&path)
-                .unwrap()
-                .file_type()
-                .is_file()
-        );
-        let bytes = std::fs::read(&path).unwrap();
-        assert_eq!(
-            hex::encode(Sha256::digest(&bytes)),
-            native_group_navigation_browser::DRIVER_SHA256
-        );
-        policy_helpers.push((path, bytes));
-    }
-    if policy_entry {
-        for (name, digest) in [
-            (
-                "policy_journey.cjs",
-                "766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea",
-            ),
-            (
-                "recovery_controls.cjs",
-                "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
-            ),
-        ] {
-            let path = driver.parent().unwrap().join(name);
+        policy_helpers.push((header_path, header_bytes));
+        if group_process_entry || group_navigation_held || group_invalid_form {
+            let path = driver.parent().unwrap().join("group_process_journey.cjs");
             assert!(
                 std::fs::symlink_metadata(&path)
                     .unwrap()
@@ -192,103 +135,163 @@ async fn company_browser_journey_with_group_invalid_form(
                     .is_file()
             );
             let bytes = std::fs::read(&path).unwrap();
-            assert_eq!(hex::encode(Sha256::digest(&bytes)), digest);
+            assert_eq!(
+                hex::encode(Sha256::digest(&bytes)),
+                "a4764161086e35b974c94bf96a7ed9d4411b940a00d1a3d62589c1b229c8ba7f"
+            );
             policy_helpers.push((path, bytes));
         }
-    }
-    if people_entry {
-        let path = driver.parent().unwrap().join("people_journey.cjs");
-        assert!(
-            std::fs::symlink_metadata(&path)
+        if group_invalid_form {
+            let path = driver
+                .parent()
                 .unwrap()
-                .file_type()
-                .is_file()
+                .join("group_invalid_form_journey.cjs");
+            assert!(
+                std::fs::symlink_metadata(&path)
+                    .unwrap()
+                    .file_type()
+                    .is_file()
+            );
+            let bytes = std::fs::read(&path).unwrap();
+            assert_eq!(
+                hex::encode(Sha256::digest(&bytes)),
+                "f301776ce4bcb9c7b5101baa4f4cab8c27c5dc633e277d17db2a89939b46a6dd"
+            );
+            policy_helpers.push((path, bytes));
+        }
+        if group_navigation_held {
+            let path = driver.parent().unwrap().join("group_navigation_held.cjs");
+            assert!(
+                std::fs::symlink_metadata(&path)
+                    .unwrap()
+                    .file_type()
+                    .is_file()
+            );
+            let bytes = std::fs::read(&path).unwrap();
+            assert_eq!(
+                hex::encode(Sha256::digest(&bytes)),
+                native_group_navigation_browser::DRIVER_SHA256
+            );
+            policy_helpers.push((path, bytes));
+        }
+        if policy_entry {
+            for (name, digest) in [
+                (
+                    "policy_journey.cjs",
+                    "766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea",
+                ),
+                (
+                    "recovery_controls.cjs",
+                    "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
+                ),
+            ] {
+                let path = driver.parent().unwrap().join(name);
+                assert!(
+                    std::fs::symlink_metadata(&path)
+                        .unwrap()
+                        .file_type()
+                        .is_file()
+                );
+                let bytes = std::fs::read(&path).unwrap();
+                assert_eq!(hex::encode(Sha256::digest(&bytes)), digest);
+                policy_helpers.push((path, bytes));
+            }
+        }
+        if people_entry {
+            let path = driver.parent().unwrap().join("people_journey.cjs");
+            assert!(
+                std::fs::symlink_metadata(&path)
+                    .unwrap()
+                    .file_type()
+                    .is_file()
+            );
+            let bytes = std::fs::read(&path).unwrap();
+            assert_eq!(
+                hex::encode(Sha256::digest(&bytes)),
+                native_people_browser::DRIVER_SHA256
+            );
+            policy_helpers.push((path, bytes));
+            let path = driver.parent().unwrap().join("react_people_controls.cjs");
+            assert!(
+                std::fs::symlink_metadata(&path)
+                    .unwrap()
+                    .file_type()
+                    .is_file()
+            );
+            let bytes = std::fs::read(&path).unwrap();
+            assert_eq!(
+                hex::encode(Sha256::digest(&bytes)),
+                native_people_browser::CONTROL_DRIVER_SHA256
+            );
+            policy_helpers.push((path, bytes));
+        }
+        let output = PathBuf::from(
+            std::env::var_os("CONSOLE_COMPANY_BROWSER_OUTPUT")
+                .expect("fresh browser output required"),
         );
-        let bytes = std::fs::read(&path).unwrap();
-        assert_eq!(
-            hex::encode(Sha256::digest(&bytes)),
-            native_people_browser::DRIVER_SHA256
-        );
-        policy_helpers.push((path, bytes));
-        let path = driver.parent().unwrap().join("react_people_controls.cjs");
         assert!(
-            std::fs::symlink_metadata(&path)
-                .unwrap()
-                .file_type()
-                .is_file()
+            output.is_absolute() && !output.exists(),
+            "browser output must be a fresh owned directory"
         );
-        let bytes = std::fs::read(&path).unwrap();
-        assert_eq!(
-            hex::encode(Sha256::digest(&bytes)),
-            native_people_browser::CONTROL_DRIVER_SHA256
-        );
-        policy_helpers.push((path, bytes));
-    }
-    let output = PathBuf::from(
-        std::env::var_os("CONSOLE_COMPANY_BROWSER_OUTPUT").expect("fresh browser output required"),
-    );
-    assert!(
-        output.is_absolute() && !output.exists(),
-        "browser output must be a fresh owned directory"
-    );
-    if group_process_entry || group_invalid_form {
-        native_policy_startup_tests::prepare_native_group_navigation_browser_database(&pool).await;
-        seed_terms(&pool).await;
-    } else if group_navigation_held {
-        native_policy_startup_tests::prepare_native_group_browser_database(&pool).await;
-        seed_terms(&pool).await;
-    } else if people_entry {
-        // Verify the actual guarded Directory activation before UI data exists.
-        // Its temporary AppState uses the fixture origin; close it before the
-        // browser creates the fresh TLS-origin-specific state below.
-        let (directory_fixture, _, directory_state) = native_policy_startup_tests::native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
-        directory_state.shutdown_realtime().await;
-        drop(directory_fixture);
-    } else if policy_entry {
-        native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
-    } else {
-        prepare_ready_database(&pool).await;
-    }
-    let artifacts = Artifacts::new();
-    let key = SigningKey::random(&mut OsRng);
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let address = listener.local_addr().unwrap();
-    let baseline = native_extension_rows(&pool).await;
-    let business_baseline = browser_business_rows(&pool).await;
-    let mut child = tokio::process::Command::new("node")
-        .arg(&driver)
-        .arg(address.port().to_string())
-        .arg(&output)
-        .args(if group_invalid_form {
-            Some("group-invalid-form")
+        if group_process_entry || group_invalid_form {
+            native_policy_startup_tests::prepare_native_group_navigation_browser_database(&pool)
+                .await;
+            seed_terms(&pool).await;
         } else if group_navigation_held {
-            Some("group-navigation-held")
-        } else if group_process_entry {
-            Some("group-process-entry")
+            native_policy_startup_tests::prepare_native_group_browser_database(&pool).await;
+            seed_terms(&pool).await;
         } else if people_entry {
-            Some("people-entry")
+            // Verify the actual guarded Directory activation before UI data exists.
+            // Its temporary AppState uses the fixture origin; close it before the
+            // browser creates the fresh TLS-origin-specific state below.
+            let (directory_fixture, _, directory_state) = native_policy_startup_tests::native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
+            directory_state.shutdown_realtime().await;
+            drop(directory_fixture);
+        } else if policy_entry {
+            native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
         } else {
-            policy_entry.then_some("policy-entry")
-        })
-        .env_remove("DEBUG")
-        .env_remove("PWDEBUG")
-        .env_remove("NODE_DEBUG")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .kill_on_drop(true)
-        .spawn()
-        .expect("browser driver launch prerequisite");
-    let mut input = child.stdin.take().unwrap();
-    let mut events = tokio::io::BufReader::new(child.stdout.take().unwrap());
-    let mut server = None;
-    let mut shutdown = None;
-    let mut state_to_close = None;
-    let mut checkpoint_receipts = Vec::new();
-    let captured_cookie = native_group_navigation_browser::CapturedCookie::default();
-    let mut owned_browser_pid = None;
-    let mut browser_seen_alive = false;
-    let outcome = Box::pin(std::panic::AssertUnwindSafe(async {
+            prepare_ready_database(&pool).await;
+        }
+        let artifacts = Artifacts::new();
+        let key = SigningKey::random(&mut OsRng);
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let baseline = native_extension_rows(&pool).await;
+        let business_baseline = browser_business_rows(&pool).await;
+        let mut child = tokio::process::Command::new("node")
+            .arg(&driver)
+            .arg(address.port().to_string())
+            .arg(&output)
+            .args(if group_invalid_form {
+                Some("group-invalid-form")
+            } else if group_navigation_held {
+                Some("group-navigation-held")
+            } else if group_process_entry {
+                Some("group-process-entry")
+            } else if people_entry {
+                Some("people-entry")
+            } else {
+                policy_entry.then_some("policy-entry")
+            })
+            .env_remove("DEBUG")
+            .env_remove("PWDEBUG")
+            .env_remove("NODE_DEBUG")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .kill_on_drop(true)
+            .spawn()
+            .expect("browser driver launch prerequisite");
+        let mut input = child.stdin.take().unwrap();
+        let mut events = tokio::io::BufReader::new(child.stdout.take().unwrap());
+        let mut server = None;
+        let mut shutdown = None;
+        let mut state_to_close = None;
+        let mut checkpoint_receipts = Vec::new();
+        let captured_cookie = native_group_navigation_browser::CapturedCookie::default();
+        let mut owned_browser_pid = None;
+        let mut browser_seen_alive = false;
+        let outcome = Box::pin(std::panic::AssertUnwindSafe(async {
         let ready = browser_owner_event(&mut events).await;
         exact_keys(
             &ready,
@@ -659,59 +662,63 @@ async fn company_browser_journey_with_group_invalid_form(
     .catch_unwind())
     .await;
 
-    // Even failed assertions close stdin so the owner-controlled browser driver
-    // cleans up its exact browser/TLS relay before this test propagates failure.
-    drop(input);
-    let child_status = tokio::time::timeout(std::time::Duration::from_secs(40), child.wait()).await;
-    if child_status.is_err() {
-        let _ = child.kill().await;
-    }
-    if let Some(stop) = shutdown {
-        let _ = stop.send(());
-    }
-    let mut server_clean = true;
-    if let Some(mut task) = server {
-        match tokio::time::timeout(std::time::Duration::from_secs(5), &mut task).await {
-            Ok(Ok(Ok(()))) => {}
-            _ => {
-                server_clean = false;
-                task.abort();
-                let _ = task.await;
+        // Even failed assertions close stdin so the owner-controlled browser driver
+        // cleans up its exact browser/TLS relay before this test propagates failure.
+        drop(input);
+        let child_status =
+            tokio::time::timeout(std::time::Duration::from_secs(40), child.wait()).await;
+        if child_status.is_err() {
+            let _ = child.kill().await;
+        }
+        if let Some(stop) = shutdown {
+            let _ = stop.send(());
+        }
+        let mut server_clean = true;
+        if let Some(mut task) = server {
+            match tokio::time::timeout(std::time::Duration::from_secs(5), &mut task).await {
+                Ok(Ok(Ok(()))) => {}
+                _ => {
+                    server_clean = false;
+                    task.abort();
+                    let _ = task.await;
+                }
             }
         }
-    }
-    if let Some(state) = state_to_close {
-        state.shutdown_realtime().await;
-    }
-    let browser_exit_observation = owned_browser_pid.and_then(browser_pid_alive);
-    let browser_exit_confirmed = browser_seen_alive && browser_exit_observation == Some(false);
-    let source_unchanged = std::fs::read(&driver).is_ok_and(|bytes| bytes == driver_bytes)
-        && policy_helpers
-            .iter()
-            .all(|(path, original)| std::fs::read(path).is_ok_and(|bytes| &bytes == original));
-    let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let mut receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"group_navigation_held":group_navigation_held,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
-    if group_invalid_form {
-        receipt["group_invalid_form"] = json!(true);
-    }
-    if output.is_dir() {
-        std::fs::write(
-            output.join("owner-receipt.json"),
-            serde_json::to_vec_pretty(&receipt).unwrap(),
-        )
-        .unwrap();
-    }
-    assert!(
-        source_unchanged && server_clean && (owned_browser_pid.is_none() || browser_exit_confirmed),
-        "browser source or owned app/browser PID cleanup failed"
-    );
-    if let Err(panic) = outcome {
-        std::panic::resume_unwind(panic);
-    }
-    assert!(
-        exit_ok && browser_exit_confirmed,
-        "browser did not exit successfully with its owned PID absent after all checkpoints"
-    );
+        if let Some(state) = state_to_close {
+            state.shutdown_realtime().await;
+        }
+        let browser_exit_observation = owned_browser_pid.and_then(browser_pid_alive);
+        let browser_exit_confirmed = browser_seen_alive && browser_exit_observation == Some(false);
+        let source_unchanged = std::fs::read(&driver).is_ok_and(|bytes| bytes == driver_bytes)
+            && policy_helpers
+                .iter()
+                .all(|(path, original)| std::fs::read(path).is_ok_and(|bytes| &bytes == original));
+        let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
+        let mut receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"group_process_entry":group_process_entry,"group_navigation_held":group_navigation_held,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
+        if group_invalid_form {
+            receipt["group_invalid_form"] = json!(true);
+        }
+        if output.is_dir() {
+            std::fs::write(
+                output.join("owner-receipt.json"),
+                serde_json::to_vec_pretty(&receipt).unwrap(),
+            )
+            .unwrap();
+        }
+        assert!(
+            source_unchanged
+                && server_clean
+                && (owned_browser_pid.is_none() || browser_exit_confirmed),
+            "browser source or owned app/browser PID cleanup failed"
+        );
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+        assert!(
+            exit_ok && browser_exit_confirmed,
+            "browser did not exit successfully with its owned PID absent after all checkpoints"
+        );
+    })
 }
 
 // Test-only diagnosis after real UI population; original workflow checks remain.
