@@ -202,3 +202,263 @@ fn shared_policy_command_preserves_assignment_witnesses_for_both_protocols() {
         assert_eq!(wrapped.expires_at(), grant.then_some(expires));
     }
 }
+
+// Organization V12 exact codec3 contract, design appendix SHA256
+// c26751c6a49b759de50ee9e9dd42c7255b2403d1c874673f7b51b91d23dd3086.
+// Test-only literals; no catalog installation, authority, owner or serving claim.
+#[path = "org_unit_codec3_literal_fixtures.rs"]
+mod org_unit_codec3_literals;
+
+fn org_unit_codec3_literal_bytes(hex: &str) -> Vec<u8> {
+    assert_eq!(hex.len() % 2, 0, "literal fixture must contain whole bytes");
+    hex.as_bytes()
+        .chunks_exact(2)
+        .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
+        .collect()
+}
+
+fn org_unit_codec3_positive_literals() -> Vec<serde_json::Value> {
+    let literals: Vec<serde_json::Value> =
+        serde_json::from_str(org_unit_codec3_literals::POSITIVE_JSON).unwrap();
+    assert_eq!(
+        literals.len(),
+        10,
+        "reviewed positive literal census changed"
+    );
+    literals
+}
+
+fn org_unit_codec3_assert_positive(
+    literal: &serde_json::Value,
+    decoded_actor: AccountId,
+    decoded: &NativePolicyCommand,
+) {
+    use super::business::PolicyAssignmentExpectationV1;
+    use time::OffsetDateTime;
+
+    let expected = &literal["expected"];
+    let bytes = org_unit_codec3_literal_bytes(literal["hex"].as_str().unwrap());
+    assert_eq!(
+        bytes.len(),
+        usize::try_from(literal["bytes"].as_u64().unwrap()).unwrap()
+    );
+    assert_eq!(literal["codec"].as_i64(), Some(3));
+    assert_eq!(decoded.codec_version(), 3);
+    assert_eq!(
+        decoded_actor,
+        AccountId::from_uuid(
+            Uuid::parse_str(expected["actor_account_id"].as_str().unwrap()).unwrap()
+        )
+        .unwrap()
+    );
+    assert_eq!(
+        decoded.company(),
+        OrgId::from_uuid(Uuid::parse_str(expected["company_id"].as_str().unwrap()).unwrap())
+    );
+    assert_eq!(
+        decoded.command_id(),
+        Uuid::parse_str(expected["command_id"].as_str().unwrap()).unwrap()
+    );
+    assert_eq!(
+        decoded.expected_company_epoch(),
+        expected["expected_company_epoch"].as_u64().unwrap()
+    );
+    assert_eq!(
+        decoded.catalog_version(),
+        expected["catalog_version"].as_str().unwrap()
+    );
+    assert_eq!(decoded.catalog_version(), "native-org-unit-work-v1");
+    let manifest = org_unit_codec3_literal_bytes(expected["manifest_digest"].as_str().unwrap());
+    assert_eq!(manifest.len(), 32);
+    assert_eq!(decoded.manifest_digest().as_slice(), manifest.as_slice());
+    assert_eq!(
+        manifest,
+        org_unit_codec3_literal_bytes(
+            "e056a68f52f13d705dc38c618bf97bf09b37c3293255c30442d20aee51fb4158"
+        )
+    );
+    let operation = match expected["operation"].as_str().unwrap() {
+        "Install" => NativeBusinessOperationV1::Install,
+        "Grant" => NativeBusinessOperationV1::Grant,
+        "Revoke" => NativeBusinessOperationV1::Revoke,
+        _ => panic!("reviewed fixture contains an unknown operation"),
+    };
+    assert_eq!(decoded.operation(), operation);
+    let recipient = expected["recipient_account_id"]
+        .as_str()
+        .map(|id| AccountId::from_uuid(Uuid::parse_str(id).unwrap()).unwrap());
+    assert_eq!(decoded.recipient_account_id(), recipient);
+    let assignment = (!expected["assignment_expectation"].is_null()).then(|| {
+        let witness = &expected["assignment_expectation"];
+        PolicyAssignmentExpectationV1 {
+            role_revision: witness["role_revision"].as_u64().unwrap(),
+            assignment_id: Uuid::parse_str(witness["assignment_id"].as_str().unwrap()).unwrap(),
+            assignment_revision: witness["assignment_revision"].as_u64().unwrap(),
+        }
+    });
+    assert_eq!(decoded.assignment_expectation(), assignment);
+    let expiry = expected["expires_at_microseconds"].as_i64().map(|micros| {
+        OffsetDateTime::from_unix_timestamp_nanos(i128::from(micros) * 1_000).unwrap()
+    });
+    assert_eq!(decoded.expires_at(), expiry);
+    let encoded = decoded.encode(decoded_actor);
+    assert_eq!(
+        encoded, bytes,
+        "decoded command changed the accepted literal"
+    );
+    if let Some(action) = expected["action_byte"].as_u64() {
+        assert_eq!(encoded[123], u8::try_from(action).unwrap());
+        assert!(matches!(action, 1..=3));
+    } else {
+        assert_eq!(operation, NativeBusinessOperationV1::Install);
+        assert_eq!(
+            encoded.len(),
+            123,
+            "install must not contain an action suffix"
+        );
+    }
+}
+
+#[test]
+fn org_unit_codec3_install_literal_preserves_catalog_and_roundtrip() {
+    let literals = org_unit_codec3_positive_literals();
+    let install = &literals[0];
+    assert_eq!(install["name"].as_str(), Some("install"));
+    assert_eq!(install["expected"]["operation"].as_str(), Some("Install"));
+    let bytes = org_unit_codec3_literal_bytes(install["hex"].as_str().unwrap());
+    let (decoded_actor, decoded) = NativePolicyCommand::decode(3, &bytes).expect(
+        "ORG_UNIT_CODEC3_INSTALL: exact reviewed install literal must reach the existing decoder",
+    );
+    org_unit_codec3_assert_positive(install, decoded_actor, &decoded);
+}
+
+#[test]
+fn org_unit_codec3_grant_and_revoke_literals_bind_each_action_and_coordinate() {
+    let literals = org_unit_codec3_positive_literals();
+    let mut checked = 0;
+    for literal in &literals[1..] {
+        let bytes = org_unit_codec3_literal_bytes(literal["hex"].as_str().unwrap());
+        let (decoded_actor, decoded) = NativePolicyCommand::decode(3, &bytes)
+            .expect("ORG_UNIT_CODEC3_ACTION: exact reviewed grant/revoke literal rejected");
+        org_unit_codec3_assert_positive(literal, decoded_actor, &decoded);
+        checked += 1;
+    }
+    assert_eq!(
+        checked, 9,
+        "three actions need fresh/replacement grant and revoke"
+    );
+}
+
+#[test]
+fn org_unit_codec3_finite_literal_refusals_remain_closed() {
+    let refusals: Vec<serde_json::Value> =
+        serde_json::from_str(org_unit_codec3_literals::REFUSAL_JSON).unwrap();
+    assert_eq!(
+        refusals.len(),
+        2_581,
+        "reviewed finite refusal census changed"
+    );
+    let mut names = std::collections::BTreeSet::new();
+    for refusal in &refusals {
+        let name = refusal["name"].as_str().unwrap();
+        assert!(names.insert(name), "duplicate refusal name: {name}");
+        assert_eq!(
+            refusal["expected_error"].as_str(),
+            Some("invalid Company business policy input")
+        );
+        let codec = i16::try_from(refusal["codec"].as_i64().unwrap()).unwrap();
+        let bytes = org_unit_codec3_literal_bytes(refusal["hex"].as_str().unwrap());
+        assert_eq!(
+            NativePolicyCommand::decode(codec, &bytes).unwrap_err(),
+            console_kernel_core::KernelError::validation("invalid Company business policy input"),
+            "literal refusal admitted or changed its typed result: {name}"
+        );
+    }
+    assert_eq!(names.len(), 2_581);
+}
+
+#[test]
+fn org_unit_codec3_existing_literal_protocols_remain_byte_exact() {
+    let preserved: Vec<serde_json::Value> =
+        serde_json::from_str(org_unit_codec3_literals::PREDECESSOR_JSON).unwrap();
+    assert_eq!(
+        preserved.len(),
+        11,
+        "four Payroll and seven People literals required"
+    );
+    let mut counts = [0_usize; 2];
+    for literal in &preserved {
+        let codec = i16::try_from(literal["codec"].as_i64().unwrap()).unwrap();
+        let bytes = org_unit_codec3_literal_bytes(literal["hex"].as_str().unwrap());
+        let (decoded_actor, decoded) = NativePolicyCommand::decode(codec, &bytes).unwrap();
+        assert_eq!(decoded.codec_version(), codec);
+        match codec {
+            1 => {
+                counts[0] += 1;
+                assert_eq!(
+                    decoded.catalog_version(),
+                    "native-payroll-collection-read-v1"
+                );
+                assert_eq!(decoded.manifest_digest(), &super::business::MANIFEST);
+            }
+            2 => {
+                counts[1] += 1;
+                assert_eq!(decoded.catalog_version(), "native-people-directory-v1");
+                assert_eq!(decoded.manifest_digest(), &super::people_business::MANIFEST);
+            }
+            _ => panic!("predecessor fixture contains a new codec"),
+        }
+        assert_eq!(decoded.encode(decoded_actor), bytes);
+        assert_eq!(
+            NativePolicyCommand::decode(3, &bytes).unwrap_err(),
+            console_kernel_core::KernelError::validation("invalid Company business policy input")
+        );
+    }
+    assert_eq!(counts, [4, 7]);
+}
+
+#[test]
+fn org_unit_codec3_three_actions_remain_pairwise_distinct() {
+    let literals = org_unit_codec3_positive_literals();
+    for operation_offset in 0..3 {
+        let mut decoded_actions = Vec::new();
+        for start in [1, 4, 7] {
+            let literal = &literals[start + operation_offset];
+            let bytes = org_unit_codec3_literal_bytes(literal["hex"].as_str().unwrap());
+            let (decoded_actor, decoded) = NativePolicyCommand::decode(3, &bytes)
+                .expect("ORG_UNIT_CODEC3_DISTINCT: exact reviewed action literal rejected");
+            org_unit_codec3_assert_positive(literal, decoded_actor, &decoded);
+            decoded_actions.push((decoded_actor, decoded));
+        }
+        assert_eq!(decoded_actions.len(), 3);
+        for (left, right) in [(0, 1), (0, 2), (1, 2)] {
+            let (left_actor, left_command) = &decoded_actions[left];
+            let (right_actor, right_command) = &decoded_actions[right];
+            assert_eq!(left_actor, right_actor);
+            assert_eq!(left_command.company(), right_command.company());
+            assert_eq!(left_command.command_id(), right_command.command_id());
+            assert_eq!(
+                left_command.expected_company_epoch(),
+                right_command.expected_company_epoch()
+            );
+            assert_eq!(left_command.operation(), right_command.operation());
+            assert_eq!(
+                left_command.recipient_account_id(),
+                right_command.recipient_account_id()
+            );
+            assert_eq!(
+                left_command.assignment_expectation(),
+                right_command.assignment_expectation()
+            );
+            assert_eq!(left_command.expires_at(), right_command.expires_at());
+            assert_ne!(
+                left_command, right_command,
+                "different actions collapsed into one command"
+            );
+            assert_ne!(
+                left_command.encode(*left_actor),
+                right_command.encode(*right_actor)
+            );
+        }
+    }
+}
