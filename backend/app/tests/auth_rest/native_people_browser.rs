@@ -5,7 +5,7 @@ use super::*;
 pub(super) const DRIVER_SHA256: &str =
     "051ccf6be53899a9b077df697e4fea36d7edacc38e8b8e2065ca37b5c52e098b";
 pub(super) const CONTROL_DRIVER_SHA256: &str =
-    "81cf1e6397479a9dc5b22c51717da74bfd9d791d0260be02aa98b761588b98f7";
+    "04990da9c37c41e8b478d118effeb44a1c6f805a408fddb455039404bd32c97c";
 const NAME: &str = "김하늘 <연구 & 운영>";
 const NUMBER: &str = "UI-사람-001";
 const PHASES: &[&str] = &[

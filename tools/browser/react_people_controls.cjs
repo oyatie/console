@@ -49,6 +49,7 @@ async function runReactControls({page, origin, company, account, expectDocument,
   const initialViewport = page.viewportSize();
   let diagnosticControl = 'none', diagnosticStep = 'start', failedStep = null, failedError = null;
   try {
+    await cdp.send('Page.enable');
     for (const name of CONTROL_NAMES) {
       diagnosticControl = name; failedStep = null; failedError = null;
       diagnosticStep = 'owner-ready';
@@ -475,6 +476,7 @@ async function startStorageObserver(page) {
   cdp.on('Runtime.bindingCalled',event=>{if(event.name!=='__consoleStorageObserverEvent')return;
     const row=JSON.parse(event.payload);if(row.kind==='installed')documents++;else if(row.kind==='control')methods.add(row.operation);
     else if(row.kind==='positive')positives++;else if(row.kind==='product'&&row.injected===true){injectedWrites++;injectedMethods.add(row.operation);}else product.push(row.operation);});
+  await cdp.send('Page.enable');
   await cdp.send('Runtime.enable');await cdp.send('Runtime.addBinding',{name:'__consoleStorageObserverEvent'});
   const source='('+installStorageObserver.toString()+')()';
   const injected=(await cdp.send('Page.addScriptToEvaluateOnNewDocument',{source})).identifier;
