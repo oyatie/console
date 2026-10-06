@@ -9,6 +9,9 @@ mod native_org_unit_closed_phase_capture {
     const WIDER_CAPTURE: &str = include_str!(
         "../../../../ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql"
     );
+    const BOUNDED_WIDER_CAPTURE: &str = include_str!(
+        "../../../../ops/postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql"
+    );
     const CLASSIFIER_INSTALLED: [&str; 2] = [
         "de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a",
         "8011bd8141ec1a0497319773d73bc1df97a924f99e8aa84b8ef7c9cb4c821b37",
@@ -223,11 +226,46 @@ mod native_org_unit_closed_phase_capture {
             "raw_native_directory_startup_rights_valid":rights,"accepted_profile":false})
     }
 
+    fn bounded_capture_source_pins() -> Value {
+        const BEFORE: &str = "), snapshots AS (\n";
+        const AFTER: &str = "), snapshots AS MATERIALIZED (\n";
+        assert_eq!(
+            digest(WIDER_CAPTURE),
+            "6be2e3d095d59bbdb9e1b932dac8da48bde261601455cdcd166c6f2a649e6010"
+        );
+        assert_eq!(
+            digest(BOUNDED_WIDER_CAPTURE),
+            "b5406233e4d4b44bd56586049179e82ed648981066c3e3afcecbcf97819b9cf7"
+        );
+        assert_eq!(WIDER_CAPTURE.matches(BEFORE).count(), 1);
+        assert_eq!(WIDER_CAPTURE.matches(AFTER).count(), 0);
+        assert_eq!(BOUNDED_WIDER_CAPTURE.matches(AFTER).count(), 1);
+        assert_eq!(BOUNDED_WIDER_CAPTURE.matches(BEFORE).count(), 0);
+        assert_eq!(BOUNDED_WIDER_CAPTURE.replace(AFTER, BEFORE), WIDER_CAPTURE);
+        let mut result = source_pins();
+        assert!(
+            result
+                .as_object_mut()
+                .unwrap()
+                .insert(
+                    "wider76_bounded_capture".into(),
+                    json!("b5406233e4d4b44bd56586049179e82ed648981066c3e3afcecbcf97819b9cf7")
+                )
+                .is_none()
+        );
+        result
+    }
+
+    #[test]
+    fn bounded_wider_capture_preserves_every_historical_byte() {
+        bounded_capture_source_pins();
+    }
+
     #[sqlx::test(migrations = false)]
     async fn collects_closed_plain_observer_raw_metadata_and_complete_effective_denials(
         pool: PgPool,
     ) {
-        let prior_pins = source_pins();
+        let prior_pins = bounded_capture_source_pins();
         assert_eq!(
             digest(CLOSED_OWNER),
             "aba221ad2cfa03390eca638ccd290901877fef615450b17cf14a96304e9f2609"
@@ -352,8 +390,14 @@ mod native_org_unit_closed_finalizer_tests {
     const CLOSED_STATE: &str = include_str!(
         "../../../../ops/postgres-native-org-unit-closed-perimeter-v1-custody-state.sql"
     );
+    const BOUNDED_CLOSED_STATE: &str = include_str!(
+        "../../../../ops/postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql"
+    );
     const WIDER_CAPTURE: &str = include_str!(
         "../../../../ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql"
+    );
+    const BOUNDED_WIDER_CAPTURE: &str = include_str!(
+        "../../../../ops/postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql"
     );
     const PREDECESSOR73: [&str; 2] = [
         "de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a",
@@ -719,6 +763,16 @@ mod native_org_unit_closed_finalizer_tests {
                 WIDER_CAPTURE,
                 "6be2e3d095d59bbdb9e1b932dac8da48bde261601455cdcd166c6f2a649e6010",
             ),
+            (
+                "wider76_bounded_capture",
+                BOUNDED_WIDER_CAPTURE,
+                "b5406233e4d4b44bd56586049179e82ed648981066c3e3afcecbcf97819b9cf7",
+            ),
+            (
+                "closed_bounded_state",
+                BOUNDED_CLOSED_STATE,
+                "66ace47fbfeacbd8df3330e6caf9ae2bf28d44191bf9a347bd3a0a986f8f2ee8",
+            ),
         ] {
             assert_eq!(
                 digest(source),
@@ -726,6 +780,18 @@ mod native_org_unit_closed_finalizer_tests {
                 "unreviewed native prerequisite: {name}"
             );
             result[name] = json!(expected);
+        }
+        const BEFORE: &str = "), snapshots AS (\n";
+        const AFTER: &str = "), snapshots AS MATERIALIZED (\n";
+        for (historical, bounded, count) in [
+            (WIDER_CAPTURE, BOUNDED_WIDER_CAPTURE, 1),
+            (CLOSED_STATE, BOUNDED_CLOSED_STATE, 2),
+        ] {
+            assert_eq!(historical.matches(BEFORE).count(), count);
+            assert_eq!(historical.matches(AFTER).count(), 0);
+            assert_eq!(bounded.matches(AFTER).count(), count);
+            assert_eq!(bounded.matches(BEFORE).count(), 0);
+            assert_eq!(bounded.replace(AFTER, BEFORE), historical);
         }
         assert_eq!(
             RELATIONS76.iter().copied().collect::<BTreeSet<_>>().len(),
@@ -1735,6 +1801,178 @@ mod native_org_unit_closed_finalizer_tests {
                 .unwrap()
                 > 0
         );
+    }
+
+    // Separate equality controls execute both reviewed readers over the same
+    // marked plain/observer predecessor and closed fixture. Existing helpers
+    // deliberately remain historical on the RED test candidate.
+    #[test]
+    fn bounded_closed_reader_sources_and_serving_pair_preserve_history() {
+        pins();
+        serving_pins();
+    }
+
+    async fn full_bounded_capture_control(
+        connection: &mut PgConnection,
+        source: &str,
+    ) -> (String, String, Option<bool>) {
+        assert!(
+            source == WIDER_CAPTURE || source == BOUNDED_WIDER_CAPTURE,
+            "equality control accepts only the exact historical or bounded capture"
+        );
+        sqlx::raw_sql(CLASSIFIER_SESSION)
+            .execute(&mut *connection)
+            .await
+            .unwrap();
+        if source == WIDER_CAPTURE {
+            // Historical equality reference only; never native 3s qualification.
+            sqlx::raw_sql("SET LOCAL statement_timeout='15s'")
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+        }
+        let body = source
+            .strip_suffix(";\n")
+            .expect("exact reviewed capture terminator");
+        let query = format!(
+            "SELECT snapshot::text,snapshot_sha256,native_directory_startup_rights_valid FROM ({body}) original_capture"
+        );
+        let result: (String, String, Option<bool>) = sqlx::query_as(sqlx::AssertSqlSafe(query))
+            .fetch_one(connection)
+            .await
+            .unwrap();
+        assert_eq!(
+            digest(&result.0),
+            result.1,
+            "full PostgreSQL snapshot text must match its historical digest"
+        );
+        assert!(
+            serde_json::from_str::<Value>(&result.0)
+                .unwrap()
+                .is_object()
+        );
+        assert_eq!(
+            result.2,
+            Some(false),
+            "historical wider76 rights must remain raw FALSE"
+        );
+        result
+    }
+
+    async fn bounded_outputs_equal(
+        connection: &mut PgConnection,
+        expected76: &str,
+        expected_state: &str,
+    ) {
+        let historical = full_bounded_capture_control(connection, WIDER_CAPTURE).await;
+        let bounded = full_bounded_capture_control(connection, BOUNDED_WIDER_CAPTURE).await;
+        assert_eq!(
+            historical.1, expected76,
+            "independent historical phase fingerprint remains the oracle"
+        );
+        assert_eq!(
+            historical, bounded,
+            "bounded reader changed full snapshot text, computed hash or raw rights"
+        );
+        for source in [CLOSED_STATE, BOUNDED_CLOSED_STATE] {
+            sqlx::raw_sql(CLASSIFIER_SESSION)
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+            if source == CLOSED_STATE {
+                // Historical equality reference only; bounded state stays at 3s.
+                sqlx::raw_sql("SET LOCAL statement_timeout='15s'")
+                    .execute(&mut *connection)
+                    .await
+                    .unwrap();
+            }
+            let observed: String = sqlx::query_scalar(source)
+                .fetch_one(&mut *connection)
+                .await
+                .unwrap();
+            assert_eq!(
+                observed, expected_state,
+                "historical and bounded classifier strings must agree"
+            );
+        }
+    }
+
+    async fn bounded_reader_equivalence(pool: PgPool, variant: usize) {
+        serving_pins();
+        let baseline = predecessor(&pool, variant).await;
+        let mut connection = direct(&pool).await;
+        let frozen = target(&mut connection).await;
+        assert_eq!(frozen, baseline.target);
+        let mut tx = begin_protocol(&mut connection, &frozen).await;
+        let outcome = AssertUnwindSafe(async {
+            let before_catalog = catalog(tx.as_mut()).await;
+            assert_eq!(before_catalog, baseline.catalog);
+            assert_eq!(
+                capture(tx.as_mut(), CAPTURE).await.sha256,
+                PREDECESSOR73[variant]
+            );
+            bounded_outputs_equal(
+                tx.as_mut(),
+                PREDECESSOR76[variant],
+                "native_org_unit.closed_perimeter_required",
+            )
+            .await;
+            assert_eq!(
+                catalog(tx.as_mut()).await,
+                before_catalog,
+                "reader control changed complete predecessor metadata"
+            );
+            assert_eq!(rows(tx.as_mut()).await, baseline.rows);
+            assert_eq!(applied_ledger(tx.as_mut()).await, baseline.ledger);
+            assert_eq!(
+                added_three_denied_rights(tx.as_mut()).await,
+                baseline.denied
+            );
+            relation_and_schema_closure(tx.as_mut(), false).await;
+            run_finalizer(tx.as_mut()).await;
+            let installed_catalog = catalog(tx.as_mut()).await;
+            closed_delta(&baseline.catalog.1, &installed_catalog.1);
+            assert_eq!(
+                capture(tx.as_mut(), CAPTURE).await.sha256,
+                CLOSED73[variant]
+            );
+            bounded_outputs_equal(
+                tx.as_mut(),
+                CLOSED76[variant],
+                "native_org_unit.closed_perimeter_compatible",
+            )
+            .await;
+            assert_eq!(
+                catalog(tx.as_mut()).await,
+                installed_catalog,
+                "reader control changed complete closed metadata"
+            );
+            assert_eq!(rows(tx.as_mut()).await, baseline.rows);
+            assert_eq!(applied_ledger(tx.as_mut()).await, baseline.ledger);
+            assert_eq!(
+                added_three_denied_rights(tx.as_mut()).await,
+                baseline.denied
+            );
+            relation_and_schema_closure(tx.as_mut(), true).await;
+        })
+        .catch_unwind()
+        .await;
+        tx.rollback().await.unwrap();
+        connection.close().await.unwrap();
+        restored(&pool, &baseline, variant).await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn bounded_reader_plain_full_output_and_rights_equal(pool: PgPool) {
+        bounded_reader_equivalence(pool, 0).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn bounded_reader_observer_full_output_and_rights_equal(pool: PgPool) {
+        bounded_reader_equivalence(pool, 1).await;
     }
 
     include!("native_org_unit_closed_serving.rs");

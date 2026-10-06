@@ -3,6 +3,8 @@
 // This is catalog serving admission, not a seeded or UI-created business journey.
 const SERVING_APP_CLOSED_STATE: &str =
     include_str!("../../src/native_org_unit_closed_perimeter_v1_custody_state.sql");
+const SERVING_APP_BOUNDED_CLOSED_STATE: &str =
+    include_str!("../../src/native_org_unit_closed_perimeter_v1_bounded_custody_state.sql");
 
 fn serving_pins() {
     pins();
@@ -10,6 +12,21 @@ fn serving_pins() {
     assert_eq!(
         digest(SERVING_APP_CLOSED_STATE),
         "670564ce4a107746d8f50d316014b4aca763af0335d9c38a01fcfa23ec9e46dc"
+    );
+    assert_eq!(BOUNDED_CLOSED_STATE, SERVING_APP_BOUNDED_CLOSED_STATE);
+    assert_eq!(
+        digest(SERVING_APP_BOUNDED_CLOSED_STATE),
+        "66ace47fbfeacbd8df3330e6caf9ae2bf28d44191bf9a347bd3a0a986f8f2ee8"
+    );
+    const BEFORE: &str = "), snapshots AS (\n";
+    const AFTER: &str = "), snapshots AS MATERIALIZED (\n";
+    assert_eq!(SERVING_APP_CLOSED_STATE.matches(BEFORE).count(), 2);
+    assert_eq!(SERVING_APP_CLOSED_STATE.matches(AFTER).count(), 0);
+    assert_eq!(SERVING_APP_BOUNDED_CLOSED_STATE.matches(AFTER).count(), 2);
+    assert_eq!(SERVING_APP_BOUNDED_CLOSED_STATE.matches(BEFORE).count(), 0);
+    assert_eq!(
+        SERVING_APP_BOUNDED_CLOSED_STATE.replace(AFTER, BEFORE),
+        SERVING_APP_CLOSED_STATE
     );
 }
 

@@ -291,3 +291,15 @@ export_file(
     name = "postgres-capture-native-org-unit-account-actor-group83-v1-custody.sql",
     visibility = ["PUBLIC"],
 )
+
+# Reviewed opt-in bounded Organization reader inputs; historical exports retained.
+
+export_file(
+    name = "postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
