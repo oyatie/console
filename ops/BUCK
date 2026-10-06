@@ -303,3 +303,14 @@ export_file(
     name = "postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql",
     visibility = ["PUBLIC"],
 )
+
+# Actual complete native Account-actor capture query inputs.
+export_file(
+    name = "native-org-unit/account-actor-custody-capture-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
