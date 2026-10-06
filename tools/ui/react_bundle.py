@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -135,8 +136,87 @@ def declared_inputs(path):
     return inputs, lock
 
 
+def normalized_path(value):
+    if not isinstance(value, (str, Path)) or not str(value):
+        raise ValueError("Invalid React resolution path")
+    if ".." in Path(value).parts:
+        raise ValueError("Parent traversal in React resolution path")
+    return Path(os.path.abspath(value))
+
+
+def validate_metafile(path, workspace, sources, packages, outputs, entry):
+    meta = load(path)
+    if not closed(meta, ["inputs", "outputs"]) or any(
+            not isinstance(meta[key], dict) or not meta[key] for key in ["inputs", "outputs"]):
+        raise ValueError("Missing React resolution closure")
+    inputs = {normalized_path(name): row for name, row in meta["inputs"].items()}
+    emitted = {normalized_path(name).resolve(strict=True): row for name, row in meta["outputs"].items()}
+    if len(inputs) != len(meta["inputs"]) or len(emitted) != len(meta["outputs"]) or set(emitted) != set(outputs):
+        raise ValueError("React resolution output identity mismatch")
+    for name in inputs:
+        actual = name.resolve(strict=True)
+        if not actual.is_file() or not (sources.get(name) == actual or any(
+                name.is_relative_to(staged) and actual.is_relative_to(archive)
+                for staged, archive in packages.items())):
+            raise ValueError("Undeclared React resolution input")
+    for rows in [inputs, emitted]:
+        for row in rows.values():
+            if not isinstance(row, dict) or type(row.get("bytes")) is not int or row["bytes"] < 0 or not isinstance(row.get("imports"), list):
+                raise ValueError("Invalid React resolution metadata")
+            for edge in row["imports"]:
+                if not isinstance(edge, dict) or edge.get("external", False) is not False or not isinstance(edge.get("kind"), str) or not edge["kind"]:
+                    raise ValueError("External or invalid React import edge")
+                if normalized_path(edge.get("path")) not in inputs:
+                    raise ValueError("React import edge leaves declared closure")
+    for row in emitted.values():
+        contributions = row.get("inputs")
+        if not isinstance(contributions, dict) or any(
+                normalized_path(name) not in inputs or not isinstance(value, dict)
+                or type(value.get("bytesInOutput")) is not int or value["bytesInOutput"] < 0
+                for name, value in contributions.items()):
+            raise ValueError("Invalid React output input closure")
+    expected_entry = workspace / "src" / entry
+    if expected_entry not in inputs or normalized_path(emitted[outputs[0]].get("entryPoint")) != expected_entry:
+        raise ValueError("React resolution entry identity mismatch")
+
+
+def validate_resolution(args, inputs, lock):
+    try:
+        workspace = normalized_path(args.workspace)
+        declared = load(args.packages)
+        names = [package["name"] for package in lock["packages"]]
+        if any(not isinstance(name, str) or not re.fullmatch(r"(?:@[a-z0-9._-]+/)?[a-z0-9._-]+", name) for name in names):
+            raise ValueError("Invalid locked React package name")
+        names = {name for name in names if not name.startswith("@esbuild/")}
+        if not names or not closed(declared, names):
+            raise ValueError("React package roots differ from dependency lock")
+        packages = {}
+        for name, archive in declared.items():
+            staged = workspace / "node_modules" / name
+            actual = normalized_path(archive).resolve(strict=True)
+            if not actual.is_dir() or staged.resolve(strict=True) != actual:
+                raise ValueError("React staged package root identity mismatch")
+            packages[staged] = actual
+        sources = {}
+        prefix = CLIENT + "/src/"
+        for name, source in inputs.items():
+            if name.startswith(prefix):
+                staged = normalized_path(workspace / "src" / name[len(prefix):])
+                if not staged.is_relative_to(workspace / "src"):
+                    raise ValueError("Invalid declared React source path")
+                sources[staged] = source.resolve(strict=True)
+        output = {name: (args.compiled / name).resolve(strict=True) for name in OUTPUTS}
+        validate_metafile(args.runtime_metafile, workspace, sources, packages,
+                          [output["people.js"], output["people.css"]], "people.tsx")
+        validate_metafile(args.guard_metafile, workspace, sources, packages,
+                          [output["people-guard.js"]], "people-guard.ts")
+    except (OSError, RuntimeError, KeyError, TypeError) as error:
+        raise ValueError("Missing or invalid React resolution inputs") from error
+
+
 def record_bundle(args):
     inputs, lock = declared_inputs(args.inputs)
+    validate_resolution(args, inputs, lock)
     tools = {"node": file_hash(args.node), "esbuild": file_hash(args.esbuild)}
     hosts = [host for host, pin in lock["hosts"].items()
              if all(tools[tool] == pin[tool]["executable_sha256"] for tool in tools)]
@@ -175,7 +255,8 @@ def publish(candidate, root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=["record", "validate", "publish", "generate"])
-    for name in ["inputs", "compiled", "node", "esbuild", "out-dir", "candidate", "committed", "root"]:
+    for name in ["inputs", "compiled", "node", "esbuild", "out-dir", "candidate", "committed", "root",
+                 "workspace", "packages", "runtime-metafile", "guard-metafile"]:
         parser.add_argument("--" + name, type=Path)
     args = parser.parse_args()
     if args.mode == "record":

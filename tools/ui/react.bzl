@@ -42,12 +42,15 @@ def _bundle_impl(ctx):
     javascript = ctx.actions.declare_output("people.js")
     stylesheet = ctx.actions.declare_output("people.css")
     guard = ctx.actions.declare_output("people-guard.js")
+    runtime_metafile = ctx.actions.declare_output("people.meta.json")
+    guard_metafile = ctx.actions.declare_output("people-guard.meta.json")
     common = cmd_args(ctx.attrs.esbuild[RunInfo], "--bundle", "--minify", "--platform=browser",
                       "--target=es2022", "--preserve-symlinks", "--legal-comments=inline",
                       cmd_args(workspace, format = "--tsconfig={}/tsconfig.json"))
     ctx.actions.run(
         cmd_args(common, cmd_args(workspace, format = "{}/src/people.tsx"), "--format=esm", "--jsx=automatic",
                  '--define:process.env.NODE_ENV="production"',
+                 cmd_args("--metafile=", runtime_metafile.as_output(), delimiter = ""),
                  cmd_args("--outfile=", javascript.as_output(), delimiter = ""), hidden = [stylesheet.as_output()]),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
         category = "react_bundle",
@@ -55,6 +58,7 @@ def _bundle_impl(ctx):
     )
     ctx.actions.run(
         cmd_args(common, cmd_args(workspace, format = "{}/src/people-guard.ts"), "--format=iife",
+                 cmd_args("--metafile=", guard_metafile.as_output(), delimiter = ""),
                  cmd_args("--outfile=", guard.as_output(), delimiter = "")),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
         category = "react_bundle",
@@ -67,9 +71,15 @@ def _bundle_impl(ctx):
         "typecheck.tsbuildinfo": ctx.attrs.typecheck,
     })
     inputs = ctx.actions.write_json("inputs.json", ctx.attrs.inputs, with_inputs = True)
+    packages = ctx.actions.write_json("packages.json", {
+        name: dep[DefaultInfo].default_outputs[0]
+        for name, dep in ctx.attrs.packages.items()
+    }, with_inputs = True)
     output = ctx.actions.declare_output("bundle", dir = True)
     ctx.actions.run(
         cmd_args(ctx.attrs._python[RunInfo], ctx.attrs._helper, "record", "--inputs", inputs,
+                 "--workspace", workspace, "--packages", packages,
+                 "--runtime-metafile", runtime_metafile, "--guard-metafile", guard_metafile,
                  "--compiled", compiled, "--node", ctx.attrs.node[DefaultInfo].default_outputs[0],
                  "--esbuild", ctx.attrs.esbuild[DefaultInfo].default_outputs[0], "--out-dir", output.as_output()),
         category = "react_record",
