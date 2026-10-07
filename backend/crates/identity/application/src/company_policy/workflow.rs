@@ -33,6 +33,7 @@ enum NativePolicyFamily {
     Payroll,
     People,
     OrgUnit,
+    CompanyInformation,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,6 +97,13 @@ impl NativePolicyCommandRef {
                 action: None,
             },
             NativePolicyCommand::People(command) => Self::from_people_command(&command),
+            NativePolicyCommand::CompanyInformation(command) => Self {
+                company: command.company(),
+                command_id: command.command_id(),
+                operation: command.operation(),
+                family: NativePolicyFamily::CompanyInformation,
+                action: None,
+            },
             NativePolicyCommand::OrgUnit(command) => Self {
                 company: command.company(),
                 command_id: command.command_id(),
@@ -121,6 +129,7 @@ impl NativePolicyCommandRef {
             NativePolicyFamily::Payroll => 1,
             NativePolicyFamily::People => 2,
             NativePolicyFamily::OrgUnit => 3,
+            NativePolicyFamily::CompanyInformation => 4,
         }
     }
 
@@ -129,6 +138,7 @@ impl NativePolicyCommandRef {
             NativePolicyFamily::Payroll => &super::business::MANIFEST,
             NativePolicyFamily::People => &super::people_business::MANIFEST,
             NativePolicyFamily::OrgUnit => &super::org_unit_business::MANIFEST,
+            NativePolicyFamily::CompanyInformation => &super::company_information::MANIFEST,
         }
     }
 
@@ -140,8 +150,10 @@ impl NativePolicyCommandRef {
     }
 
     fn action_resolved(&self) -> bool {
-        self.family == NativePolicyFamily::Payroll
-            || self.operation == NativeBusinessOperationV1::Install
+        matches!(
+            self.family,
+            NativePolicyFamily::Payroll | NativePolicyFamily::CompanyInformation
+        ) || self.operation == NativeBusinessOperationV1::Install
             || self.action.is_some()
     }
 
@@ -173,14 +185,16 @@ impl NativePolicyCommandRef {
     }
 }
 
-// Codec availability is not store activation. Keep OrgUnit closed for every
-// store implementation until its owning transactions are independently admitted.
+// Codec availability is not store activation. Keep OrgUnit and Company-information
+// closed for every store until their owning transactions are independently admitted.
 fn ensure_active_policy_family(
     selector: NativePolicyCommandRef,
 ) -> Result<(), NativePolicyWorkflowError> {
     match selector.family {
         NativePolicyFamily::Payroll | NativePolicyFamily::People => Ok(()),
-        NativePolicyFamily::OrgUnit => Err(NativePolicyWorkflowError::Unavailable),
+        NativePolicyFamily::OrgUnit | NativePolicyFamily::CompanyInformation => {
+            Err(NativePolicyWorkflowError::Unavailable)
+        }
     }
 }
 

@@ -470,7 +470,10 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
                 let stable_key = match input {
                     NativePolicyCommand::Payroll(_) => "pay_run",
                     NativePolicyCommand::People(_) => "person",
-                    NativePolicyCommand::OrgUnit(_) => return Err(Error::Unavailable),
+                    NativePolicyCommand::OrgUnit(_)
+                    | NativePolicyCommand::CompanyInformation(_) => {
+                        return Err(Error::Unavailable);
+                    }
                 };
                 match effect {
                     NativePolicyEffect::Installed { object_type_id } => self.append_audit(trace,
@@ -652,7 +655,9 @@ fn accept_payload(accepted: &rows::Accepted, session: Uuid) -> Result<Value, Err
                 NativeBusinessOperationV1::Revoke => "RevokePeopleDirectoryV1",
             },
         ),
-        NativePolicyCommand::OrgUnit(_) => return Err(Error::Unavailable),
+        NativePolicyCommand::OrgUnit(_) | NativePolicyCommand::CompanyInformation(_) => {
+            return Err(Error::Unavailable);
+        }
     };
     let mut payload = json!({ "protocol": protocol, "command_id": input.command_id(),
         "intake_receipt_id": accepted.view.intake_receipt_id, "operation": operation,

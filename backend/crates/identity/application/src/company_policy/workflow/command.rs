@@ -6,6 +6,7 @@ use super::super::{
         self, NativeBusinessOperationV1, NativeCompanyBusinessCommandV1,
         PolicyAssignmentExpectationV1,
     },
+    company_information::{self, NativeCompanyInformationCommandV1},
     org_unit_business::{self, NativeOrgUnitPolicyCommandV1},
     people_business::{self, NativePeoplePolicyCommandV1},
 };
@@ -18,6 +19,7 @@ pub enum NativePolicyCommand {
     Payroll(NativeCompanyBusinessCommandV1),
     People(NativePeoplePolicyCommandV1),
     OrgUnit(NativeOrgUnitPolicyCommandV1),
+    CompanyInformation(NativeCompanyInformationCommandV1),
 }
 
 impl From<NativeCompanyBusinessCommandV1> for NativePolicyCommand {
@@ -56,6 +58,18 @@ impl From<&NativeOrgUnitPolicyCommandV1> for NativePolicyCommand {
     }
 }
 
+impl From<NativeCompanyInformationCommandV1> for NativePolicyCommand {
+    fn from(input: NativeCompanyInformationCommandV1) -> Self {
+        Self::CompanyInformation(input)
+    }
+}
+
+impl From<&NativeCompanyInformationCommandV1> for NativePolicyCommand {
+    fn from(input: &NativeCompanyInformationCommandV1) -> Self {
+        Self::CompanyInformation(input.clone())
+    }
+}
+
 impl From<&NativePolicyCommand> for NativePolicyCommand {
     fn from(input: &NativePolicyCommand) -> Self {
         input.clone()
@@ -68,6 +82,7 @@ impl NativePolicyCommand {
             Self::Payroll(_) => 1,
             Self::People(_) => 2,
             Self::OrgUnit(_) => 3,
+            Self::CompanyInformation(_) => 4,
         }
     }
 
@@ -76,6 +91,7 @@ impl NativePolicyCommand {
             Self::Payroll(_) => "native-payroll-collection-read-v1",
             Self::People(_) => "native-people-directory-v1",
             Self::OrgUnit(_) => "native-org-unit-work-v1",
+            Self::CompanyInformation(_) => "native-company-identity-2026-09-19.1",
         }
     }
 
@@ -84,6 +100,7 @@ impl NativePolicyCommand {
             Self::Payroll(_) => &business::MANIFEST,
             Self::People(_) => &people_business::MANIFEST,
             Self::OrgUnit(_) => &org_unit_business::MANIFEST,
+            Self::CompanyInformation(_) => &company_information::MANIFEST,
         }
     }
 
@@ -92,6 +109,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.command_id(),
             Self::People(input) => input.command_id(),
             Self::OrgUnit(input) => input.command_id(),
+            Self::CompanyInformation(input) => input.command_id(),
         }
     }
 
@@ -100,6 +118,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.company(),
             Self::People(input) => input.company(),
             Self::OrgUnit(input) => input.company(),
+            Self::CompanyInformation(input) => input.company(),
         }
     }
 
@@ -108,6 +127,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.expected_company_epoch(),
             Self::People(input) => input.expected_company_epoch(),
             Self::OrgUnit(input) => input.expected_company_epoch(),
+            Self::CompanyInformation(input) => input.expected_company_epoch(),
         }
     }
 
@@ -116,6 +136,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.operation(),
             Self::People(input) => input.operation(),
             Self::OrgUnit(input) => input.operation(),
+            Self::CompanyInformation(input) => input.operation(),
         }
     }
 
@@ -124,6 +145,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.recipient_account_id(),
             Self::People(input) => input.recipient_account_id(),
             Self::OrgUnit(input) => input.recipient_account_id(),
+            Self::CompanyInformation(input) => input.recipient_account_id(),
         }
     }
 
@@ -132,6 +154,8 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.assignment_expectation(),
             Self::People(input) => input.assignment_expectation(),
             Self::OrgUnit(input) => input.assignment_expectation(),
+            // Codec 4 carries an exact child ref without a legacy role revision.
+            Self::CompanyInformation(_) => None,
         }
     }
 
@@ -140,6 +164,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.expires_at(),
             Self::People(input) => input.expires_at(),
             Self::OrgUnit(input) => input.expires_at(),
+            Self::CompanyInformation(input) => input.expires_at(),
         }
     }
 
@@ -148,6 +173,7 @@ impl NativePolicyCommand {
             Self::Payroll(input) => input.encode(actor),
             Self::People(input) => input.encode(actor),
             Self::OrgUnit(input) => input.encode(actor),
+            Self::CompanyInformation(input) => input.encode(actor),
         }
     }
 
@@ -159,6 +185,8 @@ impl NativePolicyCommand {
                 .map(|(actor, input)| (actor, Self::People(input))),
             3 => NativeOrgUnitPolicyCommandV1::decode(bytes)
                 .map(|(actor, input)| (actor, Self::OrgUnit(input))),
+            4 => NativeCompanyInformationCommandV1::decode(bytes)
+                .map(|(actor, input)| (actor, Self::CompanyInformation(input))),
             _ => Err(business::invalid()),
         }
     }
