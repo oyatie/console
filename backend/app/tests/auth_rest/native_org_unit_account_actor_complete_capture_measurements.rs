@@ -2701,6 +2701,17 @@ CREATE EXTENSION IF NOT EXISTS file_fdw;
 CREATE SERVER org_column_v3_server FOREIGN DATA WRAPPER file_fdw;
 CREATE FOREIGN TABLE org_column_v3_probe.foreign_source ("값" integer) SERVER org_column_v3_server OPTIONS (filename '/dev/null', format 'csv');"#)
                         .execute(&mut *connection).await.unwrap();
+                    let mut fixture_business = business.clone();
+                    for identity in [
+                        r#"["org_column_v3_probe","source"]"#,
+                        r#"["org_column_v3_probe","partitioned_source"]"#,
+                    ] {
+                        assert!(
+                            fixture_business.insert(identity.into(), "[]".into()).is_none(),
+                            "fixture business identity must be absent from original census"
+                        );
+                    }
+                    assert_eq!(complete_business(connection, false).await, fixture_business);
                     let raw: String = sqlx::query_scalar(r#"SELECT jsonb_agg(jsonb_build_object('tuple',jsonb_build_array('pg_catalog.pg_class'::regclass::oid::text,c.oid::text,a.attnum::integer),
  'native',jsonb_build_object('type',ident.type,'object_names',to_jsonb(ident.object_names),'object_args',to_jsonb(ident.object_args))) ORDER BY c.oid)::text
 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
@@ -2844,7 +2855,7 @@ WHERE c.oid='pg_catalog.pg_class_oid_index'::regclass AND c.relkind='i'
                         if let Err(panic)=trial { std::panic::resume_unwind(panic); }
                     }
                     assert_eq!(applied_ledger(connection).await,ledger);
-                    assert_eq!(complete_business(connection,false).await,business);
+                    assert_eq!(complete_business(connection,false).await,fixture_business);
                     observation = Some((source, baseline));
                 }).catch_unwind().await;
                 sqlx::raw_sql(

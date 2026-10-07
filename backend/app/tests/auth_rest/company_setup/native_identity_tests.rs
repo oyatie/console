@@ -12,8 +12,12 @@ mod metadata;
 #[path = "native_identity_migration_tests.rs"]
 mod migration;
 
-use birth::{identity_graph_matches, identity_rows};
-use effect::{assert_native_catalog_content, assert_only_pending_company_intake};
+#[path = "native_birth_oracles.rs"]
+mod birth_oracles;
+use birth_oracles::{
+    assert_native_catalog_content, identity_digests_match, identity_graph_matches, identity_rows,
+};
+use effect::assert_only_pending_company_intake;
 use metadata::{identity_catalog_contract, identity_catalog_matches, identity_catalog_observation};
 
 #[path = "native_topology_metadata_tests.rs"]
