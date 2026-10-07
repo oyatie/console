@@ -8174,9 +8174,221 @@ def native_company_information_manager_current_capture_files():
     }
 
 
+# Finite COMPANY_INFORMATION_MANAGER_CURRENT_POLICY_V1 successor only. These
+# reviewed observations do not broaden any historical profile or capture.
+NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_POLICY_V1_PHASE_PAIRS = (
+    ('plain', NATIVE_POLICY_FINALIZED_SHA256[0],
+     '20cac016d6cab101839b5689ecae0372dfb834d40184e445cd9ba73eabb85964',
+     'c68aa085e01610c25db30ddc9c10ef5c49a73199173f17471dbbbc0e324c10ed'),
+    ('observer', NATIVE_POLICY_FINALIZED_SHA256[1],
+     '9c528d7d3bc708611b49cca19a4eab84c85b36da67959910a6b30d6b79dfd6f4',
+     'eeef509f4e443a6ead4b8be28a5591f32b5ba33a097d2b4389b0482bfe806812'),
+)
+
+
+def native_company_information_manager_current_policy_v1_state_query(capture):
+    pairs = NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_POLICY_V1_PHASE_PAIRS
+    digests = [value for row in pairs for value in row[1:]]
+    if (len(pairs) != 2 or [row[0] for row in pairs] != ['plain', 'observer']
+            or any(len(row) != 4 for row in pairs) or len(set(digests)) != 6
+            or tuple(row[1] for row in pairs) != NATIVE_POLICY_FINALIZED_SHA256
+            or any(len(value) != 64 or any(c not in '0123456789abcdef' for c in value)
+                   for value in digests)):
+        raise SystemExit('Company-information Manager requires exact paired PolicyV1 captures')
+    prior = native_company_policy_state_query()
+    if not prior.endswith(' AS state'):
+        raise ValueError('Company-information Manager PolicyV1 classifier boundary drift')
+    prior = prior.removesuffix(' AS state') + (
+        ' AS state,(SELECT snapshot_sha256 FROM native_profile) AS snapshot_sha256')
+    routines = (
+        ('public.identity_company_information_group_lock_v1(uuid,uuid)', 'console_app', False),
+        ('public.identity_company_information_selected_lock_v1(uuid,uuid)', 'console_app', False),
+        ('public.identity_company_information_root_material_v1(uuid,uuid)', 'console_account_owner', False),
+        ('public.identity_company_information_manager_current_v1(uuid,uuid,uuid,uuid,uuid)', 'console_account_owner', True),
+    )
+    declared = native_org_unit_closed_values([(identity, owner, int(runtime))
+                                              for identity, owner, runtime in routines])
+    return f"""-- Generated finite Manager PolicyV1 serving classifier; read-only.
+-- The frozen full capture binds body/ABI/config/default ACLs and inherited
+-- metadata; independent rights and the exact routine namespace are mandatory.
+WITH manager_profile AS MATERIALIZED (
+{capture}
+), predecessor AS MATERIALIZED (
+{prior}
+), phase_pairs(variant,predecessor,empty_extension,successor) AS (
+{native_org_unit_closed_values(pairs)}
+), manager_namespace AS MATERIALIZED (
+ SELECT p.* FROM pg_catalog.pg_proc p
+ WHERE starts_with(p.proname,'identity_company_information_')
+), declared(identity,owner_name,runtime_execute) AS (
+{declared}
+), manager_routines_valid AS (
+ SELECT (SELECT count(*)=4 FROM manager_namespace)
+  AND count(*)=4 AND count(DISTINCT p.oid)=4
+  AND bool_and((p.oid IS NOT NULL AND n.nspname='public'
+   AND p.prokind='f' AND p.prosecdef AND p.proretset
+   AND p.provolatile='v' AND p.proparallel='u' AND NOT p.proleakproof
+   AND pg_catalog.pg_get_userbyid(p.proowner)=d.owner_name
+   AND p.proacl IS NOT NULL
+   AND (SELECT count(*)=CASE WHEN d.runtime_execute=1 THEN 2 ELSE 1 END
+       AND bool_and(a.grantor=p.proowner AND a.privilege_type='EXECUTE'
+        AND NOT a.is_grantable AND (pg_catalog.pg_get_userbyid(a.grantee)='console_account_owner'
+         OR (d.runtime_execute=1 AND pg_catalog.pg_get_userbyid(a.grantee)='console_rt')))
+       FROM pg_catalog.aclexplode(p.proacl) a)
+   AND pg_catalog.has_function_privilege(
+       (SELECT oid FROM pg_catalog.pg_roles WHERE rolname='console_account_owner'),p.oid,'EXECUTE')
+   AND pg_catalog.has_function_privilege(
+       (SELECT oid FROM pg_catalog.pg_roles WHERE rolname='console_rt'),p.oid,'EXECUTE')
+       IS NOT DISTINCT FROM (d.runtime_execute=1)) IS TRUE) IS TRUE AS valid
+ FROM declared d LEFT JOIN manager_namespace p ON p.oid=pg_catalog.to_regprocedure(d.identity)
+ LEFT JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+), matching_phase AS (
+ SELECT p.variant,p.successor,'company_information_manager_current_policy_v1.finalized'::text AS phase
+ FROM phase_pairs p CROSS JOIN manager_profile m
+ WHERE m.snapshot_sha256=p.successor AND m.native_policy_startup_rights_valid IS TRUE
+  AND (SELECT valid FROM manager_routines_valid) IS TRUE
+ UNION ALL
+ SELECT p.variant,p.successor,'company_information_manager_current_policy_v1.install_required'::text AS phase
+ FROM phase_pairs p CROSS JOIN manager_profile m CROSS JOIN predecessor prior
+ WHERE NOT EXISTS(SELECT 1 FROM manager_namespace)
+  AND prior.state='native_company_policy.finalized' AND prior.snapshot_sha256=p.predecessor
+  AND m.snapshot_sha256=p.empty_extension AND m.native_policy_startup_rights_valid IS TRUE
+)
+SELECT CASE WHEN (SELECT count(*) FROM matching_phase)=1
+ THEN (SELECT matching_phase.phase FROM matching_phase)
+ WHEN EXISTS(SELECT 1 FROM manager_namespace)
+ THEN 'company_information_manager_current_policy_v1.profile_mismatch'
+ ELSE 'company_information_manager_current_policy_v1.absent' END AS state;
+"""
+
+
+def native_company_information_manager_current_policy_v1_finalizer_sql(query, source, migrations):
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS))
+    if len(names) != 61 or len(set(names)) != 61:
+        raise ValueError('Company-information Manager PolicyV1 relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    required = native_org_unit_closed_values([(name,) for name in names])
+    inspect = ('SELECT classified.state,classified.variant,classified.successor\n'
+               ' INTO phase,variant_name,successor FROM (\n'
+               + query.removesuffix(' AS state;\n')
+               + ' AS state,(SELECT variant FROM matching_phase) AS variant,'
+                 '(SELECT matching_phase.successor FROM matching_phase) AS successor\n) classified;')
+    if not query.endswith(' AS state;\n') or any(delimiter in source for delimiter in (
+            '$company_information_manager_current_source$', '$company_information_manager_current_custody$')):
+        raise ValueError('Company-information Manager finalizer embedding boundary drift')
+    ledger = f"""IF (WITH expected_migrations(version,checksum) AS (
+{native_org_unit_closed_values(migrations)}
+ ) SELECT count(*)=231 AND bool_and(e.version IS NOT NULL AND m.version IS NOT NULL
+    AND m.success IS TRUE AND (encode(m.checksum,'hex')=e.checksum) IS TRUE) IS TRUE
+   FROM expected_migrations e FULL JOIN public._sqlx_migrations m ON m.version=e.version) IS NOT TRUE THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.migration_ledger_mismatch'; END IF;"""
+    return f"""-- Generated atomic COMPANY_INFORMATION_MANAGER_CURRENT_POLICY_V1 upgrade.
+-- UNINSTALLED until independent source/SQL/DB/serving qualification.
+-- The separately authenticated operator transport verifies TLS and exact
+-- operator/database OID/system identifier, retains one transaction through
+-- confirmed COMMIT, owns the schema/role maintenance lease and locks the actual
+-- console_account_owner pg_authid row FOR UPDATE, as trusted caller custody.
+-- This SQL acquires ledger SHARE and exact PolicyV1 relation locks. It cannot
+-- prove the caller's role-row lock or exclusion of other-role/namespace/ACL
+-- writers; production transport dispatch/custody qualification remains open.
+DO $company_information_manager_current_custody$
+DECLARE phase text; variant_name text; successor text; expected_variant text;
+ expected_successor text; relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user IS DISTINCT FROM current_user OR NOT EXISTS(
+    SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+  OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+   'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+   'console_platform_force_cmd','console_account_owner','console_terms_owner','console_credential_owner',
+   'console_durability_observer') THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation') IS DISTINCT FROM 'read committed'
+  OR pg_catalog.current_setting('search_path') NOT IN ('pg_catalog,pg_temp','pg_catalog, pg_temp')
+  OR pg_catalog.current_setting('jit') IS DISTINCT FROM 'off'
+  OR (SELECT setting::bigint BETWEEN 1 AND 60000 FROM pg_catalog.pg_settings
+      WHERE name='statement_timeout') IS NOT TRUE
+  OR (SELECT setting::bigint BETWEEN 1 AND 5000 FROM pg_catalog.pg_settings
+      WHERE name='lock_timeout') IS NOT TRUE THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.entry_settings_mismatch'; END IF;
+ PERFORM pg_catalog.set_config('lock_timeout','1s',true);
+ IF (SELECT count(*)=1 AND bool_and(c.relkind='r' AND NOT c.relispartition
+      AND pg_catalog.pg_get_userbyid(c.relowner)='console_app') IS TRUE
+     FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+     WHERE n.nspname='public' AND c.relname='_sqlx_migrations') IS NOT TRUE THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.migration_ledger_mismatch'; END IF;
+ LOCK TABLE ONLY public._sqlx_migrations IN SHARE MODE;
+ {ledger}
+ IF (WITH required_relations(name) AS (
+{required}
+ ) SELECT count(*)=61 AND count(DISTINCT c.oid)=61
+    AND bool_and(c.relkind='r' AND NOT c.relispartition) IS TRUE
+   FROM required_relations required LEFT JOIN pg_catalog.pg_namespace n ON n.nspname='public'
+   LEFT JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid AND c.relname=required.name) IS NOT TRUE THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.profile_mismatch'; END IF;
+ FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c
+  JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind='r' AND c.relname IN ({literals}) ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ IF locked_relations<>61 THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.relation_locks_missing'; END IF;
+ {inspect}
+ IF phase='company_information_manager_current_policy_v1.finalized'
+  AND variant_name IS NOT NULL AND successor IS NOT NULL THEN RETURN; END IF;
+ IF phase IS DISTINCT FROM 'company_information_manager_current_policy_v1.install_required'
+  OR variant_name IS NULL OR successor IS NULL THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.predecessor_mismatch'; END IF;
+ expected_variant:=variant_name; expected_successor:=successor;
+ EXECUTE $company_information_manager_current_source${source}$company_information_manager_current_source$;
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF phase IS DISTINCT FROM 'company_information_manager_current_policy_v1.finalized'
+  OR variant_name IS DISTINCT FROM expected_variant OR successor IS DISTINCT FROM expected_successor THEN
+  RAISE EXCEPTION 'company_information_manager_current_policy_v1.profile_mismatch'; END IF;
+ {ledger}
+END
+$company_information_manager_current_custody$;
+"""
+
+
+def native_company_information_manager_current_serving_custody_files():
+    frozen = native_company_information_manager_current_capture_files()
+    for name, expected in frozen.items():
+        if company_provenance_regular_path(name, required=True).read_bytes() != expected.encode():
+            raise SystemExit('Company-information Manager frozen capture/owner differs: ' + name)
+    ledger = company_provenance_regular_path('ops/account-custody-migrations.sha384', required=True).read_bytes()
+    if hashlib.sha256(ledger).hexdigest() != '42079d3f1b8077e163960adc65f35f1959c22a67bf42acf43d6b816721ba1357':
+        raise SystemExit('Company-information Manager migration ledger differs from reviewed bytes')
+    paths = sorted((ROOT / 'backend/crates/platform/db/migrations').glob('*.sql'))
+    actual = ''.join(str(int(path.name.split('_', 1)[0])) + '\t' + hashlib.sha384(
+        company_provenance_regular_path(str(path.relative_to(ROOT)), required=True).read_bytes()).hexdigest()
+        + '\n' for path in paths)
+    if actual.encode() != ledger:
+        raise SystemExit('Company-information Manager migration sources differ from reviewed bytes')
+    migrations = [(int(version), checksum) for version, checksum in
+                  (line.split('\t') for line in ledger.decode().splitlines())]
+    if [version for version, _ in migrations] != list(range(1, 232)):
+        raise SystemExit('Company-information Manager migration roster differs')
+    capture = frozen['ops/postgres-capture-company-information-manager-current-v1-custody.sql'].removesuffix(';\n')
+    query = native_company_information_manager_current_policy_v1_state_query(capture)
+    source = frozen['ops/postgres-company-information-manager-current-v1-owner.sql']
+    return {
+        'ops/postgres-finalize-company-information-manager-current-policy-v1.sql':
+            native_company_information_manager_current_policy_v1_finalizer_sql(query, source, migrations),
+        'ops/postgres-company-information-manager-current-policy-v1-custody-state.sql': query,
+        'backend/app/src/company_information_manager_current_policy_v1_custody_state.sql': query,
+    }
+
+
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-company-information-manager-current-capture'],
+    if arguments in (['--native-company-information-manager-current-serving-custody'],
+                     ['--native-company-information-manager-current-serving-custody', '--check'],
+                     ['--native-company-information-manager-current-capture'],
                      ['--native-company-information-manager-current-capture', '--check'],
                      ['--native-org-unit-closed-bounded-reader'],
                      ['--native-org-unit-closed-bounded-reader', '--check'],
@@ -8200,7 +8412,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-company-information-manager-current-capture':
+        if arguments[0] == '--native-company-information-manager-current-serving-custody':
+            files = native_company_information_manager_current_serving_custody_files()
+        elif arguments[0] == '--native-company-information-manager-current-capture':
             files = native_company_information_manager_current_capture_files()
         elif arguments[0] == '--native-org-unit-closed-bounded-reader':
             files = native_org_unit_closed_bounded_reader_files()
@@ -8237,7 +8451,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-company-information-manager-current-serving-custody | --native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
