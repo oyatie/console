@@ -1693,6 +1693,48 @@ class BrowserIntegrationVariantsTests(unittest.TestCase):
         self.assertEqual(1, len(written))
         return written[0]
 
+    def test_manager_serving_multiline_group_lock_input_reaches_auth_rest_variants(self):
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/app/tests/auth_rest/native_company_information_manager_serving_custody_tests.rs"
+        literal = "../../../../ops/native-company-information/group-lock-v1.sql"
+        relative = "ops/native-company-information/group-lock-v1.sql"
+        target = "//ops:native-company-information/group-lock-v1.sql"
+        includes = re.findall(r'include_str!\(\s*"([^"]+)"', source.read_text())
+        self.assertEqual(1, includes.count(literal), "actual multiline Manager include must be examined")
+        fixture = (source.parent / literal).resolve()
+        self.assertEqual(root / relative, fixture)
+        self.assertFalse((root / relative).is_symlink())
+        self.assertTrue(fixture.is_file())
+        self.assertEqual("daee9a6d7f2e0b1e8992c327500f0e93a9641501c467bdaddac3bfaa19fac397",
+                         hashlib.sha256(fixture.read_bytes()).hexdigest())
+
+        rules = self._target_nodes(self._render_app())
+        variants = ["console-app-itest-auth_rest", "console-app-itest-auth_rest-browser"]
+        actual = {}
+        for variant in variants:
+            mapped = rules[variant][1]["mapped_srcs"]
+            explicit = mapped.args[1].left if isinstance(mapped.args[1], ast.BinOp) else mapped.args[1]
+            self.assertIn(source.relative_to(root / "backend/app").as_posix(), ast.literal_eval(explicit))
+            external = next(keyword.value for keyword in mapped.keywords if keyword.arg == "external")
+            actual[variant] = ast.literal_eval(external).get(target)
+        self.assertEqual({variant: relative for variant in variants}, actual,
+                         "actual ordinary and browser actions must map the Manager SQL fixture")
+
+        exports = []
+        for statement in ast.parse((root / "ops/BUCK").read_text()).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id != "export_file":
+                continue
+            fields = {keyword.arg: ast.literal_eval(keyword.value) for keyword in call.keywords}
+            if fields.get("name") == "native-company-information/group-lock-v1.sql":
+                exports.append(fields)
+        self.assertEqual(1, len(exports), "Manager fixture needs exactly one native ops export")
+        self.assertEqual(["PUBLIC"], exports[0]["visibility"])
+        self.assertEqual("native-company-information/group-lock-v1.sql",
+                         exports[0].get("src", exports[0]["name"]))
+
     def test_real_app_browser_variants_clone_only_selected_native_test_targets(self):
         manifest = GENERATOR.load(Path(GENERATOR.REPO) / "backend/app")
         self.assertEqual([], manifest["features"]["test-browser"])
