@@ -4,8 +4,17 @@ use super::*;
 use futures::FutureExt;
 use std::process::Stdio;
 
-const DRIVER_SHA256: &str = "c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d";
-const HELPER_SHA256: &str = "d48aa90e0c9e8488d347198e2b8222f1c33fd109e47a2f45070e206cc3953ab7";
+#[path = "native_company_information_browser_controls.rs"]
+mod manager_controls;
+#[path = "native_company_information_browser_credentials.rs"]
+mod manager_credentials;
+#[path = "native_company_information_browser_current.rs"]
+mod manager_current;
+#[path = "native_company_information_browser_policy.rs"]
+mod manager_policy;
+
+const DRIVER_SHA256: &str = "ee8e799bd55024e2274bde98195d6a03ab564cc5b063cb70d8f445b593a3c92d";
+const HELPER_SHA256: &str = "68d5e45686d19088cb3690b1703dc8ad83f8ea1a340935ca0ff1f473c72f0b78";
 
 async fn event(reader: &mut tokio::io::BufReader<tokio::process::ChildStdout>) -> Value {
     let value = browser_owner_event(reader).await;
@@ -42,6 +51,17 @@ async fn event(reader: &mut tokio::io::BufReader<tokio::process::ChildStdout>) -
 
 #[sqlx::test(migrations = false)]
 async fn real_browser_own_reference_selects_independent_company_administrator(pool: PgPool) {
+    run_handoff_browser(pool, false).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn real_browser_company_information_manager_current_uses_actual_nonoperator_manager_without_effects(
+    pool: PgPool,
+) {
+    run_handoff_browser(pool, true).await;
+}
+
+async fn run_handoff_browser(pool: PgPool, successor: bool) {
     let original = PathBuf::from(
         std::env::var_os("CONSOLE_COMPANY_BROWSER_DRIVER")
             .expect("reviewed Company browser stage required"),
@@ -86,9 +106,19 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
             .expect("fresh Company browser output required"),
     );
     assert!(original_output.is_absolute() && !original_output.exists());
-    let output = original_output.with_file_name("account-company-handoff");
+    let output = original_output.with_file_name(if successor {
+        "company-information-manager-current"
+    } else {
+        "account-company-handoff"
+    });
     assert!(!output.exists(), "handoff browser output must be fresh");
-    prepare_ready_database(&pool).await;
+    if successor {
+        manager_credentials::pin_profile();
+        super::native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
+    } else {
+        prepare_ready_database(&pool).await;
+    }
+    let captured = manager_credentials::CapturedCookies::default();
     let artifacts = Artifacts::new();
     let key = SigningKey::random(&mut OsRng);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -99,6 +129,7 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
         .arg(&driver)
         .arg(address.port().to_string())
         .arg(&output)
+        .args(successor.then_some("company-information-manager-current"))
         .env_remove("DEBUG")
         .env_remove("PWDEBUG")
         .env_remove("NODE_DEBUG")
@@ -158,11 +189,32 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
             auth.rp_id = "localhost".to_owned();
             auth.rp_origin = origin.to_owned();
             auth.cookie_secure = true;
-            let state = AppState::from_config(config)
+            let state = AppState::from_config(config.clone())
                 .await
                 .expect("healthy actual Account/Company owner required");
             state_to_close = Some(state.clone());
+            if successor {
+                let ready = build_router(state.clone())
+                    .oneshot(
+                        Request::builder()
+                            .uri("/readyz")
+                            .body(Body::empty())
+                            .unwrap(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(
+                    ready.status(),
+                    StatusCode::OK,
+                    "actual current-policy AppState readiness prerequisite"
+                );
+            }
             let router = build_router(state);
+            let router = if successor {
+                manager_credentials::capture_router(router, captured.clone())
+            } else {
+                router
+            };
             let (stop, stopped) = tokio::sync::oneshot::channel();
             shutdown = Some(stop);
             server = Some(tokio::spawn(async move {
@@ -205,7 +257,12 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
             assert!(seen_alive, "owned browser PID must be observed alive");
             let mut previous = baseline.clone();
             let mut accounts = Vec::new();
-            for phase in ["A_ENROLLED", "O_ENROLLED"] {
+            let phases: &[&str] = if successor {
+                &["A_ENROLLED", "B_ENROLLED", "O_ENROLLED"]
+            } else {
+                &["A_ENROLLED", "O_ENROLLED"]
+            };
+            for &phase in phases {
                 let account = browser_checkpoint(&event(&mut events).await, phase);
                 assert!(
                     !accounts.contains(&account),
@@ -235,14 +292,14 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
                     &browser_business_rows(&pool).await
                 ));
                 accounts.push(account);
-                if phase == "A_ENROLLED" {
+                if phase != "O_ENROLLED" {
                     previous = enrolled;
                 }
                 checkpoints.push(phase);
                 browser_owner_continue(&mut input, phase).await;
             }
             let administrator = accounts[0];
-            let operator = accounts[1];
+            let operator = *accounts.last().unwrap();
             for (phase, state) in [
                 ("O_LOGGED_OUT", BrowserCheckpointPhase::LoggedOut),
                 ("O_LOGGED_IN", BrowserCheckpointPhase::LoggedIn),
@@ -367,6 +424,22 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
                 "reopening/denied reads changed any public table bytes"
             );
             checkpoints.push("HANDOFF_REOPENED");
+            if successor {
+                manager_current::probe(
+                    &pool,
+                    &config,
+                    &captured,
+                    administrator,
+                    accounts[1],
+                    operator,
+                    &result,
+                )
+                .await;
+                assert!(
+                    committed == all_rows(&pool).await,
+                    "manager probe changed complete handoff census"
+                );
+            }
             browser_owner_continue(&mut input, "HANDOFF_REOPENED").await;
             let final_event = event(&mut events).await;
             exact_keys(
@@ -421,7 +494,7 @@ async fn real_browser_own_reference_selects_independent_company_administrator(po
         .iter()
         .all(|(file, bytes)| std::fs::read(file).is_ok_and(|current| current == *bytes));
     let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let receipt = json!({"kind":"INDEPENDENT_REACT_ACCOUNT_COMPANY_HANDOFF_DB_CHECKPOINTS_V1",
+    let receipt = json!({"kind":if successor { "INDEPENDENT_REACT_COMPANY_INFORMATION_MANAGER_CURRENT_DB_CHECKPOINTS_V1" } else { "INDEPENDENT_REACT_ACCOUNT_COMPANY_HANDOFF_DB_CHECKPOINTS_V1" },
         "checkpoints":checkpoints,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,
         "server_shutdown":server_clean,"browser_pid":owned_pid,"browser_seen_alive":seen_alive,
         "browser_pid_exit_confirmed":browser_clean,"browser_final_alive_observation":exited,

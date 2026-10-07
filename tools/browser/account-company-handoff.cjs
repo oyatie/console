@@ -11,10 +11,11 @@ const pin={
 }[process.platform+'-'+process.arch];
 function fact(value,code){if(value!==true)throw Object.assign(new Error(code),{code});}
 function bounded(promise,ms){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Object.assign(new Error('TIMEOUT'),{code:'TIMEOUT'})),ms);})]).finally(()=>clearTimeout(timer));}
-async function main(port,out){
+async function main(port,out,mode){
+ const successor=mode==='company-information-manager-current';fact(mode===undefined||successor,'PREREQUISITE');
  fact(pin&&/^\d+$/.test(port)&&Number(port)>0&&Number(port)<=65535&&path.isAbsolute(out),'PREREQUISITE');
  fs.mkdirSync(out,{mode:0o700});
- const result={kind:'REAL_REACT_ACCOUNT_COMPANY_HANDOFF_V1',checkpoints:[],screenshots:[],documents:[],mutations:[],csrf_requests:[],observation_failures:0,external_requests:0,cleanup:{confirmed:false}};
+ const result={kind:successor?'REAL_REACT_COMPANY_INFORMATION_MANAGER_CURRENT_V1':'REAL_REACT_ACCOUNT_COMPANY_HANDOFF_V1',checkpoints:[],screenshots:[],documents:[],mutations:[],csrf_requests:[],observation_failures:0,external_requests:0,cleanup:{confirmed:false}};
  const files=['fixture.key','fixture.crt','fixture.cnf'].map(n=>path.join(out,n)),sockets=new Set();
  const emit=value=>process.stdout.write(JSON.stringify(value)+'\n');
  let relay,reader,launchPromise,cleanupPromise,finishPromise,cancelled=false,finishing=false,stage='prerequisites';
@@ -27,7 +28,7 @@ async function main(port,out){
   reader?.close();result.cleanup={confirmed:closed.confirmed&&relayClosed,browser_process_exited:closed.confirmed,relay_closed:relayClosed};
  })();}
  async function finish(){if(finishPromise)return finishPromise;finishing=true;return finishPromise=(async()=>{
-  await cleanup();result.status=!result.failure&&validEvidence(result)&&result.cleanup.confirmed?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';
+  await cleanup();result.status=!result.failure&&validEvidence(result,successor)&&result.cleanup.confirmed?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';
   fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
   emit({kind:'RESULT',status:result.status,result_path:path.join(out,'result.json'),failure_stage:result.failure?.stage??null,failure_code:result.failure?.code??null});
   process.exitCode=result.status==='BROWSER_LEAF_PASSED'?0:2;
@@ -63,11 +64,11 @@ async function main(port,out){
   stage='browser_launch';launchPromise=chromium.launchServer({headless:true,executablePath:executable,timeout:10000,env,args:['--disable-background-networking','--disable-component-update','--no-proxy-server',`--ignore-certificate-errors-spki-list=${spki}`]});
   const server=await launchPromise;result.browser_pid=server.process().pid;emit({kind:'BROWSER_OWNED',pid:result.browser_pid,executable_sha256:pin[1]});fact(!cancelled,'OWNER_REFUSED');
   const browser=await chromium.connect(server.wsEndpoint(),{timeout:10000});result.browser_version=browser.version();fact(result.browser_version==='153.0.8010.12','PREREQUISITE');
-  await runHandoff({browser,origin,result,out,emit,receive,setStage:value=>{stage=value;}});
-  fact(!result.relay_failure&&!result.tls_client_error,'TLS_RELAY_FAILED');fact(result.external_requests===0,'EXTERNAL_REQUEST');fact(validEvidence(result),'HANDOFF_EVIDENCE');
+  await runHandoff({browser,origin,result,out,emit,receive,successor,setStage:value=>{stage=value;}});
+  fact(!result.relay_failure&&!result.tls_client_error,'TLS_RELAY_FAILED');fact(result.external_requests===0,'EXTERNAL_REQUEST');fact(validEvidence(result,successor),'HANDOFF_EVIDENCE');
  }catch(error){
   const own=new Set(['ACCOUNT_REFERENCE_MISSING','ACCOUNT_REFERENCE_INVALID','SEPARATE_ADMIN_CONTROL_MISSING','ADMINISTRATOR_INPUT_INVALID','REACT_ACCOUNT_MOUNT_MISSING','HANDOFF_RECEIPT','HANDOFF_DISCLOSURE','HANDOFF_EVIDENCE']);
   result.failure??={stage,code:own.has(error?.code)?error.code:publicError(error)};
  }finally{clearTimeout(watchdog);await finish();}
 }
-if(require.main===module)main(process.argv[2],process.argv[3]).catch(()=>{process.stderr.write('Account/Company browser producer prerequisite failed; no acceptance result.\n');process.exitCode=2;});
+if(require.main===module)main(process.argv[2],process.argv[3],process.argv[4]).catch(()=>{process.stderr.write('Account/Company browser producer prerequisite failed; no acceptance result.\n');process.exitCode=2;});

@@ -4,8 +4,8 @@ use super::*;
 use futures::FutureExt;
 use std::process::Stdio;
 
-const DRIVER_SHA256: &str = "c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d";
-const HELPER_SHA256: &str = "d48aa90e0c9e8488d347198e2b8222f1c33fd109e47a2f45070e206cc3953ab7";
+const DRIVER_SHA256: &str = "ee8e799bd55024e2274bde98195d6a03ab564cc5b063cb70d8f445b593a3c92d";
+const HELPER_SHA256: &str = "68d5e45686d19088cb3690b1703dc8ad83f8ea1a340935ca0ff1f473c72f0b78";
 
 async fn event(reader: &mut tokio::io::BufReader<tokio::process::ChildStdout>) -> Value {
     let value = browser_owner_event(reader).await;
