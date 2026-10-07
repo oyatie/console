@@ -1,4 +1,15 @@
 # Exact production SQL inputs used by Account custody tests.
+# Uninstalled Manager source and read-only metadata prerequisite capture.
+export_file(
+    name = "postgres-company-information-manager-current-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-company-information-manager-current-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
 export_file(
     name = "postgres-native-company-policy-v2-owner.sql",
     visibility = ["PUBLIC"],
