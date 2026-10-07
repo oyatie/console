@@ -1,6 +1,7 @@
 // Schema/custody-only tests. No Account, Company or user business truth is created.
 use super::VerifiedCustodyProfile;
 
+#[cfg(not(feature = "test-postgres"))]
 #[test]
 fn historical_profile_capabilities_remain_exact() {
     for (profile, policy, people, directory, group, provenance) in [
@@ -415,6 +416,7 @@ mod actual_profile {
         tx.rollback().await.unwrap();
     }
 
+    #[cfg(feature = "test-postgres")]
     #[sqlx::test(migrations = false)]
     async fn actual_manager_policy_v1_verify_returns_finite_profile_without_population(
         pool: PgPool,
