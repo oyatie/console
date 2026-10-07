@@ -465,3 +465,6 @@ fn org_unit_codec3_is_unavailable_before_every_policy_store_entry() {
     }
     assert_eq!(checked, 70);
 }
+
+#[path = "native_company_information_workflow_tests.rs"]
+mod company_information_codec4_fence;
