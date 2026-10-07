@@ -211,7 +211,7 @@ fn manager_exact_routines(catalog: &Value) {
             "integer" => "23",
             _ => panic!("unreviewed type"),
         };
-        assert_eq!(raw["proargtypes"], vec!["2950"; inputs.len()].join(" "));
+        assert_eq!(raw["proargtypes"], json!(vec!["2950"; inputs.len()]));
         assert_eq!(
             raw["proallargtypes"],
             json!(
