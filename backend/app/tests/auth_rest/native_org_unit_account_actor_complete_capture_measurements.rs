@@ -2780,24 +2780,61 @@ WHERE n.nspname='org_column_v3_probe' AND c.relkind IN('r','p','f','v','m','c','
                     chosen["COLUMN_witness"]["column_count"]=json!(0);
                     chosen["inverse_tuple"]=chosen["tuple"].clone();
                     assert!(family_positive(&forged).is_err(),"copied expected inverse hid omitted lookup");
-                    for mutation in [
-                        "UPDATE pg_catalog.pg_class SET relname='renamed_column_v3' WHERE oid=$1::text::oid AND $2::integer>0",
-                        "UPDATE pg_catalog.pg_class SET relkind='r' WHERE oid=$1::text::oid AND $2::integer>0",
-                        "UPDATE pg_catalog.pg_class SET relkind='i' WHERE oid=$1::text::oid AND $2::integer>0",
-                        "UPDATE pg_catalog.pg_class SET relnamespace='pg_catalog'::regnamespace WHERE oid=$1::text::oid AND $2::integer>0",
-                        "UPDATE pg_catalog.pg_attribute SET attname='renamed_column_v3' WHERE attrelid=$1::text::oid AND attnum=$2::integer",
-                        "UPDATE pg_catalog.pg_attribute SET attisdropped=true WHERE attrelid=$1::text::oid AND attnum=$2::integer",
-                        "UPDATE pg_catalog.pg_attribute SET atttypid=0 WHERE attrelid=$1::text::oid AND attnum=$2::integer",
+                    // A genuine unsupported index supplies its own catalog/native
+                    // address. Never fabricate an index by changing a view's kind.
+                    let index_raw: String = sqlx::query_scalar(r#"SELECT jsonb_build_object(
+ 'tuple',jsonb_build_array('pg_catalog.pg_class'::regclass::oid::text,c.oid::text,a.attnum::integer),
+ 'native',jsonb_build_object('type',ident.type,'object_names',to_jsonb(ident.object_names),'object_args',to_jsonb(ident.object_args)))::text
+FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+JOIN pg_catalog.pg_index i ON i.indexrelid=c.oid AND i.indrelid='pg_catalog.pg_class'::regclass
+JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attnum=1 AND NOT a.attisdropped AND a.atttypid<>0
+CROSS JOIN LATERAL pg_catalog.pg_identify_object_as_address('pg_catalog.pg_class'::regclass::oid,c.oid,a.attnum::integer) ident
+WHERE c.oid='pg_catalog.pg_class_oid_index'::regclass AND c.relkind='i'
+ AND i.indisvalid AND i.indisready AND i.indislive AND n.nspname='pg_catalog'"#)
+                        .fetch_one(&mut *connection).await
+                        .expect("PREREQUISITE: genuine unsupported index-column catalog/native observation must execute");
+                    let index_input: Value = serde_json::from_str(&index_raw).unwrap();
+                    let mut unsupported_index = inputs.clone();
+                    unsupported_index[selected] = index_input.clone();
+                    let refused = family_inverse(connection,&unsupported_index,COLUMN_CTES,JSON_COLUMN_INPUTS).await;
+                    assert_eq!(refused.as_array().unwrap().len(),7);
+                    let e = refused.as_array().unwrap().iter().find(|e|e["tuple"]==index_input["tuple"]).unwrap();
+                    let w = &e["COLUMN_witness"];
+                    assert_eq!(w["kind"],"i");
+                    assert_eq!(w["namespace_count"],1); assert_eq!(w["relation_count"],1); assert_eq!(w["column_count"],1);
+                    assert_eq!(w["found_tuple"],index_input["tuple"]);
+                    assert_eq!(w["checks"],json!([true,true,true,false,true,true,false]));
+                    assert_eq!(e["native"],index_input["native"]);
+                    assert_eq!(e["inverse_tuple"],json!([null,null,null]));
+                    assert!(checked_column(e).is_err());
+                    for original_entry in baseline.as_array().unwrap().iter().filter(|e|e["tuple"]!=selected_tuple) {
+                        let retained = refused.as_array().unwrap().iter().find(|e|e["tuple"]==original_entry["tuple"]).unwrap();
+                        assert_eq!(retained,original_entry,"unsupported index changed another actual witness");
+                    }
+                    assert_eq!(family_raw(connection).await,saved,"unsupported index input changed raw/MVCC custody");
+                    assert_eq!(family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await,baseline);
+                    assert_eq!(source_family_observation(connection,&inputs).await,source,"unsupported index changed pinned seven-kind source observation");
+                    // Materialized views already have valid table AM/storage.
+                    // Changing only this genuine relation's kind isolates mismatch.
+                    let materialized = inputs.as_array().unwrap().iter().position(|x|x["native"]["type"]=="materialized view column").unwrap();
+                    let materialized_tuple = inputs[materialized]["tuple"].clone();
+                    for (mutation,mutation_tuple) in [
+                        ("UPDATE pg_catalog.pg_class SET relname='renamed_column_v3' WHERE oid=$1::text::oid AND $2::integer>0",&selected_tuple),
+                        ("UPDATE pg_catalog.pg_class SET relkind='r' WHERE oid=$1::text::oid AND relkind='m' AND $2::integer>0",&materialized_tuple),
+                        ("UPDATE pg_catalog.pg_class SET relnamespace='pg_catalog'::regnamespace WHERE oid=$1::text::oid AND $2::integer>0",&selected_tuple),
+                        ("UPDATE pg_catalog.pg_attribute SET attname='renamed_column_v3' WHERE attrelid=$1::text::oid AND attnum=$2::integer",&selected_tuple),
+                        ("UPDATE pg_catalog.pg_attribute SET attisdropped=true WHERE attrelid=$1::text::oid AND attnum=$2::integer",&selected_tuple),
+                        ("UPDATE pg_catalog.pg_attribute SET atttypid=0 WHERE attrelid=$1::text::oid AND attnum=$2::integer",&selected_tuple),
                     ] {
                         sqlx::raw_sql("SAVEPOINT column_catalog_control").execute(&mut *connection).await.unwrap();
                         let trial=AssertUnwindSafe(async {
                             let count=sqlx::query(sqlx::AssertSqlSafe(mutation.to_owned()))
-                                .bind(selected_tuple[1].as_str().unwrap()).bind(selected_tuple[2].as_i64().unwrap() as i32)
+                                .bind(mutation_tuple[1].as_str().unwrap()).bind(mutation_tuple[2].as_i64().unwrap() as i32)
                                 .execute(&mut *connection).await.unwrap().rows_affected();
                             assert_eq!(count,1,"exact catalog mutation admission");
                             let refused=family_inverse(connection,&inputs,COLUMN_CTES,JSON_COLUMN_INPUTS).await;
                             assert_eq!(refused.as_array().unwrap().len(),7);
-                            let e=refused.as_array().unwrap().iter().find(|e|e["tuple"]==selected_tuple).unwrap();
+                            let e=refused.as_array().unwrap().iter().find(|e|e["tuple"]==*mutation_tuple).unwrap();
                             assert!(checked_column(e).is_err()); assert_ne!(e["tuple"],e["inverse_tuple"]);
                         }).catch_unwind().await;
                         sqlx::raw_sql("ROLLBACK TO SAVEPOINT column_catalog_control; RELEASE SAVEPOINT column_catalog_control").execute(&mut *connection).await.unwrap();
@@ -2962,7 +2999,7 @@ WHERE n.nspname='org_column_v3_probe' AND c.relkind IN('r','p','f','v','m','c','
                     writeln!(&mut std::io::stderr().lock(),"ORG_COLUMN_V3_INVERSE_PREREQUISITE {}",json!({
                         "design_sha256":DESIGN,"sources":sources,"address_count":actual["address_count"],
                         "actual_seven_kind_inverse_positive":true,"actual_pinned_seven_kind_source_observation":&source_family,
-                        "evidence_only_predicate_models":true,"source_family_predicate_corruptions":58,"malformed_input_controls":16,"SQL_array_shape_controls":2,"lookup_corruption_controls":4,"actual_catalog_controls":7,
+                        "evidence_only_predicate_models":true,"source_family_predicate_corruptions":58,"malformed_input_controls":16,"SQL_array_shape_controls":2,"lookup_corruption_controls":4,"actual_catalog_controls":7,"actual_catalog_mutations":6,"actual_unsupported_index_inputs":1,
                         "all_eight_TOAST_guards_retained":true,"complete_inverse_raw_census":true,"source_flags_unchanged_by_helper":true,
                         "semantic_column_validity_accepted":false,"TOAST_map_accepted":false,"full_PSV_packet_accepted":false,
                         "database_owner_accepted":false,"MVP_accepted":false,"production_qualified":false})).unwrap();
