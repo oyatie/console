@@ -63,11 +63,12 @@ async function startStorageObserver(page,cdp,role,origin){
  return {
   positiveControl:async()=>{
    initial=await snapshot();fact(initial.local.length===0&&initial.session.length===0,'BUSINESS_STORAGE');
-   await page.evaluate(keys=>{for(const storage of [localStorage,sessionStorage]){
+   const perform=async store=>{await page.evaluate(({keys,store})=>{const storage=store==='local'?localStorage:sessionStorage;
     storage.setItem(keys.set,'observer only');storage.setItem(keys.set,'changed observer only');storage.removeItem(keys.set);
     storage[keys.property]='observer only';delete storage[keys.property];storage.setItem(keys.clear,'observer only');storage.clear();
-   }},keys);
-   await drain();fact(JSON.stringify(trace.controls)===JSON.stringify(storageControls())&&trace.product_operations===0&&trace.observation_failures===0&&JSON.stringify(await snapshot())===JSON.stringify(initial),'BUSINESS_STORAGE');
+   },{keys,store});await drain();};
+   await perform('local');fact(JSON.stringify(trace.controls)===JSON.stringify(storageControls().slice(0,7))&&trace.product_operations===0&&trace.observation_failures===0&&JSON.stringify(await snapshot())===JSON.stringify(initial),'BUSINESS_STORAGE');
+   await perform('session');fact(JSON.stringify(trace.controls)===JSON.stringify(storageControls())&&trace.product_operations===0&&trace.observation_failures===0&&JSON.stringify(await snapshot())===JSON.stringify(initial),'BUSINESS_STORAGE');
   },
   evidence:async forbidden=>{await drain();const current=await snapshot();return {role,installed_documents:installed,control_events:[...trace.controls],product_operations:trace.product_operations,observation_failures:trace.observation_failures,state_preserved:JSON.stringify(current)===JSON.stringify(initial),forbidden_snapshot_absent:storageSnapshotSafe(current,forbidden)};},
   stop:async()=>{await cdp.send('Page.removeScriptToEvaluateOnNewDocument',{identifier:script});await cdp.send('Runtime.removeBinding',{name:'__consoleHandoffStorageDocument'});await cdp.send('DOMStorage.disable');}
