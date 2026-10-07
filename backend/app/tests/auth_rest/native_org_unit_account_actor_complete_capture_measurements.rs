@@ -2887,6 +2887,138 @@ WHERE c.oid='pg_catalog.pg_class_oid_index'::regclass AND c.relkind='i'
                 )
             }
 
+            const OWNER_VIEW_ABSENT: &str = "SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname='org_column_v3_owner_probe') AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc WHERE proname='native_org_unit_column_witness_v3')";
+            const OWNER_VIEW_FIXTURE: &str = r#"CREATE SCHEMA org_column_v3_owner_probe;
+REVOKE ALL ON SCHEMA org_column_v3_owner_probe FROM PUBLIC;
+CREATE VIEW org_column_v3_owner_probe.projection AS SELECT 1::integer AS "값";
+CREATE FUNCTION org_column_v3_owner_probe.native_org_unit_column_witness_v3()
+RETURNS integer LANGUAGE sql SECURITY INVOKER
+BEGIN ATOMIC
+ SELECT "값" FROM org_column_v3_owner_probe.projection;
+END;
+REVOKE ALL ON FUNCTION org_column_v3_owner_probe.native_org_unit_column_witness_v3() FROM PUBLIC;"#;
+            const OWNER_VIEW_WITNESS: &str = r#"SELECT jsonb_build_object(
+ 'routine_tuple',jsonb_build_array('pg_catalog.pg_proc'::regclass::oid::text,p.oid::text,0),
+ 'view_tuple',jsonb_build_array('pg_catalog.pg_class'::regclass::oid::text,c.oid::text,a.attnum::integer),
+ 'native',jsonb_build_object('type',ident.type,'object_names',to_jsonb(ident.object_names),'object_args',to_jsonb(ident.object_args)),
+ 'parsed_invoker_admin',p.prosqlbody IS NOT NULL AND NOT p.prosecdef AND l.lanname='sql'
+   AND p.proowner=(SELECT oid FROM pg_catalog.pg_roles WHERE rolname=current_user),
+ 'no_PUBLIC_execute',NOT EXISTS(SELECT 1 FROM pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) acl
+   WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'),
+ 'no_nonsuper_execute',NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles r WHERE NOT r.rolsuper
+   AND pg_catalog.has_function_privilege(r.oid,p.oid,'EXECUTE')),
+ 'dependencies',(SELECT COALESCE(jsonb_agg(to_jsonb(d)||jsonb_build_object('xmin',d.xmin::text,'ctid',d.ctid::text)
+   ORDER BY to_jsonb(d)::text COLLATE "C",d.ctid),'[]'::jsonb)
+   FROM pg_catalog.pg_depend d WHERE d.classid='pg_catalog.pg_proc'::regclass AND d.objid=p.oid AND d.objsubid=0
+    AND d.refclassid='pg_catalog.pg_class'::regclass AND d.refobjid=c.oid AND d.refobjsubid=a.attnum))::text
+FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid
+JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attnum=1 AND NOT a.attisdropped AND a.atttypid<>0
+JOIN pg_catalog.pg_proc p ON p.pronamespace=n.oid AND p.proname='native_org_unit_column_witness_v3'
+ AND p.prokind='f' AND p.pronargs=0
+JOIN pg_catalog.pg_language l ON l.oid=p.prolang
+CROSS JOIN LATERAL pg_catalog.pg_identify_object_as_address('pg_catalog.pg_class'::regclass::oid,c.oid,a.attnum::integer) ident
+WHERE n.nspname='org_column_v3_owner_probe' AND c.relname='projection' AND c.relkind='v'"#;
+
+            async fn owner_view_observation(
+                connection: &mut PgConnection,
+                original_audit: &Value,
+            ) -> Value {
+                let before = catalog(connection).await;
+                let ledger = applied_ledger(connection).await;
+                let business = complete_business(connection, false).await;
+                assert!(
+                    sqlx::query_scalar::<_, bool>(OWNER_VIEW_ABSENT)
+                        .fetch_one(&mut *connection)
+                        .await
+                        .unwrap(),
+                    "PREREQUISITE: diagnostic view/routine identities must be absent"
+                );
+                sqlx::raw_sql("SAVEPOINT column_owner_view")
+                    .execute(&mut *connection)
+                    .await
+                    .unwrap();
+                let mut observation = None;
+                let result = AssertUnwindSafe(async {
+                    // Transient diagnostic custody only. The parsed helper is
+                    // selected by the existing owner prefix; it is never called.
+                    // Its real pg_depend edge supplies the endpoint, not a union
+                    // of fabricated addresses or a new selected business table.
+                    sqlx::raw_sql(OWNER_VIEW_FIXTURE)
+                        .execute(&mut *connection).await.unwrap();
+                    let witness_raw: String = sqlx::query_scalar(OWNER_VIEW_WITNESS)
+                        .fetch_one(&mut *connection).await
+                        .expect("PREREQUISITE: real parsed-helper/view dependency witness must execute");
+                    let witness: Value = serde_json::from_str(&witness_raw).unwrap();
+                    for guard in ["parsed_invoker_admin", "no_PUBLIC_execute", "no_nonsuper_execute"] {
+                        assert_eq!(witness[guard], true,
+                            "PREREQUISITE: temporary helper must preserve invoker/privilege containment: {guard}");
+                    }
+                    assert_eq!(witness["native"], json!({"type":"view column",
+                        "object_names":["org_column_v3_owner_probe","projection","값"],"object_args":[]}));
+                    let dependencies = witness["dependencies"].as_array().unwrap();
+                    assert_eq!(dependencies.len(), 1,
+                        "PREREQUISITE: one genuine direct parsed-routine-to-positive-view-column dependency");
+                    assert_eq!(dependencies[0]["deptype"], "n");
+                    let actual = owner_audit(connection).await;
+                    let selected = &actual["scope"]["selected_relations"];
+                    assert_eq!(selected, &original_audit["scope"]["selected_relations"],
+                        "diagnostic fixture must not expand selected business relations");
+                    assert_eq!(selected.as_array().unwrap().len(), 76);
+                    let ordinary: (i64, bool) = sqlx::query_as(r#"SELECT count(*),bool_and(c.relkind='r' AND NOT c.relispartition)
+FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_array_elements($1::jsonb) x)"#)
+                        .bind(sqlx::types::Json(selected)).fetch_one(&mut *connection).await.unwrap();
+                    assert_eq!(ordinary, (76, true),
+                        "PREREQUISITE: actual selected relations remain the 76 ordinary relations");
+                    assert!(actual["scope"]["M"].as_array().unwrap().contains(&witness["routine_tuple"]),
+                        "PREREQUISITE: actual owning M must select the real parsed helper");
+                    for field in ["M", "I"] {
+                        assert!(!actual["scope"][field].as_array().unwrap().contains(&witness["view_tuple"]),
+                            "diagnostic view column must remain endpoint-only");
+                    }
+                    assert!(actual["scope"]["addresses"].as_array().unwrap().contains(&witness["view_tuple"]),
+                        "PREREQUISITE: actual owner addresses must include the real view column");
+                    assert!(actual["ordinary_edges"].as_array().unwrap().contains(&dependencies[0]),
+                        "PREREQUISITE: actual owner must retain the exact raw/MVCC dependency");
+                    let captured: Vec<_> = actual["inverse"].as_array().unwrap().iter()
+                        .filter(|entry| entry["tuple"] == witness["view_tuple"]).collect();
+                    assert_eq!(captured.len(), 1);
+                    assert_eq!(captured[0]["native"], witness["native"],
+                        "PREREQUISITE: captured native type/names/arguments remain unchanged");
+                    assert_eq!(applied_ledger(connection).await, ledger);
+                    assert_eq!(complete_business(connection, false).await, business);
+                    observation = Some(actual);
+                }).catch_unwind().await;
+                sqlx::raw_sql(
+                    "ROLLBACK TO SAVEPOINT column_owner_view; RELEASE SAVEPOINT column_owner_view",
+                )
+                .execute(&mut *connection)
+                .await
+                .unwrap();
+                assert!(
+                    sqlx::query_scalar::<_, bool>(OWNER_VIEW_ABSENT)
+                        .fetch_one(&mut *connection)
+                        .await
+                        .unwrap(),
+                    "mandatory diagnostic view/routine removal"
+                );
+                assert_eq!(
+                    catalog(connection).await,
+                    before,
+                    "diagnostic view/routine rollback must restore complete catalog custody"
+                );
+                assert_eq!(applied_ledger(connection).await, ledger);
+                assert_eq!(complete_business(connection, false).await, business);
+                assert_eq!(
+                    owner_audit(connection).await,
+                    *original_audit,
+                    "immediate original raw/MVCC/M/I/census restoration after diagnostic fixture"
+                );
+                if let Err(panic) = result {
+                    std::panic::resume_unwind(panic);
+                }
+                observation.expect("PREREQUISITE: retain the genuine transient owner observation")
+            }
+
             fn audit_machinery_controls(baseline: &Value) {
                 owner_inverse_prerequisite(baseline).unwrap();
                 for field in ["inverse", "objects"] {
@@ -2998,15 +3130,15 @@ WHERE c.oid='pg_catalog.pg_class_oid_index'::regclass AND c.relkind='i'
                 let original_catalog = catalog(tx.as_mut()).await;
                 let mut baseline = None;
                 let result=AssertUnwindSafe(async {
+                    baseline=Some(owner_audit(tx.as_mut()).await);
                     let (source_family, family_inverses)=seven_kind_positive_and_controls(tx.as_mut()).await;
-                    let actual=owner_audit(tx.as_mut()).await;
+                    let actual=owner_view_observation(tx.as_mut(),baseline.as_ref().unwrap()).await;
                     owner_inverse_prerequisite(&actual).expect("PREREQUISITE: complete independent column/TOAST/native inverse positive before portable-validity RED");
                     assert!(actual["inverse"].as_array().unwrap().iter().any(|e|column_entry(e) && e["native"]["type"]=="view column"),"PREREQUISITE: real selected owner view-column witness");
                     audit_machinery_controls(&actual);
                     assert_eq!(applied_ledger(tx.as_mut()).await,original_ledger);
                     assert_eq!(complete_business(tx.as_mut(),false).await,original_rows);
                     assert_eq!(catalog(tx.as_mut()).await,original_catalog);
-                    baseline=Some(actual.clone());
                     writeln!(&mut std::io::stderr().lock(),"ORG_COLUMN_V3_INVERSE_PREREQUISITE {}",json!({
                         "design_sha256":DESIGN,"sources":sources,"address_count":actual["address_count"],
                         "actual_seven_kind_inverse_positive":true,"actual_pinned_seven_kind_source_observation":&source_family,
@@ -3029,6 +3161,13 @@ WHERE c.oid='pg_catalog.pg_class_oid_index'::regclass AND c.relkind='i'
                     original_rows
                 );
                 assert_eq!(catalog(fresh.as_mut()).await, original_catalog);
+                assert!(
+                    sqlx::query_scalar::<_, bool>(OWNER_VIEW_ABSENT)
+                        .fetch_one(fresh.as_mut())
+                        .await
+                        .unwrap(),
+                    "fresh diagnostic view/routine removal"
+                );
                 if let Some(before) = baseline {
                     assert_eq!(
                         owner_audit(fresh.as_mut()).await,
