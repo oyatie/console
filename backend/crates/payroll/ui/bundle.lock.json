@@ -165,7 +165,7 @@
     "toolchains/rust/sysroot.bzl": "a1ea4bce4948b707454336706c426af9c4d4307abf01f31746eef01fd9895f20",
     "toolchains/rust/wasm.bzl": "c7b6f21a453724a892e76e0b2b57e6f8c34b699fd6adc15f379948de977c3c10",
     "tools/buck/BUCK": "3cd8904380ff4507e00be4008ace6ea0433a01e958b8b8a57774a6efdb27ab42",
-    "tools/buck/gen_first_party.py": "a4fb5867b95b70905b8a6bd83265f2c6e5b90dc15b7163ec1eaa669809a95b25",
+    "tools/buck/gen_first_party.py": "a74fa92745868104c26a4d0d38e94c70934c9615934a3c927205fe892d52f18c",
     "tools/buck/gen_hydrate.py": "227729e955c248ff16e83ea747643e2c502450e34eb8a183fc355fc478ae6661",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
@@ -181,7 +181,7 @@
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "a31ce5ab46baea331fef0cdc17a03301d1b5ccf6054cae6ff73d1ab2bb79a5ec",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "4c3ef38a003e2e3f4be25a9fb6384f752677b52d21c3f4e2678cc9e8e3b24113"
+    "source_snapshot_sha256": "f2c2024bb22b8dd48b3a38d2c96b84ef0c38c316363f7be72f5ca60b8d90f356"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",
