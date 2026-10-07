@@ -7238,6 +7238,15 @@ def native_org_unit_account_actor_custody_capture_files():
     return {'ops/postgres-capture-native-org-unit-account-actor-v1-custody.sql': raw.decode('utf-8')}
 
 
+def native_org_unit_account_actor_custody_capture_v2_files():
+    """Export the reviewed successor query without activating a profile."""
+    name = 'ops/native-org-unit/account-actor-custody-capture-v2.sql'
+    raw = company_provenance_regular_path(name, required=True).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != '7f8e4c916ce0f4ac3f84c6e5b8d2e9795b96f913965b5eeb76cb659e97c58fb3':
+        raise SystemExit('Native OrgUnit Account actor V2 capture source differs from reviewed bytes: ' + name)
+    return {'ops/postgres-capture-native-org-unit-account-actor-v2-custody.sql': raw.decode('utf-8')}
+
+
 NATIVE_ORG_UNIT_CLOSED_PHASE_PAIRS = (
     ('plain',
      'de87fafa527398d64a1930288ef1a0a56d017db6b56bc877f8b716c714afd90a',
@@ -8122,6 +8131,8 @@ def main():
                      ['--native-org-unit-account-actor-staging', '--check'],
                      ['--native-org-unit-account-actor-capture'],
                      ['--native-org-unit-account-actor-capture', '--check'],
+                     ['--native-org-unit-account-actor-capture-v2'],
+                     ['--native-org-unit-account-actor-capture-v2', '--check'],
                      ['--native-group-process-navigation-serving-custody'],
                      ['--native-group-process-navigation-serving-custody', '--check'],
                      ['--native-group-process-navigation-finalizer'],
@@ -8142,6 +8153,8 @@ def main():
             files = native_org_unit_account_actor_staging_files()
         elif arguments[0] == '--native-org-unit-account-actor-capture':
             files = native_org_unit_account_actor_custody_capture_files()
+        elif arguments[0] == '--native-org-unit-account-actor-capture-v2':
+            files = native_org_unit_account_actor_custody_capture_v2_files()
         elif arguments[0] == '--native-group-process-navigation-serving-custody':
             files = native_group_process_navigation_serving_custody_files()
         elif arguments[0] == '--native-group-process-navigation-finalizer':
@@ -8169,7 +8182,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
