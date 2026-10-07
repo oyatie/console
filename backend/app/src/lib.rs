@@ -4078,7 +4078,14 @@ async fn native_company_result_document(
     match state.enrollment_document(&headers, &command).await {
         Ok(result) => {
             let page = match result.status {
-                CompanyEnrollmentStatus::Committed { .. } => Page::CompanyCreated {
+                CompanyEnrollmentStatus::Committed {
+                    receipt_id,
+                    administrative_account_id,
+                    ..
+                } => Page::CompanyCreated {
+                    command_id: result.command.to_string(),
+                    receipt_id: receipt_id.to_string(),
+                    administrative_account_id: administrative_account_id.to_string(),
                     company: result.company.map(|c| (c.org_id.to_string(), c.name)),
                 },
                 CompanyEnrollmentStatus::Pending(input) => Page::CompanyPending {
@@ -4086,9 +4093,16 @@ async fn native_company_result_document(
                     name: input.name().to_owned(),
                     slug: input.slug().to_owned(),
                     account_id: input.administrative_account_id().to_string(),
+                    group_id: input.group_id().map(|id| id.to_string()),
                 },
-                CompanyEnrollmentStatus::Cancelled => Page::CompanyTerminal { expired: false },
-                CompanyEnrollmentStatus::Expired => Page::CompanyTerminal { expired: true },
+                CompanyEnrollmentStatus::Cancelled => Page::CompanyTerminal {
+                    command_id: result.command.to_string(),
+                    expired: false,
+                },
+                CompanyEnrollmentStatus::Expired => Page::CompanyTerminal {
+                    command_id: result.command.to_string(),
+                    expired: true,
+                },
                 CompanyEnrollmentStatus::Missing => {
                     return document(
                         match result.reentry_account {
@@ -4342,6 +4356,7 @@ async fn native_account_page(
             }
         },
         Ok(NativeAccountEntry::Active {
+            account_id,
             context,
             can_logout,
             company_setup,
@@ -4408,6 +4423,7 @@ async fn native_account_page(
             };
             console_payroll_ui::native_account::document_with_group_navigation(
                 Page::Account {
+                    account_id: account_id.to_string(),
                     context,
                     can_logout,
                     company_setup,

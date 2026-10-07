@@ -5,6 +5,7 @@
     ".buckconfig": "f0f78518c2da7050b34e26adf61ef7e526cd14054342139d57ad28ede0590698",
     "BUCK": "83c25e6de38a9cc461877c52a5b7e403d29f9c3a905a040e5e2a7c8d87c193bd",
     "backend/crates/payroll/ui/BUCK": "74e51aa4616b8e116aa7524e60df67a4a7cb1ffadb8fbce92a4c5e06b45e71ca",
+    "backend/crates/payroll/ui/src/native_account.js": "9c29f12c13e3ca2a8255345220a68f0b735d5158c0a1c540c8451d776f949653",
     "clients/desktop-web/BUCK": "0a4b926737493888d0bd73bcf4358856c57dc27a146a5f90776c9c2bd83eb9b8",
     "clients/desktop-web/dependencies.lock.bzl": "f7e8b19b4d5c3274b02696786fe2a3b173d105d0eb2518176d7416983e728e9c",
     "clients/desktop-web/dependencies.lock.json": "923252d62073e328d1b947b7a55e9854ce03938ed334817b830289f565dd176b",
@@ -27,13 +28,13 @@
     "tools/ui/react_bundle.py": "9f2033fce036325b1b9fea0b50aa8335803d0810b87418a421bce1d1d3039082"
   },
   "outputs": {
-    "people-guard.js": "d697d2288cf8588c09fb375545105349deb73eb1d6de9ac34bf43e26affad594",
-    "people.css": "be360b4ed8cbc18ec774d88e5ae5d54cbff0e6b94ba8f32532b2fea221e56b95",
-    "people.js": "df153b89823c892d9b59ea65003a2bcacff62cdada1439b92334d799472fac20"
+    "account-guard.js": "4bf1ffe1af5621aa4bdbbbf41f62bc0c8088e7f7cf49a7fe9643dd4d059daf35",
+    "account.css": "361bb3d4d7bc190c59e3d779aeaa64eb76f8e1f93c4937c36c227731203005f4",
+    "account.js": "3880f750e13a042339c179267ff3eef57abcb4170960e7029ac802be4b47fb33"
   },
   "producer": {
     "host": "darwin-arm64",
-    "kind": "buck2-native-react-people-v1",
+    "kind": "buck2-native-react-account-v1",
     "tools": {
       "esbuild": "10b6243df618d374bb2d5c9cfbe7052e1405f6aa4e53a6164f11a91b9f2e1384",
       "node": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"

@@ -13,11 +13,13 @@ pub struct CompanyPolicyNavigation {
 }
 
 /// Only finalized current Group-owner projections may populate this list.
+#[derive(serde::Serialize)]
 pub struct GroupNavigation {
     pub group: String,
     pub label: String,
 }
 
+#[derive(serde::Serialize)]
 pub struct TermsItem {
     pub kind: String,
     pub title: String,
@@ -25,18 +27,24 @@ pub struct TermsItem {
     pub content: String,
 }
 
+#[derive(serde::Serialize)]
+#[serde(tag = "kind", content = "companies", rename_all = "snake_case")]
 pub enum ContextState {
     Empty,
     Companies(Vec<(String, String)>),
     Unavailable,
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum CompanySetupEligibility {
     Eligible,
     Ineligible,
     Unavailable,
 }
 
+#[derive(serde::Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Page {
     Public,
     SignIn,
@@ -45,6 +53,7 @@ pub enum Page {
         items: Vec<TermsItem>,
     },
     Account {
+        account_id: String,
         context: ContextState,
         can_logout: bool,
         company_setup: CompanySetupEligibility,
@@ -54,6 +63,9 @@ pub enum Page {
         command_id: Option<String>,
     },
     CompanyCreated {
+        command_id: String,
+        receipt_id: String,
+        administrative_account_id: String,
         company: Option<(String, String)>,
     },
     CompanyPending {
@@ -61,11 +73,14 @@ pub enum Page {
         name: String,
         slug: String,
         account_id: String,
+        group_id: Option<String>,
     },
     CompanyTerminal {
+        command_id: String,
         expired: bool,
     },
     CompanyUncertain,
+    #[serde(skip)]
     Company {
         org_id: String,
         name: String,
@@ -77,6 +92,7 @@ pub enum Page {
         show_payroll_policy_navigation: bool,
         people_policy: Option<Vec<super::native_policy::PolicyAction>>,
     },
+    #[serde(skip)]
     CompanyPolicy {
         org_id: String,
         action_keys: Vec<&'static str>,
@@ -97,6 +113,40 @@ fn AttemptStatus() -> impl IntoView {
         <a id="native-continue" class="text-link" href="/account" hidden>"로그인으로 확인"</a>
         <a id="native-reload-terms" class="text-link" href="/account/register" hidden>"새 약관 확인"</a>
         <noscript><p class="notice">"패스키를 사용하려면 이 브라우저에서 JavaScript를 허용해 주세요. 약관과 안내는 그대로 읽을 수 있습니다."</p></noscript>
+    }
+}
+
+#[component]
+fn AccountReference(account: String) -> impl IntoView {
+    view! {
+        <section class="workspace-state account-reference" aria-labelledby="account-reference-title">
+            <h2 id="account-reference-title">"내 계정 참조"</h2>
+            <p id="account-reference-help">"이 참조를 공유하면 권한이 있는 운영자가 관리할 계정으로 선택할 수 있습니다. 로그인 비밀이나 사람의 신원 증명, 업무 권한이 아닙니다."</p>
+            <label for="own-account-reference">"내 계정 참조"</label>
+            <input id="own-account-reference" type="text" data-account-reference="" value=account readonly aria-describedby="account-reference-help" spellcheck="false"/>
+            <button class="button secondary" type="button" data-account-copy="">"계정 참조 복사"</button>
+            <p class="status" role="status" aria-live="polite" data-account-copy-status=""></p>
+        </section>
+    }
+}
+
+#[component]
+fn CompanyRecipient(account: String) -> impl IntoView {
+    view! {
+        <fieldset class="account-recipient">
+            <legend>"관리할 계정"</legend>
+            <label class="recipient-choice"><input type="radio" name="administrator_mode" value="self" data-company-recipient-mode="" checked/>"내 계정"</label>
+            <label class="recipient-choice"><input type="radio" name="administrator_mode" value="other" data-company-recipient-mode=""/>"다른 계정"</label>
+            <div data-company-other="" hidden>
+                <label for="company-administrator-reference">"관리할 계정 참조"</label>
+                <input id="company-administrator-reference" name="administrative_account_reference" type="text" data-company-administrator-reference="" disabled autocomplete="off" autocapitalize="none" spellcheck="false" minlength="36" maxlength="36" aria-describedby="company-recipient-help"/>
+            </div>
+            <section class="workspace-state" aria-labelledby="company-recipient-title">
+                <h2 id="company-recipient-title">"선택한 관리 계정"</h2>
+                <p class="account-id" data-company-selected-account="">{account}</p>
+                <p id="company-recipient-help">"이 계정에 이 회사의 정보 열람과 제한된 권한 관리 기능을 연결합니다. 급여·인사 권한과 운영자 권한은 포함되지 않습니다."</p>
+            </section>
+        </fieldset>
     }
 }
 
@@ -168,7 +218,7 @@ fn body(
                 </section>
             }.into_any()
         },
-        Page::Account { context, can_logout, company_setup } => {
+        Page::Account { account_id, context, can_logout, company_setup } => {
             let setup = match company_setup {
                 CompanySetupEligibility::Eligible => view! {
                     <a class="button primary" href="/account/companies/new">"회사 업무 공간 만들기"</a>
@@ -223,6 +273,7 @@ fn body(
                 <section class="entry-card" data-account-state="active">
                     <p class="eyebrow">"내 CONSOLE"</p>
                     <h1>"계정에 로그인했습니다"</h1>
+                    <AccountReference account=account_id/>
                     {workspace}
                     {group_work}
                     {setup}
@@ -243,7 +294,7 @@ fn body(
                 {command_id.as_ref().map(|_| view! {
                     <p class="notice">"이 계정에 저장된 요청을 찾지 못했습니다. 입력 내용을 다시 확인하고 제출하면 현재 주소의 같은 요청 번호를 사용합니다."</p>
                 })}
-                <form data-company-enrollment="" data-account-id=account_id data-command-id=command_id>
+                <form data-company-enrollment="" data-account-id=account_id.clone() data-command-id=command_id>
                     <fieldset>
                         <legend>"회사 업무 공간 정보"</legend>
                         <label for="company-name">"회사 이름"</label>
@@ -253,11 +304,7 @@ fn body(
                         <input id="company-slug" name="slug" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required maxlength="63" pattern=r"[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?" aria-describedby="company-slug-help"/>
                         <p id="company-slug-help" class="supporting">"영문 소문자와 숫자, 하이픈(-)으로 입력하세요. 처음과 끝에는 하이픈을 사용할 수 없습니다."</p>
                     </fieldset>
-                    <section class="workspace-state" aria-labelledby="company-recipient-title">
-                        <h2 id="company-recipient-title">"관리할 계정"</h2>
-                        <p>"내 계정"</p>
-                        <p>"이 계정에 이 회사의 정보 열람과 제한된 권한 관리 기능을 연결합니다. 급여·인사 권한은 포함되지 않습니다."</p>
-                    </section>
+                    <CompanyRecipient account=account_id.clone()/>
                     <button class="button primary wide company-submit" type="submit" disabled>"회사 업무 공간 만들기"</button>
                     <p id="company-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
                     <p id="company-error" class="error" role="alert" hidden></p>
@@ -267,11 +314,12 @@ fn body(
                 <a href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::CompanyCreated { company } => view! {
+        Page::CompanyCreated { command_id, receipt_id, administrative_account_id, company } => view! {
             <section class="entry-card" data-company-outcome="committed">
                 <p class="eyebrow">"회사 업무 공간"</p>
                 <h1>"생성 완료"</h1>
                 <p class="lead">"요청이 처리되었습니다. 이 주소에서 결과를 다시 확인할 수 있습니다."</p>
+                <dl class="request-reference"><dt>"관리할 계정 참조"</dt><dd>{administrative_account_id}</dd><dt>"요청 번호"</dt><dd>{command_id}</dd><dt>"처리 기록"</dt><dd>{receipt_id}</dd></dl>
                 {company.map(|(id, name)| view! {
                     <section class="workspace-state"><h2>{name}</h2>
                         <a class="button primary" href=format!("/companies/{id}")>"업무 공간 열기"</a>
@@ -280,15 +328,18 @@ fn body(
                 <a href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::CompanyPending { command_id, name, slug, account_id } => view! {
+        Page::CompanyPending { command_id, name, slug, account_id, group_id } => view! {
             <section class="entry-card" data-company-outcome="pending">
                 <p class="eyebrow">"저장된 등록 요청"</p><h1>"아직 생성이 완료되지 않았습니다"</h1>
                 <p class="lead">"입력한 내용이 저장되어 있습니다. 같은 요청으로 다시 시도하면 중복으로 만들지 않습니다."</p>
-                <form data-company-enrollment="" data-account-id=account_id data-command-id=command_id>
+                <form data-company-enrollment="" data-account-id=account_id.clone() data-command-id=command_id.clone() data-group-id=group_id>
                     <label for="company-name">"회사 이름"</label>
                     <input id="company-name" name="name" value=name readonly/>
                     <label for="company-slug">"업무 공간 식별자"</label>
                     <input id="company-slug" name="slug" value=slug readonly/>
+                    <label for="company-retained-administrator">"관리할 계정 참조"</label>
+                    <input id="company-retained-administrator" type="text" value=account_id.clone() readonly/>
+                    <dl class="request-reference"><dt>"요청 번호"</dt><dd>{command_id.clone()}</dd></dl>
                     <button class="button primary wide company-submit" type="submit" disabled>"같은 요청으로 다시 시도"</button>
                     <p class="supporting">"등록 요청을 취소하면 다시 제출할 수 없습니다. 이미 생성이 완료된 업무 공간은 취소되지 않습니다."</p>
                     <button class="button secondary" type="button" data-company-cancel disabled>"등록 요청 취소"</button>
@@ -308,11 +359,12 @@ fn body(
                 <a class="text-link" href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::CompanyTerminal { expired } => view! {
+        Page::CompanyTerminal { command_id, expired } => view! {
             <section class="entry-card" data-company-outcome=if expired { "expired" } else { "cancelled" }>
                 <p class="eyebrow">"회사 등록 요청"</p>
                 <h1>{if expired { "요청이 만료되었습니다" } else { "요청이 취소되었습니다" }}</h1>
                 <p class="lead">"이 요청으로 생성된 회사 업무 공간은 없습니다."</p>
+                <dl class="request-reference"><dt>"요청 번호"</dt><dd>{command_id}</dd></dl>
                 <a class="button primary" href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
@@ -480,6 +532,25 @@ fn render_with_navigation(
     groups: Vec<GroupNavigation>,
 ) -> String {
     let company_workspace = matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. });
+    #[cfg(feature = "ssr")]
+    let projection = if company_workspace {
+        None
+    } else {
+        #[derive(serde::Serialize)]
+        struct Projection<'a> {
+            version: u8,
+            page: &'a Page,
+            groups: &'a [GroupNavigation],
+        }
+        serde_json::to_string(&Projection {
+            version: 1,
+            page: &page,
+            groups: &groups,
+        })
+        .ok()
+    };
+    #[cfg(not(feature = "ssr"))]
+    let projection: Option<String> = None;
     let title = match &page {
         Page::Public => "Console · 업무의 연결",
         Page::SignIn => "로그인 · Console",
@@ -579,7 +650,24 @@ fn render_with_navigation(
             </body>
         </html>
     }.to_html();
-    format!("<!DOCTYPE html>{html}")
+    let mut html = format!("<!DOCTYPE html>{html}");
+    if let Some(projection) = projection {
+        let projection = projection
+            .replace('&', "\\u0026")
+            .replace('<', "\\u003c")
+            .replace('>', "\\u003e")
+            .replace('\u{2028}', "\\u2028")
+            .replace('\u{2029}', "\\u2029");
+        html = html.replacen("</head>", "<link rel=\"stylesheet\" href=\"/assets/account.css\"/><script src=\"/assets/account-guard.js\"></script></head>", 1);
+        if let Some(start) = html
+            .find("<body")
+            .and_then(|start| html[start..].find('>').map(|end| start + end + 1))
+        {
+            html.insert_str(start, "<div id=\"console-account-fallback\">");
+            html = html.replacen("</body>", &format!("</div><script id=\"console-account-bootstrap\" type=\"application/json\">{projection}</script><script src=\"/assets/account.js\" type=\"module\"></script></body>"), 1);
+        }
+    }
+    html
 }
 
 #[cfg(feature = "ssr")]

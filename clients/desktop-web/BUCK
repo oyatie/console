@@ -92,3 +92,30 @@ react_validate(
     committed = "//backend/crates/payroll/ui:react-assets",
     visibility = ["PUBLIC"],
 )
+
+_ACCOUNT_INPUTS = dict(_INPUTS)
+_ACCOUNT_INPUTS["backend/crates/payroll/ui/src/native_account.js"] = "//backend/crates/payroll/ui:react-account-controller"
+
+react_bundle(
+    name = "account-bundle",
+    profile = "account",
+    sources = _SOURCES,
+    packages = _PACKAGES,
+    tsconfig = "tsconfig.json",
+    package = "package.json",
+    node = ":node",
+    esbuild = ":esbuild",
+    # Both fixed profiles share the complete, strictly checked source set.
+    typecheck = ":people-typecheck",
+    inputs = _ACCOUNT_INPUTS,
+    visibility = ["PUBLIC"],
+)
+
+react_validate(
+    name = "account-validated-bundle",
+    profile = "account",
+    inputs = _ACCOUNT_INPUTS,
+    native_candidate = ":account-bundle",
+    committed = "//backend/crates/payroll/ui:react-account-assets",
+    visibility = ["PUBLIC"],
+)

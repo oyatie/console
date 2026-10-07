@@ -39,25 +39,26 @@ react_typecheck = rule(impl = _typecheck_impl, attrs = _WORKSPACE)
 
 def _bundle_impl(ctx):
     workspace = _workspace(ctx)
-    javascript = ctx.actions.declare_output("people.js")
-    stylesheet = ctx.actions.declare_output("people.css")
-    guard = ctx.actions.declare_output("people-guard.js")
-    runtime_metafile = ctx.actions.declare_output("people.meta.json")
-    guard_metafile = ctx.actions.declare_output("people-guard.meta.json")
+    profile = ctx.attrs.profile
+    javascript = ctx.actions.declare_output(profile + ".js")
+    stylesheet = ctx.actions.declare_output(profile + ".css")
+    guard = ctx.actions.declare_output(profile + "-guard.js")
+    runtime_metafile = ctx.actions.declare_output(profile + ".meta.json")
+    guard_metafile = ctx.actions.declare_output(profile + "-guard.meta.json")
     common = cmd_args(ctx.attrs.esbuild[RunInfo], "--bundle", "--minify", "--platform=browser",
                       "--target=es2022", "--preserve-symlinks", "--legal-comments=inline",
                       cmd_args(workspace, format = "--tsconfig={}/tsconfig.json"))
     ctx.actions.run(
-        cmd_args(common, cmd_args(workspace, format = "{}/src/people.tsx"), "--format=esm", "--jsx=automatic",
+        cmd_args(common, cmd_args(workspace, format = "{}/src/" + profile + ".tsx"), "--format=esm", "--jsx=automatic",
                  '--define:process.env.NODE_ENV="production"',
                  cmd_args("--metafile=", runtime_metafile.as_output(), delimiter = ""),
                  cmd_args("--outfile=", javascript.as_output(), delimiter = ""), hidden = [stylesheet.as_output()]),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
         category = "react_bundle",
-        identifier = "people",
+        identifier = profile,
     )
     ctx.actions.run(
-        cmd_args(common, cmd_args(workspace, format = "{}/src/people-guard.ts"), "--format=iife",
+        cmd_args(common, cmd_args(workspace, format = "{}/src/" + profile + "-guard.ts"), "--format=iife",
                  cmd_args("--metafile=", guard_metafile.as_output(), delimiter = ""),
                  cmd_args("--outfile=", guard.as_output(), delimiter = "")),
         env = {"NODE_PATH": "", "NODE_OPTIONS": ""},
@@ -65,9 +66,9 @@ def _bundle_impl(ctx):
         identifier = "guard",
     )
     compiled = ctx.actions.symlinked_dir("compiled", {
-        "people.js": javascript,
-        "people.css": stylesheet,
-        "people-guard.js": guard,
+        profile + ".js": javascript,
+        profile + ".css": stylesheet,
+        profile + "-guard.js": guard,
         "typecheck.tsbuildinfo": ctx.attrs.typecheck,
     })
     inputs = ctx.actions.write_json("inputs.json", ctx.attrs.inputs, with_inputs = True)
@@ -77,7 +78,7 @@ def _bundle_impl(ctx):
     }, with_inputs = True)
     output = ctx.actions.declare_output("bundle", dir = True)
     ctx.actions.run(
-        cmd_args(ctx.attrs._python[RunInfo], ctx.attrs._helper, "record", "--inputs", inputs,
+        cmd_args(ctx.attrs._python[RunInfo], ctx.attrs._helper, "record", "--profile", profile, "--inputs", inputs,
                  "--workspace", workspace, "--packages", packages,
                  "--runtime-metafile", runtime_metafile, "--guard-metafile", guard_metafile,
                  "--compiled", compiled, "--node", ctx.attrs.node[DefaultInfo].default_outputs[0],
@@ -92,6 +93,7 @@ _TOOLS = {
 }
 
 react_bundle = rule(impl = _bundle_impl, attrs = _WORKSPACE | _TOOLS | {
+    "profile": attrs.enum(["people", "account"], default = "people"),
     "esbuild": attrs.exec_dep(providers = [RunInfo, DefaultInfo]),
     "inputs": attrs.dict(attrs.string(), attrs.source()),
     "typecheck": attrs.source(),
@@ -101,7 +103,7 @@ def _validate_impl(ctx):
     inputs = ctx.actions.write_json("inputs.json", ctx.attrs.inputs, with_inputs = True)
     output = ctx.actions.declare_output("validated", dir = True)
     ctx.actions.run(
-        cmd_args(ctx.attrs._python[RunInfo], ctx.attrs._helper, "validate", "--inputs", inputs,
+        cmd_args(ctx.attrs._python[RunInfo], ctx.attrs._helper, "validate", "--profile", ctx.attrs.profile, "--inputs", inputs,
                  "--candidate", ctx.attrs.native_candidate, "--committed", ctx.attrs.committed,
                  "--out-dir", output.as_output()),
         category = "react_validate",
@@ -109,6 +111,7 @@ def _validate_impl(ctx):
     return [DefaultInfo(default_output = output)]
 
 react_validate = rule(impl = _validate_impl, attrs = _TOOLS | {
+    "profile": attrs.enum(["people", "account"], default = "people"),
     "inputs": attrs.dict(attrs.string(), attrs.source()),
     "native_candidate": attrs.source(allow_directory = True),
     "committed": attrs.source(allow_directory = True),

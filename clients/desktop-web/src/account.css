@@ -1,0 +1,24 @@
+/* Inherit the shared native-account theme; presentation changes no business authority. */
+[data-console-react-account],#console-account-fallback{min-width:0}
+.account-reference label,[data-company-other] label{display:block;font-size:14px;font-weight:650;margin-bottom:8px}
+.account-reference input,.account-id,.request-reference dd{font-variant-numeric:tabular-nums;font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;overflow-wrap:anywhere}
+.account-reference .button{margin-top:12px}
+.account-recipient{margin-top:28px}
+.recipient-choice{display:flex;align-items:center;gap:12px;min-height:48px;border:1px solid var(--control-border);border-radius:9px;padding:10px 14px;margin-bottom:10px;cursor:pointer}
+.recipient-choice:has(:checked){border-color:var(--accent);background:var(--info-bg)}
+.recipient-choice input{width:20px;height:20px;flex:0 0 20px;margin:0;accent-color:var(--accent)}
+[data-company-other]{margin-top:16px}.account-id{color:var(--ink)!important}
+.request-reference{margin:24px 0;padding:20px;border:1px solid var(--line);border-radius:12px;background:var(--surface-subtle)}
+.request-reference dt{font-size:13px;color:var(--muted);margin-top:14px}.request-reference dt:first-child{margin-top:0}
+.request-reference dd{margin:6px 0 0;line-height:1.7;font-size:14px}
+.account-reference input:read-only{background:var(--surface-subtle)}
+.entry-card a:not(.button):not(.brand){display:inline-flex;align-items:center;min-height:44px}
+.entry-card summary{min-height:44px;align-content:center}
+.entry-card :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.entry-card .workspace-state{min-width:0}.entry-card ul{padding-inline-start:20px}.entry-card li{overflow-wrap:anywhere}
+@media(max-width:360px){.entry-card,.entry-card.welcome{padding:22px 16px}.request-reference{padding:16px}.account-reference input{font-size:12px}.button{padding-inline:12px}}
+
+.entry-card .check-label{min-height:44px;align-items:center}
+.account-render-error{max-width:580px;margin:0 auto 24px}
+
+.entry-card h2{overflow-wrap:anywhere}

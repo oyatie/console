@@ -30,6 +30,7 @@ pub enum NativeAccountEntry {
     SignIn,
     Registration(NativeTerms),
     Active {
+        account_id: Uuid,
         context: NativeAccountContext,
         can_logout: bool,
         company_setup: NativeCompanySetupEligibility,
@@ -376,6 +377,7 @@ async fn native_entry(
             }));
         }
         Ok(Some(NativeAccountEntry::Active {
+            account_id: projection.account_id,
             context,
             company_setup,
             can_logout: projection.permitted_self_actions.iter().any(|action| {

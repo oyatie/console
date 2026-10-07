@@ -1,17 +1,34 @@
+// Browser presentation controller only; current Rust owners retain all authority.
+// No cookie inspection, business storage or alternate transport implementation.
+(() => {
+  if (Object.hasOwn(window, '__consoleAccountController')) return;
+  let active;
+  function makeController(root) {
+    const find = id => root.querySelector(`[id="${id}"]`);
+    const listeners = [], initializers = [], idle = [];
+    let live = false, epoch = 0, ready = false, focused;
+    const presentedNodes = Array.from(root.childNodes);
+    listen(root, 'focusin', event => { focused = event.target; });
+    const current = (ticket = epoch) => live && active === api && epoch === ticket;
+    const ensure = ticket => { if (!current(ticket)) throw Object.assign(new Error('retired_controller'), {code:'retired_controller'}); };
+    function listen(target, type, callback) {
+      if (!target) throw new Error('missing_controller_control');
+      listeners.push({target, type, callback, wrapped: undefined});
+    }
 // Native browser transport only. The server owns identity, terms and every action.
 // No cookie inspection, storage, telemetry payloads or client authority.
-const form = document.querySelector('form[data-native-action]');
+const form = root.querySelector('form[data-native-action]');
 if (form) {
   const action = form.dataset.nativeAction;
   const submit = form.querySelector('[data-native-submit]');
-  const status = document.getElementById('native-status');
-  const error = document.getElementById('native-error');
-  const cancel = document.getElementById('native-cancel');
-  const recheck = document.getElementById('native-recheck');
-  const retryFinish = document.getElementById('native-retry-finish');
-  const continuation = document.getElementById('native-continue');
-  const reloadTerms = document.getElementById('native-reload-terms');
-  const choice = document.getElementById('native-account-choice');
+  const status = find('native-status');
+  const error = find('native-error');
+  const cancel = find('native-cancel');
+  const recheck = find('native-recheck');
+  const retryFinish = find('native-retry-finish');
+  const continuation = find('native-continue');
+  const reloadTerms = find('native-reload-terms');
+  const choice = find('native-account-choice');
   const consentControls = Array.from(form.querySelectorAll('[data-terms-kind]'));
   let returnFocus = false;
   let busy = false;
@@ -24,6 +41,7 @@ if (form) {
   const failure = (code, httpStatus = 0) => Object.assign(new Error(code), {code, httpStatus});
 
   async function request(path, body, proof) {
+    const ticket = epoch;
     const headers = {Accept: 'application/json'};
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     if (proof !== undefined) headers['X-Console-CSRF'] = proof;
@@ -36,9 +54,11 @@ if (form) {
         signal: controller ? AbortSignal.any([AbortSignal.timeout(15000), controller.signal]) : AbortSignal.timeout(15000),
       });
     } catch { throw failure('transport_unconfirmed'); }
+    ensure(ticket);
     let value;
     try { value = await response.json(); }
     catch { throw failure('transport_unconfirmed', response.status); }
+    ensure(ticket);
     if (!response.ok) throw failure(value?.error?.code ?? 'request_failed', response.status);
     return value;
   }
@@ -52,6 +72,7 @@ if (form) {
   }
 
   function explain(cause) {
+    if (!current() || cause?.code === 'retired_controller') return;
     const code = cause?.code;
     if (cause?.name === 'AbortError' || cause?.name === 'NotAllowedError') {
       returnFocus = true;
@@ -92,7 +113,7 @@ if (form) {
       window.location.assign('/account');
       return true;
     } catch (cause) {
-      if (cause?.code === 'identity_unconfirmed') throw cause;
+      if (cause?.code === 'identity_unconfirmed' || cause?.code === 'retired_controller') throw cause;
       return false;
     }
   }
@@ -136,7 +157,9 @@ if (form) {
     const options = {...wrapper, publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(wrapper.publicKey), signal: controller.signal};
     cancel.hidden = false;
     announce('기기의 안내에 따라 패스키를 만들어 주세요.');
+    const ticket = epoch;
     const credential = await navigator.credentials.create(options);
+    ensure(ticket);
     cancel.hidden = true;
     if (!credential) throw failure('identity_unconfirmed');
     // Reload after a possibly committed finish must return to sign-in, not
@@ -156,7 +179,9 @@ if (form) {
     announce('패스키 계정 선택 입력란에서 사용할 계정을 선택해 주세요.');
     const operation = navigator.credentials.get(options);
     choice.focus();
+    const ticket = epoch;
     const credential = await operation;
+    ensure(ticket);
     cancel.hidden = true;
     if (!credential) throw failure('identity_unconfirmed');
     const assertion = credential.toJSON();
@@ -175,17 +200,20 @@ if (form) {
   }
 
   async function exclusive(operation) {
-    if (busy) return;
+    if (!current() || busy) return;
+    const ticket = epoch;
     busy = true; submit.disabled = true; recheck.disabled = true; retryFinish.disabled = true;
     clearProblem(); controller = new AbortController();
     try {
       // Account cookies are shared between tabs. Never queue a stale attempt.
       await navigator.locks.request('console.native-account.browser-action', {ifAvailable:true}, async lock => {
+        ensure(ticket);
         if (!lock) { problem('다른 탭에서 계정 요청을 진행 중입니다. 그 탭에서 완료하거나 취소한 뒤 다시 시도해 주세요.'); return; }
         await operation();
       });
     } catch (cause) { explain(cause); }
     finally {
+      if (!current(ticket)) return;
       busy = false; cancel.hidden = true; submit.disabled = blocked;
       recheck.disabled = false; retryFinish.disabled = false;
       if (action === 'register' && !pendingFinish && !blocked) {
@@ -198,58 +226,76 @@ if (form) {
   }
 
   const start = () => { if (!blocked) void exclusive(action === 'register' ? createAccount : action === 'login' ? signIn : logout); };
-  submit.addEventListener('click', start);
-  form.addEventListener('submit', event => { event.preventDefault(); start(); });
-  cancel.addEventListener('click', () => controller?.abort());
-  recheck.addEventListener('click', () => { if (pendingFinish) void exclusive(async () => { if (!(await observeFinish(pendingFinish))) offerRecovery(pendingFinish); }); });
-  retryFinish.addEventListener('click', () => { if (pendingFinish && !pendingFinish.retried) void exclusive(async () => {
+  listen(submit, 'click', start);
+  listen(form, 'submit', event => { event.preventDefault(); start(); });
+  listen(cancel, 'click', () => controller?.abort());
+  listen(recheck, 'click', () => { if (pendingFinish) void exclusive(async () => { if (!(await observeFinish(pendingFinish))) offerRecovery(pendingFinish); }); });
+  listen(retryFinish, 'click', () => { if (pendingFinish && !pendingFinish.retried) void exclusive(async () => {
     const record = pendingFinish;
     if (await observeFinish(record)) return;
     record.retried = true; retryFinish.hidden = true;
     await finish(record);
   }); });
-  window.addEventListener('pagehide', () => controller?.abort());
-  window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+  listen(window, 'pagehide', () => controller?.abort());
+  listen(window, 'pageshow', event => { if (event.persisted) window.location.reload(); });
 
   async function initialize() {
+    const ticket = epoch;
     const nativeAvailable = window.isSecureContext && navigator.locks?.request &&
       (action === 'logout' || (window.PublicKeyCredential && navigator.credentials &&
         typeof PublicKeyCredential.parseCreationOptionsFromJSON === 'function' &&
         typeof PublicKeyCredential.parseRequestOptionsFromJSON === 'function' &&
         typeof PublicKeyCredential.prototype.toJSON === 'function'));
-    if (!nativeAvailable || (action === 'login' && !(await PublicKeyCredential.isConditionalMediationAvailable?.()))) {
+    const available = nativeAvailable && (action !== 'login' || await PublicKeyCredential.isConditionalMediationAvailable?.());
+    if (!current(ticket)) return false;
+    if (!available) {
       blocked = true;
       problem('이 브라우저에서는 필요한 패스키 기능을 사용할 수 없습니다. 최신 브라우저의 보안 연결에서 다시 열어 주세요.');
-      return;
+      return false;
     }
+    if (!current()) return false;
     submit.disabled = false;
+    return true;
   }
-  void initialize().catch(() => { blocked = true; problem('브라우저의 계정 기능을 확인할 수 없습니다. 다른 최신 브라우저에서 다시 시도해 주세요.'); });
+  idle.push(() => !busy && !blocked && !pendingFinish && !controller);
+  initializers.push(known => {
+    if (known) { submit.disabled = false; return true; }
+    return initialize().catch(() => { if (current()) { blocked = true; problem('브라우저의 계정 기능을 확인할 수 없습니다. 다른 최신 브라우저에서 다시 시도해 주세요.'); } return false; });
+  });
 }
 
-const companyForm = document.querySelector('form[data-company-enrollment]');
+const companyForm = root.querySelector('form[data-company-enrollment]');
 if (companyForm) {
   const nameInput = companyForm.elements.namedItem('name');
   const slugInput = companyForm.elements.namedItem('slug');
   const submit = companyForm.querySelector('button[type=submit]');
-  const status = document.getElementById('company-status');
-  const error = document.getElementById('company-error');
-  const resultLink = document.getElementById('company-result');
+  const status = find('company-status');
+  const error = find('company-error');
+  const resultLink = find('company-result');
   const account = companyForm.dataset.accountId;
   const originalCommand = companyForm.dataset.commandId;
-  const originalReadOnly = [nameInput.readOnly, slugInput.readOnly];
+  const modes = Array.from(companyForm.querySelectorAll('[data-company-recipient-mode]'));
+  const reference = companyForm.querySelector('[data-company-administrator-reference]');
+  const other = companyForm.querySelector('[data-company-other]');
+  const selected = companyForm.querySelector('[data-company-selected-account]');
+  const group = companyForm.dataset.groupId || null;
+  const controls = [nameInput, slugInput, ...modes, ...(reference ? [reference] : [])];
+  const originalStates = controls.map(input => ({input, readOnly: input.readOnly, disabled: input.disabled}));
   const cancel = companyForm.querySelector('[data-company-cancel]');
   const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) && value !== '00000000-0000-0000-0000-000000000000';
   let pending = false;
   let dispatched = false;
   const problem = text => { error.hidden = false; error.textContent = text; };
   async function companyProof() {
+    const ticket = epoch;
     const response = await fetch('/api/v2/auth/csrf', {
       headers:{Accept:'application/json', 'X-Console-CSRF':'fetch'},
       credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
     });
+    ensure(ticket);
     if (!response.ok) throw new Error('csrf_unavailable');
     const value = await response.json();
+    ensure(ticket);
     if (typeof value.csrf_proof !== 'string' || !value.csrf_proof) throw new Error('csrf_unavailable');
     return value.csrf_proof;
   }
@@ -258,45 +304,74 @@ if (companyForm) {
     nameInput.setCustomValidity(new TextEncoder().encode(value).length > 256 || /^\p{White_Space}*$/u.test(value) || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
       ? '회사 이름을 확인해 주세요. 공백만 입력하거나 제어 문자를 사용할 수 없으며, 한글 기준 약 85자까지 입력할 수 있습니다.' : '');
   };
-  nameInput.addEventListener('input', validateName);
-  if (window.isSecureContext && typeof crypto.randomUUID === 'function' && uuid(account) && (!originalCommand || uuid(originalCommand))) {
-    submit.disabled = false;
-    if (cancel && uuid(originalCommand)) cancel.disabled = false;
-  } else {
-    problem('이 브라우저에서는 등록 요청을 준비할 수 없습니다. 보안 연결에서 다시 열어 주세요.');
+  listen(nameInput, 'input', validateName);
+  const selectedAccount = () => modes.length ? (modes.find(mode => mode.checked)?.value === 'self' ? account : reference.value) : account;
+  function recipientChanged() {
+    if (pending || dispatched) return;
+    const separate = modes.find(mode => mode.checked)?.value === 'other';
+    if (other) other.hidden = !separate;
+    if (reference) {
+      reference.disabled = !separate;
+      reference.required = separate;
+      reference.setCustomValidity(separate && !uuid(reference.value) ? '공유받은 계정 참조를 그대로 입력해 주세요.' : '');
+    }
+    if (selected) selected.textContent = selectedAccount();
   }
-  companyForm.addEventListener('submit', async event => {
+  for (const mode of modes) listen(mode, 'change', recipientChanged);
+  if (reference) listen(reference, 'input', recipientChanged);
+  initializers.push(() => {
+    if (window.isSecureContext && typeof crypto.randomUUID === 'function' && uuid(account) && (!originalCommand || uuid(originalCommand)) && (group === null || uuid(group))) {
+      submit.disabled = false;
+      if (cancel && uuid(originalCommand)) cancel.disabled = false;
+      recipientChanged();
+      return true;
+    }
+    problem('이 브라우저에서는 등록 요청을 준비할 수 없습니다. 보안 연결에서 다시 열어 주세요.');
+    return false;
+  });
+  idle.push(() => !pending && !dispatched);
+  const restoreControls = () => {
+    for (const state of originalStates) { if (state.readOnly !== undefined) state.input.readOnly = state.readOnly; state.input.disabled = state.disabled; }
+    recipientChanged();
+  };
+  listen(companyForm, 'submit', async event => {
     event.preventDefault();
     if (pending || dispatched) return;
+    const ticket = epoch;
     validateName();
-    if (!companyForm.reportValidity()) return;
+    recipientChanged();
+    const administrator = selectedAccount();
+    if (!uuid(administrator) || !companyForm.reportValidity()) return;
     pending = true;
     submit.disabled = true;
     if (cancel) cancel.disabled = true;
     error.hidden = true;
     error.textContent = '';
-    nameInput.readOnly = true;
-    slugInput.readOnly = true;
+    for (const input of controls) { if (input.type === 'radio') input.disabled = true; else input.readOnly = true; }
     const command = originalCommand || crypto.randomUUID();
     const resultPath = `/account/companies/requests/${command}`;
     // The recovery anchor is application-owned and exists before dispatch.
     // Once dispatched, reload also reopens this original request.
     resultLink.href = resultPath;
-    const body = {command_id:command, group_id:null, administrative_account_id:account, name:nameInput.value, slug:slugInput.value};
+    const body = Object.freeze({command_id:command, group_id:group, administrative_account_id:administrator, name:nameInput.value, slug:slugInput.value});
+    const bodyBytes = JSON.stringify(body);
     status.textContent = '등록 요청을 준비하고 있습니다.';
     try {
       const csrf = await companyProof();
+      ensure(ticket);
       window.history.replaceState(null, '', resultPath);
       dispatched = true;
       status.textContent = '회사 업무 공간을 만들고 있습니다.';
       const response = await fetch('/api/v2/companies/enroll', {
         method:'POST', headers:{Accept:'application/json', 'Content-Type':'application/json', 'X-Console-CSRF':csrf},
-        body:JSON.stringify(body), credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
+        body:bodyBytes, credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
       });
+      ensure(ticket);
       if (!response.ok) {
         // A known refusal describes this attempt, not the entire command's
         // history. Keep the original locator even if a prior intake is durable.
         const failure = await response.json().catch(() => null);
+        ensure(ticket);
         const code = failure?.error?.code;
         const known = {
           '409:command_conflict': '이 요청 번호에 이미 다른 내용이 저장되어 있습니다. 원래 요청 결과를 확인해 주세요.',
@@ -318,14 +393,16 @@ if (companyForm) {
         throw new Error('enrollment_unconfirmed');
       }
       const receipt = await response.json();
+      ensure(ticket);
       if (![200,201].includes(response.status) || receipt.outcome !== 'COMMITTED' || receipt.original_command_id !== command ||
-          receipt.administrative_account_id !== account || receipt.result_path !== resultPath ||
+          receipt.administrative_account_id !== administrator || receipt.result_path !== resultPath ||
           typeof receipt.replayed !== 'boolean' || ![receipt.org_id,receipt.group_id,receipt.receipt_id].every(uuid)) {
         throw new Error('enrollment_unconfirmed');
       }
       status.textContent = '생성 완료. 요청 결과로 이동합니다.';
       window.location.assign(resultPath);
     } catch {
+      if (!current(ticket)) return;
       if (dispatched) {
         status.textContent = '생성 결과를 확인할 수 없습니다. 원래 요청의 결과를 확인해 주세요.';
         resultLink.hidden = false;
@@ -335,16 +412,18 @@ if (companyForm) {
         problem('등록 요청을 준비하지 못했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.');
       }
     } finally {
+      if (!current(ticket)) return;
       pending = false;
       if (!dispatched) {
         submit.disabled = false;
         if (cancel) cancel.disabled = false;
-        [nameInput.readOnly, slugInput.readOnly] = originalReadOnly;
+        restoreControls();
       }
     }
   });
-  cancel?.addEventListener('click', async () => {
+  if (cancel) listen(cancel, 'click', async () => {
     if (pending || dispatched || !uuid(originalCommand)) return;
+    const ticket = epoch;
     pending = true;
     submit.disabled = true;
     cancel.disabled = true;
@@ -353,12 +432,14 @@ if (companyForm) {
     status.textContent = '취소 요청을 준비하고 있습니다.';
     try {
       const csrf = await companyProof();
+      ensure(ticket);
       dispatched = true;
       const response = await fetch(`/api/v2/companies/enrollments/${originalCommand}/cancel`, {
         method:'POST', headers:{Accept:'application/json', 'Content-Type':'application/json', 'X-Console-CSRF':csrf},
         body:'{}', credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
       });
       const value = await response.json();
+      ensure(ticket);
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           status.textContent = '취소 권한을 확인할 수 없습니다. 로그인 상태를 확인한 뒤 같은 요청 결과를 다시 열어 주세요.';
@@ -373,15 +454,143 @@ if (companyForm) {
       // The owner decides whether creation committed before cancellation.
       window.location.assign(value.result_path);
     } catch {
+      if (!current(ticket)) return;
       status.textContent = dispatched
         ? '취소 결과를 확인할 수 없습니다. 같은 요청의 결과를 다시 확인해 주세요.'
         : '취소 요청을 보내지 못했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.';
       resultLink.hidden = false;
       status.focus();
     } finally {
+      if (!current(ticket)) return;
       pending = false;
       if (!dispatched) { submit.disabled = false; cancel.disabled = false; }
     }
   });
-  window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+  listen(window, 'pageshow', event => { if (event.persisted) window.location.reload(); });
 }
+
+    const reference = root.querySelector('[data-account-reference]');
+    const copy = root.querySelector('[data-account-copy]');
+    const copyStatus = root.querySelector('[data-account-copy-status]');
+    let copying = false;
+    if (copy) {
+      if (!reference || !copyStatus || !reference.readOnly) throw new Error('missing_reference_control');
+      listen(copy, 'click', async () => {
+        if (copying) return;
+        const ticket = epoch;
+        copying = true; copy.disabled = true;
+        try {
+          if (typeof navigator.clipboard?.writeText !== 'function') throw new Error('clipboard_unavailable');
+          await navigator.clipboard.writeText(reference.value);
+          ensure(ticket);
+          copyStatus.textContent = '계정 참조를 복사했습니다.';
+        } catch {
+          if (current(ticket)) copyStatus.textContent = '복사할 수 없습니다. 계정 참조를 선택해 직접 복사해 주세요.';
+        } finally {
+          if (current(ticket)) { copying = false; copy.disabled = false; }
+        }
+      });
+    }
+    idle.push(() => !copying);
+    function suspend() {
+      live = false; epoch++;
+      for (const {target,type,wrapped} of listeners) { if (wrapped) { try { target.removeEventListener(type,wrapped); } catch { /* Retired epochs cannot dispatch even when detach faults. */ } } }
+    }
+    function resume() {
+      if (live) return;
+      epoch++; live = true;
+      const ticket = epoch;
+      try { for (const listener of listeners) { listener.wrapped = event => { if (current(ticket)) return listener.callback(event); }; listener.target.addEventListener(listener.type,listener.wrapped); } }
+      catch (cause) { suspend(); throw cause; }
+    }
+    const api = Object.freeze({root, suspend, resume,
+      initialize: async known => {
+        const ticket = epoch;
+        const results = await Promise.all(initializers.map(initialize => initialize(known)));
+        if (!current(ticket)) return false;
+        ready = results.every(Boolean); return ready;
+      },
+      activateReady: () => {
+        // Capability checks were completed by the identical untouched controller.
+        for (const initialize of initializers) {
+          const result = initialize(true);
+          if (result === false) throw new Error('controller_capability_changed');
+        }
+        ready = true;
+      },
+      canPromote: () => current() && ready && idle.every(check => check()),
+      recover: () => {
+        if (!current() || !root.isConnected || !presentedNodes.length) return false;
+        // Restore this active presentation's same nodes, including current values,
+        // locks, focus/caret and original recovery locator. Never resurrect old SSR.
+        if (!presentedNodes.every(node => node.parentNode === root)) root.replaceChildren(...presentedNodes);
+        if (focused instanceof HTMLElement && root.contains(focused)) focused.focus({preventScroll:true});
+        return true;
+      },
+    });
+    return api;
+  }
+  function signature(root) {
+    const forms = [...root.querySelectorAll('form')].map(form => ({
+      data: Object.fromEntries(Object.entries(form.dataset).sort(([a],[b]) => a.localeCompare(b))),
+      controls: [...form.querySelectorAll('input')].map(input => ({id:input.id,name:input.name,type:input.type,
+        value:input.value,checked:input.checked,readOnly:input.readOnly,required:input.required,
+        terms:input.dataset.termsKind ?? null})),
+      buttons: [...form.querySelectorAll('button')].map(button => [button.id,button.type,button.textContent,
+        button.hasAttribute('data-native-submit'),button.hasAttribute('data-company-cancel')]),
+    }));
+    return JSON.stringify({forms,
+      reference:[...root.querySelectorAll('[data-account-reference]')].map(input => [input.id,input.type,input.value,input.readOnly]),
+      copy:[...root.querySelectorAll('[data-account-copy]')].map(button => [button.type,button.textContent]),
+      copyStatus:root.querySelectorAll('[data-account-copy-status]').length,
+      recipient:[...root.querySelectorAll('[data-company-selected-account]')].map(node => node.textContent),
+      history:[...root.querySelectorAll('.request-reference')].map(node => node.textContent),
+      links:[...root.querySelectorAll('a')].map(link => [link.getAttribute('href'),link.getAttribute('target'),link.getAttribute('rel'),link.textContent]),
+      terms:[...root.querySelectorAll('.terms-content')].map(node => node.textContent),
+      recovery:['native-status','native-error','native-cancel','native-recheck','native-retry-finish','native-continue','native-reload-terms','company-status','company-error','company-result']
+        .map(id => [id,root.querySelectorAll(`[id="${id}"]`).length]),
+    });
+  }
+  const root = document.getElementById('console-account-fallback') || document;
+  active = makeController(root); active.resume();
+  const ready = active.initialize(false).catch(() => false);
+  const handle = Object.freeze({ready,
+    recover: host => active.root === host && active.recover(),
+    promote: host => {
+      const original = active, guard = window.__consoleAccountGuard;
+      if (!(original.root instanceof Element) || !(host instanceof Element) || host.isConnected ||
+          !host.querySelector('[data-console-react-account="mounted"]') || !guard?.canPromote() || !original.canPromote()) return false;
+      try { if (signature(original.root) !== signature(host)) return false; } catch { return false; }
+      if (!guard.canPromote() || !original.canPromote() || !original.root.isConnected) return false;
+      let replacement, claimed = false;
+      const parent = original.root.parentNode, next = original.root.nextSibling;
+      try {
+        // Construction is detached and registers no active listeners.
+        replacement = makeController(host);
+        const oldInputs = [...original.root.querySelectorAll('input')], newInputs = [...host.querySelectorAll('input')];
+        if (oldInputs.length !== newInputs.length) return false;
+        for (let i = 0; i < oldInputs.length; i++) {
+          const before = oldInputs[i], after = newInputs[i];
+          if (before.id !== after.id || before.name !== after.name || before.type !== after.type || before.value !== after.value) return false;
+          if (before.selectionStart !== null) after.setSelectionRange(before.selectionStart,before.selectionEnd,before.selectionDirection);
+        }
+        if (!guard.canPromote() || !original.canPromote() || signature(original.root) !== signature(host)) return false;
+        original.suspend(); claimed = true;
+        original.root.replaceWith(host);
+        if (!host.isConnected || original.root.isConnected) throw new Error('incomplete_controller_swap');
+        active = replacement; replacement.resume(); replacement.activateReady();
+        return true;
+      } catch {
+        replacement?.suspend();
+        if (claimed) {
+          if (original.root.parentNode !== parent) parent.insertBefore(original.root, host.parentNode === parent ? host : next?.parentNode === parent ? next : null);
+          if (host.parentNode) host.remove();
+          active = original; original.resume();
+        }
+        return false;
+      }
+    },
+  });
+  Object.defineProperty(window,'__consoleAccountController',{value:handle,writable:false,configurable:false});
+  window.dispatchEvent(new Event('console-account-controller-ready'));
+})();

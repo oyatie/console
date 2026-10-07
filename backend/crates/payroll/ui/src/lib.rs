@@ -698,6 +698,39 @@ mod ssr {
         )
     }
 
+    async fn account_js() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_bytes!("../react-account/account.js").as_slice(),
+        )
+    }
+
+    async fn account_guard_js() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_bytes!("../react-account/account-guard.js").as_slice(),
+        )
+    }
+
+    async fn account_css() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/css; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_bytes!("../react-account/account.css").as_slice(),
+        )
+    }
+
     async fn workspace_css() -> impl IntoResponse {
         (
             [
@@ -728,6 +761,9 @@ mod ssr {
         S: Clone + Send + Sync + 'static,
     {
         Router::new()
+            .route("/assets/account.js", get(account_js))
+            .route("/assets/account-guard.js", get(account_guard_js))
+            .route("/assets/account.css", get(account_css))
             .route("/assets/people.js", get(people_js))
             .route("/assets/people-guard.js", get(people_guard_js))
             .route("/assets/people.css", get(people_css))
@@ -1736,6 +1772,7 @@ mod private_document_tests {
             ),
             (
                 || Page::Account {
+                    account_id: "11111111-1111-4111-8111-111111111111".into(),
                     context: ContextState::Empty,
                     can_logout: true,
                     company_setup: CompanySetupEligibility::Eligible,
@@ -1744,6 +1781,7 @@ mod private_document_tests {
             ),
             (
                 || Page::Account {
+                    account_id: "11111111-1111-4111-8111-111111111111".into(),
                     context: ContextState::Unavailable,
                     can_logout: true,
                     company_setup: CompanySetupEligibility::Unavailable,

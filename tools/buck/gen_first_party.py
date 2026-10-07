@@ -160,6 +160,7 @@ RESOURCE_CONFIG = {
         "external": {
             ":console-payroll-ui-validated-bundle": "backend/crates/payroll/ui/pkg",
             "//clients/desktop-web:people-validated-bundle": "backend/crates/payroll/ui/react",
+            "//clients/desktop-web:account-validated-bundle": "backend/crates/payroll/ui/react-account",
             "//backend/crates/payroll/rest:crate-openapi-tree":
                 "backend/crates/payroll/rest/openapi",
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
@@ -2007,6 +2008,17 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
             '    name = "react-assets",',
             '    src = "react",',
             '    mode = "reference",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "export_file(",
+            '    name = "react-account-assets",',
+            '    src = "react-account",',
+            '    mode = "reference",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "export_file(",
+            '    name = "react-account-controller",',
+            '    src = "src/native_account.js",',
             '    visibility = ["PUBLIC"],',
             ")", "",
         ]
