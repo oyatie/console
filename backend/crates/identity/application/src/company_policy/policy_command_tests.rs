@@ -513,3 +513,7 @@ fn org_unit_codec3_request_refs_preserve_family_and_distinct_actions() {
         }
     }
 }
+
+// Company-information V2 exact pure-codec contract; database owner remains fenced.
+#[path = "company_information_codec4_contract_tests.rs"]
+mod company_information_codec4_contract;
