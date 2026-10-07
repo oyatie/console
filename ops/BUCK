@@ -340,3 +340,14 @@ export_file(
     name = "fixtures/native-org-unit-account-actor-capture-export-contract-v2.json",
     visibility = ["PUBLIC"],
 )
+
+# Exact uninstalled Manager SQL inputs consumed by native custody verification.
+export_file(
+    name = "postgres-finalize-company-information-manager-current-policy-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-company-information-manager-current-policy-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
