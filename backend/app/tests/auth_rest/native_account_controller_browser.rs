@@ -42,6 +42,151 @@ async fn event(reader: &mut tokio::io::BufReader<tokio::process::ChildStdout>) -
     value
 }
 
+// Failure-only diagnostic; it cannot replace the original outcome or any admission oracle.
+fn producer_failure_diagnostic(output: &std::path::Path) -> Value {
+    use rustix::fs::{Mode, OFlags};
+    use std::io::Read as _;
+    #[derive(serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Diagnostic {
+        kind: String,
+        original_stage: Option<String>,
+        original_code: Option<String>,
+        finalization_stage: Option<String>,
+        finalization_code: Option<String>,
+    }
+    let unavailable = |status| json!({"status":status,"record":null});
+    let file = output.join("producer-diagnostic.json");
+    match std::fs::symlink_metadata(&file) {
+        Ok(metadata) if !metadata.is_file() => return unavailable("nonregular"),
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return unavailable("missing");
+        }
+        Err(_) => return unavailable("unavailable"),
+    }
+    let fd = match rustix::fs::open(
+        &file,
+        OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::CLOEXEC,
+        Mode::empty(),
+    ) {
+        Ok(fd) => fd,
+        Err(rustix::io::Errno::LOOP) => return unavailable("nonregular"),
+        Err(_) => return unavailable("unavailable"),
+    };
+    let file = std::fs::File::from(fd);
+    match file.metadata() {
+        Ok(metadata) if !metadata.is_file() => return unavailable("nonregular"),
+        Ok(metadata) if metadata.len() > 1024 => return unavailable("oversized"),
+        Ok(_) => {}
+        Err(_) => return unavailable("unavailable"),
+    }
+    let mut bytes = Vec::new();
+    if file.take(1025).read_to_end(&mut bytes).is_err() {
+        return unavailable("unavailable");
+    }
+    if bytes.len() > 1024 {
+        return unavailable("oversized");
+    }
+    match serde_json::from_slice::<Value>(&bytes) {
+        Ok(Value::Object(object))
+            if object.len() == 5
+                && [
+                    "kind",
+                    "original_stage",
+                    "original_code",
+                    "finalization_stage",
+                    "finalization_code",
+                ]
+                .iter()
+                .all(|key| object.contains_key(*key)) => {}
+        Ok(_) => return unavailable("invalid"),
+        Err(_) => return unavailable("unparseable"),
+    }
+    let diagnostic: Diagnostic = match serde_json::from_slice(&bytes) {
+        Ok(value) => value,
+        Err(_) => return unavailable("unparseable"),
+    };
+    let stages = [
+        "prerequisites",
+        "owner_start",
+        "browser_launch",
+        "a_registration",
+        "o_registration",
+        "o_logout",
+        "o_login",
+        "healthy_handoff_entry",
+        "own_account_reference",
+        "separate_administrator",
+        "company_submit",
+        "handoff_reopen",
+        "owner_cancel",
+        "controller/native-first",
+        "controller/react-first",
+        "controller/keyboard-before-react",
+        "controller/autofill-before-react",
+        "controller/eventless-value-before-react",
+        "controller/ime-before-react",
+        "controller/preclaim-focus",
+        "controller/partial-bind-rollback",
+        "controller/capability-denied",
+        "controller/freeze-at-csrf",
+        "cleanup",
+        "evidence",
+        "result_write",
+        "result_emit",
+        "OTHER",
+    ];
+    let codes = [
+        "TIMEOUT",
+        "OWNER_PROTOCOL",
+        "OWNER_EOF",
+        "OWNER_REFUSED",
+        "PREREQUISITE",
+        "TLS_RELAY_FAILED",
+        "EXTERNAL_REQUEST",
+        "ACCOUNT_SSR",
+        "ACCOUNT_REFERENCE_MISSING",
+        "ACCOUNT_REFERENCE_INVALID",
+        "SEPARATE_ADMIN_CONTROL_MISSING",
+        "ADMINISTRATOR_INPUT_INVALID",
+        "REACT_ACCOUNT_MOUNT_MISSING",
+        "HANDOFF_RECEIPT",
+        "HANDOFF_DISCLOSURE",
+        "HANDOFF_EVIDENCE",
+        "CONTROLLER_EVIDENCE",
+        "ACCOUNT_CONTROLLER_INVARIANT",
+        "BROWSER_TIMEOUT",
+        "INVALID_JSON",
+        "BROWSER_TYPE_ERROR",
+        "RESPONSE_BODY_UNAVAILABLE",
+        "BROWSER_CONTEXT_DESTROYED",
+        "UNCLASSIFIED_FAILURE",
+        "OTHER",
+    ];
+    let valid_pair = |stage: &Option<String>, code: &Option<String>| match (stage, code) {
+        (None, None) => true,
+        (Some(stage), Some(code)) => {
+            stages.contains(&stage.as_str()) && codes.contains(&code.as_str())
+        }
+        _ => false,
+    };
+    if diagnostic.kind != "ACCOUNT_CONTROLLER_PRODUCER_FAILURE_V1"
+        || !valid_pair(&diagnostic.original_stage, &diagnostic.original_code)
+        || !valid_pair(
+            &diagnostic.finalization_stage,
+            &diagnostic.finalization_code,
+        )
+        || (diagnostic.original_stage.is_none() && diagnostic.finalization_stage.is_none())
+    {
+        return unavailable("invalid");
+    }
+    json!({"status":"present","record":{
+        "kind":diagnostic.kind,"original_stage":diagnostic.original_stage,
+        "original_code":diagnostic.original_code,"finalization_stage":diagnostic.finalization_stage,
+        "finalization_code":diagnostic.finalization_code}})
+}
+
 #[sqlx::test(migrations = false)]
 async fn real_browser_account_controller_promotion_and_frozen_administrator(pool: PgPool) {
     let original = PathBuf::from(
@@ -68,11 +213,11 @@ async fn real_browser_account_controller_promotion_and_frozen_administrator(pool
         ("account_company_handoff.cjs", HELPER_SHA256),
         (
             "account-controller.cjs",
-            "d3a0762ddcbe27d056dc517461ff404d3807344982ad8462b4731390de86f835",
+            "c91cbff5a96176fb67f34753483a52c4960c9552fd6677d476906ef98d9aa67a",
         ),
         (
             "account_controller_controls.cjs",
-            "fedc7548c8783e4457649ba5478cd0d971dd29d5d6c671ced9ff970c840aece4",
+            "540382452084a0e40205c78ba502bf9360a2ec647a0aeb30425e20bbc4d1b8dc",
         ),
         (
             "account_controller_evidence.cjs",
@@ -446,9 +591,23 @@ async fn real_browser_account_controller_promotion_and_frozen_administrator(pool
     let source_unchanged = sources
         .iter()
         .all(|(file, bytes)| std::fs::read(file).is_ok_and(|current| current == *bytes));
-    let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
+    let exit_ok = matches!(&child_status, Ok(Ok(status)) if status.success());
+    let (wait_state, exit_code, signal) = match &child_status {
+        Ok(Ok(status)) => {
+            #[cfg(unix)]
+            let signal = std::os::unix::process::ExitStatusExt::signal(status);
+            #[cfg(not(unix))]
+            let signal: Option<i32> = None;
+            ("exited", status.code(), signal)
+        }
+        Ok(Err(_)) => ("wait_failed", None, None),
+        Err(_) => ("timed_out", None, None),
+    };
+    let producer_diagnostic = producer_failure_diagnostic(&output);
     let receipt = json!({"kind":"INDEPENDENT_REACT_ACCOUNT_CONTROLLER_DB_CHECKPOINTS_V1",
         "checkpoints":checkpoints,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,
+        "driver_wait_state":wait_state,"driver_exit_code":exit_code,"driver_signal":signal,
+        "producer_failure_diagnostic":producer_diagnostic,
         "server_shutdown":server_clean,"browser_pid":owned_pid,"browser_seen_alive":seen_alive,
         "browser_pid_exit_confirmed":browser_clean,"browser_final_alive_observation":exited,
         "limits":"TEST_ONLY terms and virtual authenticator; browser owner handoff only; complete original census retained; no native-device, full parity, usability, release or production claim"});

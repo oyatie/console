@@ -13,9 +13,30 @@ const pin={
 }[process.platform+'-'+process.arch];
 function fact(value,code){if(value!==true)throw Object.assign(new Error(code),{code});}
 function bounded(promise,ms){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Object.assign(new Error('TIMEOUT'),{code:'TIMEOUT'})),ms);})]).finally(()=>clearTimeout(timer));}
+// Failure-only fixed enums; never persist error text, inputs, identifiers or credentials.
+const diagnosticStages=new Set(["prerequisites","owner_start","browser_launch","a_registration","o_registration","o_logout","o_login","healthy_handoff_entry","own_account_reference","separate_administrator","company_submit","handoff_reopen","owner_cancel","controller/native-first","controller/react-first","controller/keyboard-before-react","controller/autofill-before-react","controller/eventless-value-before-react","controller/ime-before-react","controller/preclaim-focus","controller/partial-bind-rollback","controller/capability-denied","controller/freeze-at-csrf","cleanup","evidence","result_write","result_emit","OTHER"]);
+const diagnosticCodes=new Set(["TIMEOUT","OWNER_PROTOCOL","OWNER_EOF","OWNER_REFUSED","PREREQUISITE","TLS_RELAY_FAILED","EXTERNAL_REQUEST","ACCOUNT_SSR","ACCOUNT_REFERENCE_MISSING","ACCOUNT_REFERENCE_INVALID","SEPARATE_ADMIN_CONTROL_MISSING","ADMINISTRATOR_INPUT_INVALID","REACT_ACCOUNT_MOUNT_MISSING","HANDOFF_RECEIPT","HANDOFF_DISCLOSURE","HANDOFF_EVIDENCE","CONTROLLER_EVIDENCE","ACCOUNT_CONTROLLER_INVARIANT","BROWSER_TIMEOUT","INVALID_JSON","BROWSER_TYPE_ERROR","RESPONSE_BODY_UNAVAILABLE","BROWSER_CONTEXT_DESTROYED","UNCLASSIFIED_FAILURE","OTHER"]);
+let diagnosticFile,diagnostic,finalizationStage='prerequisites',diagnosticCreated=false,diagnosticIdentity;
+function writeFailureDiagnostic(original,finalization){
+ if(!diagnosticFile)return;
+ diagnostic??={kind:'ACCOUNT_CONTROLLER_PRODUCER_FAILURE_V1',original_stage:null,original_code:null,finalization_stage:null,finalization_code:null};
+ for(const [prefix,failure] of [['original',original],['finalization',finalization]])if(failure){
+  diagnostic[prefix+'_stage']=diagnosticStages.has(failure.stage)?failure.stage:'OTHER';
+  diagnostic[prefix+'_code']=diagnosticCodes.has(failure.code)?failure.code:'OTHER';
+ }
+ let fd;
+ try{
+  const flags=fs.constants.O_WRONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK|
+   (diagnosticCreated?0:fs.constants.O_CREAT|fs.constants.O_EXCL);
+  fd=fs.openSync(diagnosticFile,flags,0o600);const stat=fs.fstatSync(fd,{bigint:true});
+  if(!stat.isFile()||(diagnosticCreated&&(stat.dev!==diagnosticIdentity.dev||stat.ino!==diagnosticIdentity.ino)))return;
+  fs.ftruncateSync(fd,0);fs.writeFileSync(fd,JSON.stringify(diagnostic)+'\n');
+  diagnosticIdentity={dev:stat.dev,ino:stat.ino};diagnosticCreated=true;
+ }catch{}finally{if(fd!==undefined)try{fs.closeSync(fd);}catch{}}
+}
 async function main(port,out){
  fact(pin&&/^\d+$/.test(port)&&Number(port)>0&&Number(port)<=65535&&path.isAbsolute(out),'PREREQUISITE');
- fs.mkdirSync(out,{mode:0o700});
+ fs.mkdirSync(out,{mode:0o700});diagnosticFile=path.join(out,'producer-diagnostic.json');
  const result={kind:'REAL_REACT_ACCOUNT_CONTROLLER_PARITY_V1',checkpoints:[],screenshots:[],documents:[],mutations:[],csrf_requests:[],observation_failures:0,external_requests:0,cleanup:{confirmed:false}};
  const files=['fixture.key','fixture.crt','fixture.cnf'].map(n=>path.join(out,n)),sockets=new Set();
  const emit=value=>process.stdout.write(JSON.stringify(value)+'\n');
@@ -29,9 +50,9 @@ async function main(port,out){
   reader?.close();result.cleanup={confirmed:closed.confirmed&&relayClosed,browser_process_exited:closed.confirmed,relay_closed:relayClosed};
  })();}
  async function finish(){if(finishPromise)return finishPromise;finishing=true;return finishPromise=(async()=>{
-  await cleanup();result.status=!result.failure&&validCompleteEvidence(result)&&result.cleanup.confirmed?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';
-  fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
-  emit({kind:'RESULT',status:result.status,result_path:path.join(out,'result.json'),failure_stage:result.failure?.stage??null,failure_code:result.failure?.code??null});
+  finalizationStage='cleanup';await cleanup();finalizationStage='evidence';result.status=!result.failure&&validCompleteEvidence(result)&&result.cleanup.confirmed?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';
+  finalizationStage='result_write';fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
+  finalizationStage='result_emit';emit({kind:'RESULT',status:result.status,result_path:path.join(out,'result.json'),failure_stage:result.failure?.stage??null,failure_code:result.failure?.code??null});
   process.exitCode=result.status==='BROWSER_LEAF_PASSED'?0:2;
  })();}
  function cancel(code){if(finishing||cancelled)return;cancelled=true;result.failure={stage:'owner_cancel',code};void cleanup().catch(()=>{result.cleanup={confirmed:false};});}
@@ -72,6 +93,7 @@ async function main(port,out){
  }catch(error){
   const own=new Set(['ACCOUNT_REFERENCE_MISSING','ACCOUNT_REFERENCE_INVALID','SEPARATE_ADMIN_CONTROL_MISSING','ADMINISTRATOR_INPUT_INVALID','REACT_ACCOUNT_MOUNT_MISSING','HANDOFF_RECEIPT','HANDOFF_DISCLOSURE','HANDOFF_EVIDENCE']);
   result.failure??={stage,code:own.has(error?.code)?error.code:stage.startsWith('controller/')&&error?.code==='ERR_ASSERTION'?'ACCOUNT_CONTROLLER_INVARIANT':publicError(error)};
+  writeFailureDiagnostic(result.failure,null);
  }finally{clearTimeout(watchdog);await finish();}
 }
-if(require.main===module)main(process.argv[2],process.argv[3]).catch(()=>{process.stderr.write('Account controller browser producer prerequisite failed; no acceptance result.\n');process.exitCode=2;});
+if(require.main===module)main(process.argv[2],process.argv[3]).catch(error=>{writeFailureDiagnostic(null,{stage:finalizationStage,code:publicError(error)});process.stderr.write('Account controller browser producer prerequisite failed; no acceptance result.\n');process.exitCode=2;});

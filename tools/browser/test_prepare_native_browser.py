@@ -32,8 +32,8 @@ DRIVERS = {
     "hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
 }
 COMPANIONS = {
-    "account-controller.cjs": "d3a0762ddcbe27d056dc517461ff404d3807344982ad8462b4731390de86f835",
-    "account_controller_controls.cjs": "fedc7548c8783e4457649ba5478cd0d971dd29d5d6c671ced9ff970c840aece4",
+    "account-controller.cjs": "c91cbff5a96176fb67f34753483a52c4960c9552fd6677d476906ef98d9aa67a",
+    "account_controller_controls.cjs": "540382452084a0e40205c78ba502bf9360a2ec647a0aeb30425e20bbc4d1b8dc",
     "account_controller_evidence.cjs": "50e37ea2b53fdf8aa6b4f649e43ed0500946cbbcffaff139914d516ff0485341",
     "account-company-handoff.cjs": "c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d",
     "account_company_handoff.cjs": "d48aa90e0c9e8488d347198e2b8222f1c33fd109e47a2f45070e206cc3953ab7",

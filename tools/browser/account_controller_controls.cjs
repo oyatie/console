@@ -7,7 +7,7 @@ const {NAMES, validRecords} = require('./account_controller_evidence.cjs');
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
 const paint = page => page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 function installProbe(mode) {
-  let form, controls, html, progress, fault = 0, renderHits = 0, capabilityCalls = 0;
+  let form, controls, html, progress, fault = 0, renderHits = 0, capabilityCalls = 0, controllerWaits = 0;
   const retired = [], add = EventTarget.prototype.addEventListener, create = Document.prototype.createElement;
   const snapshot = () => form && JSON.stringify({values: [...form.querySelectorAll('input')].map(e =>
     [e.name, e.value, e.checked, e.readOnly, e.disabled, e.selectionStart, e.selectionEnd]),
@@ -25,7 +25,9 @@ function installProbe(mode) {
         this.matches('form[data-company-enrollment]') && currentForm() === this) {
       fault++; throw new Error('INJECTED_ACCOUNT_BIND_FAILURE');
     }
-    return add.call(this, type, listener, ...rest);
+    const registered = add.call(this, type, listener, ...rest);
+    if (this === window && type === 'console-account-controller-ready') controllerWaits++;
+    return registered;
   };
   Document.prototype.createElement = function(tag, ...rest) {
     if (String(tag).toLowerCase() === 'form') {
@@ -39,7 +41,7 @@ function installProbe(mode) {
     capabilityCalls++; return new Promise(resolve => {resolveCapability = resolve;});
   };
   Object.defineProperty(window, '__consoleAccountControllerProbe', {value: Object.freeze({
-    retain, counts: () => ({fault, renderHits, capabilityCalls}),
+    retain, counts: () => ({fault, renderHits, capabilityCalls, controllerWaits}),
     sameNodes: () => !!form && currentForm() === form && controls.every(e => e.isConnected && form.contains(e)),
     same: () => !!form && currentForm() === form && controls.every(e => e.isConnected && form.contains(e)) && form.outerHTML === html,
     preserved: () => progress === snapshot(), snapshot: () => {progress = snapshot();},
@@ -116,7 +118,9 @@ async function runControllerControls({browser, origin, result:r, out, emit, rece
         } else {
           await formLocator(p).waitFor({state:'visible'});
           if (name === 'react-first') {
-            await p.waitForFunction(() => window.__consoleAccountControllerProbe.counts().renderHits > 0);
+            // React awaits the withheld native controller before its detached render.
+            await p.waitForFunction(() => window.__consoleAccountControllerProbe.counts().controllerWaits === 1);
+            assert.equal(await p.evaluate(() => window.__consoleAccountControllerProbe.counts().renderHits),0);
             assert.equal(await p.locator('[data-console-react-account="mounted"]').count(),0);
           } else await submitLocator(p).waitFor({state:'visible'});
           if (name !== 'react-first') await p.waitForFunction(() => !document.querySelector('form[data-company-enrollment] button[type="submit"]').disabled);
@@ -146,6 +150,7 @@ async function runControllerControls({browser, origin, result:r, out, emit, rece
           await p.evaluate(() => window.__consoleAccountControllerProbe.snapshot());
         }
         release?.(); await p.waitForLoadState('networkidle'); await paint(p); await Promise.all(assetWork);
+        if (name === 'react-first') assert.ok(await p.evaluate(() => window.__consoleAccountControllerProbe.counts().renderHits > 0));
         const mounted = await p.locator('[data-console-react-account="mounted"]').count();
         assert.equal(mounted,['native-first','react-first','freeze-at-csrf'].includes(name)?1:0);
         let exactNodes = false, inputPreserved = true;
