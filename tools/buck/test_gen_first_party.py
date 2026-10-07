@@ -24,6 +24,44 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_manager_serving_sql_inputs_reach_unit_and_auth_rest(self) -> None:
+        root = Path(GENERATOR.REPO)
+        local = "src/company_information_manager_current_policy_v1_custody_state.sql"
+        library = GENERATOR.RESOURCE_CONFIG["console-app"]
+        browser = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        expected = {
+            "ops/postgres-finalize-company-information-manager-current-policy-v1.sql": "4916eaf30459b7d28f17b4fbb4793f2159b82e5f9bf5b8102ec6b0abde9fc30d",
+            "ops/postgres-company-information-manager-current-policy-v1-custody-state.sql": "2ad10750d99ded7ff02acd5ddb10214eefa4063d7d0a14c2ca83e1db9e263853",
+        }
+        existing = ["ops/postgres-finalize-company-enrollment.sql", "ops/postgres-finalize-native-company-policy.sql",
+                    "ops/account-custody-migrations.sha384"]
+        for config in [library, browser]:
+            self.assertIn(local, config["srcs"], "Manager classifier is an actual Rust include_str input")
+            required = existing + list(expected)
+            if config is library:
+                required.remove("ops/postgres-company-information-manager-current-policy-v1-custody-state.sql")
+            for relative in required:
+                self.assertEqual(config["external"].get("//ops:" + Path(relative).name), relative,
+                                 "Every SQL and ledger include must reach the actual variant")
+            for relative, digest in expected.items():
+                source = root / relative
+                self.assertFalse(source.is_symlink())
+                self.assertTrue(source.is_file())
+                self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), digest)
+        self.assertEqual((root / "backend/app" / local).read_bytes(),
+                         (root / "ops/postgres-company-information-manager-current-policy-v1-custody-state.sql").read_bytes())
+        exports = [statement.value for statement in ast.parse((root / "ops/BUCK").read_text()).body
+                   if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call)
+                   and isinstance(statement.value.func, ast.Name) and statement.value.func.id == "export_file"]
+        for relative in expected:
+            name = Path(relative).name
+            matches = [{field.arg: ast.literal_eval(field.value) for field in call.keywords}
+                       for call in exports if any(field.arg == "name" and ast.literal_eval(field.value) == name
+                                                  for field in call.keywords)]
+            self.assertEqual(len(matches), 1, "Manager SQL needs exactly one native ops export")
+            self.assertEqual(matches[0]["visibility"], ["PUBLIC"])
+            self.assertEqual(matches[0].get("src", name), name)
+
     def test_writer_ratchet_receives_workspace_and_topology_resources(self) -> None:
         expected = GENERATOR.integration_external_resources(
             "console-gate-layer-boundary", "tests/gate_detects_violation.rs", ""
