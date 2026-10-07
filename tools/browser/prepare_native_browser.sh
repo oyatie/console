@@ -44,7 +44,7 @@ for entry in \
   policy_journey:766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea \
   recovery_controls:fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6 \
   account-company-handoff:c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d \
-  account_company_handoff:6d67365b1782fe59ad22738d30b453552bc2805655ebf60d7cd825ecb14592d5; do
+  account_company_handoff:d48aa90e0c9e8488d347198e2b8222f1c33fd109e47a2f45070e206cc3953ab7; do
   cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"
   verify_sha "${stage}/${entry%%:*}.cjs" "${entry#*:}"
 done

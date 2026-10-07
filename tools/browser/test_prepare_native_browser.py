@@ -33,7 +33,7 @@ DRIVERS = {
 }
 COMPANIONS = {
     "account-company-handoff.cjs": "c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d",
-    "account_company_handoff.cjs": "6d67365b1782fe59ad22738d30b453552bc2805655ebf60d7cd825ecb14592d5",
+    "account_company_handoff.cjs": "d48aa90e0c9e8488d347198e2b8222f1c33fd109e47a2f45070e206cc3953ab7",
     "native_header.cjs": "915f37ffb3b7580202158ca23425e047e4587278aaaa5725687f9a6eb71a34c4",
     "people_journey.cjs": "051ccf6be53899a9b077df697e4fea36d7edacc38e8b8e2065ca37b5c52e098b",
     "react_people_controls.cjs": "04990da9c37c41e8b478d118effeb44a1c6f805a408fddb455039404bd32c97c",
