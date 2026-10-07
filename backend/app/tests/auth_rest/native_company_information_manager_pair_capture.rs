@@ -19,6 +19,7 @@ mod native_company_information_manager_pair_capture {
     include!("native_company_information_manager_capture_support.rs");
     include!("native_company_information_manager_capture_oracles.rs");
     include!("native_company_information_manager_capture_controls.rs");
+    include!("native_company_information_manager_serving_custody_tests.rs");
 
     #[sqlx::test(migrations = false)]
     async fn captures_actual_manager_plain_and_observer_policy_v1_metadata_then_rolls_back(

@@ -208,3 +208,8 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
         Err(AppError::Config(credentials))
     }
 }
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[path = "account_custody_manager_policy_v1_tests.rs"]
+mod manager_policy_v1_tests;
