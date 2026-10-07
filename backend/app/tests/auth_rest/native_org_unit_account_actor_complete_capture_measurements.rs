@@ -2724,7 +2724,6 @@ WHERE n.nspname='org_column_v3_probe' AND c.relkind IN('r','p','f','v','m','c','
                     family_positive(&baseline).expect("PREREQUISITE: seven actual catalog/native/function positives");
                     let source = source_family_observation(connection, &inputs).await;
                     source_family_census(&source, &baseline).expect("PREREQUISITE: actual pinned source seven-kind native/census observation");
-                    source_family_machinery_controls(&baseline);
                     let saved = family_raw(connection).await;
                     let selected = inputs.as_array().unwrap().iter().position(|x|x["native"]["type"]=="view column").unwrap();
                     let selected_tuple = inputs[selected]["tuple"].clone();
@@ -3021,27 +3020,39 @@ FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_arr
 
             fn audit_machinery_controls(baseline: &Value) {
                 owner_inverse_prerequisite(baseline).unwrap();
+                // One private working copy; restore each fault before moving
+                // ownership to the next control. Retain every original assertion.
+                let mut working = baseline.clone();
                 for field in ["inverse", "objects"] {
-                    let mut omitted = baseline.clone();
-                    omitted[field].as_array_mut().unwrap().pop();
+                    let mut omitted = working;
+                    let removed = omitted[field].as_array_mut().unwrap().pop().unwrap();
                     assert!(owner_inverse_prerequisite(&omitted).is_err());
-                    let mut duplicate = baseline.clone();
+                    omitted[field].as_array_mut().unwrap().push(removed);
+                    let mut duplicate = omitted;
                     let copy = duplicate[field][0].clone();
                     duplicate[field].as_array_mut().unwrap().push(copy);
                     assert!(owner_inverse_prerequisite(&duplicate).is_err());
+                    duplicate[field].as_array_mut().unwrap().pop();
+                    working = duplicate;
                 }
                 for field in ["ordinary_edges", "shared_edges"] {
-                    let mut changed = baseline.clone();
+                    let mut changed = working;
                     let rows = changed[field].as_array_mut().unwrap();
-                    if rows.is_empty() {
+                    let removed = rows.pop();
+                    if removed.is_none() {
                         rows.push(Value::Null);
-                    } else {
-                        rows.pop();
                     }
                     assert!(
                         owner_inverse_prerequisite(&changed).is_err(),
                         "edge bag multiplicity must remain complete"
                     );
+                    let rows = changed[field].as_array_mut().unwrap();
+                    if let Some(row) = removed {
+                        rows.push(row);
+                    } else {
+                        rows.pop();
+                    }
+                    working = changed;
                 }
                 let selected = baseline["inverse"]
                     .as_array()
@@ -3053,15 +3064,21 @@ FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_arr
                     ("inverse_tuple", Value::Null),
                     ("COLUMN_witness", Value::Null),
                 ] {
-                    let mut bad = baseline.clone();
-                    bad["inverse"][selected][field] = value;
+                    let mut bad = working;
+                    let original = std::mem::replace(&mut bad["inverse"][selected][field], value);
                     assert!(owner_inverse_prerequisite(&bad).is_err());
+                    bad["inverse"][selected][field] = original;
+                    working = bad;
                 }
+                assert_eq!(
+                    working, *baseline,
+                    "every prerequisite corruption must restore the complete observation"
+                );
                 // Evidence-only positive model. It leaves the actual
                 // source observation untouched and supplies no product pass.
                 // Every column in this independent model has its separately
                 // checked raw native address as the expected portable identity.
-                let mut oracle_positive = baseline.clone();
+                let mut oracle_positive = working;
                 let columns: Vec<_> = oracle_positive["inverse"]
                     .as_array()
                     .unwrap()
@@ -3081,12 +3098,13 @@ FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_arr
                     .expect("EVIDENCE_ONLY: predecessor strict predicate model must pass");
                 for &index in &columns {
                     for field in ["valid", "portable"] {
-                        let mut bad = oracle_positive.clone();
-                        bad["inverse"][index][field] = if field == "valid" {
+                        let mut bad = oracle_positive;
+                        let value = if field == "valid" {
                             json!(false)
                         } else {
                             Value::Null
                         };
+                        let original = std::mem::replace(&mut bad["inverse"][index][field], value);
                         assert!(
                             portable_columns_required(&bad).is_err(),
                             "successful inverse cannot confer portable validity"
@@ -3095,6 +3113,8 @@ FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_arr
                             inverse_positive(&bad).is_err(),
                             "predecessor strict portability assertion must remain enforced"
                         );
+                        bad["inverse"][index][field] = original;
+                        oracle_positive = bad;
                     }
                 }
                 portable_columns_required(&oracle_positive).unwrap();
@@ -3129,27 +3149,19 @@ FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_arr
                 let original_rows = complete_business(tx.as_mut(), false).await;
                 let original_catalog = catalog(tx.as_mut()).await;
                 let mut baseline = None;
-                let result=AssertUnwindSafe(async {
-                    baseline=Some(owner_audit(tx.as_mut()).await);
-                    let (source_family, family_inverses)=seven_kind_positive_and_controls(tx.as_mut()).await;
-                    let actual=owner_view_observation(tx.as_mut(),baseline.as_ref().unwrap()).await;
-                    owner_inverse_prerequisite(&actual).expect("PREREQUISITE: complete independent column/TOAST/native inverse positive before portable-validity RED");
-                    assert!(actual["inverse"].as_array().unwrap().iter().any(|e|column_entry(e) && e["native"]["type"]=="view column"),"PREREQUISITE: real selected owner view-column witness");
-                    audit_machinery_controls(&actual);
-                    assert_eq!(applied_ledger(tx.as_mut()).await,original_ledger);
-                    assert_eq!(complete_business(tx.as_mut(),false).await,original_rows);
-                    assert_eq!(catalog(tx.as_mut()).await,original_catalog);
-                    writeln!(&mut std::io::stderr().lock(),"ORG_COLUMN_V3_INVERSE_PREREQUISITE {}",json!({
-                        "design_sha256":DESIGN,"sources":sources,"address_count":actual["address_count"],
-                        "actual_seven_kind_inverse_positive":true,"actual_pinned_seven_kind_source_observation":&source_family,
-                        "evidence_only_predicate_models":true,"source_family_predicate_corruptions":58,"malformed_input_controls":16,"SQL_array_shape_controls":2,"lookup_corruption_controls":4,"actual_catalog_controls":7,"actual_catalog_mutations":6,"actual_unsupported_index_inputs":1,
-                        "all_eight_TOAST_guards_retained":true,"complete_inverse_raw_census":true,"source_flags_unchanged_by_helper":true,
-                        "semantic_column_validity_accepted":false,"TOAST_map_accepted":false,"full_PSV_packet_accepted":false,
-                        "database_owner_accepted":false,"MVP_accepted":false,"production_qualified":false})).unwrap();
-                    portable_columns_required(&actual)
-                        .and_then(|_| source_family_positive(&source_family, &family_inverses))
-                        .expect("COLUMN_V3_PORTABLE_VALIDITY_MISSING_OR_INVALID: actual finite positive columns must retain exact native portable identities");
-                }).catch_unwind().await;
+                let result = AssertUnwindSafe(async {
+                    baseline = Some(owner_audit(tx.as_mut()).await);
+                    let (source_family, family_inverses) =
+                        seven_kind_positive_and_controls(tx.as_mut()).await;
+                    let actual =
+                        owner_view_observation(tx.as_mut(), baseline.as_ref().unwrap()).await;
+                    assert_eq!(applied_ledger(tx.as_mut()).await, original_ledger);
+                    assert_eq!(complete_business(tx.as_mut(), false).await, original_rows);
+                    assert_eq!(catalog(tx.as_mut()).await, original_catalog);
+                    (actual, source_family, family_inverses)
+                })
+                .catch_unwind()
+                .await;
                 tx.rollback()
                     .await
                     .expect("mandatory candidate diagnostic rollback");
@@ -3177,9 +3189,34 @@ FROM pg_catalog.pg_class c WHERE c.oid IN(SELECT (x->>'oid')::oid FROM jsonb_arr
                 }
                 fresh.rollback().await.unwrap();
                 admin.close().await.unwrap();
-                if let Err(panic) = result {
-                    std::panic::resume_unwind(panic);
-                }
+                // No diagnostic transaction or administrator connection remains
+                // open during pure controls. Validate retained observations only
+                // after mandatory rollback and fresh complete custody readback.
+                let (actual, source_family, family_inverses) = match result {
+                    Ok(observation) => observation,
+                    Err(panic) => std::panic::resume_unwind(panic),
+                };
+                owner_inverse_prerequisite(&actual).expect("PREREQUISITE: complete independent column/TOAST/native inverse positive before portable-validity RED");
+                assert!(
+                    actual["inverse"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|e| column_entry(e) && e["native"]["type"] == "view column"),
+                    "PREREQUISITE: real selected owner view-column witness"
+                );
+                audit_machinery_controls(&actual);
+                source_family_machinery_controls(&family_inverses);
+                writeln!(&mut std::io::stderr().lock(),"ORG_COLUMN_V3_INVERSE_PREREQUISITE {}",json!({
+                    "design_sha256":DESIGN,"sources":sources,"address_count":actual["address_count"],
+                    "actual_seven_kind_inverse_positive":true,"actual_pinned_seven_kind_source_observation":&source_family,
+                    "evidence_only_predicate_models":true,"source_family_predicate_corruptions":58,"malformed_input_controls":16,"SQL_array_shape_controls":2,"lookup_corruption_controls":4,"actual_catalog_controls":7,"actual_catalog_mutations":6,"actual_unsupported_index_inputs":1,
+                    "all_eight_TOAST_guards_retained":true,"complete_inverse_raw_census":true,"source_flags_unchanged_by_helper":true,
+                    "semantic_column_validity_accepted":false,"TOAST_map_accepted":false,"full_PSV_packet_accepted":false,
+                    "database_owner_accepted":false,"MVP_accepted":false,"production_qualified":false})).unwrap();
+                portable_columns_required(&actual)
+                    .and_then(|_| source_family_positive(&source_family, &family_inverses))
+                    .expect("COLUMN_V3_PORTABLE_VALIDITY_MISSING_OR_INVALID: actual finite positive columns must retain exact native portable identities");
             }
         }
     }
