@@ -46,7 +46,7 @@ for entry in \
   account-company-handoff:c2f175092793d8124112c96886f00a45b147ca3f1d88e95222989101e988e31d \
   account_company_handoff:d48aa90e0c9e8488d347198e2b8222f1c33fd109e47a2f45070e206cc3953ab7 \
   account-controller:d3a0762ddcbe27d056dc517461ff404d3807344982ad8462b4731390de86f835 \
-  account_controller_controls:32af9d85ac30f68c5f8a4cd97369c55c3811db66dc5f4a350f60b25b739ac25c \
+  account_controller_controls:fedc7548c8783e4457649ba5478cd0d971dd29d5d6c671ced9ff970c840aece4 \
   account_controller_evidence:50e37ea2b53fdf8aa6b4f649e43ed0500946cbbcffaff139914d516ff0485341; do
   cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"
   verify_sha "${stage}/${entry%%:*}.cjs" "${entry#*:}"

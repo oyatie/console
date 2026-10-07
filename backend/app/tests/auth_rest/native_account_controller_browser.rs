@@ -72,7 +72,7 @@ async fn real_browser_account_controller_promotion_and_frozen_administrator(pool
         ),
         (
             "account_controller_controls.cjs",
-            "32af9d85ac30f68c5f8a4cd97369c55c3811db66dc5f4a350f60b25b739ac25c",
+            "fedc7548c8783e4457649ba5478cd0d971dd29d5d6c671ced9ff970c840aece4",
         ),
         (
             "account_controller_evidence.cjs",

@@ -18,7 +18,7 @@ function installProbe(mode) {
   EventTarget.prototype.addEventListener = function(type, listener, ...rest) {
     if (!form) form = document.querySelector('form[data-company-enrollment]');
     if (form && ((this === form && type === 'submit') ||
-        (form.contains(this) && ['click','input'].includes(type)) || (this === window && ['pagehide', 'pageshow'].includes(type)))
+        (['click','input'].includes(type) && this instanceof Node && form.contains(this)) || (this === window && ['pagehide', 'pageshow'].includes(type)))
         && form.isConnected && !document.querySelector('[data-console-react-account="mounted"]')) retired.push([this,type,listener]);
     if (mode === 'partial-bind-rollback' && !fault && type === 'submit' && form && !form.isConnected &&
         this !== form && this instanceof HTMLFormElement && this.isConnected &&
@@ -70,8 +70,9 @@ async function runControllerControls({browser, origin, result:r, out, emit, rece
     ['DOMStorage.domStorageItemUpdated','update'],['DOMStorage.domStorageItemsCleared','clear']]) cdp.on(event,row => storageObserver(operation,row));
   const assetResponse = response => {const url = new URL(response.url());
     if (url.origin !== origin || !['/assets/native-account.js','/assets/account.js'].includes(url.pathname)) return;
-    assetWork.push((async () => {assert.equal(response.status(),200); const digest = sha(await response.body());
-      if (assets.has(url.pathname)) assert.equal(digest, assets.get(url.pathname)); else assets.set(url.pathname,digest);})());
+    const task = (async () => {assert.equal(response.status(),200); const digest = sha(await response.body());
+      if (assets.has(url.pathname)) assert.equal(digest, assets.get(url.pathname)); else assets.set(url.pathname,digest);})();
+    task.catch(() => {r.observation_failures++;}); assetWork.push(task); // Retain rejection for unchanged Promise.all; cleanup must not lose the result.
   };
   page.on('response',assetResponse);
   const anonymous = await browser.newContext({serviceWorkers:'block',viewport:{width:320,height:900}});
@@ -210,6 +211,9 @@ async function runControllerControls({browser, origin, result:r, out, emit, rece
     }
     assert.equal(validRecords(records),true); assert.equal(storage.operations,0); assert.equal(storage.controls,4);
     return {records,...committed,operator_storage_operations:storage.operations,storage_positive_controls:storage.controls};
-  } finally {page.off('response',assetResponse); anonymousPage.off('response',assetResponse); await cdp.detach(); await anonymous.close();}
+  } finally {
+    page.off('response',assetResponse); anonymousPage.off('response',assetResponse);
+    try {await Promise.allSettled(assetWork);} finally {await cdp.detach(); await anonymous.close();}
+  }
 }
 module.exports={runControllerControls};
