@@ -8123,9 +8123,62 @@ $native_group_process_navigation_custody$;
     return {'ops/postgres-finalize-native-group-process-navigation-v1.sql': finalizer}
 
 
+
+# Reviewed finite source order. These exports never install or accept a profile.
+NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_SOURCE_SHA256 = {
+    'ops/native-company-information/group-lock-v1.sql': 'daee9a6d7f2e0b1e8992c327500f0e93a9641501c467bdaddac3bfaa19fac397',
+    'ops/native-company-information/selected-lock-v1.sql': 'f60cc97a92df9ca446dc4bec2964981a3957cf18b4d81fd60f9c32826065598f',
+    'ops/native-company-information/root-material-v1.sql': 'f75d12df521b2d0ec6c69271ff6dfac4663e207890af0ccdeefdd39763dacbc6',
+    'ops/native-company-information/manager-current-v1.sql': '607635bd51942c6c04f1fbdbe39c7a8ab414c9c6f19af94632a2f92e40980265',
+    'ops/native-company-information/acl-v1.sql': '1e74e8bb66e9f61242c3ef79c122f99c8953a4495ba03ab56ac1d9121cd81ade',
+}
+NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_DEPENDENCY_SHA256 = {
+    'ops/postgres-company-enrollment-input.sql': 'cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290',
+}
+
+
+def native_company_information_manager_current_capture_files():
+    sources = {}
+    for name, digest in {**NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_SOURCE_SHA256,
+                         **NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_DEPENDENCY_SHA256}.items():
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest:
+            raise SystemExit('Company-information manager source differs from reviewed bytes: ' + name)
+        if name in NATIVE_COMPANY_INFORMATION_MANAGER_CURRENT_SOURCE_SHA256:
+            sources[name] = raw.decode('utf-8')
+    # The immutable PolicyV1 composer checks leaf/hash identities. Check its
+    # existing source parents here without changing historical serializers.
+    for name in NATIVE_POLICY_SOURCE_ORDER:
+        company_provenance_regular_path('ops/native-company-policy/' + name, required=True)
+    query = native_company_policy_snapshot_query()
+    routine_anchor = '), owner_roles AS ('
+    snapshot_anchor = '), snapshots AS (\n SELECT jsonb_build_object(\n'
+    if query.count(routine_anchor) != 1 or query.count(snapshot_anchor) != 1:
+        raise ValueError('Company-information manager capture boundary drift')
+    query = query.replace(routine_anchor,
+        " OR starts_with(p.proname,'identity_company_information_') OR (n.nspname='public' AND p.proname='company_enrollment_decode_input_v1')\n"
+        + routine_anchor)
+    namespace = (
+        "(SELECT jsonb_agg(jsonb_build_array(n.nspname,p.proname,pg_get_function_identity_arguments(p.oid),"
+        "p.prokind,pg_get_userbyid(p.proowner),p.prosecdef) ORDER BY n.nspname,p.proname,"
+        "pg_get_function_identity_arguments(p.oid)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace "
+        "WHERE starts_with(p.proname,'identity_company_information_'))")
+    query = query.replace(snapshot_anchor, snapshot_anchor
+        + "  'company_information_manager_current_routine_namespace'," + namespace + ',\n')
+    return {
+        'ops/postgres-company-information-manager-current-v1-owner.sql':
+            '-- Generated UNINSTALLED Company-information manager Current source; not a custody finalizer.\n'
+            '-- No installed profile or serving readiness is asserted by this artifact.\n'
+            + '\n'.join('-- source: ' + name + '\n' + source for name, source in sources.items()),
+        'ops/postgres-capture-company-information-manager-current-v1-custody.sql': query + ';\n',
+    }
+
+
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-org-unit-closed-bounded-reader'],
+    if arguments in (['--native-company-information-manager-current-capture'],
+                     ['--native-company-information-manager-current-capture', '--check'],
+                     ['--native-org-unit-closed-bounded-reader'],
                      ['--native-org-unit-closed-bounded-reader', '--check'],
                      ['--native-org-unit-account-actor-staging'],
                      ['--native-org-unit-account-actor-staging', '--check'],
@@ -8147,7 +8200,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-org-unit-closed-bounded-reader':
+        if arguments[0] == '--native-company-information-manager-current-capture':
+            files = native_company_information_manager_current_capture_files()
+        elif arguments[0] == '--native-org-unit-closed-bounded-reader':
             files = native_org_unit_closed_bounded_reader_files()
         elif arguments[0] == '--native-org-unit-account-actor-staging':
             files = native_org_unit_account_actor_staging_files()
@@ -8182,7 +8237,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
