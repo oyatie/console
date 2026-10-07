@@ -10,16 +10,18 @@ import os
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import tempfile
 import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import test_native_org_unit_account_actor_staging_generator as prior
 from test_native_group_process_custody_generator import snapshot_fields
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = 'ops/generate-account-custody.py'
+HISTORICAL_HANDOFF = 'backend/app/tests/auth_rest/native_account_company_handoff_browser.rs'
 FIXTURE = 'ops/fixtures/native-company-information-manager-current-capture-export-contract-v1.json'
 FIXTURE_SHA256 = 'd5a70980e78fd3ed6ad1bb1f4cbc0a7e07a6ae8c06a6bb703058ef29fd911cd6'
 ENTRY = 'native_company_information_manager_current_capture_files'
@@ -79,10 +81,28 @@ class NativeCompanyInformationManagerCaptureGeneration(unittest.TestCase):
         self.owner_text = self.expected['owner_header'] + '\n'.join(
             '-- source: ' + name + '\n' + raw.decode() for name, raw in self.sources.items())
 
+    def historical_handoff(self):
+        # This retained fixture reference is not read by any generator entry.
+        base = self.expected['base']
+        row = self.expected['old_input_blobs'][HISTORICAL_HANDOFF]
+        def git(*args):
+            return subprocess.check_output(['git', '--no-replace-objects', '-c',
+                'core.commitGraph=false', '-C', str(ROOT), *args], stderr=subprocess.PIPE)
+        self.assertEqual(git('rev-parse', base + '^{tree}').decode().strip(),
+                         self.expected['tree'], 'historical handoff source tree')
+        expected = ('100644 blob ' + row['git_blob'] + '\t' + HISTORICAL_HANDOFF + '\0').encode()
+        self.assertEqual(git('ls-tree', '-z', base, '--', HISTORICAL_HANDOFF), expected,
+                         'historical handoff regular blob at exact path')
+        raw = git('cat-file', 'blob', row['git_blob'])
+        self.assertEqual(len(raw), row['bytes'], HISTORICAL_HANDOFF)
+        self.assertEqual(prior.sha(raw), row['sha256'], HISTORICAL_HANDOFF)
+
     def old_positive(self):
         # The complete generator blob is base provenance; old definitions are frozen above.
         for name, row in self.expected['old_input_blobs'].items():
-            if name != SCRIPT:
+            if name == HISTORICAL_HANDOFF:
+                self.historical_handoff()
+            elif name != SCRIPT:
                 self.assertEqual(prior.sha(self.regular(ROOT, name).read_bytes()), row['sha256'], name)
         cases = [('generated_files', self.expected['old_default_outputs'])]
         cases += [(row['function'], row['outputs'])
@@ -210,6 +230,56 @@ class NativeCompanyInformationManagerCaptureGeneration(unittest.TestCase):
                 raise ValueError("refusal cannot hide root metadata changes")
             with self.assertRaises(AssertionError):
                 self.refuses(root, root_metadata)
+
+    def test_03_historical_handoff_rejects_wrong_tree_mode_path_blob_and_content(self):
+        base = self.expected['base']
+        row = self.expected['old_input_blobs'][HISTORICAL_HANDOFF]
+        args = [('rev-parse', base + '^{tree}'),
+                ('ls-tree', '-z', base, '--', HISTORICAL_HANDOFF),
+                ('cat-file', 'blob', row['git_blob'])]
+        commands = [['git', '--no-replace-objects', '-c', 'core.commitGraph=false',
+                     '-C', str(ROOT), *item] for item in args]
+        exact = [subprocess.check_output(item, stderr=subprocess.PIPE) for item in commands]
+        with patch.object(subprocess, 'check_output', side_effect=exact) as reader:
+            self.historical_handoff()
+            self.assertEqual(reader.call_args_list,
+                             [call(item, stderr=subprocess.PIPE) for item in commands])
+        faults = [('source-tree', 0, b'0' * 40 + b'\n'),
+                  ('executable-mode', 1, exact[1].replace(b'100644', b'100755', 1)),
+                  ('symlink-mode', 1, exact[1].replace(b'100644', b'120000', 1)),
+                  ('path', 1, exact[1].replace(HISTORICAL_HANDOFF.encode(), b'other.rs', 1)),
+                  ('blob', 1, exact[1].replace(row['git_blob'].encode(), b'0' * 40, 1)),
+                  ('size', 2, exact[2] + b'\n'),
+                  ('body', 2, bytes([exact[2][0] ^ 1]) + exact[2][1:])]
+        for fault, index, changed in faults:
+            responses = exact.copy()
+            responses[index] = changed
+            with self.subTest(fault=fault), patch.object(subprocess, 'check_output',
+                    side_effect=responses), self.assertRaises(AssertionError):
+                self.historical_handoff()
+        for index, command in enumerate(commands):
+            responses = exact[:index] + [subprocess.CalledProcessError(128, command)]
+            with self.subTest(missing_object=index), patch.object(subprocess, 'check_output',
+                    side_effect=responses), self.assertRaises(subprocess.CalledProcessError):
+                self.historical_handoff()
+
+    def test_04_current_handoff_drift_is_not_generator_input_but_migration_drift_is(self):
+        with self.private_tree() as root:
+            regular = self.regular
+            with patch.object(self, 'regular', side_effect=lambda unused, name: regular(root, name)), \
+                    patch.object(self.generator, 'ROOT', root):
+                before = self.generator.generated_files()
+                with prior.leaf_fault(root / HISTORICAL_HANDOFF, 'changed'):
+                    self.old_positive()
+                    self.assertEqual(self.generator.generated_files(), before)
+                    self.assert_exports(self.generate(root))
+                live = 'backend/crates/platform/db/migrations/0001_create_regions_branches.sql'
+                with prior.leaf_fault(root / live, 'changed'):
+                    with self.assertRaises(AssertionError):
+                        self.old_positive()
+                    self.assertNotEqual(self.generator.generated_files(), before)
+                self.old_positive()
+                self.assertEqual(self.generator.generated_files(), before)
 
     def test_10_named_export_pins_four_full_bodies_final_acl_and_decoder_dependency(self):
         with self.private_tree() as root:
