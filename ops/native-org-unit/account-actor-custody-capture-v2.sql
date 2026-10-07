@@ -3370,7 +3370,8 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  SELECT a.*, CASE a.classid
  WHEN 'pg_catalog.pg_class'::regclass THEN
    CASE c.relkind WHEN 'r' THEN 'table' WHEN 'p' THEN 'table' WHEN 'i' THEN 'index' WHEN 'I' THEN 'index'
-   WHEN 'v' THEN 'view' WHEN 'm' THEN 'materialized view' WHEN 'S' THEN 'sequence' WHEN 'f' THEN 'foreign table' END
+   WHEN 'v' THEN 'view' WHEN 'm' THEN 'materialized view' WHEN 'S' THEN 'sequence' WHEN 'f' THEN 'foreign table'
+   WHEN 'c' THEN CASE WHEN a.objsubid>0 THEN 'composite type' END END
    ||CASE WHEN a.objsubid<>0 THEN ' column' ELSE '' END
  WHEN 'pg_catalog.pg_proc'::regclass THEN CASE p.prokind WHEN 'p' THEN 'procedure' WHEN 'a' THEN 'aggregate' ELSE 'function' END
  WHEN 'pg_catalog.pg_type'::regclass THEN 'type' WHEN 'pg_catalog.pg_collation'::regclass THEN 'collation'
@@ -3426,7 +3427,8 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  CASE a.classid
  WHEN 'pg_catalog.pg_class'::regclass THEN c.oid IS NOT NULL AND cn.oid IS NOT NULL
    AND NOT starts_with(cn.nspname,'pg_temp_') AND NOT starts_with(cn.nspname,'pg_toast_temp_')
-   AND (a.objsubid=0 OR c.relkind IN ('r','p','f') AND ca.attnum=a.objsubid AND NOT ca.attisdropped AND ca.atttypid<>0)
+   AND (a.objsubid=0 OR a.objsubid>0 AND c.relkind IN ('r','p','f','v','m','c','S')
+        AND ca.attrelid=c.oid AND ca.attnum=a.objsubid AND NOT ca.attisdropped AND ca.atttypid<>0)
  WHEN 'pg_catalog.pg_proc'::regclass THEN a.objsubid=0 AND p.oid IS NOT NULL AND pn.oid IS NOT NULL AND p.prokind IN ('f','p','a','w')
    AND NOT EXISTS(SELECT 1 FROM unnest(p.proargtypes::oid[]) arg(oid) LEFT JOIN type_formats f ON f.oid=arg.oid WHERE f.valid IS NOT TRUE)
  WHEN 'pg_catalog.pg_type'::regclass THEN a.objsubid=0 AND tf.valid IS TRUE
