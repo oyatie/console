@@ -3427,7 +3427,8 @@ SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snaps
  CASE a.classid
  WHEN 'pg_catalog.pg_class'::regclass THEN c.oid IS NOT NULL AND cn.oid IS NOT NULL
    AND NOT starts_with(cn.nspname,'pg_temp_') AND NOT starts_with(cn.nspname,'pg_toast_temp_')
-   AND (a.objsubid=0 OR a.objsubid>0 AND c.relkind IN ('r','p','f','v','m','c','S')
+   AND (a.objsubid=0 OR (c.relkind IN ('r','p','f')
+        OR a.objsubid>0 AND c.relkind IN ('v','m','c','S'))
         AND ca.attrelid=c.oid AND ca.attnum=a.objsubid AND NOT ca.attisdropped AND ca.atttypid<>0)
  WHEN 'pg_catalog.pg_proc'::regclass THEN a.objsubid=0 AND p.oid IS NOT NULL AND pn.oid IS NOT NULL AND p.prokind IN ('f','p','a','w')
    AND NOT EXISTS(SELECT 1 FROM unnest(p.proargtypes::oid[]) arg(oid) LEFT JOIN type_formats f ON f.oid=arg.oid WHERE f.valid IS NOT TRUE)
