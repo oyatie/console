@@ -108,7 +108,7 @@ function backendLegTopologyCondition(leg) {
   return `\${{ !cancelled() && matrix.leg == '${leg}' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}`;
 }
 
-export const PATH_CLASS_RULES_VERSION = "7";
+export const PATH_CLASS_RULES_VERSION = "8";
 const docsOnlyRootFiles = new Set([
   "README.md",
   "CHANGELOG.md",
@@ -144,6 +144,7 @@ const releaseMetadataAllowedPaths = new Set([
  */
 export function isLivePostgresPath(path) {
   if (typeof path !== "string" || path.length === 0) return false;
+  if (path.startsWith("backend/") && /\/Cargo\.(toml|lock)$/.test(path)) return true;
   if (path.includes("adapter-postgres")) return true;
   if (path.endsWith(".sql") || /(^|\/)migrations\//.test(path)) return true;
   if (/(^|\/)\.sqlx(\/|$)/.test(path)) return true;
