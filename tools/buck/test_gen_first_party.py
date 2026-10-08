@@ -19,6 +19,47 @@ GENERATOR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(GENERATOR)
 
 
+class GeneratorCliTests(unittest.TestCase):
+    def run_cli(self, argument: str) -> subprocess.CompletedProcess[str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            script = root / "tools/buck/gen_first_party.py"
+            script.parent.mkdir(parents=True)
+            shutil.copyfile(GENERATOR_PATH, script)
+            package = root / "backend/app"
+            package.mkdir(parents=True)
+            # Invalid metadata makes premature workspace discovery observable.
+            (package / "Cargo.toml").write_text("[package\n", encoding="utf-8")
+            buck = package / "BUCK"
+            sentinel = b"# sentinel BUCK must remain unchanged\n"
+            buck.write_bytes(sentinel)
+            result = subprocess.run(
+                [sys.executable, str(script), argument],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(sentinel, buck.read_bytes())
+            return result
+
+    def test_help_precedes_workspace_discovery(self) -> None:
+        for argument in ("-h", "--help"):
+            with self.subTest(argument=argument):
+                result = self.run_cli(argument)
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertIn("usage:", result.stdout)
+                self.assertEqual("", result.stderr)
+
+    def test_invalid_arguments_precede_workspace_discovery(self) -> None:
+        for argument in ("--unknown", "unexpected"):
+            with self.subTest(argument=argument):
+                result = self.run_cli(argument)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn("unrecognized arguments: " + argument, result.stderr)
+                self.assertEqual("", result.stdout)
+
+
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
     def test_no_workspace_member_is_skipped(self) -> None:
         """`-ui` members were skipped while Leptos was unvendored.
