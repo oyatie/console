@@ -9,7 +9,7 @@
 //! caller cannot strip or mint out-of-scope memberships (console-o498).
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use console_identity_application::{
     ActivateUserCommand, BranchSummary, CreateBranchCommand,
@@ -706,7 +706,7 @@ impl PgOrgStore {
             .clamp(1, MAX_USER_LIMIT);
         let offset = query.offset.unwrap_or(0).max(0);
 
-        // The branch-scope + active filter is shared by the id page and the
+        // The branch-scope + active filter is shared by the page and the
         // COUNT, so build it once into a closure that appends to any builder.
         let scope = scope.clone();
         let include_inactive = query.include_inactive;
@@ -739,7 +739,8 @@ impl PgOrgStore {
             QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM users u WHERE ");
         push_filter(&mut count_builder);
 
-        let mut builder = QueryBuilder::<Postgres>::new("SELECT id FROM users u WHERE ");
+        let mut builder = QueryBuilder::<Postgres>::new(USER_SELECT_WITH_PASSKEY);
+        builder.push(" WHERE ");
         push_filter(&mut builder);
         builder
             .push(" ORDER BY u.created_at DESC, u.id DESC LIMIT ")
@@ -748,26 +749,30 @@ impl PgOrgStore {
             .push_bind(offset);
 
         let org = current_org().map_err(KernelError::from)?;
-        let (total, ids) =
-            with_org_conn::<_, (i64, Vec<uuid::Uuid>), PgOrgError>(&self.pool, org, move |tx| {
+        let (total, items) =
+            with_org_conn::<_, (i64, Vec<UserSummary>), PgOrgError>(&self.pool, org, move |tx| {
                 Box::pin(async move {
                     let total: i64 = count_builder
                         .build_query_scalar::<i64>()
                         .fetch_one(tx.as_mut())
                         .await?;
-                    let ids = builder
-                        .build_query_scalar::<uuid::Uuid>()
-                        .fetch_all(tx.as_mut())
-                        .await?;
-                    Ok((total, ids))
+                    let rows = builder.build().fetch_all(tx.as_mut()).await?;
+                    let ids = rows
+                        .iter()
+                        .map(|row| row.try_get("id"))
+                        .collect::<Result<Vec<uuid::Uuid>, sqlx::Error>>()?;
+                    let mut branches = fetch_users_branch_ids_tx(tx, &ids).await?;
+                    let items = rows
+                        .iter()
+                        .zip(ids)
+                        .map(|(row, id)| {
+                            user_from_row(row, branches.remove(&id).unwrap_or_default())
+                        })
+                        .collect::<Result<Vec<_>, PgOrgError>>()?;
+                    Ok((total, items))
                 })
             })
             .await?;
-
-        let mut items = Vec::with_capacity(ids.len());
-        for id in ids {
-            items.push(fetch_user(&self.pool, UserId::from_uuid(id)).await?);
-        }
         Ok(UserPage {
             items,
             limit,
@@ -841,7 +846,8 @@ impl PgOrgStore {
             QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM users u WHERE ");
         push_filter(&mut count_builder);
 
-        let mut page_builder = QueryBuilder::<Postgres>::new("SELECT id FROM users u WHERE ");
+        let mut page_builder = QueryBuilder::<Postgres>::new(USER_SELECT_DIRECTORY);
+        page_builder.push(" WHERE ");
         push_filter(&mut page_builder);
         // No deployment pins the database collation (neither the CI service nor
         // deploy/apps/console/base/database.yaml sets one), so an unqualified
@@ -857,30 +863,32 @@ impl PgOrgStore {
             .push_bind(offset);
 
         let org = current_org().map_err(KernelError::from)?;
-        let (total, ids) =
-            with_org_conn::<_, (i64, Vec<uuid::Uuid>), PgOrgError>(&self.pool, org, move |tx| {
+        let (total, items) =
+            with_org_conn::<_, (i64, Vec<UserSummary>), PgOrgError>(&self.pool, org, move |tx| {
                 Box::pin(async move {
                     let total = count_builder
                         .build_query_scalar::<i64>()
                         .fetch_one(tx.as_mut())
                         .await?;
-                    let ids = page_builder
-                        .build_query_scalar::<uuid::Uuid>()
-                        .fetch_all(tx.as_mut())
-                        .await?;
-                    Ok((total, ids))
+                    let rows = page_builder.build().fetch_all(tx.as_mut()).await?;
+                    let ids = rows
+                        .iter()
+                        .map(|row| row.try_get("id"))
+                        .collect::<Result<Vec<uuid::Uuid>, sqlx::Error>>()?;
+                    let mut branches = fetch_users_branch_ids_tx(tx, &ids).await?;
+                    let items = rows
+                        .iter()
+                        .zip(ids)
+                        .map(|(row, id)| {
+                            let mut branch_ids = branches.remove(&id).unwrap_or_default();
+                            branch_ids.retain(|branch| result_scope.allows(*branch));
+                            user_from_directory_row(row, branch_ids)
+                        })
+                        .collect::<Result<Vec<_>, PgOrgError>>()?;
+                    Ok((total, items))
                 })
             })
             .await?;
-
-        let mut items = Vec::with_capacity(ids.len());
-        for id in ids {
-            // fetch_user SELECTs users.phone; directory pages must not.
-            let mut user = fetch_directory_user(&self.pool, UserId::from_uuid(id)).await?;
-            user.branch_ids
-                .retain(|branch| result_scope.allows(*branch));
-            items.push(user);
-        }
         Ok(UserPage {
             items,
             limit,
@@ -1888,7 +1896,6 @@ const USER_SELECT_WITH_PASSKEY: &str = r#"
     LEFT JOIN employees e
       ON e.id = u.employee_id
      AND e.org_id = u.org_id
-    WHERE u.id = $1
 "#;
 
 /// Directory page projection. Keep the column list aligned with
@@ -1919,7 +1926,6 @@ const USER_SELECT_DIRECTORY: &str = r#"
     LEFT JOIN employees e
       ON e.id = u.employee_id
      AND e.org_id = u.org_id
-    WHERE u.id = $1
 "#;
 
 async fn fetch_policy_role(
@@ -2448,10 +2454,9 @@ async fn fetch_user(pool: &PgPool, user_id: UserId) -> Result<UserSummary, PgOrg
     let org = current_org().map_err(KernelError::from)?;
     let row = with_org_conn::<_, _, PgOrgError>(pool, org, move |tx| {
         Box::pin(async move {
-            Ok(sqlx::query(USER_SELECT_WITH_PASSKEY)
-                .bind(*user_id.as_uuid())
-                .fetch_one(tx.as_mut())
-                .await?)
+            let mut builder = QueryBuilder::<Postgres>::new(USER_SELECT_WITH_PASSKEY);
+            builder.push(" WHERE u.id = ").push_bind(*user_id.as_uuid());
+            Ok(builder.build().fetch_one(tx.as_mut()).await?)
         })
     })
     .await?;
@@ -2459,29 +2464,13 @@ async fn fetch_user(pool: &PgPool, user_id: UserId) -> Result<UserSummary, PgOrg
     user_from_row(&row, branch_ids)
 }
 
-async fn fetch_directory_user(pool: &PgPool, user_id: UserId) -> Result<UserSummary, PgOrgError> {
-    let org = current_org().map_err(KernelError::from)?;
-    let row = with_org_conn::<_, _, PgOrgError>(pool, org, move |tx| {
-        Box::pin(async move {
-            Ok(sqlx::query(USER_SELECT_DIRECTORY)
-                .bind(*user_id.as_uuid())
-                .fetch_one(tx.as_mut())
-                .await?)
-        })
-    })
-    .await?;
-    let branch_ids = fetch_user_branch_ids(pool, user_id).await?;
-    user_from_directory_row(&row, branch_ids)
-}
-
 async fn fetch_user_tx(
     tx: &mut Transaction<'_, Postgres>,
     user_id: UserId,
 ) -> Result<UserSummary, PgOrgError> {
-    let row = sqlx::query(USER_SELECT_WITH_PASSKEY)
-        .bind(*user_id.as_uuid())
-        .fetch_one(tx.as_mut())
-        .await?;
+    let mut builder = QueryBuilder::<Postgres>::new(USER_SELECT_WITH_PASSKEY);
+    builder.push(" WHERE u.id = ").push_bind(*user_id.as_uuid());
+    let row = builder.build().fetch_one(tx.as_mut()).await?;
     let branch_rows: Vec<uuid::Uuid> = sqlx::query_scalar(
         "SELECT branch_id FROM user_branches WHERE user_id = $1 ORDER BY branch_id",
     )
@@ -2490,6 +2479,30 @@ async fn fetch_user_tx(
     .await?;
     let branch_ids = branch_rows.into_iter().map(BranchId::from_uuid).collect();
     user_from_row(&row, branch_ids)
+}
+
+async fn fetch_users_branch_ids_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    user_ids: &[uuid::Uuid],
+) -> Result<BTreeMap<uuid::Uuid, Vec<BranchId>>, PgOrgError> {
+    let mut branch_ids = BTreeMap::<uuid::Uuid, Vec<BranchId>>::new();
+    if user_ids.is_empty() {
+        return Ok(branch_ids);
+    }
+    let rows: Vec<(uuid::Uuid, uuid::Uuid)> = sqlx::query_as(
+        "SELECT user_id, branch_id FROM user_branches \
+         WHERE user_id = ANY($1) ORDER BY user_id, branch_id",
+    )
+    .bind(user_ids)
+    .fetch_all(tx.as_mut())
+    .await?;
+    for (user_id, branch_id) in rows {
+        branch_ids
+            .entry(user_id)
+            .or_default()
+            .push(BranchId::from_uuid(branch_id));
+    }
+    Ok(branch_ids)
 }
 
 async fn fetch_user_branch_uuid_ids_tx(
