@@ -141,11 +141,10 @@ async fn native_policy_validation_form_retains_original_proof_and_rechecks_expir
     close_states(&[state], outcome).await;
 }
 
-
 #[sqlx::test(migrations = false)]
 async fn native_policy_current_does_not_issue_proof_and_receipt_reads_are_inert(pool: PgPool) {
     use console_identity_application::company_policy::workflow::{
-        native_policy_current, accept_native_policy_command, execute_native_policy_command,
+        accept_native_policy_command, execute_native_policy_command, native_policy_current,
     };
     let (app, key, state) = configured_fixture(&pool, true).await;
     let mut cleanup_runtime = None;
@@ -199,6 +198,8 @@ async fn native_policy_current_does_not_issue_proof_and_receipt_reads_are_inert(
             assert!(before_terminal == all_rows(&pool).await, "terminal/navigation GET changed rows");
         }
     }).catch_unwind().await;
-    if let Some(runtime) = cleanup_runtime { runtime.close().await; }
+    if let Some(runtime) = cleanup_runtime {
+        runtime.close().await;
+    }
     close_states(&[state], outcome).await;
 }
