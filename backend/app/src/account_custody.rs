@@ -7,6 +7,7 @@ pub(crate) enum VerifiedCustodyProfile {
     NativeAccount,
     CompanyEnrollment,
     NativeCompanyPolicy,
+    NativeCompanyInformationManagerCurrentPolicyV1,
     NativeCompanyPolicyV2,
     // Verified predecessor substrate; Directory needs the row-lock correction.
     NativePeopleDirectory,
@@ -18,6 +19,9 @@ pub(crate) enum VerifiedCustodyProfile {
 }
 
 impl VerifiedCustodyProfile {
+    pub(crate) fn supports_company_information_manager_current(self) -> bool {
+        matches!(self, Self::NativeCompanyInformationManagerCurrentPolicyV1)
+    }
     pub(crate) fn supports_native_group_process(self) -> bool {
         matches!(
             self,
@@ -52,7 +56,7 @@ impl VerifiedCustodyProfile {
                 | Self::NativeOrgBridgeCompatible
                 | Self::NativeGroupProcess
                 | Self::NativeGroupProcessNavigation
-        )
+        ) || self.supports_company_information_manager_current()
     }
     pub(crate) fn supports_people(self) -> bool {
         matches!(
@@ -77,6 +81,22 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let manager: String = sqlx::query_scalar(include_str!(
+        "company_information_manager_current_policy_v1_custody_state.sql"
+    ))
+    .fetch_one(&mut *transaction)
+    .await?;
+    if manager == "company_information_manager_current_policy_v1.finalized" {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativeCompanyInformationManagerCurrentPolicyV1);
+    }
+    if !matches!(
+        manager.as_str(),
+        "company_information_manager_current_policy_v1.absent"
+            | "company_information_manager_current_policy_v1.install_required"
+    ) {
+        return Err(AppError::Config(manager));
+    }
     let navigation: String = sqlx::query_scalar(include_str!(
         "native_group_process_navigation_serving_v1_custody_state.sql"
     ))
