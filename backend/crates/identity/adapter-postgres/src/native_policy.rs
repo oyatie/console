@@ -21,6 +21,7 @@ use sqlx::{Postgres, Row, Transaction, postgres::PgRow};
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
+mod company_information_current;
 mod rows;
 use NativePolicyWorkflowError as Error;
 
@@ -42,6 +43,16 @@ impl NativePolicyWorkflowStore for PgOrgStore {
     type Credentials = AccountEnrollmentCredentials;
     type FormProof = AccountFormProof;
     type Scope<'a> = PgNativePolicyScope<'a>;
+
+    async fn company_information_manager_current<P: CompanyPolicyDecisionPort + ?Sized>(
+        &self,
+        policy: &P,
+        credentials: &Self::Credentials,
+        selector: NativePolicyCommandRef,
+    ) -> Result<NativePolicyFormView, Error> {
+        console_identity_application::company_policy::workflow::company_information_current::
+            company_information_manager_current(self, policy, credentials, selector).await
+    }
 
     async fn lock<'a>(
         &'a self,

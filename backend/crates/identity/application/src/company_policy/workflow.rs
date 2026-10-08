@@ -1,6 +1,7 @@
 //! Current-authorized policy workflows over retained owning transactions.
 //! Results remain provisional until final authentication and commit succeed.
 mod command;
+pub mod company_information_current;
 pub use command::NativePolicyCommand;
 
 use super::business::{NativeBusinessOperationV1, PolicyAssignmentExpectationV1};
@@ -379,6 +380,15 @@ pub trait NativePolicyWorkflowStore {
         credentials: &'a Self::Credentials,
         request: NativePolicyScopeRequest<'a>,
     ) -> impl Future<Output = Result<Self::Scope<'a>, NativePolicyWorkflowError>> + Send;
+
+    fn company_information_manager_current<P: CompanyPolicyDecisionPort + ?Sized>(
+        &self,
+        _policy: &P,
+        _credentials: &Self::Credentials,
+        _selector: NativePolicyCommandRef,
+    ) -> impl Future<Output = Result<NativePolicyFormView, NativePolicyWorkflowError>> + Send {
+        std::future::ready(Err(NativePolicyWorkflowError::Unavailable))
+    }
 }
 
 fn authorize<P: CompanyPolicyDecisionPort + ?Sized>(
@@ -423,6 +433,11 @@ pub async fn native_policy_current<
     credentials: &S::Credentials,
     selector: NativePolicyCommandRef,
 ) -> Result<NativePolicyFormView, NativePolicyWorkflowError> {
+    if selector.codec_version() == 4 && selector.operation() == NativeBusinessOperationV1::Grant {
+        return store
+            .company_information_manager_current(policy, credentials, selector)
+            .await;
+    }
     ensure_active_policy_family(selector)?;
     if !selector.action_resolved() {
         return Err(NativePolicyWorkflowError::InvalidInput);
