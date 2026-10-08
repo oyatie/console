@@ -16,7 +16,7 @@ const reindeerToolchainInstall = 'rustup toolchain install "$REINDEER_TOOLCHAIN"
 const strictShellMode = "set -euo pipefail";
 const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
-const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan";
+const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests";
 const reasoningLensManifestCommand = "node scripts/check-reasoning-lens-manifest.mjs";
 const reasoningLensManifestName = "Reasoning lens manifest drift";
 const reasoningLensRegressionCommand = "node --test scripts/check-reasoning-lens-manifest.test.mjs";
