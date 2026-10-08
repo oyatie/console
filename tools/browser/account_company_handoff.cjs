@@ -106,7 +106,7 @@ function observe(context,role,origin,result){const owners=new WeakMap();
 }
 async function runHandoff({browser,origin,result:r,out,emit,receive,setStage,successor=false}){
  const participants=[];r.react_mounts=[];r.storage=[];
- async function exchange(phase,id,extra={}){emit({kind:'CHECKPOINT',phase,account_id:id,...extra});fact(validCheckpointCommand(await receive(),phase),'OWNER_PROTOCOL');r.checkpoints.push(phase);}
+ async function exchange(phase,id,extra={}){emit({kind:'CHECKPOINT',phase,account_id:id,...extra});fact(validCheckpointCommand(await receive(false,phase),phase),'OWNER_PROTOCOL');r.checkpoints.push(phase);}
  async function capture(page,name){await page.screenshot({path:path.join(out,name),fullPage:true});r.screenshots.push(name);}
  async function reflow(page){return page.evaluate(()=>document.documentElement.clientWidth===320&&Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)<=321);}
  async function tabTo(page,locator,max=24){fact(await locator.count()===1,'KEYBOARD_DISCOVERY');for(let i=0;i<max;i++){await page.keyboard.press('Tab');if(await locator.evaluate(e=>document.activeElement===e)){fact(await locator.evaluate(e=>{const s=getComputedStyle(e),b=e.getBoundingClientRect();return e.matches(':focus-visible')&&s.outlineStyle!=='none'&&parseFloat(s.outlineWidth)>=2&&b.width>0&&b.height>0;}),'KEYBOARD_FOCUS');return;}}fact(false,'KEYBOARD_DISCOVERY');}

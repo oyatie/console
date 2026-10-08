@@ -58,7 +58,7 @@ async function main(port,out,mode){
   const origin=`https://localhost:${relay.address().port}`;fact(validOrigin(origin),'PREREQUISITE');result.origin=origin;
   for(const file of files)fs.unlinkSync(file);
   reader=readline.createInterface({input:process.stdin,crlfDelay:Infinity});const input=reader[Symbol.asyncIterator]();watchOwner(reader,cancel);
-  async function receive(initial=false){const line=await (initial?input.next():bounded(input.next(),20000));fact(!line.done&&line.value.length<=8192,'OWNER_EOF');let value;try{value=JSON.parse(line.value);}catch{fact(false,'OWNER_PROTOCOL');}fact(value?.kind!=='ABORT','OWNER_REFUSED');return value;}
+  async function receive(initial=false,phase){const line=await (initial?input.next():bounded(input.next(),successor&&phase==='HANDOFF_REOPENED'?120000:20000));fact(!line.done&&line.value.length<=8192,'OWNER_EOF');let value;try{value=JSON.parse(line.value);}catch{fact(false,'OWNER_PROTOCOL');}fact(value?.kind!=='ABORT','OWNER_REFUSED');return value;}
   emit({kind:'READY',origin,rp_id:'localhost',tls_spki_sha256:spki,upstream_port:Number(port)});
   stage='owner_start';const start=await receive(true);fact(start?.kind==='START'&&Object.keys(start).length===1,'OWNER_PROTOCOL');fact(!cancelled,'OWNER_REFUSED');
   stage='browser_launch';launchPromise=chromium.launchServer({headless:true,executablePath:executable,timeout:10000,env,args:['--disable-background-networking','--disable-component-update','--no-proxy-server',`--ignore-certificate-errors-spki-list=${spki}`]});
