@@ -17,12 +17,15 @@
 //!
 //! SLICE-2 is additive: no authorization decision consults this table yet.
 
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
 use console_identity_adapter_postgres::PgOrgStore;
 use console_identity_application::{
     CreatePolicyAssignmentPreviewReceiptCommand, DeactivateUserCommand, DirectoryListQuery,
     UpdateUserCommand, UserListQuery,
 };
-use console_kernel_core::{BranchScope, OrgId, TraceContext, UserId};
+use console_kernel_core::{BranchId, BranchScope, OrgId, TraceContext, UserId};
 use console_platform_request_context::CURRENT_ORG;
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
@@ -558,4 +561,492 @@ async fn update_user_delta_scopes_the_preview_receipt_gate(owner_pool: PgPool) {
         .expect_err(
             "a receipt minted for MECHANIC→ADMIN must not authorize a MECHANIC→SUPER_ADMIN change",
         );
+}
+
+/// Count reused leases independently from replacements: before_acquire does
+/// not run for new connections, so both callbacks must guard the measurement.
+async fn page_budget_runtime_pool(
+    owner_pool: &PgPool,
+) -> (PgPool, Arc<AtomicUsize>, Arc<AtomicUsize>) {
+    let leases = Arc::new(AtomicUsize::new(0));
+    let connections = Arc::new(AtomicUsize::new(0));
+    let acquired = Arc::clone(&leases);
+    let connected = Arc::clone(&connections);
+    let options = owner_pool
+        .connect_options()
+        .as_ref()
+        .clone()
+        .application_name("console_identity_page_budget");
+    let pool = PgPoolOptions::new()
+        .max_connections(1)
+        .max_lifetime(None)
+        .idle_timeout(None)
+        .before_acquire(move |_conn, _meta| {
+            let acquired = Arc::clone(&acquired);
+            Box::pin(async move {
+                acquired.fetch_add(1, Ordering::SeqCst);
+                Ok(true)
+            })
+        })
+        .after_connect(move |conn, _meta| {
+            let connected = Arc::clone(&connected);
+            Box::pin(async move {
+                sqlx::query("SET ROLE console_rt").execute(conn).await?;
+                connected.fetch_add(1, Ordering::SeqCst);
+                Ok(())
+            })
+        })
+        .connect_with(options)
+        .await
+        .unwrap();
+    let identity: (String, bool, bool) = sqlx::query_as(
+        "SELECT current_user::text, rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(identity, ("console_rt".to_owned(), false, false));
+    (pool, leases, connections)
+}
+
+async fn begin_page_measurement(
+    pool: &PgPool,
+    leases: &AtomicUsize,
+    connections: &AtomicUsize,
+) -> usize {
+    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        while pool.size() != 1 || pool.num_idle() != 1 {
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+    })
+    .await
+    .expect("measurement requires the sole runtime connection to be idle");
+    assert_eq!((pool.size(), pool.num_idle()), (1, 1));
+    let connected = connections.load(Ordering::SeqCst);
+    assert_eq!(
+        connected, 1,
+        "warm-up must establish exactly one connection"
+    );
+    leases.store(0, Ordering::SeqCst);
+    connected
+}
+
+fn assert_single_page_lease(
+    leases: &AtomicUsize,
+    connections: &AtomicUsize,
+    connected: usize,
+    listing: &str,
+) {
+    assert_eq!(
+        connections.load(Ordering::SeqCst),
+        connected,
+        "{listing} must not replace the measured runtime connection"
+    );
+    assert_eq!(
+        leases.load(Ordering::SeqCst),
+        1,
+        "{listing} must use one runtime lease for the entire page"
+    );
+}
+
+struct CollectionFixture {
+    visible: BranchId,
+    hidden: BranchId,
+    foreign: BranchId,
+    alpha: [UserId; 2],
+    shared: UserId,
+    inactive: UserId,
+}
+
+async fn seed_collection_fixture(owner_pool: &PgPool) -> CollectionFixture {
+    let org = *OrgId::knl().as_uuid();
+    seed_org(owner_pool, org, "A").await;
+    seed_org(owner_pool, ORG_B, "B").await;
+    let mut alpha = [
+        seed_active_user(owner_pool, org).await,
+        seed_active_user(owner_pool, org).await,
+    ];
+    alpha.sort();
+    let shared = seed_active_user(owner_pool, org).await;
+    let hidden_user = seed_active_user(owner_pool, org).await;
+    let unassigned = seed_active_user(owner_pool, org).await;
+    let inactive = seed_active_user(owner_pool, org).await;
+    let foreign_user = seed_active_user(owner_pool, ORG_B).await;
+    let mut tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL row_security = off")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let mut branches = Vec::new();
+    for (org_id, tag, names) in [
+        (org, "Collection A", vec!["Visible", "Hidden"]),
+        (ORG_B, "Collection B", vec!["Foreign"]),
+    ] {
+        let region: Uuid =
+            sqlx::query_scalar("INSERT INTO regions (name, org_id) VALUES ($1, $2) RETURNING id")
+                .bind(tag)
+                .bind(org_id)
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        for name in names {
+            let branch: Uuid = sqlx::query_scalar(
+                "INSERT INTO branches (region_id, name, org_id) VALUES ($1, $2, $3) RETURNING id",
+            )
+            .bind(region)
+            .bind(name)
+            .bind(org_id)
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+            branches.push(BranchId::from_uuid(branch));
+        }
+    }
+    let [visible, hidden, foreign] = branches.as_slice() else {
+        panic!("fixture must seed exactly three branches");
+    };
+    let created_at = OffsetDateTime::from_unix_timestamp(1_700_000_000).unwrap();
+    for (user, name, active) in [
+        (alpha[0], "alpha", true),
+        (alpha[1], "alpha", true),
+        (shared, "Beta", true),
+        (hidden_user, "Zulu", true),
+        (unassigned, "No branch", true),
+        (inactive, "Inactive", false),
+        (foreign_user, "Foreign", true),
+    ] {
+        sqlx::query(
+            "UPDATE users SET display_name = $2, is_active = $3, created_at = $4, phone = $5 WHERE id = $1",
+        )
+        .bind(*user.as_uuid())
+        .bind(name)
+        .bind(active)
+        .bind(if user == shared {
+            created_at + Duration::days(1)
+        } else {
+            created_at
+        })
+        .bind((user == shared).then_some("010-1234-5678"))
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    }
+    for (user, branch, org_id) in [
+        (alpha[0], *visible, org),
+        (alpha[1], *visible, org),
+        (shared, *visible, org),
+        (shared, *hidden, org),
+        (hidden_user, *hidden, org),
+        (inactive, *visible, org),
+        (foreign_user, *foreign, ORG_B),
+    ] {
+        sqlx::query("INSERT INTO user_branches (user_id, branch_id, org_id) VALUES ($1, $2, $3)")
+            .bind(*user.as_uuid())
+            .bind(*branch.as_uuid())
+            .bind(org_id)
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+    }
+    tx.commit().await.unwrap();
+    CollectionFixture {
+        visible: *visible,
+        hidden: *hidden,
+        foreign: *foreign,
+        alpha,
+        shared,
+        inactive,
+    }
+}
+
+fn collection_user_query() -> UserListQuery {
+    UserListQuery {
+        include_inactive: false,
+        limit: None,
+        offset: None,
+    }
+}
+
+fn collection_directory_query() -> DirectoryListQuery {
+    DirectoryListQuery {
+        search: None,
+        team: None,
+        branch_id: None,
+        include_inactive: false,
+        limit: None,
+        offset: None,
+    }
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn list_users_page_uses_one_runtime_lease(owner_pool: PgPool) {
+    let fixture = seed_collection_fixture(&owner_pool).await;
+    let (pool, leases, connections) = page_budget_runtime_pool(&owner_pool).await;
+    let store = PgOrgStore::new(pool.clone());
+    let scope = BranchScope::single(fixture.visible);
+    let connected = begin_page_measurement(&pool, &leases, &connections).await;
+    let page = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_users(&scope, collection_user_query()),
+        )
+        .await
+        .expect("management page must succeed as console_rt");
+    assert_single_page_lease(&leases, &connections, connected, "list_users");
+    assert_eq!(page.total, 3);
+    assert_eq!(page.items.len(), 3);
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn list_directory_people_page_uses_one_runtime_lease(owner_pool: PgPool) {
+    let fixture = seed_collection_fixture(&owner_pool).await;
+    let (pool, leases, connections) = page_budget_runtime_pool(&owner_pool).await;
+    let store = PgOrgStore::new(pool.clone());
+    let scope = BranchScope::single(fixture.visible);
+    let connected = begin_page_measurement(&pool, &leases, &connections).await;
+    let page = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_directory_people(&scope, collection_directory_query()),
+        )
+        .await
+        .expect("directory page must succeed as console_rt");
+    assert_single_page_lease(&leases, &connections, connected, "list_directory_people");
+    assert_eq!(page.total, 3);
+    assert_eq!(page.items.len(), 3);
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn collection_pages_preserve_scope_memberships_and_pagination_as_runtime_role(
+    owner_pool: PgPool,
+) {
+    let fixture = seed_collection_fixture(&owner_pool).await;
+    let store = PgOrgStore::new(runtime_role_pool(&owner_pool).await);
+    let scope = BranchScope::single(fixture.visible);
+    let management = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_users(&scope, collection_user_query()),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        (management.limit, management.offset, management.total),
+        (50, 0, 3)
+    );
+    assert_eq!(
+        management
+            .items
+            .iter()
+            .map(|user| user.id)
+            .collect::<Vec<_>>(),
+        vec![fixture.shared, fixture.alpha[1], fixture.alpha[0]],
+        "management order is created_at DESC then id DESC"
+    );
+    let mut complete_branches = vec![fixture.visible, fixture.hidden];
+    complete_branches.sort();
+    assert_eq!(management.items[0].branch_ids, complete_branches);
+    assert_eq!(management.items[0].phone.as_deref(), Some("010-1234-5678"));
+    assert!(
+        management
+            .items
+            .iter()
+            .all(|user| user.employee_id.is_none() && !user.has_passkey)
+    );
+
+    let directory = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_directory_people(&scope, collection_directory_query()),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        (directory.limit, directory.offset, directory.total),
+        (50, 0, 3)
+    );
+    assert_eq!(
+        directory
+            .items
+            .iter()
+            .map(|user| user.id)
+            .collect::<Vec<_>>(),
+        vec![fixture.alpha[0], fixture.alpha[1], fixture.shared],
+        "ICU name order puts lowercase alpha before Beta; equal names use id ASC"
+    );
+    assert!(
+        directory
+            .items
+            .iter()
+            .all(|user| { user.branch_ids == vec![fixture.visible] && user.phone.is_none() })
+    );
+
+    let management_page = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_users(
+                &scope,
+                UserListQuery {
+                    limit: Some(2),
+                    offset: Some(1),
+                    ..collection_user_query()
+                },
+            ),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        (
+            management_page.limit,
+            management_page.offset,
+            management_page.total
+        ),
+        (2, 1, 3)
+    );
+    assert_eq!(management_page.items, management.items[1..]);
+    let directory_page = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_directory_people(
+                &scope,
+                DirectoryListQuery {
+                    limit: Some(2),
+                    offset: Some(1),
+                    ..collection_directory_query()
+                },
+            ),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        (
+            directory_page.limit,
+            directory_page.offset,
+            directory_page.total
+        ),
+        (2, 1, 3)
+    );
+    assert_eq!(directory_page.items, directory.items[1..]);
+
+    for (scope, include_inactive, expected_total) in [
+        (scope.clone(), true, 4),
+        (BranchScope::All, false, 5),
+        (BranchScope::All, true, 6),
+        (BranchScope::none(), true, 0),
+        (BranchScope::single(fixture.foreign), true, 0),
+    ] {
+        let management = CURRENT_ORG
+            .scope(
+                OrgId::knl(),
+                store.list_users(
+                    &scope,
+                    UserListQuery {
+                        include_inactive,
+                        ..collection_user_query()
+                    },
+                ),
+            )
+            .await
+            .unwrap();
+        let directory = CURRENT_ORG
+            .scope(
+                OrgId::knl(),
+                store.list_directory_people(
+                    &scope,
+                    DirectoryListQuery {
+                        include_inactive,
+                        ..collection_directory_query()
+                    },
+                ),
+            )
+            .await
+            .unwrap();
+        assert_eq!(management.total, expected_total);
+        assert_eq!(directory.total, expected_total);
+        assert_eq!(management.items.len() as i64, expected_total);
+        assert_eq!(directory.items.len() as i64, expected_total);
+        assert_eq!(
+            directory
+                .items
+                .iter()
+                .any(|user| user.id == fixture.inactive),
+            include_inactive && expected_total > 0
+        );
+    }
+
+    let forbidden_requested_branch = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_directory_people(
+                &scope,
+                DirectoryListQuery {
+                    branch_id: Some(fixture.hidden),
+                    ..collection_directory_query()
+                },
+            ),
+        )
+        .await
+        .unwrap();
+    assert_eq!(forbidden_requested_branch.total, 0);
+    assert!(forbidden_requested_branch.items.is_empty());
+    let beyond_end = CURRENT_ORG
+        .scope(
+            OrgId::knl(),
+            store.list_directory_people(
+                &scope,
+                DirectoryListQuery {
+                    offset: Some(3),
+                    ..collection_directory_query()
+                },
+            ),
+        )
+        .await
+        .unwrap();
+    assert_eq!(beyond_end.total, 3);
+    assert!(beyond_end.items.is_empty());
+}
+
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn directory_page_succeeds_without_runtime_phone_select_privilege(owner_pool: PgPool) {
+    let org = OrgId::knl();
+    seed_org(&owner_pool, *org.as_uuid(), "A").await;
+    let user = seed_active_user(&owner_pool, *org.as_uuid()).await;
+    sqlx::query("UPDATE users SET phone = '010-1234-5678' WHERE id = $1")
+        .bind(*user.as_uuid())
+        .execute(&owner_pool)
+        .await
+        .unwrap();
+    // ACL changes belong only to this sqlx test database, never schema source.
+    sqlx::query("REVOKE SELECT ON public.users FROM console_rt")
+        .execute(&owner_pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "GRANT SELECT (id, display_name, employee_id, roles, team, is_active, created_at, org_id) ON public.users TO console_rt",
+    )
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+    let has_phone_select: bool = sqlx::query_scalar(
+        "SELECT has_column_privilege('console_rt', 'public.users', 'phone', 'SELECT')",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert!(
+        !has_phone_select,
+        "the phone privilege negative control must be real"
+    );
+    let store = PgOrgStore::new(runtime_role_pool(&owner_pool).await);
+    let directory = CURRENT_ORG
+        .scope(
+            org,
+            store.list_directory_people(&BranchScope::All, collection_directory_query()),
+        )
+        .await
+        .expect("the actual directory page query must not require users.phone SELECT");
+    assert_eq!(directory.total, 1);
+    assert_eq!(directory.items.len(), 1);
+    assert_eq!(directory.items[0].id, user);
+    assert_eq!(directory.items[0].phone, None);
 }
