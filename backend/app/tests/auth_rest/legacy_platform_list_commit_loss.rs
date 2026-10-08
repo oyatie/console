@@ -12,7 +12,7 @@ use tokio::{
     sync::oneshot,
 };
 
-const MAX_FRAME: usize = 1024 * 1024;
+use crate::native_pg_test_wire::{read_frame, read_startup, write_frame};
 #[derive(Clone, Default)]
 pub(in super::super::super::super::super) struct WireEvidence {
     pub(in super::super::super::super::super) connections: usize,
@@ -58,30 +58,6 @@ fn invalid_wire() -> std::io::Error {
     )
 }
 
-// Raw startup/auth/row bytes exist only in bounded relay buffers, never receipts/logs.
-async fn read_frame<R: AsyncRead + Unpin>(reader: &mut R) -> std::io::Result<(u8, Vec<u8>)> {
-    let tag = reader.read_u8().await?;
-    let size = reader.read_u32().await? as usize;
-    if !(4..=MAX_FRAME).contains(&size) {
-        return Err(invalid_wire());
-    }
-    let mut body = vec![0; size - 4];
-    reader.read_exact(&mut body).await?;
-    Ok((tag, body))
-}
-async fn write_frame<W: AsyncWrite + Unpin>(
-    writer: &mut W,
-    tag: u8,
-    body: &[u8],
-) -> std::io::Result<()> {
-    if body.len() > MAX_FRAME - 4 {
-        return Err(invalid_wire());
-    }
-    writer.write_u8(tag).await?;
-    writer.write_u32((body.len() + 4) as u32).await?;
-    writer.write_all(body).await?;
-    writer.flush().await
-}
 async fn upload<R: AsyncRead + Unpin, W: AsyncWrite + Unpin>(
     mut client: R,
     mut server: W,
@@ -154,17 +130,9 @@ async fn relay_connection(
     e: Arc<Mutex<WireEvidence>>,
 ) -> std::io::Result<()> {
     let mut server = TcpStream::connect(upstream).await?;
-    let len = client.read_u32().await? as usize;
-    if !(8..=MAX_FRAME).contains(&len) {
-        return Err(invalid_wire());
-    }
-    let mut startup = vec![0; len - 4];
-    client.read_exact(&mut startup).await?;
-    if startup[..4] != 196608u32.to_be_bytes() {
-        return Err(invalid_wire());
-    }
+    let startup = read_startup(&mut client).await?;
     e.lock().unwrap().startup_valid = true;
-    server.write_u32(len as u32).await?;
+    server.write_u32((startup.len() + 4) as u32).await?;
     server.write_all(&startup).await?;
     server.flush().await?;
     drop(startup);

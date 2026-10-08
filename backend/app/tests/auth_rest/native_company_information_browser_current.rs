@@ -272,6 +272,10 @@ pub(super) async fn probe(
             pool, &runtime, config, &a, &authority, selector, &expected, &before,
         )
         .await;
+        finalization::verify(
+            pool, &runtime, config, &a, &authority, selector, &expected, &before,
+        )
+        .await;
     })
     .catch_unwind()
     .await;
@@ -402,3 +406,6 @@ pub(super) async fn prepare_successor_fixture(pool: &PgPool) {
         std::panic::resume_unwind(panic);
     }
 }
+
+#[path = "native_company_information_finalization.rs"]
+mod finalization;

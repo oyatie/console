@@ -9133,3 +9133,6 @@ async fn approval_requester_person_is_pinned_before_real_identity_relink(pool: P
         .unwrap();
     assert_eq!(committed, (1, 1, before.2 + 1, 0));
 }
+
+#[path = "auth_rest/native_pg_test_wire.rs"]
+mod native_pg_test_wire;
