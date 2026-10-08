@@ -26,6 +26,7 @@ Test targets:
   - owner.* and domain.* labels are derived from package paths, never a central
     hand-maintained exception table.
 """
+import argparse
 import os
 import re
 import sys
@@ -1691,6 +1692,9 @@ def _block(
 
 
 def main():
+    argparse.ArgumentParser(
+        description="Generate first-party BUCK files for the backend workspace crates."
+    ).parse_args()
     members = find_members()
     first_party, meta = {}, {}
     for d in members:
