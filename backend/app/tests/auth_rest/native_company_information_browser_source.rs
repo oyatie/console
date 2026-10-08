@@ -461,6 +461,10 @@ pub(super) async fn prerequisite(
     // scope. External whole-leaf cancellation belongs to root's container supervisor.
     let outcome=std::panic::AssertUnwindSafe(tokio::time::timeout(Duration::from_secs(45),async {
     pid=Some(sqlx::query_scalar::<_,i32>("SELECT pg_backend_pid()").fetch_one(&mut connection).await.unwrap());
+    // PL/pgSQL registers session GUCs on first execution; rollback retains them.
+    // Warm this owned socket before the full, unchanged restoration baselines.
+    sqlx::raw_sql("DO LANGUAGE plpgsql $$ BEGIN NULL; END; $$;")
+        .execute(&mut connection).await.expect("STOP: bounded operator PL/pgSQL settings warm-up");
     let metadata_before=fault_metadata(&mut connection).await;
     outer_metadata=Some(metadata_before.clone());
     let settings_before=fault_settings(&mut connection).await;
