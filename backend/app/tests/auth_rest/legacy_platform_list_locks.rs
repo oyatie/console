@@ -750,6 +750,6 @@ pub(in super::super) use legacy_platform_list_expiry_progress::{
     configured_family_state, other_operator,
 };
 
-pub(in super::super) use legacy_platform_list_commit_loss::{
+pub(in super::super::super::super) use legacy_platform_list_commit_loss::{
     WireEvidence, evidence, proven_ack_loss, relay,
 };

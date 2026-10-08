@@ -690,6 +690,10 @@ fn wait_and_role_delta_oracles_reject_omissions_and_extra_effects() {
 #[path = "legacy_platform_list_credentials.rs"]
 mod legacy_platform_list_credentials;
 
+pub(in super::super) use legacy_platform_list_credentials::{
+    WireEvidence, evidence, proven_ack_loss, relay,
+};
+
 #[path = "legacy_platform_list_unavailable.rs"]
 mod legacy_platform_list_unavailable;
 

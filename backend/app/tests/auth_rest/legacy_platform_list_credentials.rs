@@ -591,4 +591,6 @@ pub(super) use legacy_platform_list_locks::{elapsed, revocation_delta, role_wait
 
 pub(super) use legacy_platform_list_locks::{configured_family_state, other_operator};
 
-pub(super) use legacy_platform_list_locks::{WireEvidence, evidence, proven_ack_loss, relay};
+pub(in super::super::super) use legacy_platform_list_locks::{
+    WireEvidence, evidence, proven_ack_loss, relay,
+};

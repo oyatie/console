@@ -1735,6 +1735,48 @@ class BrowserIntegrationVariantsTests(unittest.TestCase):
         self.assertEqual("native-company-information/group-lock-v1.sql",
                          exports[0].get("src", exports[0]["name"]))
 
+    def test_manager_current_source_prerequisite_inputs_reach_auth_rest_variants(self):
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/app/tests/auth_rest/native_company_information_browser_source.rs"
+        expected = {
+            "group-lock-v1.sql": "daee9a6d7f2e0b1e8992c327500f0e93a9641501c467bdaddac3bfaa19fac397",
+            "selected-lock-v1.sql": "f60cc97a92df9ca446dc4bec2964981a3957cf18b4d81fd60f9c32826065598f",
+            "root-material-v1.sql": "f75d12df521b2d0ec6c69271ff6dfac4663e207890af0ccdeefdd39763dacbc6",
+            "manager-current-v1.sql": "607635bd51942c6c04f1fbdbe39c7a8ab414c9c6f19af94632a2f92e40980265",
+            "acl-v1.sql": "1e74e8bb66e9f61242c3ef79c122f99c8953a4495ba03ab56ac1d9121cd81ade",
+        }
+        includes = re.findall(r'include_str!\(\s*"([^"]+)"', source.read_text())
+        rules = self._target_nodes(self._render_app())
+        variants = ["console-app-itest-auth_rest", "console-app-itest-auth_rest-browser"]
+        exports = [
+            {field.arg: ast.literal_eval(field.value) for field in statement.value.keywords}
+            for statement in ast.parse((root / "ops/BUCK").read_text()).body
+            if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Name)
+            and statement.value.func.id == "export_file"
+        ]
+        for name, digest in expected.items():
+            relative = "ops/native-company-information/" + name
+            literal = "../../../../" + relative
+            target = "//ops:native-company-information/" + name
+            fixture = root / relative
+            self.assertEqual(1, includes.count(literal), "actual source include must be examined")
+            self.assertEqual(fixture, (source.parent / literal).resolve())
+            self.assertFalse(fixture.is_symlink())
+            self.assertTrue(fixture.is_file())
+            self.assertEqual(digest, hashlib.sha256(fixture.read_bytes()).hexdigest())
+            for variant in variants:
+                mapped = rules[variant][1]["mapped_srcs"]
+                explicit = mapped.args[1].left if isinstance(mapped.args[1], ast.BinOp) else mapped.args[1]
+                self.assertIn(source.relative_to(root / "backend/app").as_posix(), ast.literal_eval(explicit))
+                external = next(field.value for field in mapped.keywords if field.arg == "external")
+                self.assertEqual(relative, ast.literal_eval(external).get(target),
+                                 "actual ordinary and browser actions must map each source input")
+            matches = [export for export in exports if export.get("name") == "native-company-information/" + name]
+            self.assertEqual(1, len(matches), "each source input needs one native ops export")
+            self.assertEqual(["PUBLIC"], matches[0]["visibility"])
+            self.assertEqual("native-company-information/" + name, matches[0].get("src", matches[0]["name"]))
+
     def test_real_app_browser_variants_clone_only_selected_native_test_targets(self):
         manifest = GENERATOR.load(Path(GENERATOR.REPO) / "backend/app")
         self.assertEqual([], manifest["features"]["test-browser"])

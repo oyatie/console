@@ -112,9 +112,15 @@ async fn run_handoff_browser(pool: PgPool, successor: bool) {
         "account-company-handoff"
     });
     assert!(!output.exists(), "handoff browser output must be fresh");
+    let _manager_fixture_lease = if successor {
+        Some(manager_current::fixture_lease())
+    } else {
+        None
+    };
     if successor {
         manager_credentials::pin_profile();
         super::native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
+        manager_current::prepare_successor_fixture(&pool).await;
     } else {
         prepare_ready_database(&pool).await;
     }
