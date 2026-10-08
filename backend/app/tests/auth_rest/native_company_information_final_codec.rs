@@ -5,15 +5,16 @@ use std::io::Result;
 use time::{Duration, OffsetDateTime, format_description::well_known::Rfc3339};
 use uuid::Uuid;
 
-pub(super) const MANAGER: &str = "SELECT actor_account_id, session_id, org_id, command_id, current_group_id, company_epoch, current_policy_receipt_id, context_generation, assignment_id, assignment_revision, role_id, role_revision, registered_clauses, company_name, company_slug, installed_object_type_id, observed_at, source_xid::text AS source_xid, source_backend_pid, source_material FROM public.identity_company_information_manager_current_v1($1,$2,$3,$4,$5) LIMIT 2";
-pub(super) const AUTH: &str = "SELECT * FROM public.account_session_shared_material_v1($1,$2)";
+pub(in super::super) const MANAGER: &str = "SELECT actor_account_id, session_id, org_id, command_id, current_group_id, company_epoch, current_policy_receipt_id, context_generation, assignment_id, assignment_revision, role_id, role_revision, registered_clauses, company_name, company_slug, installed_object_type_id, observed_at, source_xid::text AS source_xid, source_backend_pid, source_material FROM public.identity_company_information_manager_current_v1($1,$2,$3,$4,$5) LIMIT 2";
+pub(in super::super) const AUTH: &str =
+    "SELECT * FROM public.account_session_shared_material_v1($1,$2)";
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum Kind {
+pub(in super::super) enum Kind {
     Other,
     Manager,
     Auth,
 }
-pub(super) fn kind(sql: &[u8]) -> Result<Kind> {
+pub(in super::super) fn kind(sql: &[u8]) -> Result<Kind> {
     let text = std::str::from_utf8(sql).map_err(|_| invalid_wire())?;
     if text.len() > 16384 {
         return Err(invalid_wire());
@@ -116,14 +117,14 @@ pub(super) fn cells(c: &mut Cursor<'_>, count: usize) -> Result<Cells> {
     }
     Ok(result)
 }
-pub(super) fn row(bytes: &[u8]) -> Result<Cells> {
+pub(in super::super) fn row(bytes: &[u8]) -> Result<Cells> {
     let mut c = Cursor::new(bytes);
     let n = usize::from(c.u16()?);
     let result = cells(&mut c, n)?;
     c.done()?;
     Ok(result)
 }
-pub(super) fn write_cells(cells: &Cells) -> Vec<u8> {
+pub(in super::super) fn write_cells(cells: &Cells) -> Vec<u8> {
     let mut bytes = (cells.len() as u16).to_be_bytes().to_vec();
     for cell in cells {
         match cell {
@@ -151,7 +152,7 @@ pub(super) fn uuid(raw: &Option<Vec<u8>>, format: u16) -> Result<Option<Uuid>> {
     }
     Ok(Some(id))
 }
-pub(super) fn uuid_bytes(id: Uuid, format: u16) -> Vec<u8> {
+pub(in super::super) fn uuid_bytes(id: Uuid, format: u16) -> Vec<u8> {
     if format == 1 {
         id.as_bytes().to_vec()
     } else {
@@ -159,11 +160,11 @@ pub(super) fn uuid_bytes(id: Uuid, format: u16) -> Vec<u8> {
     }
 }
 #[derive(Clone)]
-pub(super) struct Column {
-    pub(super) name: String,
-    pub(super) oid: u32,
+pub(in super::super) struct Column {
+    pub(in super::super) name: String,
+    pub(in super::super) oid: u32,
 }
-pub(super) const MANAGER_SCHEMA: &[(&str, u32)] = &[
+pub(in super::super) const MANAGER_SCHEMA: &[(&str, u32)] = &[
     ("actor_account_id", 2950),
     ("session_id", 2950),
     ("org_id", 2950),
@@ -185,7 +186,7 @@ pub(super) const MANAGER_SCHEMA: &[(&str, u32)] = &[
     ("source_backend_pid", 23),
     ("source_material", 3802),
 ];
-pub(super) const AUTH_SCHEMA: &[(&str, u32)] = &[
+pub(in super::super) const AUTH_SCHEMA: &[(&str, u32)] = &[
     ("security_state", 25),
     ("security_generation", 20),
     ("revision", 20),
@@ -295,7 +296,7 @@ fn value(raw: &Option<Vec<u8>>, oid: u32, format: u16) -> Result<Value> {
     };
     Ok(json!(n))
 }
-pub(super) fn values(cells: &Cells, schema: &[Column], formats: &[u16]) -> Result<Value> {
+pub(in super::super) fn values(cells: &Cells, schema: &[Column], formats: &[u16]) -> Result<Value> {
     if cells.len() != schema.len()
         || formats.len() != schema.len()
         || formats.iter().any(|f| *f > 1)
