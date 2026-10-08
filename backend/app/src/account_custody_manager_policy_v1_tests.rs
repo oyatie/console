@@ -446,7 +446,7 @@ mod actual_profile {
             let before = rows(&pool).await;
             let mut tx = operator_tx(&pool).await;
             sqlx::raw_sql(FINALIZER).execute(tx.as_mut()).await.expect("STOP: accepted Manager SQL installation prerequisite failed");
-            let actual: Vec<String> = sqlx::query_scalar("SELECT DISTINCT c.relname::text FROM pg_catalog.pg_locks l JOIN pg_catalog.pg_class c ON c.oid=l.relation JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE l.pid=pg_backend_pid() AND l.granted AND l.mode='AccessExclusiveLock' AND n.nspname='public' AND c.relkind='r' ORDER BY c.relname::text COLLATE \"C\"")
+            let actual: Vec<String> = sqlx::query_scalar("SELECT DISTINCT c.relname::text COLLATE \"C\" FROM pg_catalog.pg_locks l JOIN pg_catalog.pg_class c ON c.oid=l.relation JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE l.pid=pg_backend_pid() AND l.granted AND l.mode='AccessExclusiveLock' AND n.nspname='public' AND c.relkind='r' ORDER BY c.relname::text COLLATE \"C\"")
                 .fetch_all(tx.as_mut()).await.unwrap();
             assert_eq!(actual, LOCKS.map(str::to_owned));
             tx.commit().await.unwrap();

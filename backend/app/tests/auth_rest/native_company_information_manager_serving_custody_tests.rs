@@ -301,7 +301,7 @@ mod native_company_information_manager_serving_custody_tests {
 
     async fn exact_locks(tx: &mut Transaction<'_, Postgres>) {
         let actual: Vec<String> = sqlx::query_scalar(
-            "SELECT DISTINCT c.relname::text FROM pg_catalog.pg_locks l \
+            "SELECT DISTINCT c.relname::text COLLATE \"C\" FROM pg_catalog.pg_locks l \
              JOIN pg_catalog.pg_class c ON c.oid=l.relation \
              JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace \
              WHERE l.pid=pg_backend_pid() AND l.granted AND l.mode='AccessExclusiveLock' \
