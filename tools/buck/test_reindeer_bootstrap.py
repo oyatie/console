@@ -90,7 +90,7 @@ class ReindeerBootstrapTests(unittest.TestCase):
             '        "CARGO_PKG_RUST_VERSION": "1.80.0",\n'
             '        "CARGO_PKG_VERSION_MAJOR": "0",\n'
             '        "CARGO_PKG_VERSION_MINOR": "9",\n'
-            '        "CARGO_PKG_VERSION_PATCH": "116",\n'
+            '        "CARGO_PKG_VERSION_PATCH": "117",\n'
             '        "CARGO_PKG_VERSION_PRE": "",\n'
             '        "OPENSSL_RUST_USE_NASM": "0",\n'
             "    },\n",
