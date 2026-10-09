@@ -882,39 +882,39 @@ cargo.rust_library(
 
 alias(
     name = "async-imap",
-    actual = ":async-imap-0.11",
+    actual = ":async-imap-0.12",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "async-imap-0.11.3.crate",
-    sha256 = "9a6728e0f7931b36d725ac234fcb02539e9f7888dbeaaa8a18d9ea5792181570",
-    strip_prefix = "async-imap-0.11.3",
-    urls = ["https://static.crates.io/crates/async-imap/0.11.3/download"],
+    name = "async-imap-0.12.0.crate",
+    sha256 = "f97b87216c9f0ccc63c516263169085fa34bba25633f6d96c6a9b9ca1fd5f70a",
+    strip_prefix = "async-imap-0.12.0",
+    urls = ["https://static.crates.io/crates/async-imap/0.12.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "async-imap-0.11",
-    srcs = [":async-imap-0.11.3.crate"],
+    name = "async-imap-0.12",
+    srcs = [":async-imap-0.12.0.crate"],
     crate = "async_imap",
-    crate_root = "async-imap-0.11.3.crate/src/lib.rs",
-    edition = "2021",
+    crate_root = "async-imap-0.12.0.crate/src/lib.rs",
+    edition = "2024",
     env = {
         "CARGO_BIN_NAME": "async_imap",
         "CARGO_CRATE_NAME": "async_imap",
-        "CARGO_MANIFEST_DIR": "async-imap-0.11.3.crate",
+        "CARGO_MANIFEST_DIR": "async-imap-0.12.0.crate",
         "CARGO_PKG_AUTHORS": "dignifiedquire <me@dignifiedquire.com>",
         "CARGO_PKG_DESCRIPTION": "Async IMAP client for Rust",
         "CARGO_PKG_HOMEPAGE": "https://github.com/async-email/async-imap",
         "CARGO_PKG_NAME": "async-imap",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/async-email/async-imap",
-        "CARGO_PKG_RUST_VERSION": "",
-        "CARGO_PKG_VERSION": "0.11.3",
+        "CARGO_PKG_RUST_VERSION": "1.88",
+        "CARGO_PKG_VERSION": "0.12.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "11",
-        "CARGO_PKG_VERSION_PATCH": "3",
+        "CARGO_PKG_VERSION_MINOR": "12",
+        "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
@@ -924,13 +924,13 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":async-channel-2",
-        ":base64-0.22",
+        ":base64-0.23",
         ":bytes-1",
         ":chrono-0.4",
-        ":futures-0.3",
-        ":imap-proto-0.16",
+        ":futures-util-0.3",
+        ":imap-proto-0.17",
         ":log-0.4",
-        ":nom-7",
+        ":nom-8",
         ":pin-project-1",
         ":pin-utils-0.1",
         ":self_cell-1",
@@ -9261,23 +9261,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "hydration_context-0.4.0-beta.crate",
-    sha256 = "5a4aea8f2328f516a0b0ec2a6e9e621444e88a027c7fa01a935a2db16ae83638",
-    strip_prefix = "hydration_context-0.4.0-beta",
-    urls = ["https://static.crates.io/crates/hydration_context/0.4.0-beta/download"],
+    name = "hydration_context-0.4.0-beta2.crate",
+    sha256 = "12da13466a3a57c7b56dffad74bbffeac03d17caef84577886b1307fdbc01325",
+    strip_prefix = "hydration_context-0.4.0-beta2",
+    urls = ["https://static.crates.io/crates/hydration_context/0.4.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "hydration_context-0.4",
-    srcs = [":hydration_context-0.4.0-beta.crate"],
+    srcs = [":hydration_context-0.4.0-beta2.crate"],
     crate = "hydration_context",
-    crate_root = "hydration_context-0.4.0-beta.crate/src/lib.rs",
+    crate_root = "hydration_context-0.4.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "hydration_context",
         "CARGO_CRATE_NAME": "hydration_context",
-        "CARGO_MANIFEST_DIR": "hydration_context-0.4.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "hydration_context-0.4.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Utilities for sharing data between web servers and client-side web applications.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -9285,11 +9285,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.4.0-beta",
+        "CARGO_PKG_VERSION": "0.4.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "4",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = ["browser"],
     visibility = [],
@@ -10059,38 +10059,38 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "imap-proto-0.16.7.crate",
-    sha256 = "25f6af35c6a517aea5c72314abe90134980d2ae6a763809b50c208b3e429d71f",
-    strip_prefix = "imap-proto-0.16.7",
-    urls = ["https://static.crates.io/crates/imap-proto/0.16.7/download"],
+    name = "imap-proto-0.17.0.crate",
+    sha256 = "5ccf963d57074747b455398a1763d174da80bcaba6f51e3671a82252b531a68b",
+    strip_prefix = "imap-proto-0.17.0",
+    urls = ["https://static.crates.io/crates/imap-proto/0.17.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "imap-proto-0.16",
-    srcs = [":imap-proto-0.16.7.crate"],
+    name = "imap-proto-0.17",
+    srcs = [":imap-proto-0.17.0.crate"],
     crate = "imap_proto",
-    crate_root = "imap-proto-0.16.7.crate/src/lib.rs",
+    crate_root = "imap-proto-0.17.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "imap_proto",
         "CARGO_CRATE_NAME": "imap_proto",
-        "CARGO_MANIFEST_DIR": "imap-proto-0.16.7.crate",
+        "CARGO_MANIFEST_DIR": "imap-proto-0.17.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "IMAP protocol parser and data structures",
-        "CARGO_PKG_HOMEPAGE": "https://github.com/djc/tokio-imap",
+        "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "imap-proto",
         "CARGO_PKG_README": "README.md",
-        "CARGO_PKG_REPOSITORY": "https://github.com/djc/tokio-imap",
-        "CARGO_PKG_RUST_VERSION": "1.61",
-        "CARGO_PKG_VERSION": "0.16.7",
+        "CARGO_PKG_REPOSITORY": "https://github.com/djc/imap-proto",
+        "CARGO_PKG_RUST_VERSION": "1.70",
+        "CARGO_PKG_VERSION": "0.17.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "16",
-        "CARGO_PKG_VERSION_PATCH": "7",
+        "CARGO_PKG_VERSION_MINOR": "17",
+        "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
     visibility = [],
-    deps = [":nom-7"],
+    deps = [":nom-8"],
 )
 
 http_archive(
@@ -11000,23 +11000,23 @@ alias(
 )
 
 http_archive(
-    name = "leptos-0.9.0-beta.crate",
-    sha256 = "63af1dcd8afc654381c7468ddc1c009168bf622259682ce4ad0236783fb281cd",
-    strip_prefix = "leptos-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/leptos/0.9.0-beta/download"],
+    name = "leptos-0.9.0-beta2.crate",
+    sha256 = "388f53e7fed17c804a8dc03d0caf2657c43a099f77015d35b96c9a9d112f7a86",
+    strip_prefix = "leptos-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/leptos/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "leptos-0.9",
-    srcs = [":leptos-0.9.0-beta.crate"],
+    srcs = [":leptos-0.9.0-beta2.crate"],
     crate = "leptos",
-    crate_root = "leptos-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "leptos-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "leptos",
         "CARGO_CRATE_NAME": "leptos",
-        "CARGO_MANIFEST_DIR": "leptos-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "leptos-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Leptos is a full-stack, isomorphic Rust web framework leveraging fine-grained reactivity to build declarative user interfaces.",
         "CARGO_PKG_HOMEPAGE": "https://leptos.dev/",
@@ -11024,11 +11024,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = [
         "hydration",
@@ -11071,23 +11071,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "leptos_config-0.9.0-beta.crate",
-    sha256 = "dd60476ac686675976f723ce2e07e83ae32eccd7c1667fbd247ec2532de830bf",
-    strip_prefix = "leptos_config-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/leptos_config/0.9.0-beta/download"],
+    name = "leptos_config-0.9.0-beta2.crate",
+    sha256 = "417ea6225cdaa92486456247d8445412beaf0a3b057b0332b3214c1a6f099c1d",
+    strip_prefix = "leptos_config-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/leptos_config/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "leptos_config-0.9",
-    srcs = [":leptos_config-0.9.0-beta.crate"],
+    srcs = [":leptos_config-0.9.0-beta2.crate"],
     crate = "leptos_config",
-    crate_root = "leptos_config-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "leptos_config-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "leptos_config",
         "CARGO_CRATE_NAME": "leptos_config",
-        "CARGO_MANIFEST_DIR": "leptos_config-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "leptos_config-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Configuration for the Leptos web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -11095,11 +11095,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     visibility = [],
     deps = [
@@ -11111,23 +11111,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "leptos_dom-0.9.0-beta.crate",
-    sha256 = "b55532661e2e0fb4046e59c47d87296d8f3758e06d62e2c853d0ae9cda1c6a4c",
-    strip_prefix = "leptos_dom-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/leptos_dom/0.9.0-beta/download"],
+    name = "leptos_dom-0.9.0-beta2.crate",
+    sha256 = "a1af483eb8dcc4def9122a71b8e0a86941634073fd5112a2bd5ae52df46d1f6e",
+    strip_prefix = "leptos_dom-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/leptos_dom/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "leptos_dom-0.9",
-    srcs = [":leptos_dom-0.9.0-beta.crate"],
+    srcs = [":leptos_dom-0.9.0-beta2.crate"],
     crate = "leptos_dom",
-    crate_root = "leptos_dom-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "leptos_dom-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "leptos_dom",
         "CARGO_CRATE_NAME": "leptos_dom",
-        "CARGO_MANIFEST_DIR": "leptos_dom-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "leptos_dom-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "DOM operations for the Leptos web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -11135,11 +11135,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = [
         "default",
@@ -11158,23 +11158,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "leptos_hot_reload-0.9.0-beta.crate",
-    sha256 = "d933db9cf070a51438a76c8020de1570a80f2bd2166d66605cf5e395fe05bd0c",
-    strip_prefix = "leptos_hot_reload-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/leptos_hot_reload/0.9.0-beta/download"],
+    name = "leptos_hot_reload-0.9.0-beta2.crate",
+    sha256 = "d2152c4dfa8e6a4cce1da0c3154aa322400fb9e355ad7652a66df576f4b9766b",
+    strip_prefix = "leptos_hot_reload-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/leptos_hot_reload/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "leptos_hot_reload-0.9",
-    srcs = [":leptos_hot_reload-0.9.0-beta.crate"],
+    srcs = [":leptos_hot_reload-0.9.0-beta2.crate"],
     crate = "leptos_hot_reload",
-    crate_root = "leptos_hot_reload-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "leptos_hot_reload-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "leptos_hot_reload",
         "CARGO_CRATE_NAME": "leptos_hot_reload",
-        "CARGO_MANIFEST_DIR": "leptos_hot_reload-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "leptos_hot_reload-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Utility types used for dev mode and hot-reloading for the Leptos web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -11182,11 +11182,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     visibility = [],
     deps = [
@@ -11204,23 +11204,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "leptos_macro-0.9.0-beta.crate",
-    sha256 = "b1d1285578a015f4792443afc5f6573a6dd1e1ced4ce8b49892a519fcf3035b9",
-    strip_prefix = "leptos_macro-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/leptos_macro/0.9.0-beta/download"],
+    name = "leptos_macro-0.9.0-beta2.crate",
+    sha256 = "17aecc73c4b5844cbd4fad67b32fa048627a0b1aa0ec3e1f06c1ef589fbda6ec",
+    strip_prefix = "leptos_macro-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/leptos_macro/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "leptos_macro-0.9",
-    srcs = [":leptos_macro-0.9.0-beta.crate"],
+    srcs = [":leptos_macro-0.9.0-beta2.crate"],
     crate = "leptos_macro",
-    crate_root = "leptos_macro-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "leptos_macro-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "leptos_macro",
         "CARGO_CRATE_NAME": "leptos_macro",
-        "CARGO_MANIFEST_DIR": "leptos_macro-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "leptos_macro-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "view macro for the Leptos web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -11228,11 +11228,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = [
         "islands",
@@ -11249,7 +11249,6 @@ cargo.rust_library(
         ":itertools-0.14",
         ":leptos_hot_reload-0.9",
         ":prettyplease-0.2",
-        ":proc-macro-error2-2",
         ":proc-macro2-1",
         ":quote-1",
         ":rstml-0.12",
@@ -11260,23 +11259,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "leptos_server-0.9.0-beta2.crate",
-    sha256 = "9c6474b2a6bbb8ab14cc25e0ea20ea720cf5b9fa0577dd59d14d7259db6bf83d",
-    strip_prefix = "leptos_server-0.9.0-beta2",
-    urls = ["https://static.crates.io/crates/leptos_server/0.9.0-beta2/download"],
+    name = "leptos_server-0.9.0-beta3.crate",
+    sha256 = "7f77f79718842d90ccde9bece9954ad6e5eee4534c79b4e83bb5387f73a93bab",
+    strip_prefix = "leptos_server-0.9.0-beta3",
+    urls = ["https://static.crates.io/crates/leptos_server/0.9.0-beta3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "leptos_server-0.9",
-    srcs = [":leptos_server-0.9.0-beta2.crate"],
+    srcs = [":leptos_server-0.9.0-beta3.crate"],
     crate = "leptos_server",
-    crate_root = "leptos_server-0.9.0-beta2.crate/src/lib.rs",
+    crate_root = "leptos_server-0.9.0-beta3.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "leptos_server",
         "CARGO_CRATE_NAME": "leptos_server",
-        "CARGO_MANIFEST_DIR": "leptos_server-0.9.0-beta2.crate",
+        "CARGO_MANIFEST_DIR": "leptos_server-0.9.0-beta3.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "RPC for the Leptos web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -11284,11 +11283,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta2",
+        "CARGO_PKG_VERSION": "0.9.0-beta3",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta2",
+        "CARGO_PKG_VERSION_PRE": "beta3",
     },
     features = [
         "hydration",
@@ -14104,28 +14103,28 @@ buildscript_run(
 
 alias(
     name = "opentelemetry",
-    actual = ":opentelemetry-0.32",
+    actual = ":opentelemetry-0.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "opentelemetry-0.32.0.crate",
-    sha256 = "b0142c63252a9e054e68a4c61a5778f7b14f576274d593f8ce883d191a099682",
-    strip_prefix = "opentelemetry-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry/0.32.0/download"],
+    name = "opentelemetry-0.33.0.crate",
+    sha256 = "6cdb0b1b267eb9db3331b434ed9ddab10d50e280a9adf9d13e5233e2002b61b5",
+    strip_prefix = "opentelemetry-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-0.32",
-    srcs = [":opentelemetry-0.32.0.crate"],
+    name = "opentelemetry-0.33",
+    srcs = [":opentelemetry-0.33.0.crate"],
     crate = "opentelemetry",
-    crate_root = "opentelemetry-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry",
         "CARGO_CRATE_NAME": "opentelemetry",
-        "CARGO_MANIFEST_DIR": "opentelemetry-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "OpenTelemetry API for Rust",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry",
@@ -14133,9 +14132,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14163,23 +14162,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "opentelemetry-http-0.32.0.crate",
-    sha256 = "5683015d09e2df236ef005b17f6f196f0d5f6313c4fa43a7b6a53b52776e4331",
-    strip_prefix = "opentelemetry-http-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry-http/0.32.0/download"],
+    name = "opentelemetry-http-0.33.0.crate",
+    sha256 = "ee2c3625b8aa04209f7e01e513bc8044da9687fa38a9eacf59628ca5f3b87300",
+    strip_prefix = "opentelemetry-http-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry-http/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-http-0.32",
-    srcs = [":opentelemetry-http-0.32.0.crate"],
+    name = "opentelemetry-http-0.33",
+    srcs = [":opentelemetry-http-0.33.0.crate"],
     crate = "opentelemetry_http",
-    crate_root = "opentelemetry-http-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-http-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_http",
         "CARGO_CRATE_NAME": "opentelemetry_http",
-        "CARGO_MANIFEST_DIR": "opentelemetry-http-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-http-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Helper implementations for sending HTTP requests. Uses include propagating and extracting context over http, exporting telemetry, requesting sampling strategies.",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-http",
@@ -14187,9 +14186,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-http",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14202,35 +14201,35 @@ cargo.rust_library(
         ":async-trait-0.1",
         ":bytes-1",
         ":http-1",
-        ":opentelemetry-0.32",
+        ":opentelemetry-0.33",
         ":reqwest-0.13",
     ],
 )
 
 alias(
     name = "opentelemetry-otlp",
-    actual = ":opentelemetry-otlp-0.32",
+    actual = ":opentelemetry-otlp-0.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "opentelemetry-otlp-0.32.0.crate",
-    sha256 = "9966929966d17620d7c316c643ba62631826e10021409357772d5eea84f62c35",
-    strip_prefix = "opentelemetry-otlp-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry-otlp/0.32.0/download"],
+    name = "opentelemetry-otlp-0.33.0.crate",
+    sha256 = "699a67345e21962a231955b9059a157e428b219fa5df8efe11f08346fb23a344",
+    strip_prefix = "opentelemetry-otlp-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry-otlp/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-otlp-0.32",
-    srcs = [":opentelemetry-otlp-0.32.0.crate"],
+    name = "opentelemetry-otlp-0.33",
+    srcs = [":opentelemetry-otlp-0.33.0.crate"],
     crate = "opentelemetry_otlp",
-    crate_root = "opentelemetry-otlp-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-otlp-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_otlp",
         "CARGO_CRATE_NAME": "opentelemetry_otlp",
-        "CARGO_MANIFEST_DIR": "opentelemetry-otlp-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-otlp-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Exporter for the OpenTelemetry Collector",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-otlp",
@@ -14238,9 +14237,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-otlp",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14249,6 +14248,7 @@ cargo.rust_library(
         "grpc-tonic",
         "http",
         "http-proto",
+        "httpdate",
         "internal-logs",
         "logs",
         "metrics",
@@ -14264,10 +14264,11 @@ cargo.rust_library(
     visibility = [],
     deps = [
         ":http-1",
-        ":opentelemetry-0.32",
-        ":opentelemetry-http-0.32",
-        ":opentelemetry-proto-0.32",
-        ":opentelemetry_sdk-0.32",
+        ":httpdate-1",
+        ":opentelemetry-0.33",
+        ":opentelemetry-http-0.33",
+        ":opentelemetry-proto-0.33",
+        ":opentelemetry_sdk-0.33",
         ":prost-0.14",
         ":reqwest-0.13",
         ":thiserror-2",
@@ -14278,23 +14279,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "opentelemetry-proto-0.32.0.crate",
-    sha256 = "56d658ba1faf63f7b9c492cfbe6e0ec365440a16132d3270c1065f7b33f1b638",
-    strip_prefix = "opentelemetry-proto-0.32.0",
-    urls = ["https://static.crates.io/crates/opentelemetry-proto/0.32.0/download"],
+    name = "opentelemetry-proto-0.33.0.crate",
+    sha256 = "25da1ac11a0aeccf38d7f77ee0348715adaf8340f65ad46c94a02c6b20e2f65d",
+    strip_prefix = "opentelemetry-proto-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry-proto/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry-proto-0.32",
-    srcs = [":opentelemetry-proto-0.32.0.crate"],
+    name = "opentelemetry-proto-0.33",
+    srcs = [":opentelemetry-proto-0.33.0.crate"],
     crate = "opentelemetry_proto",
-    crate_root = "opentelemetry-proto-0.32.0.crate/src/lib.rs",
+    crate_root = "opentelemetry-proto-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_proto",
         "CARGO_CRATE_NAME": "opentelemetry_proto",
-        "CARGO_MANIFEST_DIR": "opentelemetry-proto-0.32.0.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry-proto-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Protobuf generated files and transformations.",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-proto",
@@ -14302,9 +14303,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-proto",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.0",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
+        "CARGO_PKG_VERSION_MINOR": "33",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -14320,8 +14321,8 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":opentelemetry-0.32",
-        ":opentelemetry_sdk-0.32",
+        ":opentelemetry-0.33",
+        ":opentelemetry_sdk-0.33",
         ":prost-0.14",
         ":tonic-0.14",
         ":tonic-prost-0.14",
@@ -14330,28 +14331,28 @@ cargo.rust_library(
 
 alias(
     name = "opentelemetry_sdk",
-    actual = ":opentelemetry_sdk-0.32",
+    actual = ":opentelemetry_sdk-0.33",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "opentelemetry_sdk-0.32.1.crate",
-    sha256 = "9b59f80e1ac4d5ff7a2db8fb6c80badb7f0f3f858211fba08dd9aaec750894f9",
-    strip_prefix = "opentelemetry_sdk-0.32.1",
-    urls = ["https://static.crates.io/crates/opentelemetry_sdk/0.32.1/download"],
+    name = "opentelemetry_sdk-0.33.0.crate",
+    sha256 = "cb39533d9d1c912123efd7d41d7e0c29d16917b60ce15b4c8d87cb1af7f67520",
+    strip_prefix = "opentelemetry_sdk-0.33.0",
+    urls = ["https://static.crates.io/crates/opentelemetry_sdk/0.33.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "opentelemetry_sdk-0.32",
-    srcs = [":opentelemetry_sdk-0.32.1.crate"],
+    name = "opentelemetry_sdk-0.33",
+    srcs = [":opentelemetry_sdk-0.33.0.crate"],
     crate = "opentelemetry_sdk",
-    crate_root = "opentelemetry_sdk-0.32.1.crate/src/lib.rs",
+    crate_root = "opentelemetry_sdk-0.33.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "opentelemetry_sdk",
         "CARGO_CRATE_NAME": "opentelemetry_sdk",
-        "CARGO_MANIFEST_DIR": "opentelemetry_sdk-0.32.1.crate",
+        "CARGO_MANIFEST_DIR": "opentelemetry_sdk-0.33.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "The SDK for the OpenTelemetry metrics collection and distributed tracing framework",
         "CARGO_PKG_HOMEPAGE": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-sdk",
@@ -14359,10 +14360,10 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/open-telemetry/opentelemetry-rust/tree/main/opentelemetry-sdk",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.32.1",
+        "CARGO_PKG_VERSION": "0.33.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "32",
-        "CARGO_PKG_VERSION_PATCH": "1",
+        "CARGO_PKG_VERSION_MINOR": "33",
+        "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
@@ -14379,7 +14380,7 @@ cargo.rust_library(
         ":futures-channel-0.3",
         ":futures-executor-0.3",
         ":futures-util-0.3",
-        ":opentelemetry-0.32",
+        ":opentelemetry-0.33",
         ":percent-encoding-2",
         ":rand-0.9",
         ":thiserror-2",
@@ -16228,16 +16229,11 @@ cargo.rust_library(
         "CARGO_PKG_VERSION_PATCH": "1",
         "CARGO_PKG_VERSION_PRE": "",
     },
-    features = [
-        "default",
-        "syn-error",
-    ],
     visibility = [],
     deps = [
         ":proc-macro-error-attr2-2",
         ":proc-macro2-1",
         ":quote-1",
-        ":syn-2",
     ],
 )
 
@@ -17454,23 +17450,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "reactive_graph-0.3.0-beta2.crate",
-    sha256 = "5404bbb25779839c1cc2bec81924499228a8481a2ad536b84d51ce66bf44a631",
-    strip_prefix = "reactive_graph-0.3.0-beta2",
-    urls = ["https://static.crates.io/crates/reactive_graph/0.3.0-beta2/download"],
+    name = "reactive_graph-0.3.0-beta3.crate",
+    sha256 = "ed4d681c2cbf43487aeb9751642e6f08364355166bab5c27aed82989549ca86f",
+    strip_prefix = "reactive_graph-0.3.0-beta3",
+    urls = ["https://static.crates.io/crates/reactive_graph/0.3.0-beta3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "reactive_graph-0.3",
-    srcs = [":reactive_graph-0.3.0-beta2.crate"],
+    srcs = [":reactive_graph-0.3.0-beta3.crate"],
     crate = "reactive_graph",
-    crate_root = "reactive_graph-0.3.0-beta2.crate/src/lib.rs",
+    crate_root = "reactive_graph-0.3.0-beta3.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "reactive_graph",
         "CARGO_CRATE_NAME": "reactive_graph",
-        "CARGO_MANIFEST_DIR": "reactive_graph-0.3.0-beta2.crate",
+        "CARGO_MANIFEST_DIR": "reactive_graph-0.3.0-beta3.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "A fine-grained reactive graph for building user interfaces.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -17478,11 +17474,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.3.0-beta2",
+        "CARGO_PKG_VERSION": "0.3.0-beta3",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "3",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta2",
+        "CARGO_PKG_VERSION_PRE": "beta3",
     },
     features = [
         "hydration",
@@ -17508,23 +17504,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "reactive_stores-0.5.0-beta.crate",
-    sha256 = "d8bf5fe51b4334c1129783976bae2961fea9721caf889a08cf1584025a440b35",
-    strip_prefix = "reactive_stores-0.5.0-beta",
-    urls = ["https://static.crates.io/crates/reactive_stores/0.5.0-beta/download"],
+    name = "reactive_stores-0.5.0-beta2.crate",
+    sha256 = "6f0fd7ec251bb991fd6704d5e11c8c279e5cfa1ada72376c59648d5290dfa76a",
+    strip_prefix = "reactive_stores-0.5.0-beta2",
+    urls = ["https://static.crates.io/crates/reactive_stores/0.5.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "reactive_stores-0.5",
-    srcs = [":reactive_stores-0.5.0-beta.crate"],
+    srcs = [":reactive_stores-0.5.0-beta2.crate"],
     crate = "reactive_stores",
-    crate_root = "reactive_stores-0.5.0-beta.crate/src/lib.rs",
+    crate_root = "reactive_stores-0.5.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "reactive_stores",
         "CARGO_CRATE_NAME": "reactive_stores",
-        "CARGO_MANIFEST_DIR": "reactive_stores-0.5.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "reactive_stores-0.5.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Stores for holding deeply-nested reactive state while maintaining fine-grained reactive tracking.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -17532,11 +17528,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.5.0-beta",
+        "CARGO_PKG_VERSION": "0.5.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "5",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = ["default"],
     visibility = [],
@@ -17554,23 +17550,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "reactive_stores_macro-0.5.0-beta.crate",
-    sha256 = "12f97c3c6f5f6a63503265d36285517598b196a7a4d50ed7b4db6dd4c67602c8",
-    strip_prefix = "reactive_stores_macro-0.5.0-beta",
-    urls = ["https://static.crates.io/crates/reactive_stores_macro/0.5.0-beta/download"],
+    name = "reactive_stores_macro-0.5.0-beta2.crate",
+    sha256 = "03bfe5f2bc0f0659d456fd7b0ae7c56826785b8b8cc1eed2b7883aa52591b8a5",
+    strip_prefix = "reactive_stores_macro-0.5.0-beta2",
+    urls = ["https://static.crates.io/crates/reactive_stores_macro/0.5.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "reactive_stores_macro-0.5",
-    srcs = [":reactive_stores_macro-0.5.0-beta.crate"],
+    srcs = [":reactive_stores_macro-0.5.0-beta2.crate"],
     crate = "reactive_stores_macro",
-    crate_root = "reactive_stores_macro-0.5.0-beta.crate/src/lib.rs",
+    crate_root = "reactive_stores_macro-0.5.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "reactive_stores_macro",
         "CARGO_CRATE_NAME": "reactive_stores_macro",
-        "CARGO_MANIFEST_DIR": "reactive_stores_macro-0.5.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "reactive_stores_macro-0.5.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Stores for holding deeply-nested reactive state while maintaining fine-grained reactive tracking.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -17578,17 +17574,16 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.5.0-beta",
+        "CARGO_PKG_VERSION": "0.5.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "5",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     proc_macro = True,
     visibility = [],
     deps = [
         ":convert_case-0.11",
-        ":proc-macro-error2-2",
         ":proc-macro2-1",
         ":quote-1",
         ":syn-2",
@@ -20113,23 +20108,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "server_fn-0.9.0-beta.crate",
-    sha256 = "548108d4179fc18c2517a6071fe52d24192d2e47dee1ab2d30fbb248f7329837",
-    strip_prefix = "server_fn-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/server_fn/0.9.0-beta/download"],
+    name = "server_fn-0.9.0-beta2.crate",
+    sha256 = "9a60afdb446bb1b4ce93901e6892882550f91e1d6ff5e127ffa438121103505d",
+    strip_prefix = "server_fn-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/server_fn/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "server_fn-0.9",
-    srcs = [":server_fn-0.9.0-beta.crate"],
+    srcs = [":server_fn-0.9.0-beta2.crate"],
     crate = "server_fn",
-    crate_root = "server_fn-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "server_fn-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "server_fn",
         "CARGO_CRATE_NAME": "server_fn",
-        "CARGO_MANIFEST_DIR": "server_fn-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "server_fn-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston:Ben Wishovich",
         "CARGO_PKG_DESCRIPTION": "RPC for any web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -20137,11 +20132,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = [
         "browser",
@@ -20174,30 +20169,30 @@ cargo.rust_library(
         ":url-2",
         ":wasm-bindgen-0.2",
         ":wasm-bindgen-futures-0.4",
-        ":wasm-streams-0.5",
+        ":wasm-streams-0.6",
         ":web-sys-0.3",
         ":xxhash-rust-0.8",
     ],
 )
 
 http_archive(
-    name = "server_fn_macro-0.9.0-beta.crate",
-    sha256 = "10bf6f59e8617cf89212ab362f14e4c25dd028f86ef0a22573ad05d3ebc8a2e4",
-    strip_prefix = "server_fn_macro-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/server_fn_macro/0.9.0-beta/download"],
+    name = "server_fn_macro-0.9.0-beta2.crate",
+    sha256 = "7a802c22c4ae776f4f1a42a31246e4056d17f2454dfa5c413e4570812b9e0a17",
+    strip_prefix = "server_fn_macro-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/server_fn_macro/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "server_fn_macro-0.9",
-    srcs = [":server_fn_macro-0.9.0-beta.crate"],
+    srcs = [":server_fn_macro-0.9.0-beta2.crate"],
     crate = "server_fn_macro",
-    crate_root = "server_fn_macro-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "server_fn_macro-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "server_fn_macro",
         "CARGO_CRATE_NAME": "server_fn_macro",
-        "CARGO_MANIFEST_DIR": "server_fn_macro-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "server_fn_macro-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "RPC for any web framework.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -20205,11 +20200,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     features = ["ssr"],
     visibility = [],
@@ -20224,23 +20219,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "server_fn_macro_default-0.9.0-beta.crate",
-    sha256 = "9ea2be7f2ca432791b318f28f848f892bb64259d6e807312b3e2be0339a37e44",
-    strip_prefix = "server_fn_macro_default-0.9.0-beta",
-    urls = ["https://static.crates.io/crates/server_fn_macro_default/0.9.0-beta/download"],
+    name = "server_fn_macro_default-0.9.0-beta2.crate",
+    sha256 = "555bea3687fc1f268fa8b54afc95dd304583abc80559c3df3a37b90ff0c3dc6b",
+    strip_prefix = "server_fn_macro_default-0.9.0-beta2",
+    urls = ["https://static.crates.io/crates/server_fn_macro_default/0.9.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "server_fn_macro_default-0.9",
-    srcs = [":server_fn_macro_default-0.9.0-beta.crate"],
+    srcs = [":server_fn_macro_default-0.9.0-beta2.crate"],
     crate = "server_fn_macro_default",
-    crate_root = "server_fn_macro_default-0.9.0-beta.crate/src/lib.rs",
+    crate_root = "server_fn_macro_default-0.9.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "server_fn_macro_default",
         "CARGO_CRATE_NAME": "server_fn_macro_default",
-        "CARGO_MANIFEST_DIR": "server_fn_macro_default-0.9.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "server_fn_macro_default-0.9.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "The default implementation of the server_fn macro without a context",
         "CARGO_PKG_HOMEPAGE": "",
@@ -20248,11 +20243,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "",
-        "CARGO_PKG_VERSION": "0.9.0-beta",
+        "CARGO_PKG_VERSION": "0.9.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "9",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     proc_macro = True,
     visibility = [],
@@ -22518,23 +22513,23 @@ buildscript_run(
 )
 
 http_archive(
-    name = "tachys-0.3.0-beta2.crate",
-    sha256 = "1852e854e3c4191246165ab178c363b8e7bcab40796d7978bfa2cbee20b5b851",
-    strip_prefix = "tachys-0.3.0-beta2",
-    urls = ["https://static.crates.io/crates/tachys/0.3.0-beta2/download"],
+    name = "tachys-0.3.0-beta3.crate",
+    sha256 = "925ed45b913c940ad0a1c4481485f2e14dd84918bcb5108dda794dd0081635d3",
+    strip_prefix = "tachys-0.3.0-beta3",
+    urls = ["https://static.crates.io/crates/tachys/0.3.0-beta3/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "tachys-0.3",
-    srcs = [":tachys-0.3.0-beta2.crate"],
+    srcs = [":tachys-0.3.0-beta3.crate"],
     crate = "tachys",
-    crate_root = "tachys-0.3.0-beta2.crate/src/lib.rs",
+    crate_root = "tachys-0.3.0-beta3.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "tachys",
         "CARGO_CRATE_NAME": "tachys",
-        "CARGO_MANIFEST_DIR": "tachys-0.3.0-beta2.crate",
+        "CARGO_MANIFEST_DIR": "tachys-0.3.0-beta3.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Tools for building reactivity-agnostic, renderer-generic, statically-typed view trees for user interface libraries.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -22542,11 +22537,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.3.0-beta2",
+        "CARGO_PKG_VERSION": "0.3.0-beta3",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "3",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta2",
+        "CARGO_PKG_VERSION_PRE": "beta3",
     },
     features = [
         "default",
@@ -22819,34 +22814,34 @@ alias(
 )
 
 http_archive(
-    name = "thiserror-2.0.20.crate",
-    sha256 = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f",
-    strip_prefix = "thiserror-2.0.20",
-    urls = ["https://static.crates.io/crates/thiserror/2.0.20/download"],
+    name = "thiserror-2.0.21.crate",
+    sha256 = "09e52cb86a36cede5cb101bf8908837b3e4c6e5e59fe7fd85c23fb56200d189e",
+    strip_prefix = "thiserror-2.0.21",
+    urls = ["https://static.crates.io/crates/thiserror/2.0.21/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "thiserror-2",
-    srcs = [":thiserror-2.0.20.crate"],
+    srcs = [":thiserror-2.0.21.crate"],
     crate = "thiserror",
-    crate_root = "thiserror-2.0.20.crate/src/lib.rs",
+    crate_root = "thiserror-2.0.21.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "thiserror",
         "CARGO_CRATE_NAME": "thiserror",
-        "CARGO_MANIFEST_DIR": "thiserror-2.0.20.crate",
+        "CARGO_MANIFEST_DIR": "thiserror-2.0.21.crate",
         "CARGO_PKG_AUTHORS": "David Tolnay <dtolnay@gmail.com>",
         "CARGO_PKG_DESCRIPTION": "derive(Error)",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "thiserror",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "2.0.20",
+        "CARGO_PKG_RUST_VERSION": "1.77",
+        "CARGO_PKG_VERSION": "2.0.21",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
         "OUT_DIR": "$(location :thiserror-2-build-script-run[out_dir])",
     },
@@ -22861,25 +22856,25 @@ cargo.rust_library(
 
 cargo.rust_binary(
     name = "thiserror-2-build-script-build",
-    srcs = [":thiserror-2.0.20.crate"],
+    srcs = [":thiserror-2.0.21.crate"],
     crate = "build_script_build",
-    crate_root = "thiserror-2.0.20.crate/build.rs",
+    crate_root = "thiserror-2.0.21.crate/build.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "build-script-build",
         "CARGO_CRATE_NAME": "build_script_build",
-        "CARGO_MANIFEST_DIR": "thiserror-2.0.20.crate",
+        "CARGO_MANIFEST_DIR": "thiserror-2.0.21.crate",
         "CARGO_PKG_AUTHORS": "David Tolnay <dtolnay@gmail.com>",
         "CARGO_PKG_DESCRIPTION": "derive(Error)",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "thiserror",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "2.0.20",
+        "CARGO_PKG_RUST_VERSION": "1.77",
+        "CARGO_PKG_VERSION": "2.0.21",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
@@ -22899,17 +22894,17 @@ buildscript_run(
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
+        "CARGO_PKG_RUST_VERSION": "1.77",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
         "default",
         "std",
     ],
-    version = "2.0.20",
+    version = "2.0.21",
 )
 
 http_archive(
@@ -22953,34 +22948,34 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "thiserror-impl-2.0.20.crate",
-    sha256 = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af",
-    strip_prefix = "thiserror-impl-2.0.20",
-    urls = ["https://static.crates.io/crates/thiserror-impl/2.0.20/download"],
+    name = "thiserror-impl-2.0.21.crate",
+    sha256 = "fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524",
+    strip_prefix = "thiserror-impl-2.0.21",
+    urls = ["https://static.crates.io/crates/thiserror-impl/2.0.21/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "thiserror-impl-2",
-    srcs = [":thiserror-impl-2.0.20.crate"],
+    srcs = [":thiserror-impl-2.0.21.crate"],
     crate = "thiserror_impl",
-    crate_root = "thiserror-impl-2.0.20.crate/src/lib.rs",
+    crate_root = "thiserror-impl-2.0.21.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "thiserror_impl",
         "CARGO_CRATE_NAME": "thiserror_impl",
-        "CARGO_MANIFEST_DIR": "thiserror-impl-2.0.20.crate",
+        "CARGO_MANIFEST_DIR": "thiserror-impl-2.0.21.crate",
         "CARGO_PKG_AUTHORS": "David Tolnay <dtolnay@gmail.com>",
         "CARGO_PKG_DESCRIPTION": "Implementation detail of the `thiserror` crate",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "thiserror-impl",
         "CARGO_PKG_README": "",
         "CARGO_PKG_REPOSITORY": "https://github.com/dtolnay/thiserror",
-        "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "2.0.20",
+        "CARGO_PKG_RUST_VERSION": "1.77",
+        "CARGO_PKG_VERSION": "2.0.21",
         "CARGO_PKG_VERSION_MAJOR": "2",
         "CARGO_PKG_VERSION_MINOR": "0",
-        "CARGO_PKG_VERSION_PATCH": "20",
+        "CARGO_PKG_VERSION_PATCH": "21",
         "CARGO_PKG_VERSION_PRE": "",
     },
     proc_macro = True,
@@ -23062,23 +23057,23 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "throw_error-0.4.0-beta.crate",
-    sha256 = "f70cf1f33f6ac2cf712fc798860a0383cea39ad4763f5c1851e11c609ddd9b10",
-    strip_prefix = "throw_error-0.4.0-beta",
-    urls = ["https://static.crates.io/crates/throw_error/0.4.0-beta/download"],
+    name = "throw_error-0.4.0-beta2.crate",
+    sha256 = "2f108082d134dd38e117e2cc35d7e93fa2b927df154ff34ac8f16b70261af1a0",
+    strip_prefix = "throw_error-0.4.0-beta2",
+    urls = ["https://static.crates.io/crates/throw_error/0.4.0-beta2/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "throw_error-0.4",
-    srcs = [":throw_error-0.4.0-beta.crate"],
+    srcs = [":throw_error-0.4.0-beta2.crate"],
     crate = "throw_error",
-    crate_root = "throw_error-0.4.0-beta.crate/src/lib.rs",
+    crate_root = "throw_error-0.4.0-beta2.crate/src/lib.rs",
     edition = "2024",
     env = {
         "CARGO_BIN_NAME": "throw_error",
         "CARGO_CRATE_NAME": "throw_error",
-        "CARGO_MANIFEST_DIR": "throw_error-0.4.0-beta.crate",
+        "CARGO_MANIFEST_DIR": "throw_error-0.4.0-beta2.crate",
         "CARGO_PKG_AUTHORS": "Greg Johnston",
         "CARGO_PKG_DESCRIPTION": "Utilities for wrapping, throwing, and catching errors.",
         "CARGO_PKG_HOMEPAGE": "",
@@ -23086,11 +23081,11 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/leptos-rs/leptos",
         "CARGO_PKG_RUST_VERSION": "1.88",
-        "CARGO_PKG_VERSION": "0.4.0-beta",
+        "CARGO_PKG_VERSION": "0.4.0-beta2",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "4",
         "CARGO_PKG_VERSION_PATCH": "0",
-        "CARGO_PKG_VERSION_PRE": "beta",
+        "CARGO_PKG_VERSION_PRE": "beta2",
     },
     visibility = [],
     deps = [":pin-project-lite-0.2"],
@@ -23494,23 +23489,23 @@ alias(
 )
 
 http_archive(
-    name = "tokio-rustls-0.26.5.crate",
-    sha256 = "b0c85f2c3ef0b1cd58b36682f4b17aaa995f0e5db534d85692b4903abce21f67",
-    strip_prefix = "tokio-rustls-0.26.5",
-    urls = ["https://static.crates.io/crates/tokio-rustls/0.26.5/download"],
+    name = "tokio-rustls-0.26.6.crate",
+    sha256 = "c9cc2678c2cdd569ef8215e2afd7954ada2ae20b4fdd2c5fe6139a3b02d105db",
+    strip_prefix = "tokio-rustls-0.26.6",
+    urls = ["https://static.crates.io/crates/tokio-rustls/0.26.6/download"],
     visibility = [],
 )
 
 cargo.rust_library(
     name = "tokio-rustls-0.26",
-    srcs = [":tokio-rustls-0.26.5.crate"],
+    srcs = [":tokio-rustls-0.26.6.crate"],
     crate = "tokio_rustls",
-    crate_root = "tokio-rustls-0.26.5.crate/src/lib.rs",
+    crate_root = "tokio-rustls-0.26.6.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "tokio_rustls",
         "CARGO_CRATE_NAME": "tokio_rustls",
-        "CARGO_MANIFEST_DIR": "tokio-rustls-0.26.5.crate",
+        "CARGO_MANIFEST_DIR": "tokio-rustls-0.26.6.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "Asynchronous TLS/SSL streams for Tokio using Rustls.",
         "CARGO_PKG_HOMEPAGE": "https://github.com/rustls/tokio-rustls",
@@ -23518,10 +23513,10 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/rustls/tokio-rustls",
         "CARGO_PKG_RUST_VERSION": "1.71",
-        "CARGO_PKG_VERSION": "0.26.5",
+        "CARGO_PKG_VERSION": "0.26.6",
         "CARGO_PKG_VERSION_MAJOR": "0",
         "CARGO_PKG_VERSION_MINOR": "26",
-        "CARGO_PKG_VERSION_PATCH": "5",
+        "CARGO_PKG_VERSION_PATCH": "6",
         "CARGO_PKG_VERSION_PRE": "",
     },
     features = [
@@ -24362,28 +24357,28 @@ cargo.rust_library(
 
 alias(
     name = "tracing-opentelemetry",
-    actual = ":tracing-opentelemetry-0.33",
+    actual = ":tracing-opentelemetry-0.34",
     visibility = ["PUBLIC"],
 )
 
 http_archive(
-    name = "tracing-opentelemetry-0.33.0.crate",
-    sha256 = "adbc64cba7137545b8044cb1fe9814f7aacf3c6b5f9b45be8bb5db538befdb26",
-    strip_prefix = "tracing-opentelemetry-0.33.0",
-    urls = ["https://static.crates.io/crates/tracing-opentelemetry/0.33.0/download"],
+    name = "tracing-opentelemetry-0.34.0.crate",
+    sha256 = "0a904802a1b902f43638b677ff2a650847e3b4404101b6c586d648e8c1e3e8fe",
+    strip_prefix = "tracing-opentelemetry-0.34.0",
+    urls = ["https://static.crates.io/crates/tracing-opentelemetry/0.34.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "tracing-opentelemetry-0.33",
-    srcs = [":tracing-opentelemetry-0.33.0.crate"],
+    name = "tracing-opentelemetry-0.34",
+    srcs = [":tracing-opentelemetry-0.34.0.crate"],
     crate = "tracing_opentelemetry",
-    crate_root = "tracing-opentelemetry-0.33.0.crate/src/lib.rs",
+    crate_root = "tracing-opentelemetry-0.34.0.crate/src/lib.rs",
     edition = "2021",
     env = {
         "CARGO_BIN_NAME": "tracing_opentelemetry",
         "CARGO_CRATE_NAME": "tracing_opentelemetry",
-        "CARGO_MANIFEST_DIR": "tracing-opentelemetry-0.33.0.crate",
+        "CARGO_MANIFEST_DIR": "tracing-opentelemetry-0.34.0.crate",
         "CARGO_PKG_AUTHORS": "",
         "CARGO_PKG_DESCRIPTION": "OpenTelemetry integration for tracing",
         "CARGO_PKG_HOMEPAGE": "https://github.com/tokio-rs/tracing-opentelemetry",
@@ -24391,9 +24386,9 @@ cargo.rust_library(
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/tokio-rs/tracing-opentelemetry",
         "CARGO_PKG_RUST_VERSION": "1.75.0",
-        "CARGO_PKG_VERSION": "0.33.0",
+        "CARGO_PKG_VERSION": "0.34.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "33",
+        "CARGO_PKG_VERSION_MINOR": "34",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
@@ -24405,7 +24400,7 @@ cargo.rust_library(
     ],
     visibility = [],
     deps = [
-        ":opentelemetry-0.32",
+        ":opentelemetry-0.33",
         ":smallvec-1",
         ":tracing-0.1",
         ":tracing-core-0.1",
@@ -26509,34 +26504,34 @@ cargo.rust_library(
 )
 
 http_archive(
-    name = "wasm-streams-0.5.0.crate",
-    sha256 = "9d1ec4f6517c9e11ae630e200b2b65d193279042e28edd4a2cda233e46670bbb",
-    strip_prefix = "wasm-streams-0.5.0",
-    urls = ["https://static.crates.io/crates/wasm-streams/0.5.0/download"],
+    name = "wasm-streams-0.6.0.crate",
+    sha256 = "e7d3be8814f5ba5f074491a469eed3d73c273ffad955f25ed1635efac4b0d269",
+    strip_prefix = "wasm-streams-0.6.0",
+    urls = ["https://static.crates.io/crates/wasm-streams/0.6.0/download"],
     visibility = [],
 )
 
 cargo.rust_library(
-    name = "wasm-streams-0.5",
-    srcs = [":wasm-streams-0.5.0.crate"],
+    name = "wasm-streams-0.6",
+    srcs = [":wasm-streams-0.6.0.crate"],
     crate = "wasm_streams",
-    crate_root = "wasm-streams-0.5.0.crate/src/lib.rs",
+    crate_root = "wasm-streams-0.6.0.crate/src/lib.rs",
     dlopen_enable = True,
-    edition = "2021",
+    edition = "2024",
     env = {
         "CARGO_BIN_NAME": "wasm_streams",
         "CARGO_CRATE_NAME": "wasm_streams",
-        "CARGO_MANIFEST_DIR": "wasm-streams-0.5.0.crate",
+        "CARGO_MANIFEST_DIR": "wasm-streams-0.6.0.crate",
         "CARGO_PKG_AUTHORS": "Mattias Buelens <mattias@buelens.com>",
         "CARGO_PKG_DESCRIPTION": "Bridging between web streams and Rust streams using WebAssembly\n",
         "CARGO_PKG_HOMEPAGE": "",
         "CARGO_PKG_NAME": "wasm-streams",
         "CARGO_PKG_README": "README.md",
         "CARGO_PKG_REPOSITORY": "https://github.com/MattiasBuelens/wasm-streams/",
-        "CARGO_PKG_RUST_VERSION": "",
-        "CARGO_PKG_VERSION": "0.5.0",
+        "CARGO_PKG_RUST_VERSION": "1.88",
+        "CARGO_PKG_VERSION": "0.6.0",
         "CARGO_PKG_VERSION_MAJOR": "0",
-        "CARGO_PKG_VERSION_MINOR": "5",
+        "CARGO_PKG_VERSION_MINOR": "6",
         "CARGO_PKG_VERSION_PATCH": "0",
         "CARGO_PKG_VERSION_PRE": "",
     },
