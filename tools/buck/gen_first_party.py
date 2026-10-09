@@ -142,6 +142,11 @@ RESOURCE_CONFIG = {
     },
     "console-contracts": {
         "srcs": ["src/**/*.json"],
+        "itests": {
+            "tests/compose.rs": {
+                "srcs": ["src/semantic_manifest.json"],
+            },
+        },
     },
     "console-app": {
         "external": {
