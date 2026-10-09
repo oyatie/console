@@ -148,7 +148,7 @@ jobs:
       - name: Buck impact planner regression
         id: buck-impact-planner
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests
+        run: python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests
 
       - name: Console route inventory regression
         id: route-inventory
@@ -1451,7 +1451,7 @@ jobs:
         id: openapi-drift
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
-        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift
+        run: env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift //backend/crates/contracts:console-contracts-itest-compose
 
       - name: Buck2 console-app inline PostgreSQL suites
         id: app-inline-pg

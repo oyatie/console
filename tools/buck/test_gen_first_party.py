@@ -10,6 +10,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 GENERATOR_PATH = Path(__file__).with_name("gen_first_party.py")
@@ -58,6 +59,39 @@ class GeneratorCliTests(unittest.TestCase):
                 self.assertEqual(2, result.returncode, result.stderr)
                 self.assertIn("unrecognized arguments: " + argument, result.stderr)
                 self.assertEqual("", result.stdout)
+
+
+class GeneratorContractsResourceTests(unittest.TestCase):
+    def test_compose_emits_its_semantic_manifest_input(self) -> None:
+        source = Path(GENERATOR.REPO) / "backend/crates/contracts"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = root / "backend/crates/contracts"
+            shutil.copytree(source, package)
+            with patch.object(GENERATOR, "REPO", str(root)):
+                GENERATOR.emit(
+                    str(package), "console-contracts", [], {}, [], {}, version="0.1.0"
+                )
+            generated = (package / "BUCK").read_text(encoding="utf-8")
+
+        for face, buck in (
+            ("emitted", generated),
+            ("committed", (source / "BUCK").read_text(encoding="utf-8")),
+        ):
+            with self.subTest(face=face):
+                target = next(
+                    block for block in buck.split("\n\n")
+                    if 'name = "console-contracts-itest-compose"' in block
+                )
+                self.assertIn('glob(["src/semantic_manifest.json"])', target)
+                self.assertIn('"tests/compose.rs"', target)
+
+    def test_other_integration_files_do_not_inherit_library_json(self) -> None:
+        config = GENERATOR.integration_resource_config(
+            "console-contracts", "tests/unrelated.rs"
+        )
+        self.assertEqual([], config["srcs"])
+        self.assertEqual({}, config["external"])
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):

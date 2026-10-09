@@ -2779,13 +2779,20 @@ describe("CI preflight contract", () => {
   // H-1's request-body half but reads no route inventory, so nothing else covers what this covers.
   it("locks the console-app OpenAPI drift suite step in backend", () => {
     const run = "        run: env -u DATABASE_URL tools/buck2 test"
-      + " //backend/app:console-app-itest-openapi_drift\n";
+      + " //backend/app:console-app-itest-openapi_drift"
+      + " //backend/crates/contracts:console-contracts-itest-compose\n";
     const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
       + "        id: openapi-drift\n"
       + `        if: ${backendBuckAppLegIf}\n`
       + "        working-directory: .\n"
       + run;
     assert.ok(workflow.includes(step), "backend does not run the openapi_drift suite");
+
+    expectFailure(
+      workflow.replace(run, "        run: env -u DATABASE_URL tools/buck2 test"
+        + " //backend/app:console-app-itest-openapi_drift\n"),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
 
     // The exact deletion this lock exists to refuse: the step keeps its slot, runs nothing.
     expectFailure(

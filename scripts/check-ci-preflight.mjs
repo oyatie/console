@@ -16,7 +16,7 @@ const reindeerToolchainInstall = 'rustup toolchain install "$REINDEER_TOOLCHAIN"
 const strictShellMode = "set -euo pipefail";
 const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
-const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests";
+const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests";
 const reasoningLensManifestCommand = "node scripts/check-reasoning-lens-manifest.mjs";
 const reasoningLensManifestName = "Reasoning lens manifest drift";
 const reasoningLensRegressionCommand = "node --test scripts/check-reasoning-lens-manifest.test.mjs";
@@ -1095,7 +1095,7 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendLegTopologyCondition("buck-dev-auth"), workingDirectory: "." }),
     proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
-    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift //backend/crates/contracts:console-contracts-itest-compose", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition, workingDirectory: "." }),
   ],
@@ -2841,7 +2841,7 @@ export function evaluateCiPreflight(
           // inventory, so nothing else in CI covers what this step covers — a gate one line from
           // silent removal is the meta-finding this file exists to refuse.
           name: "Buck2 console-app OpenAPI drift suite",
-          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift",
+          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift //backend/crates/contracts:console-contracts-itest-compose",
           workingDirectory: ".",
           if: backendLegCondition("buck-app"),
         },
