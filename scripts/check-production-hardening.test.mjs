@@ -14,11 +14,15 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
+import * as yaml from "js-yaml";
 
 import {
+  DEPLOYMENT_CONTEXTS,
+  evaluateActionPinChecks,
   evaluateCnpgContextChecks,
   evaluateDeployAutomationChecks,
   evaluateExpandContractReleaseChecks,
+  evaluateGlobalHardeningChecks,
   evaluateOnPremHaContextChecks,
   evaluateProdOverlayImageChecks,
   evaluateSmtpDeploymentChecks,
@@ -931,37 +935,9 @@ jobs:
       - name: Kubernetes render and NetworkPolicy preflight
         run: npm run check:k8s
 `,
-  ".github/workflows/security.yml": `name: Security
-jobs:
-  iac:
-    steps:
-      - name: Render and scan production manifests
-        run: |
-          npm run check:production-hardening
-          trivy config --severity HIGH,CRITICAL --exit-code 1 "$RUNNER_TEMP/rendered-k8s"
-  filesystem:
-    steps:
-      - name: Verify canonical Trivy exception projection
-        run: node scripts/generate-trivy-dev-codegen-exceptions.mjs --check
-      - name: Trivy filesystem scan
-        run: trivy fs --scanners vuln,secret --ignore-unfixed --ignorefile security/trivy-dev-codegen-exceptions.yaml --severity HIGH,CRITICAL --exit-code 1 .
-  rust-advisories:
-    steps:
-      - name: Run cargo audit
-        run: cargo audit
-  rust-supply-chain:
-    steps:
-      - name: Run cargo deny
-        run: cargo deny --manifest-path backend/Cargo.toml check
-  node-advisories:
-    steps:
-      - name: npm audit
-        run: |
-          npm audit --omit=dev --audit-level=high --json > report.json
-          node scripts/check-node-audit-exceptions.mjs --mode production --audit-report report.json
-          npm audit --audit-level=high --json > report.json
-          node scripts/check-node-audit-exceptions.mjs --mode dev-codegen --audit-report report.json
-`,
+  ".github/workflows/security.yml": readFileSync(
+    new URL("../.github/workflows/security.yml", import.meta.url), "utf8",
+  ),
   ".github/workflows/image-release.yml": `name: Image Release
 on:
   workflow_dispatch:
@@ -1108,6 +1084,86 @@ function evaluateWorkflows(overrides = {}) {
   const files = { ...validWorkflowFiles, ...overrides };
   return evaluateWorkflowHardeningChecks((path) => files[path] ?? "");
 }
+
+describe("production hardening Security owner integration", () => {
+  const security = readFileSync(
+    new URL("../.github/workflows/security.yml", import.meta.url), "utf8",
+  );
+
+  function evaluateOwner(securityText) {
+    const readText = (path) => {
+      if (path === ".github/workflows/security.yml") return securityText;
+      const url = new URL(`../${path}`, import.meta.url);
+      return existsSync(url) ? readFileSync(url, "utf8") : "";
+    };
+    return [
+      evaluateGlobalHardeningChecks(readText),
+      evaluateActionPinChecks(readText),
+      ...DEPLOYMENT_CONTEXTS.map((context) => context.evaluate(readText)),
+    ].flatMap((result) => result.failures);
+  }
+
+  it("accepts all unchanged owner groups and the ordered audit report consumers", () => {
+    assert.deepEqual(evaluateOwner(security), []);
+  });
+
+  const mutations = [
+    [
+      "echoed hardening command",
+      "          npm run check:production-hardening\n",
+      "          echo npm run check:production-hardening\n",
+    ],
+    [
+      "masked hardening command",
+      "          npm run check:production-hardening\n",
+      "          npm run check:production-hardening || true\n",
+    ],
+    [
+      "missing cargo audit with retained narrative",
+      '          "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-audit" audit --ignore RUSTSEC-2023-0071\n',
+      "",
+    ],
+    [
+      "echoed cargo deny invocation",
+      '          "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-deny" --manifest-path backend/Cargo.toml check\n',
+      '          echo "${RUNNER_TEMP}/cargo-security-tools/bin/cargo-deny" --manifest-path backend/Cargo.toml check\n',
+    ],
+  ];
+  for (const [label, original, replacement] of mutations) {
+    it(`rejects ${label} through the owner groups`, () => {
+      assert.equal(security.split(original).length, 2, `${label}: exact fixture anchor`);
+      const mutated = security.replace(original, replacement);
+      assert.notEqual(mutated, security);
+      const failures = evaluateOwner(mutated);
+      assert.ok(
+        failures.some((failure) => /security\.jobs\..*\.run must remain/.test(failure)),
+        `${label}: expected the Security owner's exact command failure, got ${JSON.stringify(failures)}`,
+      );
+    });
+  }
+
+  it("installs dependencies before the fresh Security caller imports the owner", () => {
+    const workflow = yaml.load(security);
+    const step = workflow.jobs.iac.steps.find(
+      (entry) => entry.name === "Render and scan production manifests",
+    );
+    const commands = step.run.trim().split("\n");
+    const install = commands.indexOf("npm ci --ignore-scripts");
+    const hardening = commands.indexOf("npm run check:production-hardening");
+    assert.ok(install >= 0 && install < hardening, "Security must install before hardening");
+    for (const run of [
+      commands.filter((command, index) => index !== install).join("\n"),
+      [...commands.slice(0, install), ...commands.slice(install + 1), commands[install]].join("\n"),
+    ]) {
+      const mutated = structuredClone(workflow);
+      mutated.jobs.iac.steps.find((entry) => entry.name === step.name).run = `${run}\n`;
+      assert.notDeepEqual(mutated, workflow);
+      assert.ok(evaluateOwner(yaml.dump(mutated)).some(
+        (failure) => /security\.jobs\.iac.*\.run must remain/.test(failure),
+      ));
+    }
+  });
+});
 
 describe("production hardening wrapper-argv0 gate", () => {
   const realSecurity = readFileSync(
