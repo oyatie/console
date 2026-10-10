@@ -1891,13 +1891,13 @@ jobs:
           CONSOLE_NETWORKPOLICY_PREFLIGHT: warn
         run: npm run check:k8s
 
-      - name: Production hardening contract
-        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
-        run: npm run check:production-hardening
-
       - name: Install production-hardening test dependencies
         if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
         run: npm ci --ignore-scripts
+
+      - name: Production hardening contract
+        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}
+        run: npm run check:production-hardening
 
       - name: Production hardening regression tests
         if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}

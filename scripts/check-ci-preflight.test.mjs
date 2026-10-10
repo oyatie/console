@@ -2592,7 +2592,7 @@ describe("CI preflight contract", () => {
         "        run: npm ci --ignore-scripts\n",
         "        run: npm ci\n",
       ),
-      "kubernetes-manifests setup run step 7 must preserve its exact name, command, condition, and execution semantics",
+      "kubernetes-manifests setup run step 6 must preserve its exact name, command, condition, and execution semantics",
     );
     expectFailure(
       workflow.replace(
@@ -2608,6 +2608,17 @@ describe("CI preflight contract", () => {
       ),
       "kubernetes-manifests must preserve the locked fail-fast step multiset and failure semantics",
     );
+  });
+
+  it("locks the hardening dependency order before the fresh CI caller", () => {
+    const install = `      - name: Install production-hardening test dependencies\n        if: ${runHeavyUnlessCancelledIf}\n        run: npm ci --ignore-scripts\n\n`;
+    const hardening = `      - name: Production hardening contract\n        if: ${runHeavyUnlessCancelledIf}\n        run: npm run check:production-hardening\n\n`;
+    assert.equal(workflow.split(install).length, 2, "exact install step anchor");
+    assert.equal(workflow.split(hardening).length, 2, "exact hardening step anchor");
+    assert.ok(workflow.includes(install + hardening), "CI must install before hardening");
+    const inverted = workflow.replace(install + hardening, hardening + install);
+    assert.notEqual(inverted, workflow);
+    expectFailure(inverted, "kubernetes-manifests setup run step 6 must preserve its exact name, command, condition, and execution semantics");
   });
 
   it("fails closed when optimized gates or targets are commented, weakened, or duplicated", () => {

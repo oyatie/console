@@ -4,6 +4,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { evaluateSecurityWorkflowHardening } from "./check-workflow-hardening.mjs";
 import {
   allWorkflowCommands,
   directExecutable,
@@ -1362,6 +1363,7 @@ export function evaluateWorkflowHardeningChecks(readText) {
     securityPath,
     "Security workflow",
   );
+  appendResult(result, evaluateSecurityWorkflowHardening(securityWorkflow));
   const imageReleaseWorkflow = requirePresentText(
     result,
     readText,

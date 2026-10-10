@@ -106,6 +106,7 @@ const REQUIRED_SECURITY_JOBS = Object.freeze({
       {
         name: "Render and scan production manifests",
         run: [
+          "npm ci --ignore-scripts",
           'scripts/render-k8s-manifests.sh "${RUNNER_TEMP}/rendered-k8s"',
           "npm run check:production-hardening",
           '/usr/local/bin/trivy config --severity HIGH,CRITICAL --exit-code 1 "${RUNNER_TEMP}/rendered-k8s"',
