@@ -1115,8 +1115,8 @@ const requiredJobRunContracts = Object.freeze({
     setupDigest("Install kustomize (NetworkPolicy static render proof)", "4cc1bf875027906f3b8a9878c0f13ce9b1438490390d858088c5ca279e4b9b3c", { if: runHeavyCondition }),
     proofRun("Governed command-database DARK wiring regression", "node --test scripts/check-command-database-wiring.test.mjs", { if: runHeavyCondition }),
     proofRun("Render manifests and NetworkPolicy enforcement preflight", "npm run check:k8s", { if: runHeavyUnlessCancelledCondition }),
-    proofRun("Production hardening contract", "npm run check:production-hardening", { if: runHeavyUnlessCancelledCondition }),
     setupRun("Install production-hardening test dependencies", "npm ci --ignore-scripts", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Production hardening contract", "npm run check:production-hardening", { if: runHeavyUnlessCancelledCondition }),
     proofRun("Production hardening regression tests", "npm run test:production-hardening", { if: runHeavyUnlessCancelledCondition }),
   ],
   "repo-gates": [
@@ -2924,6 +2924,10 @@ export function evaluateCiPreflight(
         name: "Path-class skip proof",
         run: pathClassSkipProofScript.join("\n"),
         if: skipProofCondition,
+      }, {
+        name: "Install production-hardening test dependencies",
+        run: "npm ci --ignore-scripts",
+        if: runHeavyUnlessCancelledCondition,
       }, {
         name: "Production hardening contract",
         run: "npm run check:production-hardening",
