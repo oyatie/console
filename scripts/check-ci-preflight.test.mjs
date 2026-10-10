@@ -2618,7 +2618,7 @@ describe("CI preflight contract", () => {
     assert.ok(workflow.includes(install + hardening), "CI must install before hardening");
     const inverted = workflow.replace(install + hardening, hardening + install);
     assert.notEqual(inverted, workflow);
-    expectFailure(inverted, "kubernetes-manifests must preserve all 8 ordered setup/proof run steps");
+    expectFailure(inverted, "kubernetes-manifests setup run step 6 must preserve its exact name, command, condition, and execution semantics");
   });
 
   it("fails closed when optimized gates or targets are commented, weakened, or duplicated", () => {

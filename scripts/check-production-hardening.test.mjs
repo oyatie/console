@@ -1136,7 +1136,7 @@ describe("production hardening Security owner integration", () => {
       assert.notEqual(mutated, security);
       const failures = evaluateOwner(mutated);
       assert.ok(
-        failures.some((failure) => /security\.jobs\..*\.run must remain/.test(failure)),
+        failures.some((failure) => /security\.jobs\..*\.run must equal/.test(failure)),
         `${label}: expected the Security owner's exact command failure, got ${JSON.stringify(failures)}`,
       );
     });
@@ -1159,7 +1159,7 @@ describe("production hardening Security owner integration", () => {
       mutated.jobs.iac.steps.find((entry) => entry.name === step.name).run = `${run}\n`;
       assert.notDeepEqual(mutated, workflow);
       assert.ok(evaluateOwner(yaml.dump(mutated)).some(
-        (failure) => /security\.jobs\.iac.*\.run must remain/.test(failure),
+        (failure) => /security\.jobs\.iac.*\.run must equal/.test(failure),
       ));
     }
   });
