@@ -211,6 +211,7 @@ const PLAN = new Map([
   ["Native Company creation browser", { tier: "db" }],
   ["Native Company preview browser", { tier: "db" }],
   ["Native payroll hydration browser", { tier: "db" }],
+  ["Native inherited browser histories", { tier: "db" }],
 
   // ---- repo-gates --------------------------------------------------------
   // Pure `npm run` gate binaries: no Docker, no Rust toolchain, no network.
