@@ -26,6 +26,7 @@ Test targets:
   - owner.* and domain.* labels are derived from package paths, never a central
     hand-maintained exception table.
 """
+import argparse
 import ast
 import json
 import os
@@ -191,6 +192,11 @@ RESOURCE_CONFIG = {
             "//backend/openapi:shared-tree": "backend/openapi/shared",
             **{"//" + package + ":crate-openapi-tree": package + "/openapi"
                for _, package in OPENAPI_GENERATOR_PACKAGES},
+        },
+        "itests": {
+            "tests/compose.rs": {
+                "srcs": ["src/semantic_manifest.json"],
+            },
         },
     },
     "console-app": {
@@ -1841,6 +1847,9 @@ def _block(
 
 
 def main():
+    argparse.ArgumentParser(
+        description="Generate first-party BUCK files for the backend workspace crates."
+    ).parse_args()
     members = find_members()
     first_party, meta = {}, {}
     for d in members:

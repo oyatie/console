@@ -29,6 +29,7 @@ import {
   classifyChangedPaths,
   evaluateCiPreflight,
   emitPathClassGithubOutput,
+  isLivePostgresPath,
   listChangedPathsForPathClass,
   parseNulDelimitedChangedPaths,
   resolvePathClassFromEnv,
@@ -518,6 +519,87 @@ describe("CI preflight contract", () => {
     // Missing git range fails closed for live postgres as well as run_heavy.
     assert.equal(backendPr.runHeavy, true);
     assert.equal(backendPr.runLivePostgres, true);
+  });
+
+  for (const dependencyPath of [
+    "backend/Cargo.toml",
+    "backend/Cargo.lock",
+    "backend/crates/platform/jobs/Cargo.toml",
+    "backend/crates/platform/jobs/Cargo.lock",
+    "backend/crates/comms/credential-cipher/Cargo.toml",
+  ]) {
+    it(`dependency path ${dependencyPath} requires live PostgreSQL`, () => {
+      assert.equal(isLivePostgresPath(dependencyPath), true, dependencyPath);
+      for (const paths of [[dependencyPath], [dependencyPath, "docs/program/foo.md"]]) {
+        const classified = classifyChangedPaths(paths);
+        assert.equal(classified.pathClass, paths.length === 1 ? "backend" : "mixed");
+        assert.equal(classified.docsOnly, false);
+        assert.equal(classified.runHeavy, true);
+        assert.equal(classified.runLivePostgres, true, paths.join(", "));
+      }
+    });
+  }
+
+  it("dependency PostgreSQL routing preserves ordinary Rust, docs, and lookalike skips", () => {
+    for (const path of [
+      "backend/app/src/lib.rs",
+      "docs/program/foo.md",
+      "docs/Cargo.toml",
+      "backend/Cargo.toml.bak",
+      "backend/crates/platform/jobs/Cargo.lock.bak",
+    ]) {
+      assert.equal(isLivePostgresPath(path), false, path);
+      assert.equal(classifyChangedPaths([path]).runLivePostgres, false, path);
+    }
+    const mixed = classifyChangedPaths(["backend/app/src/lib.rs", "docs/program/foo.md"]);
+    assert.equal(mixed.pathClass, "mixed");
+    assert.equal(mixed.runHeavy, true);
+    assert.equal(mixed.runLivePostgres, false);
+  });
+
+  it("dependency metadata with docs emits required PostgreSQL routing", () => {
+    const repo = mkdtempSync(join(tmpdir(), "ci-preflight-dependency-postgres-"));
+    const git = (args) => {
+      const result = spawnSync("git", args, { cwd: repo, encoding: "utf8" });
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+      return result.stdout.trim();
+    };
+    try {
+      git(["init", "-q"]);
+      git(["config", "user.email", "ci-preflight@example.test"]);
+      git(["config", "user.name", "ci-preflight"]);
+      writeFileSync(join(repo, "README.md"), "base\n");
+      git(["add", "."]);
+      git(["commit", "-qm", "base"]);
+      const base = git(["rev-parse", "HEAD"]);
+      mkdirSync(join(repo, "backend"));
+      mkdirSync(join(repo, "docs"));
+      writeFileSync(join(repo, "backend/Cargo.toml"), "[workspace]\n");
+      writeFileSync(join(repo, "backend/Cargo.lock"), "version = 4\n");
+      writeFileSync(join(repo, "docs/dependencies.md"), "dependency update\n");
+      git(["add", "."]);
+      git(["commit", "-qm", "dependency metadata with docs"]);
+      const head = git(["rev-parse", "HEAD"]);
+      const previous = process.cwd();
+      process.chdir(repo);
+      try {
+        const output = join(repo, "github-output");
+        const resolved = emitPathClassGithubOutput({
+          PATH_CLASS_EVENT_NAME: "pull_request",
+          PATH_CLASS_PR_BASE_SHA: base,
+          PATH_CLASS_PR_HEAD_SHA: head,
+        }, output);
+        assert.equal(resolved.pathClass, "mixed");
+        assert.equal(resolved.docsOnly, false);
+        assert.equal(resolved.runHeavy, true);
+        assert.match(readFileSync(output, "utf8"), /^run_live_postgres=true$/m);
+        assert.equal(resolved.runLivePostgres, true);
+      } finally {
+        process.chdir(previous);
+      }
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
   });
 
   it("resolves a merge group's diff range, and fails closed without its SHAs", () => {
@@ -2517,7 +2599,7 @@ describe("CI preflight contract", () => {
         "        run: npm ci --ignore-scripts\n",
         "        run: npm ci\n",
       ),
-      "kubernetes-manifests setup run step 7 must preserve its exact name, command, condition, and execution semantics",
+      "kubernetes-manifests setup run step 6 must preserve its exact name, command, condition, and execution semantics",
     );
     expectFailure(
       workflow.replace(
@@ -2533,6 +2615,17 @@ describe("CI preflight contract", () => {
       ),
       "kubernetes-manifests must preserve the locked fail-fast step multiset and failure semantics",
     );
+  });
+
+  it("locks the hardening dependency order before the fresh CI caller", () => {
+    const install = `      - name: Install production-hardening test dependencies\n        if: ${runHeavyUnlessCancelledIf}\n        run: npm ci --ignore-scripts\n\n`;
+    const hardening = `      - name: Production hardening contract\n        if: ${runHeavyUnlessCancelledIf}\n        run: npm run check:production-hardening\n\n`;
+    assert.equal(workflow.split(install).length, 2, "exact install step anchor");
+    assert.equal(workflow.split(hardening).length, 2, "exact hardening step anchor");
+    assert.ok(workflow.includes(install + hardening), "CI must install before hardening");
+    const inverted = workflow.replace(install + hardening, hardening + install);
+    assert.notEqual(inverted, workflow);
+    expectFailure(inverted, "kubernetes-manifests setup run step 6 must preserve its exact name, command, condition, and execution semantics");
   });
 
   it("fails closed when optimized gates or targets are commented, weakened, or duplicated", () => {
@@ -2739,13 +2832,20 @@ describe("CI preflight contract", () => {
   // H-1's request-body half but reads no route inventory, so nothing else covers what this covers.
   it("locks the console-app OpenAPI drift suite step in backend", () => {
     const run = "        run: env -u DATABASE_URL tools/buck2 test"
-      + " //backend/app:console-app-itest-openapi_drift\n";
+      + " //backend/app:console-app-itest-openapi_drift"
+      + " //backend/crates/contracts:console-contracts-itest-compose\n";
     const step = "      - name: Buck2 console-app OpenAPI drift suite\n"
       + "        id: openapi-drift\n"
       + `        if: ${backendBuckAppLegIf}\n`
       + "        working-directory: .\n"
       + run;
     assert.ok(workflow.includes(step), "backend does not run the openapi_drift suite");
+
+    expectFailure(
+      workflow.replace(run, "        run: env -u DATABASE_URL tools/buck2 test"
+        + " //backend/app:console-app-itest-openapi_drift\n"),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
 
     // The exact deletion this lock exists to refuse: the step keeps its slot, runs nothing.
     expectFailure(

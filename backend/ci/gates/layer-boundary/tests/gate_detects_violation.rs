@@ -1295,7 +1295,15 @@ workspace = true
 
 #[test]
 fn adr0045_ratchet_covers_this_workspace() -> Result<(), Box<dyn std::error::Error>> {
-    let backend = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let root = std::process::Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .output()?;
+    assert!(
+        root.status.success(),
+        "git root discovery failed: {}",
+        String::from_utf8_lossy(&root.stderr)
+    );
+    let backend = PathBuf::from(String::from_utf8(root.stdout)?.trim()).join("backend");
     let (metadata, edition) = load_metadata(&backend)?;
     let result = check(&metadata, &edition);
     assert!(

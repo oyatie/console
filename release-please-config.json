@@ -7,6 +7,7 @@
   "bump-patch-for-minor-pre-major": true,
   "changelog-path": "CHANGELOG.md",
   "always-update": true,
+  "last-release-sha": "b86320f866a44f1b73e32189ed0f981ba3f5764f",
   "packages": {
     ".": {
       "component": "console"

@@ -16,7 +16,7 @@ const reindeerToolchainInstall = 'rustup toolchain install "$REINDEER_TOOLCHAIN"
 const strictShellMode = "set -euo pipefail";
 const reindeerToolchainOverride = /^(?:export\s+)?REINDEER_TOOLCHAIN\s*=/;
 const ciPreflightTestCommand = "node --test scripts/check-ci-preflight.test.mjs";
-const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan";
+const buckImpactPlannerTestCommand = "python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests";
 const reasoningLensManifestCommand = "node scripts/check-reasoning-lens-manifest.mjs";
 const reasoningLensManifestName = "Reasoning lens manifest drift";
 const reasoningLensRegressionCommand = "node --test scripts/check-reasoning-lens-manifest.test.mjs";
@@ -108,7 +108,7 @@ function backendLegTopologyCondition(leg) {
   return `\${{ !cancelled() && matrix.leg == '${leg}' && steps.topology.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}`;
 }
 
-export const PATH_CLASS_RULES_VERSION = "7";
+export const PATH_CLASS_RULES_VERSION = "8";
 const docsOnlyRootFiles = new Set([
   "README.md",
   "CHANGELOG.md",
@@ -144,6 +144,7 @@ const releaseMetadataAllowedPaths = new Set([
  */
 export function isLivePostgresPath(path) {
   if (typeof path !== "string" || path.length === 0) return false;
+  if (path.startsWith("backend/") && /\/Cargo\.(toml|lock)$/.test(path)) return true;
   if (path.includes("adapter-postgres")) return true;
   if (path.endsWith(".sql") || /(^|\/)migrations\//.test(path)) return true;
   if (/(^|\/)\.sqlx(\/|$)/.test(path)) return true;
@@ -1093,7 +1094,7 @@ const requiredJobRunContracts = Object.freeze({
     proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendLegTopologyCondition("buck-dev-auth"), workingDirectory: "." }),
     proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test \\\n  //backend/crates/platform/authz:console-platform-authz-unit \\\n  //backend/crates/platform/provisioning:console-platform-provisioning-unit \\\n  //backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity\n", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
-    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift //backend/crates/contracts:console-contracts-itest-compose", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofDigest("Buck2 console-app inline PostgreSQL suites", "f60c5dd8a2332e846df168408415e8a361ba9da6e44b2c15fdd259884cbf03ab", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
     setupRun("Install pinned native browser prerequisites", "tools/browser/prepare_native_browser.sh", { if: "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}", workingDirectory: "." }),
     proofRun("Native Account browser", "for leaf in \\\n  account_browser::browser_business_oracle_requires_complete_lossless_unchanged_rows \\\n  account_browser::browser_login_history_oracle_requires_exact_key_and_retained_effects \\\n  account_browser::browser_global_oracle_requires_complete_owned_effects_and_immutable_tables; do\n  expected=\"${leaf}: test\"$'\\n\\n1 test, 0 benchmarks'\n  if ! listing=\"$(tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact \"${leaf}\" 2>/dev/null)\" || [[ \"${listing}\" != \"${expected}\" ]]; then\n    echo \"native browser: exact oracle discovery failed\" >&2\n    exit 1\n  fi\n  tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact \"${leaf}\"\ndone\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-sign-in.png 05-account-returned.png; do\n  evidence_path=\"${CONSOLE_BROWSER_JOURNEY_OUTPUT:?}/${evidence_file}\"\n  if [[ ! -f \"${evidence_path}\" || ! -s \"${evidence_path}\" || -L \"${evidence_path}\" ]]; then\n    echo \"native browser: required retained evidence missing or invalid\" >&2\n    exit 1\n  fi\ndone\n", { if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", workingDirectory: "." }),
@@ -1118,8 +1119,8 @@ const requiredJobRunContracts = Object.freeze({
     setupDigest("Install kustomize (NetworkPolicy static render proof)", "4cc1bf875027906f3b8a9878c0f13ce9b1438490390d858088c5ca279e4b9b3c", { if: runHeavyCondition }),
     proofRun("Governed command-database DARK wiring regression", "node --test scripts/check-command-database-wiring.test.mjs", { if: runHeavyCondition }),
     proofRun("Render manifests and NetworkPolicy enforcement preflight", "npm run check:k8s", { if: runHeavyUnlessCancelledCondition }),
-    proofRun("Production hardening contract", "npm run check:production-hardening", { if: runHeavyUnlessCancelledCondition }),
     setupRun("Install production-hardening test dependencies", "npm ci --ignore-scripts", { if: runHeavyUnlessCancelledCondition }),
+    proofRun("Production hardening contract", "npm run check:production-hardening", { if: runHeavyUnlessCancelledCondition }),
     proofRun("Production hardening regression tests", "npm run test:production-hardening", { if: runHeavyUnlessCancelledCondition }),
   ],
   "repo-gates": [
@@ -2845,7 +2846,7 @@ export function evaluateCiPreflight(
           // inventory, so nothing else in CI covers what this step covers — a gate one line from
           // silent removal is the meta-finding this file exists to refuse.
           name: "Buck2 console-app OpenAPI drift suite",
-          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift",
+          run: "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift //backend/crates/contracts:console-contracts-itest-compose",
           workingDirectory: ".",
           if: backendLegCondition("buck-app"),
         },
@@ -2929,6 +2930,10 @@ export function evaluateCiPreflight(
         name: "Path-class skip proof",
         run: pathClassSkipProofScript.join("\n"),
         if: skipProofCondition,
+      }, {
+        name: "Install production-hardening test dependencies",
+        run: "npm ci --ignore-scripts",
+        if: runHeavyUnlessCancelledCondition,
       }, {
         name: "Production hardening contract",
         run: "npm run check:production-hardening",
