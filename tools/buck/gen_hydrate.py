@@ -93,8 +93,11 @@ def main():
                                "--format-version", "1", "--manifest-path", "backend/Cargo.toml"]))
     ui = next(p for p in metadata["packages"] if p["name"] == "console-payroll-ui")
     workspace = tomllib.loads((REPO / "backend/Cargo.toml").read_text())
-    if len(ui["targets"]) != 1 or Path(ui["targets"][0]["src_path"]) != REPO / "backend/crates/payroll/ui/src/lib.rs":
+    libraries = [target for target in ui["targets"]
+                 if set(target["kind"]) & {"lib", "rlib", "dylib", "cdylib", "staticlib", "proc-macro"}]
+    if len(libraries) != 1 or Path(libraries[0]["src_path"]) != REPO / "backend/crates/payroll/ui/src/lib.rs":
         raise ValueError("hydration projection requires the real single UI library")
+    library = libraries[0]
     for dep in ui["dependencies"]:
         if (dep["kind"] is not None or dep["target"] is not None or dep.get("path")
                 or dep["source"] != "registry+https://github.com/rust-lang/crates.io-index"
@@ -107,9 +110,9 @@ def main():
         if ui[key] is not None:
             lines.append(key.replace("_", "-") + " = " + value(ui[key]))
     lines += ["publish = false", "autobins = false", "autoexamples = false", "autotests = false",
-              "autobenches = false", "", "[lib]", "name = " + value(ui["targets"][0]["name"]),
-              "path = " + value(os.path.relpath(ui["targets"][0]["src_path"], OUTPUT)),
-              "crate-type = " + value(ui["targets"][0]["crate_types"]), "", "[features]"]
+              "autobenches = false", "", "[lib]", "name = " + value(library["name"]),
+              "path = " + value(os.path.relpath(library["src_path"], OUTPUT)),
+              "crate-type = " + value(library["crate_types"]), "", "[features]"]
     lines += [json.dumps(k) + " = " + value(v) for k, v in sorted(ui["features"].items())]
     lines += ["", "[dependencies]"]
     for dep in sorted(ui["dependencies"], key=lambda d: d["rename"] or d["name"]):
