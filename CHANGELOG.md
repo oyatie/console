@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.28](https://github.com/oyatie/console/compare/v0.3.27...v0.3.28) (2026-10-10)
+
+
+### Bug Fixes
+
+* **buck:** declare contracts compose test resources ([#1137](https://github.com/oyatie/console/issues/1137)) ([f693588](https://github.com/oyatie/console/commit/f69358897674d0f77e6b4ab7366210e95fdbb2d7))
+* **ci:** qualify dependency updates before merge ([#1131](https://github.com/oyatie/console/issues/1131)) ([6bb0231](https://github.com/oyatie/console/commit/6bb0231e0b5a4f2cccdce36726830f291eff86b3))
+* **ci:** reject Security workflow command decoys ([#1138](https://github.com/oyatie/console/issues/1138)) ([b4bde8a](https://github.com/oyatie/console/commit/b4bde8af9710509ad941fbf004b598e3be2ea5eb))
+* **ci:** repair generated closure and native architecture qualification ([#1132](https://github.com/oyatie/console/issues/1132)) ([965c2de](https://github.com/oyatie/console/commit/965c2dee831e80d5f14aebd668225fd764dd5d96))
+* **deps:** bump the rust-crates group in /backend with 6 updates ([#1127](https://github.com/oyatie/console/issues/1127)) ([dbe1538](https://github.com/oyatie/console/commit/dbe15386e2c9aab51e3b5b082e450186585200c2))
+* **deps:** qualify updates and repair workflow start race ([#1120](https://github.com/oyatie/console/issues/1120)) ([3333a0e](https://github.com/oyatie/console/commit/3333a0e52dc008d33206ebd61c272370fd04314c))
+* **lanes:** preserve Git status columns in ownership checks ([#1125](https://github.com/oyatie/console/issues/1125)) ([cc4e1fd](https://github.com/oyatie/console/commit/cc4e1fd372e80fa089d30b0336cd6140347ca5ce))
+* **release:** reconcile the published release history boundary ([#1134](https://github.com/oyatie/console/issues/1134)) ([f068f38](https://github.com/oyatie/console/commit/f068f3861ae095ae7ece8e8428b0aa391f75d194))
+* **tooling:** make generator help side-effect-free ([#1129](https://github.com/oyatie/console/issues/1129)) ([db1745a](https://github.com/oyatie/console/commit/db1745aa2052057869ff62fe09e673b46aa0d9ad))
+* **workflow:** preserve committed effects on node replay ([#1121](https://github.com/oyatie/console/issues/1121)) ([09d1a81](https://github.com/oyatie/console/commit/09d1a81439fcf088e4ba59d649259a41df30f5a4))
+
+
+### Performance Improvements
+
+* **identity:** batch collection page hydration ([#1130](https://github.com/oyatie/console/issues/1130)) ([7adacfa](https://github.com/oyatie/console/commit/7adacfaaff6b876a5e26c16278a2acf8e5a9b8f9))
+
 ## [0.3.27](https://github.com/oyatie/console/compare/v0.3.26...v0.3.27) (2026-09-16)
 
 
