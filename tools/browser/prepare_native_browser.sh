@@ -4,7 +4,7 @@ set -euo pipefail
 umask 077
 
 fail() { echo "native browser: $1" >&2; exit 1; }
-for tool in npm node curl unzip openssl uname; do
+for tool in npm node curl unzip openssl uname git; do
   command -v "${tool}" >/dev/null || fail "required bootstrap tool missing"
 done
 [[ "$(uname -s)" == Linux && "$(uname -m)" == x86_64 ]] || fail "unsupported reviewed platform"
@@ -63,6 +63,7 @@ unzip -q "${stage}/browser.zip" -d "${stage}/runtime/browser"
 browser="${stage}/runtime/browser/chrome-headless-shell-linux64/chrome-headless-shell"
 verify_sha "${browser}" ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e
 chmod 700 "${browser}"
+node "${repo_root}/tools/browser/group-source-descriptor.cjs" "${repo_root}" "${stage}/group-source"
 
 # Publish only after every prerequisite check; no environment or credentials enter
 # the receipt. These version/digest facts are not browser execution evidence.
@@ -100,5 +101,7 @@ const settings = Object.entries(drivers).flatMap(([prefix, name]) => [
   prefix + '_SHA256=' + digests.drivers[name + '.cjs'],
   prefix + '_OUTPUT=' + path.join(stage, 'outputs', name),
 ]);
+settings.push('CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR=' + path.join(stage, 'group-source/descriptor.json'),
+  'CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256=' + hash('group-source/descriptor.json'));
 fs.appendFileSync(envFile, settings.join('\n') + '\n');
 NODE

@@ -148,7 +148,7 @@ jobs:
       - name: Buck impact planner regression
         id: buck-impact-planner
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests
+        run: python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests tools.buck.test_gen_first_party.BrowserIntegrationVariantsTests
 
       - name: Console route inventory regression
         id: route-inventory
@@ -1561,6 +1561,103 @@ jobs:
             fi
           done
 
+      - name: Native inherited browser histories
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: .
+        run: |
+          set -euo pipefail
+          umask 077
+          node --test tools/browser/account-controller.test.cjs tools/browser/account-company-handoff.test.cjs tools/browser/account-company-handoff-protocol.test.cjs tools/browser/company-information-manager-current.test.cjs tools/browser/group-invalid-form.test.cjs tools/browser/people-journey.test.cjs
+          require_inherited_browser_discovery() {
+            local leaf="$1" listing expected
+            expected="${leaf}: test"$'\n\n1 test, 0 benchmarks'
+            if ! listing="$(env -u DATABASE_URL tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact "${leaf}" 2>/dev/null)" || [[ "${listing}" != "${expected}" ]]; then
+              echo "native browser: exact inherited discovery failed" >&2
+              exit 1
+            fi
+            printf 'native browser: discovered %s exactly once\n' "${leaf}"
+          }
+          # Begin inherited evidence guard
+          require_inherited_browser_evidence() {
+            local root="$1" ancestor evidence_file evidence_path
+            shift
+            [[ -d "${root}" && ! -L "${root}" ]] || return 1
+            ancestor="${root}"
+            while [[ "${ancestor}" != / ]]; do
+              [[ ! -L "${ancestor}" ]] || return 1
+              ancestor="$(dirname "${ancestor}")"
+            done
+            for evidence_file in "$@"; do
+              [[ "${evidence_file}" =~ ^[a-zA-Z0-9_.-]+$ && "${evidence_file}" != . && "${evidence_file}" != .. ]] || return 1
+              evidence_path="${root}/${evidence_file}"
+              if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+                echo "native browser: required inherited evidence missing or invalid" >&2
+                return 1
+              fi
+            done
+          }
+          # End inherited evidence guard
+          for leaf in \
+            account_browser::deployment_operator_designation::company_setup::policy_audit_oracle_rejects_missing_extra_wrong_fields_and_sql_json_null_confusion \
+            account_browser::deployment_operator_designation::company_setup::policy_participant_content_oracle_rejects_same_cardinality_corruption \
+            account_browser::deployment_operator_designation::company_setup::policy_browser_wire_expectation_matches_independent_frozen_vectors \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::people_effect_census_requires_every_effect_and_preserves_unrelated_history \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::native_directory_shape_oracle_rejects_employment_facts_and_false_provenance \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::native_receipt_linkage_oracle_rejects_same_count_wrong_identity_or_digest \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::people_action_oracle_uses_actual_dispatch_target_column \
+            account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_projection_rejects_noncanonical_or_mismatched_values; do
+            require_inherited_browser_discovery "${leaf}"
+            env -u DATABASE_URL tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact "${leaf}"
+          done
+          leaf=account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_wire_matches_exact_postgresql_json_text
+          require_inherited_browser_discovery "${leaf}"
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT="${leaf}" tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          stage="$(dirname "${CONSOLE_COMPANY_BROWSER_DRIVER:?}")"
+          while IFS='|' read -r tag leaf basename evidence_files screenshots; do
+            require_inherited_browser_discovery "${leaf}"
+            parent="$(mktemp -d "${stage}/outputs/inherited-${tag}.XXXXXX")"
+            requested="${parent}/requested"
+            actual="${parent}/${basename}"
+            node tools/browser/publish-history-output.cjs "${tag}" "${stage}" "${parent}" "${GITHUB_ENV:?}"
+            started="${SECONDS}"
+            CONSOLE_COMPANY_BROWSER_OUTPUT="${requested}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT="${leaf}" tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+            printf 'native browser: %s migration/bootstrap and test seconds=%s\n' "${tag}" "$((SECONDS - started))"
+            started="${SECONDS}"
+            read -r -a public_files <<< "${evidence_files}"
+            require_inherited_browser_evidence "${actual}" "${public_files[@]}"
+            node - "${actual}" "${screenshots}" "${tag}" <<'RESULT'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const [root, screenshots, tag] = process.argv.slice(2);
+          const file = path.join(root, 'result.json');
+          const stat = fs.lstatSync(file);
+          assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size > 0 && stat.size <= 1048576);
+          const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+          assert.equal(value.status, 'BROWSER_LEAF_PASSED');
+          assert.equal(value.cleanup?.confirmed, true);
+          assert.deepEqual(value.screenshots, screenshots.split(' '));
+          if (tag === 'account-controller') {
+            const names = ['native-first', 'react-first', 'keyboard-before-react', 'autofill-before-react',
+              'eventless-value-before-react', 'ime-before-react', 'preclaim-focus', 'partial-bind-rollback',
+              'capability-denied', 'freeze-at-csrf'];
+            assert.ok(Array.isArray(value.controller?.records));
+            assert.deepEqual(value.controller.records.map(record => record.name), names);
+          }
+          RESULT
+            printf 'native browser: %s public retention seconds=%s\n' "${tag}" "$((SECONDS - started))"
+          done <<'HISTORIES'
+          people|account_browser::deployment_operator_designation::company_setup::native_people_real_browser_register_reopen_and_revoke|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png people-directory-320.png people-workspace-next-task.png people-workspace-next-task-320.png people-registration-desktop.png people-pending-320.png people-detail-desktop.png people-detail-320.png people-search-match-320.png people-search-miss-320.png react-people-delayed-ime-input-320.png react-people-delayed-scroll-320.png react-people-precommit-focus-320.png react-people-failed-load-320.png react-people-failed-render-320.png react-people-decoder-registration-unmodified-320.png react-people-decoder-registration-invalid-json-320.png react-people-decoder-registration-unknown-version-320.png react-people-decoder-registration-extra-envelope-field-320.png react-people-decoder-registration-unknown-page-kind-320.png react-people-decoder-registration-extra-page-field-320.png react-people-decoder-registration-extra-scope-field-320.png react-people-decoder-registration-invalid-scope-boolean-320.png react-people-decoder-registration-malformed-company-id-320.png react-people-decoder-registration-nil-company-id-320.png react-people-decoder-registration-uppercase-company-id-320.png react-people-decoder-registration-malformed-command-id-320.png react-people-decoder-registration-malformed-expectation-id-320.png react-people-decoder-registration-numeric-revision-320.png react-people-decoder-registration-noncanonical-revision-320.png react-people-decoder-registration-large-revision-string-320.png react-people-decoder-registration-unicode-scalar-boundary-320.png react-people-decoder-registration-unicode-scalar-overflow-320.png react-people-decoder-registration-oversized-name-320.png react-people-decoder-registration-oversized-number-320.png react-people-decoder-registration-extra-form-field-320.png react-people-decoder-registration-extra-expectation-field-320.png react-people-decoder-registration-invalid-nullable-field-320.png react-people-decoder-registration-invalid-proof-type-320.png react-people-decoder-registration-registration-conflict-valid-320.png react-people-decoder-registration-registration-conflict-extra-field-320.png react-people-decoder-registration-request-not-visible-valid-320.png react-people-decoder-registration-request-not-visible-extra-field-320.png react-people-decoder-registration-uncertain-valid-320.png react-people-decoder-registration-uncertain-extra-field-320.png react-people-decoder-registration-hostile-text-320.png react-people-decoder-terminal-unmodified-320.png react-people-decoder-terminal-unknown-outcome-kind-320.png react-people-decoder-terminal-extra-terminal-field-320.png react-people-decoder-terminal-terminal-proof-injection-320.png react-people-decoder-terminal-rejected-valid-320.png react-people-decoder-terminal-rejected-proof-injection-320.png react-people-decoder-terminal-conflicting-valid-320.png react-people-decoder-terminal-conflicting-proof-injection-320.png react-people-decoder-terminal-cancelled-valid-320.png react-people-decoder-terminal-cancelled-proof-injection-320.png react-people-decoder-terminal-expired-valid-320.png react-people-decoder-terminal-expired-proof-injection-320.png react-people-decoder-terminal-malformed-terminal-id-320.png react-people-decoder-directory-unmodified-320.png react-people-decoder-directory-nullable-record-fields-320.png react-people-decoder-directory-oversized-record-collection-320.png react-people-decoder-directory-malformed-record-id-320.png react-people-decoder-directory-extra-record-field-320.png react-people-decoder-directory-numeric-record-revision-320.png react-people-decoder-directory-invalid-record-nullable-field-320.png react-people-decoder-directory-invalid-after-cursor-320.png react-people-decoder-directory-unsafe-next-href-320.png react-people-decoder-directory-detail-valid-320.png react-people-decoder-directory-detail-extra-field-320.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png people-directory-320.png people-workspace-next-task.png people-workspace-next-task-320.png people-registration-desktop.png people-pending-320.png people-detail-desktop.png people-detail-320.png people-search-match-320.png people-search-miss-320.png react-people-delayed-ime-input-320.png react-people-delayed-scroll-320.png react-people-precommit-focus-320.png react-people-failed-load-320.png react-people-failed-render-320.png react-people-decoder-registration-unmodified-320.png react-people-decoder-registration-invalid-json-320.png react-people-decoder-registration-unknown-version-320.png react-people-decoder-registration-extra-envelope-field-320.png react-people-decoder-registration-unknown-page-kind-320.png react-people-decoder-registration-extra-page-field-320.png react-people-decoder-registration-extra-scope-field-320.png react-people-decoder-registration-invalid-scope-boolean-320.png react-people-decoder-registration-malformed-company-id-320.png react-people-decoder-registration-nil-company-id-320.png react-people-decoder-registration-uppercase-company-id-320.png react-people-decoder-registration-malformed-command-id-320.png react-people-decoder-registration-malformed-expectation-id-320.png react-people-decoder-registration-numeric-revision-320.png react-people-decoder-registration-noncanonical-revision-320.png react-people-decoder-registration-large-revision-string-320.png react-people-decoder-registration-unicode-scalar-boundary-320.png react-people-decoder-registration-unicode-scalar-overflow-320.png react-people-decoder-registration-oversized-name-320.png react-people-decoder-registration-oversized-number-320.png react-people-decoder-registration-extra-form-field-320.png react-people-decoder-registration-extra-expectation-field-320.png react-people-decoder-registration-invalid-nullable-field-320.png react-people-decoder-registration-invalid-proof-type-320.png react-people-decoder-registration-registration-conflict-valid-320.png react-people-decoder-registration-registration-conflict-extra-field-320.png react-people-decoder-registration-request-not-visible-valid-320.png react-people-decoder-registration-request-not-visible-extra-field-320.png react-people-decoder-registration-uncertain-valid-320.png react-people-decoder-registration-uncertain-extra-field-320.png react-people-decoder-registration-hostile-text-320.png react-people-decoder-terminal-unmodified-320.png react-people-decoder-terminal-unknown-outcome-kind-320.png react-people-decoder-terminal-extra-terminal-field-320.png react-people-decoder-terminal-terminal-proof-injection-320.png react-people-decoder-terminal-rejected-valid-320.png react-people-decoder-terminal-rejected-proof-injection-320.png react-people-decoder-terminal-conflicting-valid-320.png react-people-decoder-terminal-conflicting-proof-injection-320.png react-people-decoder-terminal-cancelled-valid-320.png react-people-decoder-terminal-cancelled-proof-injection-320.png react-people-decoder-terminal-expired-valid-320.png react-people-decoder-terminal-expired-proof-injection-320.png react-people-decoder-terminal-malformed-terminal-id-320.png react-people-decoder-directory-unmodified-320.png react-people-decoder-directory-nullable-record-fields-320.png react-people-decoder-directory-oversized-record-collection-320.png react-people-decoder-directory-malformed-record-id-320.png react-people-decoder-directory-extra-record-field-320.png react-people-decoder-directory-numeric-record-revision-320.png react-people-decoder-directory-invalid-record-nullable-field-320.png react-people-decoder-directory-invalid-after-cursor-320.png react-people-decoder-directory-unsafe-next-href-320.png react-people-decoder-directory-detail-valid-320.png react-people-decoder-directory-detail-extra-field-320.png
+          policy|account_browser::deployment_operator_designation::company_setup::native_company_real_browser_policy_grant_payroll_reopen_revoke|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png
+          policy-startup|account_browser::deployment_operator_designation::company_setup::native_policy_startup_tests::native_policy_verified_startup_drives_browser_current_reader_after_epoch_advance|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png
+          account-controller|account_browser::deployment_operator_designation::company_setup::native_account_controller_browser::real_browser_account_controller_promotion_and_frozen_administrator|account-controller|result.json owner-receipt.json 01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png controller-native-first.png controller-react-first.png controller-keyboard-before-react.png controller-autofill-before-react.png controller-eventless-value-before-react.png controller-ime-before-react.png controller-preclaim-focus.png controller-partial-bind-rollback.png controller-capability-denied.png controller-freeze-at-csrf.png|01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png
+          account-handoff|account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_own_reference_selects_independent_company_administrator|account-company-handoff|result.json owner-receipt.json 01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png|01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png
+          company-manager|account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_company_information_manager_current_uses_actual_nonoperator_manager_without_effects|company-information-manager-current|result.json owner-receipt.json 01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png|01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png
+          group-process|account_browser::deployment_operator_designation::company_setup::native_group_process_real_browser_adopt_reopen_suspend_replace|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-process-adopt-320.png group-process-adopt-desktop.png group-process-adopted.png group-process-suspended.png group-process-replacement-320.png group-process-replaced.png group-process-own-receipt-after-revoke.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-process-adopt-320.png group-process-adopt-desktop.png group-process-adopted.png group-process-suspended.png group-process-replacement-320.png group-process-replaced.png group-process-own-receipt-after-revoke.png
+          group-correction|account_browser::deployment_operator_designation::company_setup::native_group_invalid_form_real_browser_correct_same_command_and_reopen|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-correction-invalid-320.png group-correction-focused-320.png group-correction-corrected-320.png group-correction-adopted.png group-correction-own-receipt-after-revoke.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-correction-invalid-320.png group-correction-focused-320.png group-correction-corrected-320.png group-correction-adopted.png group-correction-own-receipt-after-revoke.png
+          group-held|account_browser::deployment_operator_designation::company_setup::native_group_navigation_held_real_browser_transport_fence|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-held-form-before-correction-320.png group-held-form-submission-interrupted.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-held-form-before-correction-320.png group-held-form-submission-interrupted.png
+          HISTORIES
+
       - name: Retain sanitized native browser evidence
         id: native-browser-evidence
         if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
@@ -1594,6 +1691,207 @@ jobs:
             ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-1.png
             ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-2.png
             ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-3.png
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/06-policy-install-preflight.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-before-grant.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-grant-reopened.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-active-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-revoked-reopened.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll-navigation-receipt-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll-navigation-workspace-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll-navigation-workspace-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll_read.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll_reopened.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll_denied.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-administration-retained.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-directory-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-workspace-next-task.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-workspace-next-task-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-registration-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-pending-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-detail-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-detail-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-search-match-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-search-miss-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-delayed-ime-input-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-delayed-scroll-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-precommit-focus-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-failed-load-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-failed-render-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unmodified-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-json-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unknown-version-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-envelope-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unknown-page-kind-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-page-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-scope-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-scope-boolean-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-malformed-company-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-nil-company-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-uppercase-company-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-malformed-command-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-malformed-expectation-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-numeric-revision-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-noncanonical-revision-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-large-revision-string-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unicode-scalar-boundary-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unicode-scalar-overflow-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-oversized-name-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-oversized-number-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-form-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-expectation-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-nullable-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-proof-type-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-registration-conflict-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-registration-conflict-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-request-not-visible-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-request-not-visible-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-uncertain-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-uncertain-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-hostile-text-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-unmodified-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-unknown-outcome-kind-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-extra-terminal-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-terminal-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-rejected-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-rejected-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-conflicting-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-conflicting-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-cancelled-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-cancelled-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-expired-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-expired-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-malformed-terminal-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-unmodified-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-nullable-record-fields-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-oversized-record-collection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-malformed-record-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-extra-record-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-numeric-record-revision-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-invalid-record-nullable-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-invalid-after-cursor-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-unsafe-next-href-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-detail-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-detail-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/06-policy-install-preflight.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-before-grant.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-grant-reopened.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-active-320.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-revoked-reopened.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll-navigation-receipt-320.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll-navigation-workspace-320.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll-navigation-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll_read.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll_reopened.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll_denied.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/06-policy-install-preflight.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-before-grant.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-grant-reopened.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-active-320.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-revoked-reopened.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll-navigation-receipt-320.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll-navigation-workspace-320.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll-navigation-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll_read.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll_reopened.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll_denied.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/01-own-account-reference.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/02-selected-administrator.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/03-operator-creation-history.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-native-first.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-react-first.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-keyboard-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-autofill-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-eventless-value-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-ime-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-preclaim-focus.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-partial-bind-rollback.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-capability-denied.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-freeze-at-csrf.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/01-own-account-reference.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/02-selected-administrator.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/03-operator-creation-history.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/01-own-account-reference.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/02-selected-administrator.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/03-operator-creation-history.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/company-policy-root-320.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/company-policy-root-desktop.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-adopt-320.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-adopt-desktop.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-adopted.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-suspended.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-replacement-320.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-replaced.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/company-policy-root-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/company-policy-root-desktop.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-invalid-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-focused-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-corrected-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-adopted.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/company-policy-root-320.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/company-policy-root-desktop.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/group-held-form-before-correction-320.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/group-held-form-submission-interrupted.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
           if-no-files-found: error
           retention-days: 7
           include-hidden-files: false
