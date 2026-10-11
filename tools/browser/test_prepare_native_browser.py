@@ -52,6 +52,18 @@ FAMILIES = {
     "CONSOLE_COMPANY_PREVIEW_BROWSER": "company-preview.cjs",
     "CONSOLE_HYDRATION_BROWSER": "hydration.cjs",
 }
+# Frozen from the independently reviewed V3 candidate, not recomputed from installer output.
+GROUP_SOURCE_FILES = {
+    "schema_digest": ("backend/crates/platform/authz/src/group_process/process-v1.cedarschema", "c711017368596094ad0ff9b1123eb17573722df47f1b4abb15a31ce1ce8b1e44"),
+    "policy_digest": ("backend/crates/platform/authz/src/group_process/process-v1.cedar", "2453684b70134124a8cf77f2d882fb7497d8c1498325fac1321ca7e616791ed8"),
+    "codec_contract_digest": ("ops/native-group-process/codec-contract-v1.json", "595376f9edea8ebd5a698bd27d6f7310a470f5e5d95522d7eed7c01db8169067"),
+}
+GROUP_METADATA = "ops/native-group-process/source-v1.sql"
+GROUP_METADATA_SHA = "6cda12aa3051768db0418b0b0aecb82a590ddfac0c753ef01d07e027720beea7"
+GROUP_ENGINE = "backend/crates/platform/authz/src/cedar_pbac/engine.rs"
+GROUP_SETTINGS = {"CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR", "CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256"}
+GROUP_ACTIONS = json.loads(r'''[{"key":"identity.verifier.process.adopt/1","action_id":"47c0f0fe-92d6-473a-b0b5-1c0d218f919f","revision":1,"fields":["process_id","process_version","process_digest","process_head_revision","process_head_digest","state","expiry","title","method","intended_claimant_matching_procedure","account_possession_procedure","physical_human_evidence_procedure","duplicate_contradictory_claim_procedure","qualification_criteria_instruction","escalation_adjudication_procedure","evidence_minimization_retention_description","recipient_responsibility","receipt_locator"]},{"key":"identity.verifier.process.suspend/1","action_id":"12865e98-68d3-4086-a516-2cc9e4f75cf0","revision":1,"fields":["process_id","process_version","process_digest","process_head_revision","process_head_digest","state","expiry","reason","receipt_locator"]},{"key":"identity.verifier.process.read/1","action_id":"fb8eaa7c-f7b5-4a0f-8fba-d6bed0f98e31","revision":1,"fields":["group_context","process_id","process_version","process_digest","process_head_revision","process_head_digest","state","expiry","title","method","intended_claimant_matching_procedure","account_possession_procedure","physical_human_evidence_procedure","duplicate_contradictory_claim_procedure","qualification_criteria_instruction","escalation_adjudication_procedure","evidence_minimization_retention_description","recipient_responsibility","history","allowed_actions"]},{"key":"identity.verifier.process.receipt.read-own/1","action_id":"13dec8e4-5451-4d09-b7e1-a1e043e67d53","revision":1,"fields":["command_id","input_digest","intake_receipt_id","result_receipt_id","terminal_code","accepted_at","executed_at","process_id","before_head","after_head","original_content","original_reason","receipt_locator"]}]''')
+
 SENTINEL = b"EXISTING_REVIEWED_VALUE=preserve-me\n"
 SECRET = "INSTALLER_TEST_ONLY_SECRET_CANARY"
 
@@ -114,7 +126,7 @@ elif name == "npm":
     core = runtime / "node_modules/playwright-core"
     playwright.mkdir(parents=True)
     core.mkdir(parents=True)
-    (playwright / "package.json").write_text(json.dumps({"name":"playwright","version":"1.63.0"}))
+    (playwright / "package.json").write_text(json.dumps({"name":"playwright","version":os.environ.get("CONSOLE_BROWSER_INSTALL_TEST_PACKAGE_VERSION", "1.63.0")}))
     (core / "package.json").write_text(json.dumps({"name":"playwright-core","version":"1.63.0"}))
     shutil.copyfile(os.environ["CONSOLE_BROWSER_INSTALL_TEST_BROWSERS"], core / "browsers.json")
     (playwright / "cli.js").write_text("""
@@ -137,7 +149,7 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         if sha256(cls.archive) != ARCHIVE_SHA:
             raise RuntimeError("prerequisite: retained Linux archive differs from reviewed custody")
         cls.unzip = shutil.which("unzip")
-        for tool in ("python3", "node", "openssl", "bash"):
+        for tool in ("python3", "node", "openssl", "bash", "git"):
             if shutil.which(tool) is None:
                 raise RuntimeError("prerequisite: missing host tool " + tool)
         if cls.unzip is None:
@@ -148,6 +160,9 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         for name, expected in {**DRIVERS, **COMPANIONS}.items():
             if sha256(ROOT / "tools/browser" / name) != expected:
                 raise RuntimeError("prerequisite: reviewed browser source pin mismatch " + name)
+        for relative, expected in [*GROUP_SOURCE_FILES.values(), (GROUP_METADATA, GROUP_METADATA_SHA)]:
+            if sha256(ROOT / relative) != expected:
+                raise RuntimeError("prerequisite: reviewed Group source pin mismatch " + relative)
 
     def setUp(self):
         self.assertTrue(INSTALLER.is_file(), "NATIVE_BROWSER_INSTALLER_REQUIRED")
@@ -162,6 +177,22 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         shutil.copy2(INSTALLER, self.script)
         for name in {**DRIVERS, **COMPANIONS}:
             shutil.copy2(ROOT / "tools/browser" / name, self.script.parent / name)
+        # Baseline has no helper: execute the actual installer, never import an absent module.
+        helper = ROOT / "tools/browser/group-source-descriptor.cjs"
+        if helper.is_file():
+            shutil.copy2(helper, self.script.parent / helper.name)
+        for relative in [*(value[0] for value in GROUP_SOURCE_FILES.values()), GROUP_METADATA, GROUP_ENGINE]:
+            target = self.repo / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / relative, target)
+        self.git_env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+        self.git_env.update({"GIT_CONFIG_GLOBAL": "/dev/null", "GIT_CONFIG_NOSYSTEM": "1",
+                             "GIT_CONFIG_SYSTEM": "/dev/null", "GIT_CONFIG_COUNT": "0",
+                             "GIT_TERMINAL_PROMPT": "0", "GIT_NO_REPLACE_OBJECTS": "1"})
+        self.git("init", "--quiet")
+        self.git("add", "--", ".")
+        self.git("-c", "user.name=Jason Lee", "-c", "user.email=fixture@localhost",
+                 "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "test: installer source custody fixture")
         sources = self.repo / EVIDENCE
         sources.mkdir(parents=True)
         for name in PACKAGE_FILES:
@@ -192,6 +223,10 @@ class PrepareNativeBrowserTests(unittest.TestCase):
             "DATABASE_URL": "postgres://fixture:" + SECRET + "@localhost/unused",
         })
 
+    def git(self, *arguments):
+        return subprocess.check_output(["git", "-C", str(self.repo), *arguments],
+                                       env=self.git_env, text=True).strip()
+
     def invoke(self, env=None):
         result = subprocess.run(["bash", str(self.script)], cwd=self.repo,
                                 env=self.env if env is None else env,
@@ -216,11 +251,12 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         raw = self.env_file.read_bytes()
         self.assertTrue(raw.startswith(SENTINEL))
         lines = raw[len(SENTINEL):].decode().splitlines()
-        self.assertEqual(12, len(lines), "only twelve public browser settings may be published")
+        self.assertEqual(14, len(lines), "exactly twelve browser and two Group descriptor settings are published")
         pairs = [line.split("=", 1) for line in lines]
         self.assertTrue(all(len(pair) == 2 for pair in pairs))
         values = dict(pairs)
         expected_names = {family + "_" + suffix for family in FAMILIES for suffix in ("DRIVER", "SHA256", "OUTPUT")}
+        expected_names |= GROUP_SETTINGS
         self.assertEqual(expected_names, set(values))
         stage = Path(values["CONSOLE_BROWSER_JOURNEY_DRIVER"]).parent
         self.assertTrue(stage.is_absolute())
@@ -272,7 +308,48 @@ class PrepareNativeBrowserTests(unittest.TestCase):
             self.assertEqual(expected, evidence["digests"][key])
         self.assertEqual(DRIVERS, evidence["digests"]["drivers"])
         self.assertEqual(COMPANIONS, evidence["digests"]["companions"])
+        self.verify_group_descriptor(values, stage)
         return stage
+
+    def verify_group_descriptor(self, values, stage):
+        self.assertTrue(GROUP_SETTINGS <= set(values), "GROUP_SOURCE_DESCRIPTOR_SETTINGS_REQUIRED")
+        descriptor_path = Path(values["CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR"])
+        self.assertTrue(descriptor_path.is_absolute() and descriptor_path.is_relative_to(stage))
+        def regular(path):
+            self.assertTrue(path.is_absolute())
+            for ancestor in [path, *path.parents]:
+                self.assertFalse(ancestor.is_symlink(), "symlink in source custody")
+            self.assertTrue(path.is_file() and path.stat().st_size <= 1_048_576)
+            return path.read_bytes()
+        raw = regular(descriptor_path)
+        self.assertNotIn(SECRET.encode(), raw)
+        self.assertRegex(values["CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), values["CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256"])
+        value = json.loads(raw)
+        self.assertEqual("console.native_group_process_installed_test_source.v1", value["schema"])
+        self.assertEqual("native-group-process-v1", value["schema_id"])
+        self.assertEqual(self.git("rev-parse", "HEAD"), value["source_candidate"])
+        self.assertEqual(str(self.repo), value["git_root"])
+        self.assertEqual("4.13.0", value["cedar_sdk_version"])
+        self.assertEqual("4.5", value["cedar_language_version"])
+        self.assertEqual(1, value["registration_manifest_version"])
+        self.assertEqual(GROUP_ACTIONS, value["registered_actions"])
+        self.assertEqual(3, len(value["sources"]))
+        self.assertEqual(set(GROUP_SOURCE_FILES), {source["key"] for source in value["sources"]})
+        for source in value["sources"]:
+            relative, expected = GROUP_SOURCE_FILES[source["key"]]
+            self.assertEqual(relative, source["repository_path"])
+            self.assertEqual(expected, source["sha256"])
+            self.assertEqual("\\x" + expected, value[source["key"]])
+            object_name = value["source_candidate"] + ":" + relative
+            self.assertEqual(self.git("rev-parse", object_name), source["git_blob"])
+            staged = Path(source["staged_path"])
+            self.assertTrue(staged.is_relative_to(stage))
+            self.assertEqual((self.repo / relative).read_bytes(), regular(staged))
+            actual_blob = subprocess.check_output(["git", "-C", str(self.repo), "show", object_name], env=self.git_env)
+            self.assertEqual(actual_blob, regular(staged))
+            self.assertEqual(expected, sha256(staged))
+        return value
 
     def test_real_archive_staging_is_pinned_fresh_and_publishes_only_after_success(self):
         stages = []
@@ -287,6 +364,74 @@ class PrepareNativeBrowserTests(unittest.TestCase):
                 self.assertEqual(1, kinds.count(required), kinds)
         self.assertNotEqual(stages[0], stages[1], "second invocation reused prior evidence or outputs")
         self.assertEqual(DRIVERS["account.cjs"], sha256(stages[0] / "account.cjs"))
+
+    def test_group_descriptor_is_candidate_bound_and_published_only_after_success(self):
+        result = self.invoke()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        values = dict(line.split("=", 1) for line in self.env_file.read_text().splitlines()[1:])
+        self.assertTrue(GROUP_SETTINGS <= set(values), "GROUP_SOURCE_DESCRIPTOR_SETTINGS_REQUIRED")
+        stage = self.verify_stage()
+        first = Path(values["CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR"]).read_bytes()
+        self.env_file.write_bytes(SENTINEL)
+        result = self.invoke()
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        next_stage = self.verify_stage()
+        next_values = dict(line.split("=", 1) for line in self.env_file.read_text().splitlines()[1:])
+        self.assertNotEqual(stage, next_stage)
+        self.assertNotEqual(first, Path(next_values["CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR"]).read_bytes())
+
+    def test_group_missing_dirty_and_symlinked_sources_publish_nothing(self):
+        for relative in [*(value[0] for value in GROUP_SOURCE_FILES.values()), GROUP_METADATA, GROUP_ENGINE]:
+            source = self.repo / relative
+            original = source.read_bytes()
+            for corruption in ("missing", "dirty", "symlink"):
+                with self.subTest(source=relative, corruption=corruption):
+                    self.env_file.write_bytes(SENTINEL)
+                    self.events.write_text("")
+                    source.unlink()
+                    if corruption == "dirty":
+                        source.write_bytes(original + b"\nSOURCE_CUSTODY_CORRUPTION\n")
+                    elif corruption == "symlink":
+                        external = self.scratch / "external-source"
+                        external.write_bytes(original)
+                        source.symlink_to(external)
+                    try:
+                        self.assert_failure()
+                    finally:
+                        if source.exists() or source.is_symlink():
+                            source.unlink()
+                        source.write_bytes(original)
+
+    def test_group_committed_metadata_corruption_publishes_nothing(self):
+        source = self.repo / GROUP_METADATA
+        original = source.read_text()
+        corruptions = [
+            ("schema-digest", "c711017368596094", "c711017368596095"),
+            ("action-id", "47c0f0fe-92d6-473a-b0b5-1c0d218f919f", "47c0f0fe-92d6-473a-b0b5-1c0d218f919e"),
+            ("sdk", "'4.13.0'", "'4.14.0'"),
+            ("language", "'4.5'", "'4.6'"),
+            ("manifest", "'registration_manifest_version',1", "'registration_manifest_version',2"),
+        ]
+        for name, before, after in corruptions:
+            with self.subTest(corruption=name):
+                self.assertIn(before, original)
+                self.env_file.write_bytes(SENTINEL)
+                source.write_text(original.replace(before, after, 1))
+                self.git("add", "--", GROUP_METADATA)
+                self.git("-c", "user.name=Jason Lee", "-c", "user.email=fixture@localhost",
+                         "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "test: corrupt source fixture")
+                try:
+                    self.assert_failure()
+                finally:
+                    source.write_text(original)
+                    self.git("add", "--", GROUP_METADATA)
+                    self.git("-c", "user.name=Jason Lee", "-c", "user.email=fixture@localhost",
+                             "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "test: restore source fixture")
+
+    def test_late_package_version_failure_publishes_no_browser_or_group_settings(self):
+        self.env["CONSOLE_BROWSER_INSTALL_TEST_PACKAGE_VERSION"] = "0.0.0"
+        self.assert_failure()
+        self.assertEqual(["npm-ci", "install-deps", "curl", "unzip"], [call["kind"] for call in self.calls()])
 
     def test_unsupported_platform_publishes_nothing(self):
         self.env["CONSOLE_BROWSER_INSTALL_TEST_SYSTEM"] = "FreeBSD"

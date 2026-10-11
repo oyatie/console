@@ -1951,9 +1951,33 @@ class BrowserIntegrationVariantsTests(unittest.TestCase):
             matches = [(index, step) for index, step in enumerate(steps) if step.get("name") == wanted["name"]]
             self.assertEqual(1, len(matches), "REAL_NATIVE_BROWSER_PRODUCER_REQUIRED: " + wanted["name"])
             index, actual = matches[0]
+            if wanted.get("id") == "native-browser-evidence":
+                retained = wanted["with"]["path"]
+                actual_path = actual["with"]["path"]
+                self.assertEqual(26, len(retained.splitlines()))
+                self.assertTrue(actual_path.startswith(retained), "original public uploader prefix changed")
+                additional = actual_path[len(retained):]
+                self.assertEqual(201, len(additional.splitlines()), "all inherited evidence paths required")
+                # Independently frozen from reviewed coverage-and-evidence-v2.json.
+                self.assertEqual("b994df9ec64c972a7ccb9ccc16eba21bf0e191b19ac7ba1dbbaa43c7a2e9599c",
+                                 hashlib.sha256(additional.encode()).hexdigest(),
+                                 "exact ordered whole-path conditional upload suffix required")
+                wanted = {**wanted, "with": {**wanted["with"], "path": retained + additional}}
             self.assertEqual(wanted, actual, "browser producer execution contract differs")
             producer_indices.append(index)
-        self.assertEqual(list(range(producer_indices[0], producer_indices[0] + 6)), producer_indices)
+        inherited = [(index, step) for index, step in enumerate(steps)
+                     if step.get("name") == "Native inherited browser histories"]
+        self.assertEqual(1, len(inherited), "REAL_NATIVE_INHERITED_BROWSER_PRODUCER_REQUIRED")
+        inherited_index, inherited_step = inherited[0]
+        self.assertEqual(expected[1]["if"], inherited_step.get("if"))
+        self.assertEqual(".", inherited_step.get("working-directory"))
+        self.assertIsInstance(inherited_step.get("run"), str)
+        self.assertTrue(inherited_step["run"].strip())
+        self.assertEqual({"name", "if", "working-directory", "run"}, set(inherited_step),
+                         "inherited producer cannot add soft-failure or environment overrides")
+        # The JavaScript CI suite executes and corrupts this actual run body.
+        producer_indices.insert(-1, inherited_index)
+        self.assertEqual(list(range(producer_indices[0], producer_indices[0] + 7)), producer_indices)
         self.assertEqual("Collect failures", steps[producer_indices[-1] + 1]["name"])
         prerequisite = root / "tools/browser/prepare_native_browser.sh"
         self.assertTrue(prerequisite.is_file(), "PINNED_BROWSER_PREREQUISITE_PRODUCER_REQUIRED")

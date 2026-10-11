@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
   copyFileSync,
+  chmodSync,
+  existsSync,
+  realpathSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -1154,9 +1157,9 @@ describe("CI preflight contract", () => {
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
     // +1 required Python lane-harness proof; every old run step remains covered.
-    assert.equal(runStepCount, 138, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 138*3 = 414.
-    assert.equal(mutationCount, 414, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 139, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 139*3 = 417.
+    assert.equal(mutationCount, 417, "exhaustive bypass matrix must not shrink");
   });
 
   it("runs the Python lane harness beside JavaScript in required preflight", () => {
@@ -2870,6 +2873,80 @@ describe("CI preflight contract", () => {
   });
 });
 
+// Exact V3 design e084a1fe…; independent frozen test data, never imported from a producer.
+const inheritedBrowserStepName = "Native inherited browser histories";
+const inheritedBrowserGuard = "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
+const inheritedCompanyPictures = Object.freeze([
+  "01-public.png", "02-terms.png", "03-account-enrolled.png",
+  "04-company-created.png", "company-workspace-desktop.png", "05-company-workspace.png",
+]);
+const inheritedPolicyPictures = Object.freeze([
+  ...inheritedCompanyPictures,
+  "06-policy-install-preflight.png", "policy-before-grant.png", "policy-grant-reopened.png",
+  "policy-active-320.png", "policy-revoked-reopened.png", "payroll-navigation-receipt-320.png",
+  "payroll-navigation-workspace-320.png", "payroll-navigation-workspace-desktop.png", "payroll_read.png",
+  "payroll_reopened.png", "payroll_denied.png", "policy-administration-retained.png",
+]);
+const inheritedPeoplePictures = Object.freeze([
+  ...inheritedPolicyPictures,
+  "people-directory-320.png", "people-workspace-next-task.png", "people-workspace-next-task-320.png",
+  "people-registration-desktop.png", "people-pending-320.png", "people-detail-desktop.png",
+  "people-detail-320.png", "people-search-match-320.png", "people-search-miss-320.png",
+  "react-people-delayed-ime-input-320.png", "react-people-delayed-scroll-320.png", "react-people-precommit-focus-320.png",
+  "react-people-failed-load-320.png", "react-people-failed-render-320.png", "react-people-decoder-registration-unmodified-320.png",
+  "react-people-decoder-registration-invalid-json-320.png", "react-people-decoder-registration-unknown-version-320.png", "react-people-decoder-registration-extra-envelope-field-320.png",
+  "react-people-decoder-registration-unknown-page-kind-320.png", "react-people-decoder-registration-extra-page-field-320.png", "react-people-decoder-registration-extra-scope-field-320.png",
+  "react-people-decoder-registration-invalid-scope-boolean-320.png", "react-people-decoder-registration-malformed-company-id-320.png", "react-people-decoder-registration-nil-company-id-320.png",
+  "react-people-decoder-registration-uppercase-company-id-320.png", "react-people-decoder-registration-malformed-command-id-320.png", "react-people-decoder-registration-malformed-expectation-id-320.png",
+  "react-people-decoder-registration-numeric-revision-320.png", "react-people-decoder-registration-noncanonical-revision-320.png", "react-people-decoder-registration-large-revision-string-320.png",
+  "react-people-decoder-registration-unicode-scalar-boundary-320.png", "react-people-decoder-registration-unicode-scalar-overflow-320.png", "react-people-decoder-registration-oversized-name-320.png",
+  "react-people-decoder-registration-oversized-number-320.png", "react-people-decoder-registration-extra-form-field-320.png", "react-people-decoder-registration-extra-expectation-field-320.png",
+  "react-people-decoder-registration-invalid-nullable-field-320.png", "react-people-decoder-registration-invalid-proof-type-320.png", "react-people-decoder-registration-registration-conflict-valid-320.png",
+  "react-people-decoder-registration-registration-conflict-extra-field-320.png", "react-people-decoder-registration-request-not-visible-valid-320.png", "react-people-decoder-registration-request-not-visible-extra-field-320.png",
+  "react-people-decoder-registration-uncertain-valid-320.png", "react-people-decoder-registration-uncertain-extra-field-320.png", "react-people-decoder-registration-hostile-text-320.png",
+  "react-people-decoder-terminal-unmodified-320.png", "react-people-decoder-terminal-unknown-outcome-kind-320.png", "react-people-decoder-terminal-extra-terminal-field-320.png",
+  "react-people-decoder-terminal-terminal-proof-injection-320.png", "react-people-decoder-terminal-rejected-valid-320.png", "react-people-decoder-terminal-rejected-proof-injection-320.png",
+  "react-people-decoder-terminal-conflicting-valid-320.png", "react-people-decoder-terminal-conflicting-proof-injection-320.png", "react-people-decoder-terminal-cancelled-valid-320.png",
+  "react-people-decoder-terminal-cancelled-proof-injection-320.png", "react-people-decoder-terminal-expired-valid-320.png", "react-people-decoder-terminal-expired-proof-injection-320.png",
+  "react-people-decoder-terminal-malformed-terminal-id-320.png", "react-people-decoder-directory-unmodified-320.png", "react-people-decoder-directory-nullable-record-fields-320.png",
+  "react-people-decoder-directory-oversized-record-collection-320.png", "react-people-decoder-directory-malformed-record-id-320.png", "react-people-decoder-directory-extra-record-field-320.png",
+  "react-people-decoder-directory-numeric-record-revision-320.png", "react-people-decoder-directory-invalid-record-nullable-field-320.png", "react-people-decoder-directory-invalid-after-cursor-320.png",
+  "react-people-decoder-directory-unsafe-next-href-320.png", "react-people-decoder-directory-detail-valid-320.png", "react-people-decoder-directory-detail-extra-field-320.png",
+]);
+const inheritedHandoffPictures = Object.freeze([
+  "01-own-account-reference.png", "02-selected-administrator.png", "03-operator-creation-history.png",
+  "04-administrator-company-reopened.png",
+]);
+const inheritedGroupPictures = Object.freeze([
+  ...inheritedCompanyPictures,
+  "company-policy-root-320.png", "company-policy-root-desktop.png",
+]);
+function inheritedCase(tag, exact_leaf, actual_output_basename, public_output_variable, pictures, declared = pictures) {
+  return Object.freeze({tag, exact_leaf, actual_output_basename, public_output_variable, public_files: ["result.json", "owner-receipt.json", ...pictures], result_declared_screenshots: declared});
+}
+const inheritedBrowserCases = Object.freeze([
+  inheritedCase("people", "account_browser::deployment_operator_designation::company_setup::native_people_real_browser_register_reopen_and_revoke", "requested", "CONSOLE_INHERITED_PEOPLE_OUTPUT", inheritedPeoplePictures),
+  inheritedCase("policy", "account_browser::deployment_operator_designation::company_setup::native_company_real_browser_policy_grant_payroll_reopen_revoke", "requested", "CONSOLE_INHERITED_POLICY_OUTPUT", inheritedPolicyPictures),
+  inheritedCase("policy-startup", "account_browser::deployment_operator_designation::company_setup::native_policy_startup_tests::native_policy_verified_startup_drives_browser_current_reader_after_epoch_advance", "requested", "CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT", inheritedPolicyPictures),
+  inheritedCase("account-controller", "account_browser::deployment_operator_designation::company_setup::native_account_controller_browser::real_browser_account_controller_promotion_and_frozen_administrator", "account-controller", "CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT", [...inheritedHandoffPictures, "controller-native-first.png", "controller-react-first.png", "controller-keyboard-before-react.png", "controller-autofill-before-react.png", "controller-eventless-value-before-react.png", "controller-ime-before-react.png", "controller-preclaim-focus.png", "controller-partial-bind-rollback.png", "controller-capability-denied.png", "controller-freeze-at-csrf.png"], inheritedHandoffPictures),
+  inheritedCase("account-handoff", "account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_own_reference_selects_independent_company_administrator", "account-company-handoff", "CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT", inheritedHandoffPictures),
+  inheritedCase("company-manager", "account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_company_information_manager_current_uses_actual_nonoperator_manager_without_effects", "company-information-manager-current", "CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT", inheritedHandoffPictures),
+  inheritedCase("group-process", "account_browser::deployment_operator_designation::company_setup::native_group_process_real_browser_adopt_reopen_suspend_replace", "requested", "CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT", [...inheritedGroupPictures, "group-process-adopt-320.png", "group-process-adopt-desktop.png", "group-process-adopted.png", "group-process-suspended.png", "group-process-replacement-320.png", "group-process-replaced.png", "group-process-own-receipt-after-revoke.png"]),
+  inheritedCase("group-correction", "account_browser::deployment_operator_designation::company_setup::native_group_invalid_form_real_browser_correct_same_command_and_reopen", "requested", "CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT", [...inheritedGroupPictures, "group-correction-invalid-320.png", "group-correction-focused-320.png", "group-correction-corrected-320.png", "group-correction-adopted.png", "group-correction-own-receipt-after-revoke.png"]),
+  inheritedCase("group-held", "account_browser::deployment_operator_designation::company_setup::native_group_navigation_held_real_browser_transport_fence", "requested", "CONSOLE_INHERITED_GROUP_HELD_OUTPUT", [...inheritedGroupPictures, "group-held-form-before-correction-320.png", "group-held-form-submission-interrupted.png"]),
+]);
+const inheritedPureRustControls = Object.freeze(["account_browser::deployment_operator_designation::company_setup::policy_audit_oracle_rejects_missing_extra_wrong_fields_and_sql_json_null_confusion", "account_browser::deployment_operator_designation::company_setup::policy_participant_content_oracle_rejects_same_cardinality_corruption", "account_browser::deployment_operator_designation::company_setup::policy_browser_wire_expectation_matches_independent_frozen_vectors", "account_browser::deployment_operator_designation::company_setup::native_people_browser::people_effect_census_requires_every_effect_and_preserves_unrelated_history", "account_browser::deployment_operator_designation::company_setup::native_people_browser::native_directory_shape_oracle_rejects_employment_facts_and_false_provenance", "account_browser::deployment_operator_designation::company_setup::native_people_browser::native_receipt_linkage_oracle_rejects_same_count_wrong_identity_or_digest", "account_browser::deployment_operator_designation::company_setup::native_people_browser::people_action_oracle_uses_actual_dispatch_target_column", "account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_projection_rejects_noncanonical_or_mismatched_values"]);
+const inheritedWireControl = "account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_wire_matches_exact_postgresql_json_text";
+const inheritedNodeSuites = Object.freeze([
+  "tools/browser/account-controller.test.cjs", "tools/browser/account-company-handoff.test.cjs",
+  "tools/browser/account-company-handoff-protocol.test.cjs", "tools/browser/company-information-manager-current.test.cjs",
+  "tools/browser/group-invalid-form.test.cjs", "tools/browser/people-journey.test.cjs",
+]);
+function inheritedUploadExpressions() {
+  return inheritedBrowserCases.flatMap(row => row.public_files.map(file =>
+    "${{ env." + row.public_output_variable + " && format('{0}/" + file + "', env." + row.public_output_variable + ") || '' }}"));
+}
+
 // Retention qualification is separate from browser/product correctness.
 describe("native browser evidence retention", () => {
   const families = [
@@ -2879,25 +2956,32 @@ describe("native browser evidence retention", () => {
     ["Native payroll hydration browser", "CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "authorized-before.png", "authorized-filter-1.png", "authorized-filter-2.png", "authorized-filter-3.png"]],
   ];
 
-  it("retains exactly26 public files in one pinned action before failure collection", () => {
+  it("preserves original26 entries and retains exactly227 public files in one pinned action", () => {
     const model = yaml.load(workflow);
     const steps = model.jobs.backend.steps;
     assert.equal(Object.keys(model.jobs).length, 17);
     const uploads = steps.filter((step) => step.uses?.startsWith("actions/upload-artifact@"));
     assert.equal(uploads.length, 1);
     const step = uploads[0];
-    assert.equal(steps.indexOf(step), 32);
+    assert.equal(steps.indexOf(step), 33);
     assert.equal(steps[31].name, "Native payroll hydration browser");
-    assert.equal(steps[33].name, "Collect failures");
+    assert.equal(steps[32].name, inheritedBrowserStepName);
+    assert.equal(steps[34].name, "Collect failures");
     assert.equal(step.id, "native-browser-evidence");
     assert.equal(step.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
     assert.equal(step.if, "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}");
     const paths = families.flatMap(([, variable, files]) => files.map((file) => `\${{ env.${variable} }}/${file}`));
     assert.equal(paths.length, 26);
     assert.equal(new Set(paths).size, 26);
+    const additional = inheritedUploadExpressions();
+    assert.equal(additional.length, 201);
+    const expanded = [...paths, ...additional];
+    assert.equal(expanded.length, 227);
+    assert.equal(new Set(expanded).size, 227);
+    assert.equal(step.with.path.slice(0, paths.join("\n").length + 1), paths.join("\n") + "\n");
     assert.deepEqual(step.with, {
       name: "native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}",
-      path: paths.join("\n") + "\n",
+      path: expanded.join("\n") + "\n",
       "if-no-files-found": "error",
       "retention-days": 7,
       "include-hidden-files": false,
@@ -3379,4 +3463,418 @@ it("Navigation V2 machinery executes in CI with the existing pinned browser prer
     const {failures} = evaluateCiPreflight(changed);
     assert.ok(failures.length > 0, "preflight must reject " + label);
   }
+});
+
+
+// These fixtures qualify CI scheduling/retention machinery only, never the mocked owners.
+function inheritedStep(source = workflow) {
+  const steps = yaml.load(source).jobs.backend.steps;
+  const matches = steps.filter(step => step.name === inheritedBrowserStepName);
+  assert.equal(matches.length, 1, "NINE_INHERITED_BROWSER_HISTORIES_NOT_SCHEDULED");
+  assert.equal(matches[0].if, inheritedBrowserGuard);
+  assert.equal(matches[0]["working-directory"], ".");
+  assert.ok(!Object.hasOwn(matches[0], "continue-on-error"));
+  return matches[0];
+}
+function guardedInheritedUploads(source, values) {
+  const action = yaml.load(source).jobs.backend.steps.find(step => step.id === "native-browser-evidence");
+  const lines = action.with.path.trimEnd().split("\n");
+  assert.equal(lines.length, 227);
+  return lines.slice(26).map(expression => {
+    const match = /^\$\{\{ env\.([A-Z_]+) && format\('\{0\}\/([a-z0-9_.-]+)', env\.\1\) \|\| '' \}\}$/.exec(expression);
+    assert.ok(match, "INHERITED_UPLOAD_MUST_CONDITION_THE_WHOLE_PATH");
+    return values[match[1]] ? values[match[1]] + "/" + match[2] : "";
+  });
+}
+function inheritedEvidenceGuard(step) {
+  const begin = "# Begin inherited evidence guard", end = "# End inherited evidence guard";
+  assert.equal(step.run.split(begin).length, 2);
+  assert.equal(step.run.split(end).length, 2);
+  const source = step.run.slice(step.run.indexOf(begin) + begin.length, step.run.indexOf(end));
+  assert.match(source, /require_inherited_browser_evidence\s*\(\s*\)/);
+  return source;
+}
+function readInheritedSettings(file) {
+  return Object.fromEntries(readFileSync(file, "utf8").trimEnd().split("\n").map(line => {
+    const separator = line.indexOf("="); assert.ok(separator > 0);
+    return [line.slice(0, separator), line.slice(separator + 1)];
+  }));
+}
+function makeInheritedFixture() {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "console-inherited-ci-")));
+  const stage = mkdtempSync(join(root, "console-native-browser."));
+  mkdirSync(join(stage, "outputs")); mkdirSync(join(root, "tools")); mkdirSync(join(root, "tools", "buck"));
+  mkdirSync(join(root, "tools", "browser")); mkdirSync(join(root, "bin"));
+  const envFile = join(root, "github.env"), events = join(root, "events.jsonl");
+  writeFileSync(events, "");
+  const original = [
+    ["CONSOLE_BROWSER_JOURNEY_OUTPUT", ["result.json","owner-receipt.json","01-public.png","02-terms.png","03-account-enrolled.png","04-sign-in.png","05-account-returned.png"]],
+    ["CONSOLE_COMPANY_BROWSER_OUTPUT", ["result.json","owner-receipt.json","01-public.png","02-terms.png","03-account-enrolled.png","04-company-created.png","05-company-workspace.png"]],
+    ["CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT", ["result.json","owner-receipt.json","01-public.png","02-terms.png","03-account-enrolled.png","04-company-preview-input-preserved.png"]],
+    ["CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json","owner-receipt.json","authorized-before.png","authorized-filter-1.png","authorized-filter-2.png","authorized-filter-3.png"]],
+  ];
+  const originalValues = {};
+  for (const [variable, files] of original) {
+    const output = join(stage, "outputs", variable); mkdirSync(output); originalValues[variable] = output;
+    for (const file of files) writeFileSync(join(output, file), "public guard fixture\n");
+  }
+  writeFileSync(envFile, Object.entries(originalValues).map(([key,value]) => key + "=" + value).join("\n") + "\n");
+  copyFileSync(new URL("../tools/browser/company.cjs", import.meta.url), join(stage, "company.cjs"));
+  const helper = new URL("../tools/browser/publish-history-output.cjs", import.meta.url);
+  if (existsSync(helper)) copyFileSync(helper, join(root, "tools/browser/publish-history-output.cjs"));
+  const fixtureData = join(root, "fixture.json");
+  writeFileSync(fixtureData, JSON.stringify({histories: inheritedBrowserCases, pure: inheritedPureRustControls, wire: inheritedWireControl}));
+  const mock = join(root, "mock.cjs");
+  writeFileSync(mock, String.raw`
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+const [kind,...args]=process.argv.slice(2), data=JSON.parse(fs.readFileSync(process.env.INHERITED_FIXTURE_DATA));
+const event=value=>fs.appendFileSync(process.env.INHERITED_FIXTURE_EVENTS,JSON.stringify(value)+'\n');
+if(kind==='node') {
+  if(args[0]==='--test') {event({kind:'node-controls',suites:args.slice(1)});process.exit(process.env.INHERITED_FIXTURE_FAILURE==='node-control'?31:0);}
+  const result=spawnSync(process.execPath,args,{env:process.env,stdio:'inherit'});process.exit(result.status??99);
+}
+const leaf=kind==='wrapper'?process.env.CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT:args.at(-1);
+if(kind==='buck'&&args.includes('--list')) {
+  event({kind:'discovery',leaf});
+  if(process.env.INHERITED_FIXTURE_FAILURE==='zero-discovery') {process.stdout.write('0 tests, 0 benchmarks\n');process.exit(0);}
+  process.stdout.write(leaf+': test\n\n1 test, 0 benchmarks\n');process.exit(0);
+}
+if(kind==='buck') {event({kind:'pure-control',leaf,database_exposed:Object.hasOwn(process.env,'DATABASE_URL')});process.exit(process.env.INHERITED_FIXTURE_FAILURE==='rust-control'?32:0);}
+const row=data.histories.find(row=>row.exact_leaf===leaf);
+event({kind:'postgres',leaf,target:args.at(-1),requested:process.env.CONSOLE_COMPANY_BROWSER_OUTPUT});
+if(!row) {if(leaf!==data.wire)process.exit(34);process.exit(0);}
+const requested=process.env.CONSOLE_COMPANY_BROWSER_OUTPUT;
+const output=path.join(path.dirname(requested),row.actual_output_basename);
+if(fs.existsSync(output)||fs.existsSync(requested))process.exit(35);
+fs.mkdirSync(output,{mode:0o700});
+if(process.env.INHERITED_FIXTURE_FAILURE==='first-history') {fs.writeFileSync(path.join(output,'result.json'),'public partial guard fixture\n');process.exit(33);}
+const result={status:'BROWSER_LEAF_PASSED',screenshots:[...row.result_declared_screenshots],cleanup:{confirmed:true},controller:{records:['native-first','react-first','keyboard-before-react','autofill-before-react','eventless-value-before-react','ime-before-react','preclaim-focus','partial-bind-rollback','capability-denied','freeze-at-csrf'].map(name=>({name}))}};
+const failure=process.env.INHERITED_FIXTURE_FAILURE;
+if(row.tag==='people') {
+  if(failure==='wrong-status')result.status='BROWSER_LEAF_FAILED';
+  if(failure==='cleanup-false')result.cleanup.confirmed=false;
+  if(failure==='cleanup-missing')delete result.cleanup;
+  if(failure==='screenshots-missing')result.screenshots.pop();
+  if(failure==='screenshots-duplicate')result.screenshots[1]=result.screenshots[0];
+  if(failure==='screenshots-extra')result.screenshots.push('private-unlisted.png');
+  if(failure==='screenshots-wrong-type')result.screenshots='not-an-array';
+}
+if(row.tag==='account-controller') {
+  if(failure==='controller-missing')result.controller.records.pop();
+  if(failure==='controller-duplicate')result.controller.records[1]=result.controller.records[0];
+  if(failure==='controller-wrong-name')result.controller.records[0].name='unreviewed';
+  if(failure==='controller-wrong-type')result.controller.records='not-an-array';
+}
+for(const file of row.public_files) fs.writeFileSync(path.join(output,file),file==='result.json'?(failure==='malformed-result'&&row.tag==='people'?'not-json':JSON.stringify(result)):'public guard fixture\n');
+process.exit(0);
+`);
+  const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
+  for (const [file, kind] of [["bin/node", "node"], ["tools/buck2", "buck"], ["tools/buck/test_needs_postgres.sh", "wrapper"]]) {
+    const destination = join(root, file);
+    writeFileSync(destination, "#!/bin/sh\nexec " + quote(process.execPath) + " " + quote(mock) + " " + quote(kind) + ' "$@"\n');
+    chmodSync(destination, 0o700);
+  }
+  const env = {PATH: join(root,"bin") + ":" + process.env.PATH, RUNNER_TEMP:root, GITHUB_ENV:envFile,
+    CONSOLE_COMPANY_BROWSER_DRIVER:join(stage,"company.cjs"), ...originalValues,
+    DATABASE_URL:'postgres://guard-fixture.invalid/not-a-product-database',
+    INHERITED_FIXTURE_DATA:fixtureData, INHERITED_FIXTURE_EVENTS:events};
+  return {root,stage,envFile,events,env,originalValues,
+    run: (body, failure="") => spawnSync("/bin/bash", ["-euo", "pipefail", "-c", body], {
+      cwd:root, env:{...env, INHERITED_FIXTURE_FAILURE:failure}, encoding:"utf8", timeout:20000}),
+    dispose: () => rmSync(root,{recursive:true,force:true})};
+}
+
+describe("inherited browser coverage and safe failure retention", () => {
+  it("requires all nine inherited browser histories with fresh evidence", () => {
+    const step = inheritedStep(), fixture = makeInheritedFixture();
+    try {
+      const result = fixture.run(step.run);
+      assert.equal(result.status,0,result.stderr);
+      const events = readFileSync(fixture.events,"utf8").trimEnd().split("\n").map(JSON.parse);
+      const discovered = events.filter(row=>row.kind==='discovery').map(row=>row.leaf);
+      assert.deepEqual(discovered.filter(leaf=>inheritedPureRustControls.includes(leaf)),inheritedPureRustControls);
+      for (const leaf of [...inheritedPureRustControls,inheritedWireControl,...inheritedBrowserCases.map(row=>row.exact_leaf)])
+        assert.equal(discovered.filter(value=>value===leaf).length,1,"exact one-case discovery required");
+      assert.deepEqual(events.filter(row=>row.kind==='pure-control').map(row=>row.leaf),inheritedPureRustControls);
+      assert.ok(events.filter(row=>row.kind==='pure-control').every(row=>!row.database_exposed),
+        'database-free controls cannot receive database credentials');
+      const postgres = events.filter(row=>row.kind==='postgres');
+      assert.deepEqual(postgres.map(row=>row.leaf),[inheritedWireControl,...inheritedBrowserCases.map(row=>row.exact_leaf)]);
+      assert.ok(postgres.every(row=>row.target==='//tools/buck:app-auth-rest-browser-pg'));
+      assert.deepEqual(events.filter(row=>row.kind==='node-controls').flatMap(row=>row.suites),inheritedNodeSuites);
+      const values = readInheritedSettings(fixture.envFile);
+      assert.equal(new Set(inheritedBrowserCases.map(row=>values[row.public_output_variable])).size,9);
+      for (const row of inheritedBrowserCases) {
+        const output=values[row.public_output_variable]; assert.ok(output.startsWith(fixture.stage+'/outputs/'));
+        assert.ok(output.endsWith('/'+row.actual_output_basename));
+        for (const file of row.public_files) assert.ok(lstatSync(join(output,file)).isFile());
+      }
+      assert.equal(guardedInheritedUploads(workflow,values).filter(Boolean).length,201);
+    } finally {fixture.dispose();}
+  });
+
+  it("keeps original evidence safe after early Node Rust and first-history failures", () => {
+    const step=inheritedStep();
+    for(const failure of ['node-control','rust-control','first-history','zero-discovery']) {
+      const fixture=makeInheritedFixture();
+      try {
+        const result=fixture.run(step.run,failure); assert.notEqual(result.status,0,failure);
+        const values=readInheritedSettings(fixture.envFile);
+        for(const [variable,original] of Object.entries(fixture.originalValues)) assert.equal(values[variable],original);
+        const paths=guardedInheritedUploads(workflow,values).filter(Boolean);
+        if(failure==='first-history') {
+          assert.equal(paths.length,inheritedBrowserCases[0].public_files.length);
+          assert.ok(paths.every(value=>value.startsWith(fixture.stage+'/outputs/')));
+          for(const row of inheritedBrowserCases.slice(1)) assert.equal(values[row.public_output_variable],undefined);
+        } else assert.deepEqual(paths,[],failure+' must publish no upload roots');
+        assert.ok(paths.every(value=>value!== '/result.json'&&value!== '/owner-receipt.json'));
+      } finally {fixture.dispose();}
+    }
+  });
+
+  it("rejects completed histories with corrupt status screenshots controller records or cleanup", () => {
+    const step=inheritedStep();
+    const failures=['wrong-status','cleanup-false','cleanup-missing','screenshots-missing',
+      'screenshots-duplicate','screenshots-extra','screenshots-wrong-type','malformed-result',
+      'controller-missing','controller-duplicate','controller-wrong-name','controller-wrong-type'];
+    for(const failure of failures) {
+      const fixture=makeInheritedFixture();
+      try {
+        const result=fixture.run(step.run,failure); assert.notEqual(result.status,0,failure);
+        const values=readInheritedSettings(fixture.envFile);
+        const failedTag=failure.startsWith('controller-')?'account-controller':'people';
+        const failedIndex=inheritedBrowserCases.findIndex(row=>row.tag===failedTag);
+        assert.ok(values[inheritedBrowserCases[failedIndex].public_output_variable],failure+' executes the corrupt history');
+        for(const row of inheritedBrowserCases.slice(failedIndex+1))
+          assert.equal(values[row.public_output_variable],undefined,failure+' cannot publish later histories');
+      } finally {fixture.dispose();}
+    }
+  });
+
+  it("renders an unset history root empty and rejects an external filename suffix", () => {
+    inheritedStep();
+    const values=Object.fromEntries(inheritedBrowserCases.map(row=>[row.public_output_variable,'/owned/'+row.tag]));
+    for(const row of inheritedBrowserCases) {
+      const absent={...values}; delete absent[row.public_output_variable];
+      const expanded=guardedInheritedUploads(workflow,absent);
+      assert.equal(expanded.filter(value=>value==='').length,row.public_files.length);
+      const bad=workflow.replace(inheritedUploadExpressions().find(value=>value.includes(row.public_output_variable)),
+        '${{ env.'+row.public_output_variable+' }}/result.json');
+      assert.notEqual(bad,workflow);
+      assert.throws(()=>guardedInheritedUploads(bad,absent),/CONDITION_THE_WHOLE_PATH/);
+      assert.ok(evaluateCiPreflight(bad).failures.length>0);
+    }
+  });
+
+  it("executes every added evidence guard against missing empty and symlinked files", () => {
+    const guard=inheritedEvidenceGuard(inheritedStep()), fixture=makeInheritedFixture();
+    let executions=0;
+    try {
+      const target=join(fixture.root,'target'); writeFileSync(target,'public guard target\n');
+      for(const row of inheritedBrowserCases) {
+        const output=join(fixture.stage,'outputs',row.tag); mkdirSync(output);
+        for(const name of row.public_files) writeFileSync(join(output,name),'public guard fixture\n');
+        const run=()=>{executions++;return spawnSync('/bin/bash',['-euo','pipefail','-c',guard+'\nrequire_inherited_browser_evidence "$@"','guard',output,...row.public_files],{env:{PATH:process.env.PATH},encoding:'utf8'});};
+        assert.equal(run().status,0,row.tag+' complete');
+        for(const file of row.public_files) {
+          const path=join(output,file); unlinkSync(path); assert.notEqual(run().status,0,row.tag+' missing '+file);
+          writeFileSync(path,''); assert.notEqual(run().status,0,row.tag+' empty '+file);
+          unlinkSync(path); symlinkSync(target,path); assert.notEqual(run().status,0,row.tag+' symlink '+file);
+          unlinkSync(path); writeFileSync(path,'public guard fixture\n');
+        }
+      }
+      assert.equal(executions,612,'9 positives plus201each missing/empty/symlink');
+    } finally {fixture.dispose();}
+  });
+
+  it("binds the actual publisher to canonical fresh stage roots and rejects malformed inputs", () => {
+    inheritedStep();
+    const fixture=makeInheritedFixture(), helper=join(fixture.root,'tools/browser/publish-history-output.cjs');
+    try {
+      assert.ok(existsSync(helper),'reviewed publisher prerequisite required after schedule exists');
+      for(const row of inheritedBrowserCases) {
+        const parent=mkdtempSync(join(fixture.stage,'outputs','inherited-'+row.tag+'.'));
+        const before=readFileSync(fixture.envFile);
+        const invoke=(tag=row.tag,stage=fixture.stage,selected=parent)=>spawnSync(process.execPath,[helper,tag,stage,selected,fixture.envFile],{env:{PATH:process.env.PATH},encoding:'utf8'});
+        const corruptions=[['unknown-tag',fixture.stage,parent], [row.tag,fixture.stage,''], [row.tag,fixture.stage,'relative'], [row.tag,fixture.stage,'/'], [row.tag,fixture.stage,fixture.root], [row.tag,fixture.stage,parent+'/../'+parent.split('/').at(-1)], [row.tag,fixture.stage,parent+'\nINJECTED=value']];
+        const symlink=parent+'-symlink'; symlinkSync(parent,symlink); corruptions.push([row.tag,fixture.stage,symlink]);
+        const stageLink=parent+'-stage-link'; symlinkSync(fixture.stage,stageLink);
+        corruptions.push([row.tag,stageLink,join(stageLink,'outputs',parent.split('/').at(-1))]);
+        const wrongPrefix=mkdtempSync(join(fixture.stage,'outputs','wrong-'+row.tag+'.'));
+        const publicParent=mkdtempSync(join(fixture.stage,'outputs','inherited-'+row.tag+'.')); chmodSync(publicParent,0o777);
+        const fileParent=parent+'-file'; writeFileSync(fileParent,'not-a-directory');
+        corruptions.push([row.tag,fixture.stage,wrongPrefix], [row.tag,fixture.stage,publicParent],
+          [row.tag,fixture.stage,fileParent], [row.tag,'relative-stage',parent],
+          [row.tag,fixture.stage,join(fixture.stage,'outputs')]);
+        for(const args of corruptions) {assert.notEqual(invoke(...args).status,0);assert.deepEqual(readFileSync(fixture.envFile),before);}
+        const requested=join(parent,'requested'); mkdirSync(requested);
+        assert.notEqual(invoke().status,0); assert.deepEqual(readFileSync(fixture.envFile),before); rmSync(requested,{recursive:true});
+        const output=join(parent,row.actual_output_basename); mkdirSync(output);
+        assert.notEqual(invoke().status,0); assert.deepEqual(readFileSync(fixture.envFile),before); rmSync(output,{recursive:true});
+        assert.equal(invoke().status,0);
+        const after=readFileSync(fixture.envFile); assert.notEqual(invoke().status,0,'duplicate setting'); assert.deepEqual(readFileSync(fixture.envFile),after);
+        assert.equal(readInheritedSettings(fixture.envFile)[row.public_output_variable],output);
+      }
+    } finally {fixture.dispose();}
+  });
+
+  it("rejects omitted duplicated altered skipped and swallowed history execution", () => {
+    inheritedStep();
+    for(const row of inheritedBrowserCases) {
+      const identifier=row.exact_leaf.split('::').at(-1);
+      for(const replacement of ['',identifier+'-wrong',identifier+' '+identifier]) {
+        const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,source=>source.replace(identifier,replacement));
+        assert.ok(evaluateCiPreflight(changed).failures.length>0);
+      }
+    }
+    for(const mutate of [addFalseCondition,addContinueOnError,addRetainedTextEarlyExit]) {
+      const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,mutate);
+      assert.ok(evaluateCiPreflight(changed).failures.length>0);
+    }
+    for (const identifier of [...inheritedPureRustControls.map(leaf=>leaf.split('::').at(-1)), inheritedWireControl.split('::').at(-1), ...inheritedNodeSuites]) {
+      const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,source=>source.replace(identifier,''));
+      assert.ok(evaluateCiPreflight(changed).failures.length>0,'omitted control '+identifier);
+    }
+    for(const selected of ['//tools/buck:app-auth-rest-browser-pg','--list','--exact']) {
+      const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,source=>source.replace(selected,selected+'-wrong'));
+      assert.ok(evaluateCiPreflight(changed).failures.length>0);
+    }
+  });
+});
+
+
+it("inherited guard fixture preserves exact discovery bytes and isolated execution events", () => {
+  const fixture=makeInheritedFixture(), leaf=inheritedPureRustControls[0];
+  const discovery='tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact '+leaf;
+  const pure='tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact '+leaf;
+  const wire='CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT='+inheritedWireControl+
+    ' tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg';
+  try {
+    const listed=fixture.run(discovery); assert.equal(listed.status,0,listed.stderr);
+    assert.equal(listed.stdout,leaf+': test\n\n1 test, 0 benchmarks\n');
+    assert.equal(fixture.run(pure).status,0);
+    assert.equal(fixture.run(wire).status,0);
+    assert.equal(fixture.run('node --test '+inheritedNodeSuites.join(' ')).status,0);
+    const events=readFileSync(fixture.events,'utf8').trimEnd().split('\n').map(JSON.parse);
+    assert.deepEqual(events.map(row=>row.kind),['discovery','pure-control','postgres','node-controls']);
+    assert.equal(events[0].leaf,leaf); assert.equal(events[1].leaf,leaf);
+    assert.equal(events[1].database_exposed,true,'fixture detects inherited database environment');
+    assert.equal(events[2].leaf,inheritedWireControl);
+    assert.deepEqual(events[3].suites,inheritedNodeSuites);
+    assert.equal(fixture.run('env -u DATABASE_URL '+pure).status,0);
+    const withoutDatabase=JSON.parse(readFileSync(fixture.events,'utf8').trimEnd().split('\n').at(-1));
+    assert.equal(withoutDatabase.database_exposed,false,'fixture detects removal before execution');
+    assert.equal(fixture.run(pure,'rust-control').status,32);
+    assert.equal(fixture.run('node --test '+inheritedNodeSuites.join(' '),'node-control').status,31);
+    assert.equal(fixture.run(discovery,'zero-discovery').stdout,'0 tests, 0 benchmarks\n');
+  } finally {fixture.dispose();}
+});
+
+it("whole-path upload oracle rejects root-relative suffixes and preserves complete vectors", () => {
+  const retained = Array.from({length:26},(_,index)=>"retained-original-"+index);
+  const source=yaml.dump({jobs:{backend:{steps:[{id:"native-browser-evidence",with:{path:[...retained,...inheritedUploadExpressions()].join("\n")+"\n"}}]}}}, {lineWidth: -1});
+  const roots=Object.fromEntries(inheritedBrowserCases.map(row=>[row.public_output_variable,"/owned-stage/outputs/"+row.tag+"/"+row.actual_output_basename]));
+  const expected=inheritedBrowserCases.flatMap(row=>row.public_files.map(file=>roots[row.public_output_variable]+"/"+file));
+  assert.deepEqual(guardedInheritedUploads(source,roots),expected);
+  assert.deepEqual(guardedInheritedUploads(source,{}),Array(201).fill(""));
+  for(const row of inheritedBrowserCases) {
+    const missing={...roots};delete missing[row.public_output_variable];
+    assert.equal(guardedInheritedUploads(source,missing).filter(value=>value==="").length,row.public_files.length);
+  }
+  const bad=source.replace(inheritedUploadExpressions()[0],"${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT }}/result.json");
+  assert.notEqual(bad,source);
+  assert.throws(()=>guardedInheritedUploads(bad,{}),/CONDITION_THE_WHOLE_PATH/);
+});
+
+const inheritedGeneratorSelectors = Object.freeze([
+  "tools.buck.impact.test_plan",
+  "tools.buck.test_gen_first_party.GeneratorCliTests",
+  "tools.buck.test_gen_first_party.GeneratorContractsResourceTests",
+  "tools.buck.test_gen_first_party.BrowserIntegrationVariantsTests",
+]);
+const inheritedGeneratorCommand = "python3 -m unittest -v " + inheritedGeneratorSelectors.join(" ");
+const inheritedGeneratorMirror = readFileSync(new URL("./check-ci-preflight.mjs", import.meta.url), "utf8");
+const inheritedGeneratorMirrorPattern = /^const buckImpactPlannerTestCommand = ("[^\n]*");$/gm;
+
+function assertInheritedGeneratorScheduling(source, mirror) {
+  const model = yaml.load(source), steps = model.jobs.preflight.steps;
+  const matches = steps.map((step, index) => ({step, index})).filter(({step}) =>
+    step.name === "Buck impact planner regression" || step.id === "buck-impact-planner");
+  assert.equal(matches.length, 1, "one original protected Buck regression step required");
+  const {step, index} = matches[0];
+  assert.equal(index, 16, "original preflight position must remain unchanged");
+  assert.equal(steps[index - 1].id, "ci-preflight-tests");
+  assert.equal(steps[index + 1].id, "route-inventory");
+  assert.deepEqual(step, {
+    name: "Buck impact planner regression", id: "buck-impact-planner",
+    if: "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}",
+    run: inheritedGeneratorCommand,
+  }, "BROWSER_GENERATOR_CLASS_MUST_EXECUTE_WITH_ALL_ORIGINAL_SELECTORS");
+  const entries = navV2Executables.allWorkflowCommands(source).filter(entry =>
+    entry.tokens.includes(inheritedGeneratorSelectors.at(-1)));
+  assert.equal(entries.length, 1, "exactly one actual complete class executor required");
+  const entry = entries[0], actualStep = yaml.load("      - " + entry.step)[0];
+  assert.equal(entry.job, "preflight");
+  assert.deepEqual(actualStep, step, "executing and inspected step must be identical");
+  assert.equal(entry.gating, true); assert.equal(entry.controlFlow, false);
+  assert.equal(entry.malformed, false); assert.equal(entry.shell, null);
+  const executable = navV2Executables.directExecutable(entry.tokens);
+  assert.equal(executable.malformed, false);
+  assert.deepEqual(executable.tokens, ["python3", "-m", "unittest", "-v", ...inheritedGeneratorSelectors]);
+  const commands = [...mirror.matchAll(inheritedGeneratorMirrorPattern)];
+  assert.equal(commands.length, 1, "one literal exact mirror required");
+  assert.equal(JSON.parse(commands[0][1]), inheritedGeneratorCommand, "CI mirror must retain all selectors exactly");
+}
+
+it("BrowserIntegrationVariantsTests executes in the existing protected Buck regression command", () => {
+  assertInheritedGeneratorScheduling(workflow, inheritedGeneratorMirror);
+});
+
+it("BrowserIntegrationVariantsTests scheduling oracle rejects dark duplicated reordered disabled and inert execution", () => {
+  const original = "python3 -m unittest -v " + inheritedGeneratorSelectors.slice(0, -1).join(" ");
+  const withRun = (source, command) => {
+    const model = yaml.load(source);
+    const matches = model.jobs.preflight.steps.filter(step => step.name === "Buck impact planner regression");
+    assert.equal(matches.length, 1, "one original protected Buck regression step required");
+    matches[0].run = command;
+    return yaml.dump(model, {lineWidth: -1});
+  };
+  const withMirror = (source, command) => source.replace(inheritedGeneratorMirrorPattern,
+    "const buckImpactPlannerTestCommand = " + JSON.stringify(command) + ";");
+  const red = withRun(workflow, original), green = withRun(workflow, inheritedGeneratorCommand);
+  const scheduled = withRun(red, inheritedGeneratorCommand);
+  assert.equal(withRun(green, inheritedGeneratorCommand), scheduled, "RED and GREEN fixtures must converge");
+  assert.equal(withRun(scheduled, inheritedGeneratorCommand), scheduled, "construction must be idempotent");
+  const redMirror = withMirror(inheritedGeneratorMirror, original);
+  const greenMirror = withMirror(inheritedGeneratorMirror, inheritedGeneratorCommand);
+  const mirror = withMirror(redMirror, inheritedGeneratorCommand);
+  assert.equal(withMirror(greenMirror, inheritedGeneratorCommand), mirror, "RED and GREEN mirrors must converge");
+  assert.equal(withMirror(mirror, inheritedGeneratorCommand), mirror, "mirror construction must be idempotent");
+  assert.throws(() => assertInheritedGeneratorScheduling(red, redMirror));
+  assertInheritedGeneratorScheduling(scheduled, mirror);
+  assertInheritedGeneratorScheduling(green, greenMirror);
+  const changeRun = mutate => mutateNamedStep(scheduled, "preflight", "Buck impact planner regression", mutate);
+  const corruptions = [
+    ...inheritedGeneratorSelectors.map(selector => changeRun(source => source.replace(" " + selector, ""))),
+    changeRun(source => source.replace(inheritedGeneratorCommand, inheritedGeneratorCommand + " " + inheritedGeneratorSelectors.at(-1))),
+    changeRun(source => source.replace(inheritedGeneratorCommand, "python3 -m unittest -v " + [...inheritedGeneratorSelectors].reverse().join(" "))),
+    changeRun(source => source.replace(inheritedGeneratorSelectors.at(-1), "tools.buck.test_gen_first_party.NativeHydrationGenerationTests")),
+    changeRun(source => source.replace("run: " + inheritedGeneratorCommand, "run: echo " + inheritedGeneratorCommand)),
+    changeRun(addFalseCondition), changeRun(addContinueOnError), changeRun(addRetainedTextEarlyExit),
+    changeRun(source => source + source),
+    swapNamedSteps(scheduled, "preflight", "Buck impact planner regression", "Console route inventory regression"),
+    changeRun(source => source.replace("id: buck-impact-planner", "id: unprotected-buck")),
+    changeRun(source => source.replace("steps.npm-ci.outcome == 'success'", "true")),
+  ];
+  assert.equal(corruptions.length, 15);
+  for (const source of corruptions) {
+    assert.notEqual(source, scheduled, "mutation must affect actual workflow bytes");
+    assert.throws(() => assertInheritedGeneratorScheduling(source, mirror));
+  }
+  for (const selector of inheritedGeneratorSelectors) {
+    const bad = mirror.replace(" " + selector, "");
+    assert.notEqual(bad, mirror); assert.throws(() => assertInheritedGeneratorScheduling(scheduled, bad));
+  }
+  assert.throws(() => assertInheritedGeneratorScheduling(scheduled, mirror + "\n" +
+    "const buckImpactPlannerTestCommand = " + JSON.stringify(inheritedGeneratorCommand) + ";\n"));
 });
