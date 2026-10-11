@@ -25,6 +25,94 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class GeneratorCliTests(unittest.TestCase):
+
+    class ProjectedManifestReady(Exception):
+        pass
+
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location(
+            "hydrate_selection_fixture", GENERATOR_PATH.with_name("gen_hydrate.py")
+        )
+        self.hydrate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.hydrate)
+        self.library = {
+            "kind": ["rlib", "cdylib"], "crate_types": ["rlib", "cdylib"],
+            "name": "console_payroll_ui",
+            "src_path": str(self.hydrate.REPO / "backend/crates/payroll/ui/src/lib.rs"),
+        }
+        self.integration = {
+            "kind": ["test"], "crate_types": ["bin"], "name": "react_people",
+            "src_path": str(self.hydrate.REPO / "backend/crates/payroll/ui/tests/react_people.rs"),
+        }
+
+    def project_hydration(self, targets):
+        # Cargo metadata fixtures exercise target selection only. No compiler,
+        # Reindeer, business data, or canonical manifest is modified.
+        ui = {
+            "name": "console-payroll-ui", "version": "0.1.0", "description": None,
+            "license": "MIT", "edition": "2024", "rust_version": "1.98.1",
+            "targets": targets, "dependencies": [], "features": {},
+        }
+
+        def run(argv):
+            if argv[:2] == ["rustup", "which"]:
+                return "/unexecuted-tooling-fixture/" + argv[-1] + "\n"
+            if "metadata" in argv and "--no-deps" in argv:
+                return json.dumps({"packages": [ui]})
+            if "metadata" in argv and "--manifest-path" in argv:
+                raise self.ProjectedManifestReady()
+            self.fail("unexpected projection invocation: " + repr(argv))
+
+        with tempfile.TemporaryDirectory(prefix="hydrate-target-selection-") as tmp:
+            output = Path(tmp).resolve() / "projection"
+            with patch.object(self.hydrate, "OUTPUT", output), \
+                    patch.object(self.hydrate, "run", side_effect=run), \
+                    patch.object(sys, "argv", ["gen_hydrate.py", "--reindeer", "/unexecuted-fixture"]):
+                with self.assertRaises(self.ProjectedManifestReady):
+                    self.hydrate.main()
+            import tomllib
+            projected = tomllib.loads((output / "Cargo.toml").read_text())
+            self.assertEqual("console_payroll_ui", projected["lib"]["name"])
+            self.assertEqual(["rlib", "cdylib"], projected["lib"]["crate-type"])
+            self.assertEqual(
+                self.library["src_path"],
+                str((output / projected["lib"]["path"]).resolve()),
+            )
+            for option in ["autobins", "autoexamples", "autotests", "autobenches"]:
+                self.assertIs(projected["package"][option], False)
+
+    def test_existing_single_library_projects_its_exact_identity(self):
+        self.project_hydration([self.library])
+
+    def test_real_integration_test_does_not_replace_hydration_library(self):
+        self.project_hydration([self.library, self.integration])
+
+    def test_library_selection_does_not_depend_on_target_order(self):
+        self.project_hydration([self.integration, self.library])
+
+    def test_no_target_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([])
+
+    def test_integration_test_without_library_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([self.integration])
+
+    def test_nonlibrary_target_at_library_path_is_rejected(self):
+        wrong_kind = {**self.library, "kind": ["test"], "crate_types": ["bin"]}
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([wrong_kind])
+
+    def test_library_with_wrong_source_is_rejected(self):
+        wrong_source = {**self.library, "src_path": self.integration["src_path"]}
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([wrong_source])
+
+    def test_duplicate_libraries_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([self.library, dict(self.library)])
+
+
     def run_cli(self, argument: str) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -2040,6 +2128,8 @@ class NativeHydrationGenerationTests(unittest.TestCase):
                              ast.literal_eval(external).get(":console-payroll-ui-validated-bundle"))
         self.assertIn("console-payroll-ui-validated-bundle", targets)
         self.assertIn("console-payroll-ui-wasm-bundle", targets)
+
+
 
 
 if __name__ == "__main__":
