@@ -1083,7 +1083,7 @@ describe("CI preflight contract", () => {
       preflight: 34,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
-      backend: 30,
+      backend: 31,
       "migration-expand-contract": 5,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
@@ -3308,18 +3308,39 @@ function navV2AssertProtectedScheduling(source) {
   const entries = navV2Executables.allWorkflowCommands(source).filter(
     entry => entry.tokens.some(token => navV2SuitePaths.includes(token)),
   );
-  assert.equal(entries.length, 1, "one complete executable Navigation suite command required");
-  const entry = entries[0];
-  const actualStep = yaml.load("      - " + entry.step)[0];
-  assert.equal(entry.job, "backend");
-  assert.deepEqual(actualStep, preview[0], "the actual executor must be the protected step");
-  assert.equal(entry.gating, true, "Navigation failures must gate the job");
-  assert.equal(entry.controlFlow, false, "Navigation failures cannot be swallowed");
-  assert.equal(entry.malformed, false);
-  assert.equal(entry.shell, null, "retain the runner's fail-fast default shell");
-  const direct = navV2Executables.directExecutable(entry.tokens);
-  assert.equal(direct.malformed, false);
-  assert.deepEqual(direct.tokens, ["node", "--test", ...navV2SuitePaths], "all three complete suites must execute under Node");
+  const navigationTokens = ["node", "--test", ...navV2SuitePaths];
+  const navigation = entries.filter(entry => entry.tokens.length === navigationTokens.length &&
+    entry.tokens.every((token, index) => token === navigationTokens[index]));
+  assert.equal(navigation.length, 1, "one complete executable Navigation suite command required");
+  const overlap = entries.filter(entry => entry !== navigation[0]);
+  const inherited = steps.filter(step => step.name === inheritedBrowserStepName);
+  assert.ok(inherited.length <= 1, "at most one protected inherited executor may overlap Navigation");
+  assert.equal(overlap.length, inherited.length, "only the protected inherited executor may overlap Navigation");
+  const protectedEntries = [[navigation[0], preview[0], navigationTokens]];
+  if (inherited.length === 1) {
+    const step = inherited[0], tokens = ["node", "--test", ...inheritedNodeSuites];
+    assert.deepEqual(Object.keys(step).sort(), ["if", "name", "run", "working-directory"],
+      "inherited overlap cannot add unreviewed execution inputs");
+    assert.equal(step.if, inheritedBrowserGuard);
+    assert.equal(step["working-directory"], ".");
+    assert.equal(steps.indexOf(step), 32, "inherited overlap retains its approved backend position");
+    assert.ok(step.run.startsWith("set -euo pipefail\numask 077\n" + tokens.join(" ") + "\n"),
+      "inherited overlap retains the exact fail-fast six-suite executor");
+    protectedEntries.push([overlap[0], step, tokens]);
+  }
+  for (const [entry, step, tokens] of protectedEntries) {
+    const actualStep = yaml.load("      - " + entry.step)[0];
+    assert.equal(entry.job, "backend");
+    assert.deepEqual(actualStep, step, "the actual executor must be the protected step");
+    assert.equal(entry.gating, true, "Navigation failures must gate the job");
+    assert.equal(entry.controlFlow, false, "Navigation failures cannot be swallowed");
+    assert.equal(entry.malformed, false);
+    assert.equal(entry.shell, null, "retain the runner's fail-fast default shell");
+    assert.deepEqual(entry.tokens, tokens, "only the exact approved executor may overlap Navigation");
+    const direct = navV2Executables.directExecutable(entry.tokens);
+    assert.equal(direct.malformed, false);
+    assert.deepEqual(direct.tokens, tokens, "complete suites must execute directly under Node");
+  }
 }
 
 function navV2ScheduledWorkflow() {
@@ -3424,6 +3445,51 @@ it("Navigation V2 CI scheduling oracle accepts only the complete live protected 
   navV2AssertProtectedScheduling(scheduled);
   for (const [label, changed] of navV2SchedulingCorruptions(scheduled)) {
     assert.notEqual(changed, scheduled, label + " must mutate source");
+    assert.doesNotThrow(() => yaml.load(changed), label + " must remain valid YAML");
+    assert.throws(() => navV2AssertProtectedScheduling(changed), undefined, label + " must be refused");
+  }
+});
+
+it("Navigation V2 permits only the exact protected inherited People-suite overlap", () => {
+  let scheduled = navV2ScheduledWorkflow();
+  if (yaml.load(scheduled).jobs.backend.steps.some(step => step.name === inheritedBrowserStepName)) {
+    scheduled = mutateNamedStep(scheduled, "backend", inheritedBrowserStepName, () => "");
+  }
+  // Synthetic scheduling calibration; the nine real histories remain independently required below.
+  const command = "node --test " + inheritedNodeSuites.join(" ");
+  const step = "      - name: " + inheritedBrowserStepName + "\n" +
+    "        if: \"" + inheritedBrowserGuard + "\"\n        working-directory: .\n        run: |\n" +
+    "          set -euo pipefail\n          umask 077\n          " + command + "\n\n";
+  const anchor = "      - name: Retain sanitized native browser evidence\n";
+  const allowed = replaceJob(scheduled, "backend", body => body.replace(anchor, step + anchor));
+  navV2AssertProtectedScheduling(scheduled);
+  navV2AssertProtectedScheduling(allowed);
+  const change = mutate => mutateNamedStep(allowed, "backend", inheritedBrowserStepName, mutate);
+  const cases = [
+    ["partial People executor", change(s => s.replace(command, "node --test " + navV2SuitePaths[2]))],
+    ["wrong suite order", change(s => s.replace(command, "node --test " + [...inheritedNodeSuites].reverse().join(" ")))],
+    ["duplicate inherited executor", change(s => s.replace("          " + command + "\n", "          " + command + "\n          " + command + "\n"))],
+    ["unprotected step", change(s => s.replace(inheritedBrowserStepName, "Unprotected People executor"))],
+    ["extra step ID", change(s => s.replace("        run: |\n", "        id: unreviewed-overlap\n        run: |\n"))],
+    ["wrong guard", change(addFalseCondition)],
+    ["failure ignored", change(addContinueOnError)],
+    ["unreviewed shell", change(s => s.replace("        run: |\n", "        shell: bash {0}\n        run: |\n"))],
+    ["Node preload", change(s => s.replace("        run: |\n", "        env:\n          NODE_OPTIONS: --require=/tmp/unpinned.cjs\n        run: |\n"))],
+    ["inline Node preload", change(s => s.replace(command, "NODE_OPTIONS=--require=/tmp/unpinned.cjs " + command))],
+    ["alternate executor wrapper", change(s => s.replace(command, "command " + command))],
+    ["malformed executor", change(s => s.replace(command, command + " '"))],
+    ["wrong directory", change(s => s.replace("working-directory: .", "working-directory: backend"))],
+    ["missing fail-fast prefix", change(s => s.replace("          set -euo pipefail\n", ""))],
+    ["inert command after exit", change(addRetainedTextEarlyExit)],
+    ["wrong protected position", swapNamedSteps(allowed, "backend", "Native payroll hydration browser", inheritedBrowserStepName)],
+    ["extra partial executor", replaceJob(allowed, "backend", body => body.replace(anchor,
+      "      - name: Extra People executor\n        run: node --test " + navV2SuitePaths[2] + "\n\n" + anchor))],
+    ["extra complete Navigation executor", replaceJob(allowed, "backend", body => body.replace(anchor,
+      "      - name: Extra Navigation executor\n        run: " + navV2MachineryCommand + "\n\n" + anchor))],
+  ];
+  assert.equal(cases.length, 18, "all unauthorized overlap controls must remain present");
+  for (const [label, changed] of cases) {
+    assert.notEqual(changed, allowed, label + " must mutate source");
     assert.doesNotThrow(() => yaml.load(changed), label + " must remain valid YAML");
     assert.throws(() => navV2AssertProtectedScheduling(changed), undefined, label + " must be refused");
   }
