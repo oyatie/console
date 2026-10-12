@@ -11,6 +11,111 @@ const PERSON: &str = "00000000-0000-0000-0000-000000000104";
 const PROOF: &str = "unit-form-proof-only";
 const NAME: &str = "<img src=x onerror=alert(1)>&김하늘";
 
+fn rendered_outcome_body<'a>(html: &'a str, state: &str) -> &'a str {
+    let marker = format!("data-people-outcome=\"{state}\"");
+    assert_eq!(html.matches(&marker).count(), 1, "one actual outcome body");
+    html.split_once(&marker)
+        .unwrap()
+        .1
+        .split_once("</section>")
+        .unwrap()
+        .0
+}
+
+#[test]
+fn native_people_recovery_not_visible_keeps_original_command() {
+    let root = format!("/companies/{COMPANY}");
+    let recovery = format!("{root}/people/requests/{COMMAND}");
+    for read in [false, true] {
+        for create in [false, true] {
+            let html = render(Page::RequestNotVisible {
+                scope: scope(read, create),
+                command: COMMAND.into(),
+            });
+            let body = rendered_outcome_body(&html, "not-visible");
+            assert!(body.contains("등록이 실패했거나 취소되었다는 뜻이 아닙니다."));
+            assert_eq!(native_header_links(body), vec![(recovery.as_str(), false)]);
+            assert!(!body.contains("<form") && !body.contains("<button"));
+            let mut expected = vec!["/account".to_owned(), root.clone()];
+            if read {
+                expected.push(format!("{root}/people"));
+            }
+            if create {
+                expected.push(format!("{root}/people/new"));
+            }
+            expected.sort();
+            let (desktop, mobile) = native_header_regions(&html);
+            for region in [desktop, mobile] {
+                let mut actual: Vec<_> = native_header_links(region)
+                    .into_iter()
+                    .map(|(href, _)| href.to_owned())
+                    .collect();
+                actual.sort();
+                assert_eq!(
+                    actual, expected,
+                    "global authorized navigation is preserved"
+                );
+                assert!(!region.contains(COMMAND));
+            }
+        }
+    }
+}
+
+#[test]
+fn native_people_recovery_known_outcomes_preserve_actions() {
+    let root = format!("/companies/{COMPANY}/people");
+    for read in [false, true] {
+        for create in [false, true] {
+            for (outcome, state) in [
+                (
+                    Outcome::Rejected {
+                        reason: "등록하지 않았습니다",
+                    },
+                    "rejected",
+                ),
+                (Outcome::Cancelled, "cancelled"),
+                (Outcome::Expired, "expired"),
+                (
+                    Outcome::Pending {
+                        proof: PROOF.into(),
+                    },
+                    "pending",
+                ),
+                (committed(), "committed"),
+            ] {
+                let html = render(Page::Request {
+                    scope: scope(read, create),
+                    request: request(outcome),
+                });
+                let body = rendered_outcome_body(&html, state);
+                assert!(body.contains(&format!("href=\"{root}/requests/{COMMAND}\"")));
+                assert_eq!(
+                    body.contains(&format!("href=\"{root}/new\"")),
+                    create && !matches!(state, "pending" | "committed"),
+                    "known terminal fresh-registration actions keep their current scope"
+                );
+                assert_eq!(
+                    body.matches("<form ").count(),
+                    if state == "pending" { 2 } else { 0 }
+                );
+                assert_eq!(
+                    body.contains(&format!("href=\"{root}/{EMPLOYEE}\"")),
+                    state == "committed" && read
+                );
+                if state == "pending" {
+                    for action in ["execute", "cancel"] {
+                        assert!(
+                            body.contains(&format!(
+                                "action=\"{root}/requests/{COMMAND}/{action}\""
+                            ))
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn scope(read: bool, create: bool) -> Scope {
     Scope {
         company: COMPANY.into(),
