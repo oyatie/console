@@ -76,7 +76,7 @@ jobs:
             | tee "${RUNNER_TEMP}/buck-hermeticity.log" | tail -12
       # ...and `tail -12` throws the rest away, which is the evidence loss the
       # rest of this change is about. Keep it for the same reason.
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: buck2-hermeticity-logs-${{ github.run_attempt }}
