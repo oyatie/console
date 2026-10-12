@@ -1235,7 +1235,7 @@ function actionStep(index, name, uses, withInputs, options = {}) {
 const requiredJobActionContracts = Object.freeze({
   "preflight": [
     actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false,"fetch-depth":0}, { id: "checkout" }),
-    actionStep(1, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
+    actionStep(1, "Set up Node.js", "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1", {"node-version":"24.16.0","cache":"npm"}, { if: preflightCheckoutDependentCondition, id: "setup-node" }),
     actionStep(10, "Install Rust toolchain for Cargo.lock consistency", "./.github/actions/setup-rust", { if: preflightCheckoutHeavyCondition, id: "rust-toolchain" }),
   ],
   "domain-unit": [
@@ -1258,15 +1258,15 @@ const requiredJobActionContracts = Object.freeze({
   ],
   "repo-gates": [
     actionStep(0, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1"),
-    actionStep(1, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24.16.0","cache":"npm"}),
+    actionStep(1, "Set up Node.js", "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1", {"node-version":"24.16.0","cache":"npm"}),
   ],
   "api-contract": [
     actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", { if: runHeavyCondition }),
-    actionStep(2, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
+    actionStep(2, "Set up Node.js", "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1", {"node-version":"24","cache":"npm"}, { if: runHeavyCondition }),
   ],
   "generated-face-authority": [
     actionStep(1, "Checkout", "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", {"persist-credentials":false}, { if: runHeavyCondition }),
-    actionStep(3, "Set up Node.js", "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020", {"node-version":"24.16.0","cache":"npm"}, { if: runHeavyCondition }),
+    actionStep(3, "Set up Node.js", "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1", {"node-version":"24.16.0","cache":"npm"}, { if: runHeavyCondition }),
     actionStep(4, "Set up Java", "actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6", {"distribution":"temurin","java-version":"21"}, { if: runHeavyCondition }),
     actionStep(5, "Install Rust toolchain (pinned via rust-toolchain.toml)", "./.github/actions/setup-rust", { if: runHeavyCondition }),
   ],
@@ -2365,7 +2365,7 @@ function requireExactRequiredJobContracts(workflowModel, failures) {
 const apiContractAllowedSteps = [
   "name: Path-class skip proof\n        if: ${{ needs.preflight.outputs.run_heavy != 'true' }}\n        shell: bash\n        run: |\n          set -euo pipefail\n          printf 'path-class skip proof: %s not required for class=%s\\n' \"${GITHUB_JOB}\" \"${{ needs.preflight.outputs.path_class }}\"",
   "name: Checkout\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7",
-  "name: Set up Node.js\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0\n        with:\n          node-version: \"24\"\n          cache: npm",
+  "name: Set up Node.js\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0\n        with:\n          node-version: \"24\"\n          cache: npm",
   "name: Install Node tooling\n        if: ${{ needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm ci",
   "name: Platform contract drift gate\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run check:platform-contract-drift",
   "name: Employee import replay contract\n        if: ${{ !cancelled() && needs.preflight.outputs.run_heavy == 'true' }}\n        run: npm run test:employee-import-contract",

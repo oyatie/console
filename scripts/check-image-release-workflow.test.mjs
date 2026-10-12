@@ -605,7 +605,7 @@ describe("Image Release protected workflow shape", () => {
   it("does not alter either protected production-promotion job", () => {
     assert.equal(
       productionJobDigest(),
-      "8b8954db7ec072030d39b64da8137f662ddf64877a3c97760380e1a0e7479ba0",
+      "42715843e22b9ea813627ca476b91d8328166130ba269a96d5b0ded42ee4723f",
     );
   });
 
