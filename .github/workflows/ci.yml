@@ -1691,207 +1691,207 @@ jobs:
             ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-1.png
             ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-2.png
             ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-3.png
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/06-policy-install-preflight.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-before-grant.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-grant-reopened.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-active-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-revoked-reopened.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll-navigation-receipt-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll-navigation-workspace-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll-navigation-workspace-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll_read.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll_reopened.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/payroll_denied.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/policy-administration-retained.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-directory-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-workspace-next-task.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-workspace-next-task-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-registration-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-pending-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-detail-desktop.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-detail-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-search-match-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/people-search-miss-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-delayed-ime-input-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-delayed-scroll-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-precommit-focus-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-failed-load-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-failed-render-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unmodified-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-json-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unknown-version-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-envelope-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unknown-page-kind-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-page-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-scope-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-scope-boolean-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-malformed-company-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-nil-company-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-uppercase-company-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-malformed-command-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-malformed-expectation-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-numeric-revision-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-noncanonical-revision-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-large-revision-string-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unicode-scalar-boundary-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-unicode-scalar-overflow-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-oversized-name-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-oversized-number-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-form-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-extra-expectation-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-nullable-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-invalid-proof-type-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-registration-conflict-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-registration-conflict-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-request-not-visible-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-request-not-visible-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-uncertain-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-uncertain-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-registration-hostile-text-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-unmodified-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-unknown-outcome-kind-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-extra-terminal-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-terminal-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-rejected-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-rejected-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-conflicting-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-conflicting-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-cancelled-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-cancelled-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-expired-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-expired-proof-injection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-terminal-malformed-terminal-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-unmodified-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-nullable-record-fields-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-oversized-record-collection-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-malformed-record-id-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-extra-record-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-numeric-record-revision-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-invalid-record-nullable-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-invalid-after-cursor-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-unsafe-next-href-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-detail-valid-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/react-people-decoder-directory-detail-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/06-policy-install-preflight.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-before-grant.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-grant-reopened.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-active-320.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-revoked-reopened.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll-navigation-receipt-320.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll-navigation-workspace-320.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll-navigation-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll_read.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll_reopened.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/payroll_denied.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/06-policy-install-preflight.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-before-grant.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-grant-reopened.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-active-320.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-revoked-reopened.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll-navigation-receipt-320.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll-navigation-workspace-320.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll-navigation-workspace-desktop.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll_read.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll_reopened.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/payroll_denied.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/01-own-account-reference.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/02-selected-administrator.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/03-operator-creation-history.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-native-first.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-react-first.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-keyboard-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-autofill-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-eventless-value-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-ime-before-react.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-preclaim-focus.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-partial-bind-rollback.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-capability-denied.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/controller-freeze-at-csrf.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/01-own-account-reference.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/02-selected-administrator.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/03-operator-creation-history.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/01-own-account-reference.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/02-selected-administrator.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/03-operator-creation-history.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/company-policy-root-320.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/company-policy-root-desktop.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-adopt-320.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-adopt-desktop.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-adopted.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-suspended.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-replacement-320.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-replaced.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/group-process-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/company-policy-root-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/company-policy-root-desktop.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-invalid-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-focused-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-corrected-320.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-adopted.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/group-correction-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/result.json', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/owner-receipt.json', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/01-public.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/02-terms.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/03-account-enrolled.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/04-company-created.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/company-workspace-desktop.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/05-company-workspace.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/company-policy-root-320.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/company-policy-root-desktop.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/group-held-form-before-correction-320.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
-            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/group-held-form-submission-interrupted.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/06-policy-install-preflight.png
+            {0}/policy-before-grant.png
+            {0}/policy-grant-reopened.png
+            {0}/policy-active-320.png
+            {0}/policy-revoked-reopened.png
+            {0}/payroll-navigation-receipt-320.png
+            {0}/payroll-navigation-workspace-320.png
+            {0}/payroll-navigation-workspace-desktop.png
+            {0}/payroll_read.png
+            {0}/payroll_reopened.png
+            {0}/payroll_denied.png
+            {0}/policy-administration-retained.png
+            {0}/people-directory-320.png
+            {0}/people-workspace-next-task.png
+            {0}/people-workspace-next-task-320.png
+            {0}/people-registration-desktop.png
+            {0}/people-pending-320.png
+            {0}/people-detail-desktop.png
+            {0}/people-detail-320.png
+            {0}/people-search-match-320.png
+            {0}/people-search-miss-320.png
+            {0}/react-people-delayed-ime-input-320.png
+            {0}/react-people-delayed-scroll-320.png
+            {0}/react-people-precommit-focus-320.png
+            {0}/react-people-failed-load-320.png
+            {0}/react-people-failed-render-320.png
+            {0}/react-people-decoder-registration-unmodified-320.png
+            {0}/react-people-decoder-registration-invalid-json-320.png
+            {0}/react-people-decoder-registration-unknown-version-320.png
+            {0}/react-people-decoder-registration-extra-envelope-field-320.png
+            {0}/react-people-decoder-registration-unknown-page-kind-320.png
+            {0}/react-people-decoder-registration-extra-page-field-320.png
+            {0}/react-people-decoder-registration-extra-scope-field-320.png
+            {0}/react-people-decoder-registration-invalid-scope-boolean-320.png
+            {0}/react-people-decoder-registration-malformed-company-id-320.png
+            {0}/react-people-decoder-registration-nil-company-id-320.png
+            {0}/react-people-decoder-registration-uppercase-company-id-320.png
+            {0}/react-people-decoder-registration-malformed-command-id-320.png
+            {0}/react-people-decoder-registration-malformed-expectation-id-320.png
+            {0}/react-people-decoder-registration-numeric-revision-320.png
+            {0}/react-people-decoder-registration-noncanonical-revision-320.png
+            {0}/react-people-decoder-registration-large-revision-string-320.png
+            {0}/react-people-decoder-registration-unicode-scalar-boundary-320.png
+            {0}/react-people-decoder-registration-unicode-scalar-overflow-320.png
+            {0}/react-people-decoder-registration-oversized-name-320.png
+            {0}/react-people-decoder-registration-oversized-number-320.png
+            {0}/react-people-decoder-registration-extra-form-field-320.png
+            {0}/react-people-decoder-registration-extra-expectation-field-320.png
+            {0}/react-people-decoder-registration-invalid-nullable-field-320.png
+            {0}/react-people-decoder-registration-invalid-proof-type-320.png
+            {0}/react-people-decoder-registration-registration-conflict-valid-320.png
+            {0}/react-people-decoder-registration-registration-conflict-extra-field-320.png
+            {0}/react-people-decoder-registration-request-not-visible-valid-320.png
+            {0}/react-people-decoder-registration-request-not-visible-extra-field-320.png
+            {0}/react-people-decoder-registration-uncertain-valid-320.png
+            {0}/react-people-decoder-registration-uncertain-extra-field-320.png
+            {0}/react-people-decoder-registration-hostile-text-320.png
+            {0}/react-people-decoder-terminal-unmodified-320.png
+            {0}/react-people-decoder-terminal-unknown-outcome-kind-320.png
+            {0}/react-people-decoder-terminal-extra-terminal-field-320.png
+            {0}/react-people-decoder-terminal-terminal-proof-injection-320.png
+            {0}/react-people-decoder-terminal-rejected-valid-320.png
+            {0}/react-people-decoder-terminal-rejected-proof-injection-320.png
+            {0}/react-people-decoder-terminal-conflicting-valid-320.png
+            {0}/react-people-decoder-terminal-conflicting-proof-injection-320.png
+            {0}/react-people-decoder-terminal-cancelled-valid-320.png
+            {0}/react-people-decoder-terminal-cancelled-proof-injection-320.png
+            {0}/react-people-decoder-terminal-expired-valid-320.png
+            {0}/react-people-decoder-terminal-expired-proof-injection-320.png
+            {0}/react-people-decoder-terminal-malformed-terminal-id-320.png
+            {0}/react-people-decoder-directory-unmodified-320.png
+            {0}/react-people-decoder-directory-nullable-record-fields-320.png
+            {0}/react-people-decoder-directory-oversized-record-collection-320.png
+            {0}/react-people-decoder-directory-malformed-record-id-320.png
+            {0}/react-people-decoder-directory-extra-record-field-320.png
+            {0}/react-people-decoder-directory-numeric-record-revision-320.png
+            {0}/react-people-decoder-directory-invalid-record-nullable-field-320.png
+            {0}/react-people-decoder-directory-invalid-after-cursor-320.png
+            {0}/react-people-decoder-directory-unsafe-next-href-320.png
+            {0}/react-people-decoder-directory-detail-valid-320.png
+            {0}/react-people-decoder-directory-detail-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/06-policy-install-preflight.png
+            {0}/policy-before-grant.png
+            {0}/policy-grant-reopened.png
+            {0}/policy-active-320.png
+            {0}/policy-revoked-reopened.png
+            {0}/payroll-navigation-receipt-320.png
+            {0}/payroll-navigation-workspace-320.png
+            {0}/payroll-navigation-workspace-desktop.png
+            {0}/payroll_read.png
+            {0}/payroll_reopened.png
+            {0}/payroll_denied.png
+            {0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/06-policy-install-preflight.png
+            {0}/policy-before-grant.png
+            {0}/policy-grant-reopened.png
+            {0}/policy-active-320.png
+            {0}/policy-revoked-reopened.png
+            {0}/payroll-navigation-receipt-320.png
+            {0}/payroll-navigation-workspace-320.png
+            {0}/payroll-navigation-workspace-desktop.png
+            {0}/payroll_read.png
+            {0}/payroll_reopened.png
+            {0}/payroll_denied.png
+            {0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-own-account-reference.png
+            {0}/02-selected-administrator.png
+            {0}/03-operator-creation-history.png
+            {0}/04-administrator-company-reopened.png
+            {0}/controller-native-first.png
+            {0}/controller-react-first.png
+            {0}/controller-keyboard-before-react.png
+            {0}/controller-autofill-before-react.png
+            {0}/controller-eventless-value-before-react.png
+            {0}/controller-ime-before-react.png
+            {0}/controller-preclaim-focus.png
+            {0}/controller-partial-bind-rollback.png
+            {0}/controller-capability-denied.png
+            {0}/controller-freeze-at-csrf.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-own-account-reference.png
+            {0}/02-selected-administrator.png
+            {0}/03-operator-creation-history.png
+            {0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-own-account-reference.png
+            {0}/02-selected-administrator.png
+            {0}/03-operator-creation-history.png
+            {0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/company-policy-root-320.png
+            {0}/company-policy-root-desktop.png
+            {0}/group-process-adopt-320.png
+            {0}/group-process-adopt-desktop.png
+            {0}/group-process-adopted.png
+            {0}/group-process-suspended.png
+            {0}/group-process-replacement-320.png
+            {0}/group-process-replaced.png
+            {0}/group-process-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/company-policy-root-320.png
+            {0}/company-policy-root-desktop.png
+            {0}/group-correction-invalid-320.png
+            {0}/group-correction-focused-320.png
+            {0}/group-correction-corrected-320.png
+            {0}/group-correction-adopted.png
+            {0}/group-correction-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/company-policy-root-320.png
+            {0}/company-policy-root-desktop.png
+            {0}/group-held-form-before-correction-320.png
+            {0}/group-held-form-submission-interrupted.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
           if-no-files-found: error
           retention-days: 7
           include-hidden-files: false
