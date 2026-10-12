@@ -206,7 +206,6 @@ function Content({page}: {page: Page}) {
         <p>현재 권한으로 이 요청의 처리 결과를 확인할 수 없습니다. 이 화면은 등록이 실패했거나 취소되었다는 뜻이 아닙니다.</p>
         <p>새 요청을 작성하기 전에 기존 요청의 처리 여부를 확인하세요.</p>
         <div className="policy-actions"><a className="policy-button" href={`${directory(page.scope.company)}/requests/${page.command}`}>같은 요청 상태 다시 확인</a>
-          {page.scope.can_create && <a href={`${directory(page.scope.company)}/new`}>새 등록 요청 작성</a>}
         </div>
       </div>
     </section>;

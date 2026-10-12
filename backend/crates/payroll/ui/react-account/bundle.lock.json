@@ -17,11 +17,11 @@
     "clients/desktop-web/src/account.tsx": "d68c576a84e95067762fb2d347814da41aff862858fced4a938a514521927f48",
     "clients/desktop-web/src/people-guard.ts": "4376d8d629dadcddb2a410d2b009eba875e120409258ed20f9eb29e6c07485d1",
     "clients/desktop-web/src/people-projection.ts": "9077e246dd90cab9ec5b6d70fea75152592aba154bb71003a5dcd7d946041c08",
-    "clients/desktop-web/src/people-view.tsx": "e69ff61c1108d482afaf79e6ac12968e402c4010ac2120ee16eaf16918ed3716",
+    "clients/desktop-web/src/people-view.tsx": "0b35182a39be8f54588322c09d7e3c910979eb00ce3ca0d51fe229e6376da7fe",
     "clients/desktop-web/src/people.css": "16fbb57ef0a01ad366b7907b1824109f3887c638ee3a984e3578c943dc546a5f",
     "clients/desktop-web/src/people.tsx": "b7358c8a333e2210db2c938cd186238f809bfe4a41f55758032b67a9d9395ece",
     "clients/desktop-web/tsconfig.json": "1ecc3c38e332a8a65618a1f3658fd82b3584fc504f7b43850b57287cd51bb719",
-    "tools/buck/gen_first_party.py": "d8eba26a4b93fafcef9f91ac2dc133830a6bf31dcd2597da161ee3a176619202",
+    "tools/buck/gen_first_party.py": "5886cc38b4b66ffb39bfe2fb21f9807eabcd1bee67b6bba76f7d47b0bc482f30",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
     "tools/ui/react.bzl": "715001cf5f214140b6858013702af96bfb73c514ec5f1641e6821caef5c498f9",
@@ -39,7 +39,7 @@
       "esbuild": "10b6243df618d374bb2d5c9cfbe7052e1405f6aa4e53a6164f11a91b9f2e1384",
       "node": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"
     },
-    "typecheck_sha256": "1a24e681cc71c3d2f2674971348d100f59684b99e2d9a89e7fc2d9e177461943",
+    "typecheck_sha256": "6f21cebeed8ff2fa702e23bde821d3107caf2b10335bb1205c0d7efe508142ea",
     "versions": {
       "esbuild": "0.28.2",
       "node": "26.7.0",

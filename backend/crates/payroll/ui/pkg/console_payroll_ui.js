@@ -394,15 +394,15 @@ function __wbg_get_imports() {
             const ret = typeof window === 'undefined' ? null : window;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
-        __wbg_static_accessor___INCOMPLETE_CHUNKS_46409da7a233da3e: function() {
+        __wbg_static_accessor___INCOMPLETE_CHUNKS_9532825b71aef37a: function() {
             const ret = __INCOMPLETE_CHUNKS;
             return ret;
         },
-        __wbg_static_accessor___RESOLVED_RESOURCES_a347a159d3ca05fb: function() {
+        __wbg_static_accessor___RESOLVED_RESOURCES_cda1f3b3d81a1e8f: function() {
             const ret = __RESOLVED_RESOURCES;
             return ret;
         },
-        __wbg_static_accessor___SERIALIZED_ERRORS_130cc13aada7ac2e: function() {
+        __wbg_static_accessor___SERIALIZED_ERRORS_e42a1e31098e04d1: function() {
             const ret = __SERIALIZED_ERRORS;
             return ret;
         },

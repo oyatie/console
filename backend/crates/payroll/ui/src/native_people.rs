@@ -438,9 +438,6 @@ pub fn render(page: Page) -> String {
                     <p>"새 요청을 작성하기 전에 기존 요청의 처리 여부를 확인하세요."</p>
                     <div class="policy-actions">
                         <a class="policy-button" href=format!("{}/requests/{command}",directory(&scope.company))>"같은 요청 상태 다시 확인"</a>
-                        {scope.can_create.then(||view! {
-                            <a href=format!("{}/new",directory(&scope.company))>"새 등록 요청 작성"</a>
-                        })}
                     </div>
                 </div>
             </section>
