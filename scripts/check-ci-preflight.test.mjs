@@ -2979,9 +2979,11 @@ describe("native browser evidence retention", () => {
     assert.equal(expanded.length, 227);
     assert.equal(new Set(expanded).size, 227);
     assert.equal(step.with.path.slice(0, paths.join("\n").length + 1), paths.join("\n") + "\n");
+    const groupedAdditional = groupedInheritedUploadExpressions();
+    assert.equal(groupedAdditional.length, 9);
     assert.deepEqual(step.with, {
       name: "native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}",
-      path: expanded.join("\n") + "\n",
+      path: [...paths, ...groupedAdditional].join("\n") + "\n",
       "if-no-files-found": "error",
       "retention-days": 7,
       "include-hidden-files": false,
@@ -3542,15 +3544,25 @@ function inheritedStep(source = workflow) {
   assert.ok(!Object.hasOwn(matches[0], "continue-on-error"));
   return matches[0];
 }
+function groupedInheritedUploadExpressions() {
+  return inheritedBrowserCases.map(row =>
+    "${{ env." + row.public_output_variable + " && format('"
+    + row.public_files.map(file => "{0}/" + file).join("\n")
+    + "', env." + row.public_output_variable + ") || '' }}");
+}
 function guardedInheritedUploads(source, values) {
   const action = yaml.load(source).jobs.backend.steps.find(step => step.id === "native-browser-evidence");
   const lines = action.with.path.trimEnd().split("\n");
-  assert.equal(lines.length, 227);
-  return lines.slice(26).map(expression => {
-    const match = /^\$\{\{ env\.([A-Z_]+) && format\('\{0\}\/([a-z0-9_.-]+)', env\.\1\) \|\| '' \}\}$/.exec(expression);
-    assert.ok(match, "INHERITED_UPLOAD_MUST_CONDITION_THE_WHOLE_PATH");
-    return values[match[1]] ? values[match[1]] + "/" + match[2] : "";
-  });
+  const refusal = "INHERITED_UPLOAD_MUST_CONDITION_THE_WHOLE_PATH";
+  assert.equal(lines.length, 227, refusal + ": exact227 literal lines required");
+  const suffix = lines.slice(26).join("\n");
+  assert.ok(suffix === inheritedUploadExpressions().join("\n")
+    || suffix === groupedInheritedUploadExpressions().join("\n"),
+    refusal + ": exact closed per-file or whole-history conditional suffix required");
+  // Preserve201 semantic slots and every old absence/partial-failure assertion.
+  // Real grouped output has fewer blank LF lines; eligible paths stay exact.
+  return inheritedBrowserCases.flatMap(row => row.public_files.map(file =>
+    values[row.public_output_variable] ? values[row.public_output_variable] + "/" + file : ""));
 }
 function inheritedEvidenceGuard(step) {
   const begin = "# Begin inherited evidence guard", end = "# End inherited evidence guard";
@@ -3724,8 +3736,15 @@ describe("inherited browser coverage and safe failure retention", () => {
       const absent={...values}; delete absent[row.public_output_variable];
       const expanded=guardedInheritedUploads(workflow,absent);
       assert.equal(expanded.filter(value=>value==='').length,row.public_files.length);
-      const bad=workflow.replace(inheritedUploadExpressions().find(value=>value.includes(row.public_output_variable)),
-        '${{ env.'+row.public_output_variable+' }}/result.json');
+      const action=yaml.load(workflow).jobs.backend.steps.find(step=>step.id==='native-browser-evidence');
+      const perFile=inheritedUploadExpressions().find(value=>value.includes(row.public_output_variable));
+      const wholeHistory=groupedInheritedUploadExpressions()[inheritedBrowserCases.indexOf(row)];
+      const marker=action.with.path.includes(perFile)?perFile:wholeHistory;
+      assert.ok(action.with.path.includes(marker),'negative mutation must reach an actual guarded path');
+      const changedPath=action.with.path.replace(marker,'${{ env.'+row.public_output_variable+' }}/result.json');
+      const bad=mutateNamedStep(workflow,'backend',action.name,
+        source=>mutateActionInput(source,'path',JSON.stringify(changedPath)));
+      assert.equal(yaml.load(bad).jobs.backend.steps.find(step=>step.id==='native-browser-evidence').with.path,changedPath);
       assert.notEqual(bad,workflow);
       assert.throws(()=>guardedInheritedUploads(bad,absent),/CONDITION_THE_WHOLE_PATH/);
       assert.ok(evaluateCiPreflight(bad).failures.length>0);
@@ -3943,4 +3962,303 @@ it("BrowserIntegrationVariantsTests scheduling oracle rejects dark duplicated re
   }
   assert.throws(() => assertInheritedGeneratorScheduling(scheduled, mirror + "\n" +
     "const buckImpactPlannerTestCommand = " + JSON.stringify(inheritedGeneratorCommand) + ";\n"));
+});
+
+
+// Additive regression: hosted run38191289769 rejected the mixed path scalar
+// before any job. This closed model is source proof, not a GitHub runner clone.
+describe("native browser upload scalar expression contract", () => {
+  const limit = 21000;
+  const originalFamilies = [
+    ["CONSOLE_BROWSER_JOURNEY_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-sign-in.png", "05-account-returned.png"]],
+    ["CONSOLE_COMPANY_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-created.png", "05-company-workspace.png"]],
+    ["CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-preview-input-preserved.png"]],
+    ["CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "authorized-before.png", "authorized-filter-1.png", "authorized-filter-2.png", "authorized-filter-3.png"]],
+  ];
+  const roots = new Set([...originalFamilies.map(([root]) => root), ...inheritedBrowserCases.map(row => row.public_output_variable)]);
+  const original = originalFamilies.flatMap(([root, files]) => files.map(file => "${{ env." + root + " }}/" + file));
+
+  // Parse only this reviewed string-expression language. No eval, arbitrary
+  // functions, secret contexts, operators or property lookup are accepted.
+  function expression(source) {
+    let position = 0;
+    let next;
+    function advance() {
+      while (/\s/.test(source[position] ?? "") && position < source.length) position += 1;
+      if (position === source.length) return next = { kind: "end" };
+      const start = position;
+      const char = source[position++];
+      if (char === "'") {
+        let value = "";
+        while (position < source.length) {
+          const char = source[position++];
+          if (char !== "'") value += char;
+          else if (source[position] === "'") { value += "'"; position += 1; }
+          else return next = { kind: "string", value };
+        }
+        throw new Error("unterminated expression string");
+      }
+      if ("(),.".includes(char)) return next = { kind: char };
+      if ((char === "&" || char === "|") && source[position] === char) {
+        position += 1; return next = { kind: char + char };
+      }
+      if (/[A-Za-z_]/.test(char)) {
+        while (/[A-Za-z0-9_]/.test(source[position] ?? "") && position < source.length) position += 1;
+        return next = { kind: "identifier", value: source.slice(start, position) };
+      }
+      throw new Error("unsupported expression token");
+    }
+    function take(kind) {
+      assert.equal(next.kind, kind, "closed expression grammar");
+      const token = next; advance(); return token;
+    }
+    function primary() {
+      if (next.kind === "string") return { kind: "string", value: take("string").value };
+      if (next.kind === "(") { take("("); const inner = or(); take(")"); return inner; }
+      const name = take("identifier").value;
+      if (name === "env") {
+        take("."); const root = take("identifier").value;
+        assert.ok(roots.has(root), "only approved output-root contexts are permitted");
+        return { kind: "env", root };
+      }
+      assert.equal(name, "format", "only standard format is admitted");
+      take("("); const args = [or()];
+      while (next.kind === ",") { take(","); args.push(or()); }
+      take(")"); assert.ok(args.length >= 2);
+      return { kind: "format", args };
+    }
+    function and() {
+      let left = primary();
+      while (next.kind === "&&") { take("&&"); left = { kind: "and", left, right: primary() }; }
+      return left;
+    }
+    function or() {
+      let left = and();
+      while (next.kind === "||") { take("||"); left = { kind: "or", left, right: and() }; }
+      return left;
+    }
+    advance(); const ast = or(); take("end"); return ast;
+  }
+
+  function format(template, args) {
+    let output = "";
+    for (let index = 0; index < template.length;) {
+      const char = template[index++];
+      if (char === "{" && template[index] === "{") { output += "{"; index += 1; continue; }
+      if (char === "}" && template[index] === "}") { output += "}"; index += 1; continue; }
+      if (char === "{") {
+        const start = index;
+        while (/[0-9]/.test(template[index] ?? "") && index < template.length) index += 1;
+        assert.ok(index > start && template[index++] === "}", "invalid format placeholder");
+        const arg = Number(template.slice(start, index - 1));
+        assert.ok(arg < args.length, "missing format argument");
+        output += args[arg]; continue;
+      }
+      assert.notEqual(char, "}", "unescaped closing format brace");
+      output += char;
+    }
+    return output;
+  }
+
+  function evaluate(ast, env) {
+    if (ast.kind === "string") return ast.value;
+    if (ast.kind === "env") {
+      const value = Object.hasOwn(env, ast.root) ? env[ast.root] : "";
+      assert.equal(typeof value, "string", "output env values are strings");
+      return value;
+    }
+    if (ast.kind === "and") return evaluate(ast.left, env) ? evaluate(ast.right, env) : "";
+    if (ast.kind === "or") return evaluate(ast.left, env) || evaluate(ast.right, env);
+    assert.equal(ast.kind, "format");
+    const [template, ...args] = ast.args.map(arg => evaluate(arg, env));
+    return format(template, args);
+  }
+
+  function template(scalar) {
+    const parts = [];
+    let position = 0;
+    while (position < scalar.length) {
+      const start = scalar.indexOf("${{", position);
+      if (start < 0) { parts.push({ literal: scalar.slice(position) }); break; }
+      if (start > position) parts.push({ literal: scalar.slice(position, start) });
+      let end = start + 3;
+      let quoted = false;
+      for (; end < scalar.length; end += 1) {
+        if (scalar[end] === "'") {
+          if (quoted && scalar[end + 1] === "'") { end += 1; continue; }
+          quoted = !quoted;
+        } else if (!quoted && scalar.slice(end, end + 2) === "}}") break;
+      }
+      assert.ok(!quoted && end < scalar.length, "unterminated template expression");
+      const source = scalar.slice(start + 3, end).trim();
+      parts.push({ source, ast: expression(source) });
+      position = end + 2;
+    }
+    const expressions = parts.filter(part => Object.hasOwn(part, "source"));
+    // The single-expression case stays an expression token. Mixed scalar
+    // interpolation synthesizes one outer format: length is UTF-16 source
+    // characters, not individual inner lengths, UTF-8 bytes or YAML lines.
+    let compiled = "";
+    if (parts.length === 1 && expressions.length === 1) compiled = expressions[0].source;
+    else if (expressions.length) {
+      let literal = "";
+      let arg = 0;
+      for (const part of parts) literal += Object.hasOwn(part, "literal")
+        ? part.literal.replaceAll("'", "''").replaceAll("{", "{{").replaceAll("}", "}}")
+        : "{" + arg++ + "}";
+      compiled = "format('" + literal + "', " + expressions.map(part => part.source).join(", ") + ")";
+      expression(compiled);
+    }
+    return { parts, compiled, expressions };
+  }
+
+  function render(parsed, env) {
+    return parsed.parts.map(part => Object.hasOwn(part, "literal") ? part.literal : evaluate(part.ast, env)).join("");
+  }
+  function eligible(value) { return value.split("\n").filter(Boolean); }
+  function underLimit(scalar) {
+    const parsed = template(scalar);
+    assert.ok(parsed.compiled.length <= limit,
+      "GitHub compiled upload path expression exceeds 21000: " + parsed.compiled.length);
+    return parsed;
+  }
+  function grouped(separator = "\n") {
+    return original.join("\n") + "\n" + inheritedBrowserCases.map(row =>
+      "${{ env." + row.public_output_variable + " && format('"
+      + row.public_files.map(file => "{0}/" + file).join(separator)
+      + "', env." + row.public_output_variable + ") || '' }}").join("\n") + "\n";
+  }
+  function expected(env) {
+    return [
+      ...originalFamilies.flatMap(([root, files]) => files.map(file => (env[root] ?? "") + "/" + file)),
+      ...inheritedBrowserCases.flatMap(row => env[row.public_output_variable]
+        ? row.public_files.map(file => env[row.public_output_variable] + "/" + file) : []),
+    ];
+  }
+  function allRootStates(scalar) {
+    const parsed = template(scalar);
+    assert.equal(original.length, 26);
+    assert.deepEqual(inheritedBrowserCases.map(row => row.public_files.length), [89,20,20,16,6,6,17,15,12]);
+    let states = 0;
+    for (let mask = 0; mask < 512; mask += 1) {
+      const env = Object.fromEntries(originalFamilies.map(([root], index) => [root, "/original-prefix-" + index]));
+      inheritedBrowserCases.forEach((row, index) => {
+        if (mask & (1 << index)) env[row.public_output_variable] = "/history-prefix-" + index + " path with spaces";
+        else if (index % 2) env[row.public_output_variable] = ""; // both absent and explicit empty
+      });
+      const paths = eligible(render(parsed, env));
+      assert.deepEqual(paths, expected(env), "exact ordered whitelist/absent-root semantics mask=" + mask);
+      assert.equal(new Set(paths).size, paths.length, "duplicate eligible path");
+      states += 1;
+    }
+    assert.equal(states, 512);
+    return parsed;
+  }
+  function upload(source = workflow) {
+    const model = yaml.load(source);
+    const uploads = model.jobs.backend.steps.filter(step => step.uses?.startsWith("actions/upload-artifact@"));
+    assert.equal(uploads.length, 1);
+    assert.equal(uploads[0].id, "native-browser-evidence");
+    assert.equal(typeof uploads[0].with.path, "string");
+    return uploads[0];
+  }
+  function replacement(scalar) {
+    const step = upload();
+    const changed = mutateNamedStep(workflow, "backend", step.name,
+      source => mutateActionInput(source, "path", JSON.stringify(scalar)));
+    assert.equal(upload(changed).with.path, scalar, "mutation must reach typed YAML path");
+    return changed;
+  }
+  function budgetFailure(failures) {
+    return failures.some(failure => /expression/i.test(failure) && failure.includes("21000"));
+  }
+  function boundary(length) {
+    const shell = "${{ format('{0}', env.CONSOLE_BROWSER_JOURNEY_OUTPUT) }}";
+    const padding = "p".repeat(length - template(shell).compiled.length);
+    const scalar = shell.replace("'{0}'", "'" + padding + "{0}'");
+    assert.equal(template(scalar).compiled.length, length);
+    return scalar;
+  }
+
+  it("keeps the actual mixed upload path within GitHub's compiled expression limit", () => {
+    underLimit(upload().with.path);
+  });
+
+  it("makes the named production preflight gate diagnose an overlong compiled path", () => {
+    const actualLength = template(upload().with.path).compiled.length;
+    const observed = [["actual", actualLength, budgetFailure(evaluateCiPreflight(workflow).failures)]];
+    for (const length of [20999, 21000, 21001, 22000]) {
+      const source = replacement(boundary(length));
+      observed.push(["mutation", length, budgetFailure(evaluateCiPreflight(source).failures)]);
+    }
+    assert.deepEqual(observed, observed.map(([kind, length]) => [kind, length, length > limit]),
+      "production gate must diagnose the actual and synthetic compiled scalar budget; unrelated exact-path lock failures do not count");
+  });
+
+  it("accepts near-bound expressions and rejects greater than21000 using compiled UTF16 source length", () => {
+    for (const length of [20999,21000]) assert.doesNotThrow(() => underLimit(boundary(length)));
+    for (const length of [21001,22000]) assert.throws(() => underLimit(boundary(length)), /21000/);
+    const unicode = "${{ format('🧪{0}', env.CONSOLE_BROWSER_JOURNEY_OUTPUT) }}";
+    assert.equal(template(unicode).compiled.length, template(unicode.replace("🧪", "pp")).compiled.length);
+    assert.ok(Buffer.byteLength(template(unicode).compiled, "utf8") > template(unicode).compiled.length);
+  });
+
+  it("preserves all227 actual ordered paths and omits absent histories across512 mixed-prefix states", () => {
+    const scalar = upload().with.path;
+    assert.equal(scalar.slice(0, original.join("\n").length + 1), original.join("\n") + "\n");
+    allRootStates(scalar);
+  });
+
+  it("qualifies whole-history grouping with real LF and the same closed path semantics", () => {
+    const scalar = grouped();
+    const parsed = underLimit(scalar);
+    assert.equal(parsed.expressions.length, 35);
+    assert.equal(parsed.compiled.length, 10654, "source projection is pinned, not hosted parser evidence");
+    assert.equal(scalar.length, 10689);
+    allRootStates(scalar);
+  });
+
+  it("keeps the existing partial-failure upload caller's201 semantic slots for old and grouped inputs", () => {
+    const values = Object.fromEntries(inheritedBrowserCases.map(row => [row.public_output_variable, "/caller-prefix/" + row.tag]));
+    const expectedPaths = inheritedBrowserCases.flatMap(row => row.public_files.map(file => values[row.public_output_variable] + "/" + file));
+    for (const scalar of [original.join("\n") + "\n" + inheritedUploadExpressions().join("\n") + "\n", grouped()]) {
+      const source = replacement(scalar);
+      assert.deepEqual(guardedInheritedUploads(source, values), expectedPaths);
+      assert.deepEqual(guardedInheritedUploads(source, {}), Array(201).fill(""));
+      for (const row of inheritedBrowserCases) {
+        const missing = { ...values }; delete missing[row.public_output_variable];
+        const slots = guardedInheritedUploads(source, missing);
+        assert.equal(slots.length, 201);
+        assert.equal(slots.filter(value => value === "").length, row.public_files.length);
+        assert.deepEqual(slots.filter(Boolean), expectedPaths.filter(path => !path.startsWith(values[row.public_output_variable] + "/")));
+      }
+    }
+  });
+
+  it("rejects literal backslash-n, missing root guards, reordered files and private or wildcard additions", () => {
+    assert.throws(() => allRootStates(grouped("\\n")));
+    const scalar = grouped();
+    const first = inheritedBrowserCases[0].public_output_variable;
+    for (const changed of [
+      scalar.replace("env." + first + " && ", ""),
+      scalar.replace("{0}/result.json\n{0}/owner-receipt.json", "{0}/owner-receipt.json\n{0}/result.json"),
+      scalar.replace("{0}/result.json", "{0}/runtime/private.json"),
+      scalar.replace("{0}/result.json", "{0}/**"),
+      scalar + "${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT }}/runtime/**\n",
+    ]) { assert.notEqual(changed, scalar); assert.throws(() => allRootStates(changed)); }
+  });
+
+  it("parses quotes braces precedence and string roots without arbitrary context or function fallback", () => {
+    const root = "CONSOLE_INHERITED_PEOPLE_OUTPUT";
+    const value = "${{ env." + root + " && format('{0}/a''b{{literal}}.png', env." + root + ") || '' }}";
+    const parsed = template(value);
+    assert.equal(render(parsed, {}), "");
+    for (const prefix of ["0", "false", "/opaque/'quote'/{braces}/🧪"])
+      assert.equal(render(parsed, { [root]: prefix }), prefix + "/a'b{literal}.png");
+    for (const source of [
+      "${{ secrets.PRIVATE_ROOT }}", "${{ env.PRIVATE_OUTPUT }}", "${{ join('unsafe', 'value') }}",
+      "${{ env." + root + " & 'value' }}", "${{ format('unterminated, env." + root + ") }}",
+      "${{ format('{1}', env." + root + ") }}", "${{ format('{0}', env." + root + ") }",
+    ]) assert.throws(() => render(template(source), { [root]: "/root" }));
+  });
 });

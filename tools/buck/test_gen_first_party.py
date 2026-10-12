@@ -2047,7 +2047,7 @@ class BrowserIntegrationVariantsTests(unittest.TestCase):
                 additional = actual_path[len(retained):]
                 self.assertEqual(201, len(additional.splitlines()), "all inherited evidence paths required")
                 # Independently frozen from reviewed coverage-and-evidence-v2.json.
-                self.assertEqual("b994df9ec64c972a7ccb9ccc16eba21bf0e191b19ac7ba1dbbaa43c7a2e9599c",
+                self.assertEqual('91d80ba4b89d64e205242a21e7db966be365a8966d1383e3b7dcfdf258826d55',
                                  hashlib.sha256(additional.encode()).hexdigest(),
                                  "exact ordered whole-path conditional upload suffix required")
                 wanted = {**wanted, "with": {**wanted["with"], "path": retained + additional}}
