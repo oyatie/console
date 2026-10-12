@@ -4,7 +4,7 @@
   "counts": {
     "mapped": 238,
     "unmapped": 3,
-    "native": 2,
+    "native": 3,
     "workflow_targets": 223,
     "workflow_mapped": 223,
     "workflow_missing": 0
@@ -5705,6 +5705,11 @@
       "wrapper": "app-health-readiness-browser-pg",
       "loc": "//backend/app:console-app-itest-health_readiness-browser",
       "reason": "Required native Buck2 browser variant with test-browser feature, executed by CI payroll hydration browser step; intentionally no Cargo producer. Not dark. Native graph and CI execution are checked by tools/buck/test_gen_first_party.py."
+    },
+    {
+      "wrapper": "identity-rest-unit-pg",
+      "loc": "//backend/crates/identity/rest:console-identity-rest-unit",
+      "reason": "Required native Buck2 Identity unit binary, executed by CI through the PostgreSQL credential-isolation wrapper; no Cargo producer. The declared wrapper dependency and canonical CI unit command bind this exact target."
     }
   ],
   "unmapped": [

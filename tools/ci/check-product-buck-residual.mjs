@@ -4,7 +4,7 @@
  *
  * After S2, the load-bearing PG facets run via cargo_needs_postgres.sh. Any
  * product wrappers in ci.yml must appear in postgres-cargo-map.json. Reviewed
- * native browser variants are separate from the retained Cargo transition.
+ * native product tests are separate from the retained Cargo transition.
  * Unknown wrappers fail closed; the legacy residual ceiling does not increase.
  */
 import { readFileSync } from "node:fs";
@@ -17,9 +17,10 @@ export const MAX_PRODUCT_BUCK_RESIDUAL = 7;
 
 // This finite admission roster is checked against the registry, not inferred
 // from a target name. Generator tests verify the native graph and CI producers.
-const NATIVE_BROWSER_TARGETS = new Map([
+const NATIVE_PRODUCT_TARGETS = new Map([
   ["app-auth-rest-browser-pg", "//backend/app:console-app-itest-auth_rest-browser"],
   ["app-health-readiness-browser-pg", "//backend/app:console-app-itest-health_readiness-browser"],
+  ["identity-rest-unit-pg", "//backend/crates/identity/rest:console-identity-rest-unit"],
 ]);
 
 export function extractBuckWrappersFromCiYml(wf) {
@@ -81,17 +82,17 @@ export function residualFailures(wf, map, { maxResidual = MAX_PRODUCT_BUCK_RESID
   const seenNative = new Set();
   for (const row of map.native ?? []) {
     const name = row.wrapper;
-    if (!NATIVE_BROWSER_TARGETS.has(name) || row.loc !== NATIVE_BROWSER_TARGETS.get(name)) {
-      failures.push(`unapproved native browser wrapper/target: ${name}`);
+    if (!NATIVE_PRODUCT_TARGETS.has(name) || row.loc !== NATIVE_PRODUCT_TARGETS.get(name)) {
+      failures.push(`unapproved native product wrapper/target: ${name}`);
     }
     if (typeof row.reason !== "string" || !row.reason.trim()) {
-      failures.push(`native browser ${name} lacks reason`);
+      failures.push(`native product ${name} lacks reason`);
     }
     if (seenNative.has(name) || legacyNames.has(name)) {
-      failures.push(`duplicate or overlapping native browser: ${name}`);
+      failures.push(`duplicate or overlapping native product: ${name}`);
     }
     if (!all.includes(name)) {
-      failures.push(`registered native browser absent from CI: ${name}`);
+      failures.push(`registered native product absent from CI: ${name}`);
     }
     seenNative.add(name);
   }
