@@ -20,7 +20,7 @@
  * router is merged into the production app — a `Router` that is built and never
  * mounted still counts as served — and it cannot evaluate `#[cfg]`, so a router
  * assembled inside a `#[cfg(test)]` module is indistinguishable from a mounted
- * one. Only the two known timeout sources are excluded after verifying their
+ * one. Only the three known test route sources are excluded after verifying their
  * real test-only inclusion. This bounded check is not Rust module reachability;
  * ambiguous inclusions fail closed and every other route source remains scanned.
  * `backend/app/tests/openapi_drift.rs` is the compiled counterpart and remains
@@ -46,8 +46,9 @@ const httpMethods = ["get", "put", "post", "delete", "options", "head", "patch",
 const httpMethodSet = new Set(httpMethods);
 const methodConstructor = new RegExp(`\\b(${httpMethods.join("|")})\\s*\\(`, "g");
 const testOnlyRouteParents = new Map([
-  ["backend/app/src/native_payroll_timeout_tests.rs", "backend/app/src/native_payroll.rs"],
-  ["backend/app/src/native_people_timeout_tests.rs", "backend/app/src/native_people.rs"],
+  ["backend/app/src/native_payroll_timeout_tests.rs", ["backend/app/src/native_payroll.rs", "timeout_tests"]],
+  ["backend/app/src/native_people_timeout_tests.rs", ["backend/app/src/native_people.rs", "timeout_tests"]],
+  ["backend/app/src/native_group_process_transport_tests.rs", ["backend/app/src/native_group_process.rs", "transport_tests"]],
 ]);
 
 /**
@@ -150,7 +151,7 @@ function discoverRouteSourceFiles() {
     }
   }
 
-  for (const [testSource, parent] of testOnlyRouteParents) {
+  for (const [testSource, [parent, moduleName]] of testOnlyRouteParents) {
     if (!sources.has(testSource)) continue;
     const filename = testSource.slice(testSource.lastIndexOf("/") + 1);
     const stem = filename.slice(0, -3);
@@ -168,7 +169,7 @@ function discoverRouteSourceFiles() {
       return count ? [{ file, count, source }] : [];
     });
     const declaration = ["#", "[", "cfg", "(", "test", ")", "]", "#", "[", "path", "=",
-      JSON.stringify(filename), "]", "mod", "timeout_tests", ";"];
+      JSON.stringify(filename), "]", "mod", moduleName, ";"];
     const tokens = references.length === 1
       ? rustCodeTokens(references[0].source)
       : [];
