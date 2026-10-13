@@ -401,16 +401,9 @@ jobs:
             -p console-ontology-canonical-adapter-postgres -p console-orgchange-adapter-postgres \
             -p console-gate-writer-ownership -p console-identity-adapter-postgres
           check_status "domain --lib sweep"
-          # Its own invocation, and deliberately NOT also in the sweep above.
-          # The executed-tests ratchet keys a test binary by (crate_root,
-          # feature set), and this crate's Buck face declares islands+ssr --
-          # the same set Cargo applies by default. An invocation leaving them
-          # implicit keys a different binary, so the real one reads as
-          # executing nowhere and the ratchet calls it a test that cannot fail.
-          # Naming them makes the two identities the same; listing the crate
-          # in both places would compile and run the same 8 tests twice and
-          # leave a bare key the ratchet cannot see, because it only checks
-          # defined-minus-executed.
+          # Keep one explicit islands+ssr invocation; the ratchet includes
+          # manifest defaults when resolving both implicit and explicit features.
+          # Adding this crate to the sweep would execute the same tests twice.
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
             -p console-payroll-ui --features islands,ssr
           check_status "payroll-ui --lib"
