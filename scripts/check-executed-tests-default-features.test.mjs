@@ -1,7 +1,7 @@
 // Miniature static repositories exercise the real gate; no business data or compiler runs.
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
-import {cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync} from "node:fs";
+import {cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -20,7 +20,7 @@ const ANCHORS = [
   ["backend/app/src/lib.rs", ["test-postgres"]],
 ];
 function fixture({mode = "cargo", explicit = [], literalSsr = false, pinnedSsr = false, options = [], omitDeclaration = false, metadataFault = null, defaults = ["ssr", "islands"], guard = "ssr"} = {}) {
-  const root = mkdtempSync(join(tmpdir(), "console-static-default-feature-test-"));
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "console-static-default-feature-test-")));
   const write = (path, value, mode) => {
     const absolute = join(root, path);
     mkdirSync(dirname(absolute), {recursive: true});
