@@ -51,7 +51,7 @@ function fixture({mode = "cargo", explicit = [], literalSsr = false, pinnedSsr =
     counts[PEOPLE] = 8;
     if (!omitDeclaration) declare(PEOPLE, guard === "dev-auth" ? ["dev-auth"] : ["islands", "ssr"], "people");
     if (literalSsr) declare(PEOPLE, ["ssr"], "people_ssr");
-    if (explicit.length) declare(PEOPLE, [...defaults, ...explicit], "people_extra");
+    if (explicit.length && !omitDeclaration) declare(PEOPLE, [...defaults, ...explicit], "people_extra");
     const anchorTargets = targets.slice(0, ANCHORS.length);
     workflow.push(`tools/buck2 test ${anchorTargets.join(" ")}`);
     const argv = ["cargo", "test", "-p", "console-payroll-ui", "--test", "react_people", ...options];
@@ -60,7 +60,7 @@ function fixture({mode = "cargo", explicit = [], literalSsr = false, pinnedSsr =
       workflow.push("tools/ci/cargo_needs_postgres.sh --workflow-only");
       write("tools/ci/postgres-cargo-map.json", JSON.stringify({entries: [{name: "people", in_workflow_postgres_job: true, cargo_argv: argv}]}));
     }
-    if (explicit.length) workflow.push(`${argv.join(" ")} --features ${explicit.join(",")}`);
+    if (mode === "cargo" && explicit.length) workflow.push(`${argv.join(" ")} --features ${explicit.join(",")}`);
     if (mode === "buck") workflow.push(`tools/buck2 test ${targets.slice(ANCHORS.length).join(" ")}`);
     if (mode === "missing") delete counts[PEOPLE];
     write(".github/workflows/ci.yml", `jobs:\n  static-fixture:\n    steps:\n      - name: Run\n        run: |\n${workflow.map(line => `          ${line}`).join("\n")}\n`);
@@ -117,9 +117,11 @@ it("explicit Cargo features add to defaults and preserve both defined variants",
   assert.deepEqual(result.report.dark, []);
 });
 it("PostgreSQL map Cargo invocation applies the same defaults", () => {
-  const result = fixture({mode: "postgres"});
-  assert.equal(result.status, 0, result.stderr);
-  assert.deepEqual(result.report.dark, []);
+  for (const settings of [{mode: "postgres"}, {mode: "postgres", guard: "extra", omitDeclaration: true, options: ["--features", "extra"]}]) {
+    const result = fixture(settings);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(result.report.dark, []);
+  }
 });
 it("unsupported feature-mode overrides fail closed in both Cargo sources", () => {
   for (const mode of ["cargo", "postgres"]) for (const option of ["--no-default-features", "--all-features"]) {
