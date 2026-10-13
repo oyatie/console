@@ -1,0 +1,339 @@
+{
+  "base_commit": "28678952da4fbf9616ff36d4324aa04ad5b12ecb",
+  "base_tree": "21f1ab1315f561e479da4bbbb975996293e27d95",
+  "historical_reference_files": [
+    {
+      "bytes": 7413,
+      "git_blob_sha": "871d2aaec94854bfecc357c28ae512ea20d13309",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/before-owner.log",
+      "resolution": "active_unchanged",
+      "sha256": "f0febe1c91255e267cd1820871d84edcbb12277b668cc6d1fa5059798094fbb7"
+    },
+    {
+      "bytes": 361931,
+      "git_blob_sha": "23ca6bb29aa57f1c8b9f148846e27a47c67d9fa9",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/preserved-evidence-sha256.json",
+      "resolution": "active_unchanged",
+      "sha256": "a5dccd8364f06a22de5dcf27b664eb50f4a0c2c8f98fc79ff57d472a2124bbf2"
+    },
+    {
+      "bytes": 661126,
+      "git_blob_sha": "8651116974e2030ad2b27bfcbee8def73e7d7512",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/candidate-e1007b0c-verify.log",
+      "resolution": "active_unchanged",
+      "sha256": "f320520a05b2749095d69ca64935e9c71fc145db0449a8e4498e12577cef7cfd"
+    },
+    {
+      "bytes": 707,
+      "git_blob_sha": "15a4128ce9c31d9074144e7897f5be161c8e1bd7",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/owner-red.log",
+      "resolution": "active_unchanged",
+      "sha256": "a142f783c3281833ebfa1b0a1621f9484ebf5975eb1718f43ec75a80910635b0"
+    },
+    {
+      "bytes": 4095,
+      "git_blob_sha": "550625faa01416d637eaa1b85df2279b4c9d33d7",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/security-test-review.json",
+      "resolution": "active_unchanged",
+      "sha256": "920684e97ffd10c7fa7f5f051e1d1982dac0bc837b8ec94500f54ac275b5ab48"
+    },
+    {
+      "bytes": 733,
+      "git_blob_sha": "6e421d096f31a2e4f3e11482174aa87a0bc40ac1",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/source-custody.json",
+      "resolution": "active_unchanged",
+      "sha256": "203aae016e8eb1315144302e49d300a1ef248c0c23740e8db1488d90a986b8a2"
+    },
+    {
+      "bytes": 606280,
+      "git_blob_sha": "de0ccb6862d4e3640c47f45fcad65ec393060a90",
+      "mode": "100644",
+      "path": "docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log",
+      "resolution": "pinned_original",
+      "sha256": "70882bb929794167772c536b14f8fd243e5d122e16beb9d9048b65af15506f90"
+    },
+    {
+      "bytes": 6123,
+      "git_blob_sha": "7dbe2a9c5359add89c55b8767d49078225008b69",
+      "mode": "100644",
+      "path": "docs/evidence/console/policy/2026-09-22-native-cedar/receipt.json",
+      "resolution": "active_unchanged",
+      "sha256": "880a60e565c668dd7b01f89803ed9bbc3cef4e6ebd5bb54b46914fe2350fca4d"
+    },
+    {
+      "bytes": 3100,
+      "git_blob_sha": "6dc0a694af0a881c0a03ea2a0d1aebfa96fcfb2b",
+      "mode": "100644",
+      "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/clock-investigation.txt",
+      "resolution": "active_unchanged",
+      "sha256": "67757c4e29ae837b46d48f2bbe747e0ef43eb515a9e3d3a02ed9d37dad05250f"
+    },
+    {
+      "bytes": 8274,
+      "git_blob_sha": "4669347f07d1ec32c761f189ee2c5d6e2711d988",
+      "mode": "100644",
+      "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/receipt.json",
+      "resolution": "active_unchanged",
+      "sha256": "1f5d08bf1316d1f2ed4cba64de712fb51f3ff5de65dc765da9aa747b48623e82"
+    }
+  ],
+  "historical_reference_lines": [
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 34,
+      "line_sha256": "4abb7f439ca9d69cd7397773d4a13ff5862b9c8137b48b7a1afb003310b6b8b6",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/before-owner.log"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 35,
+      "line_sha256": "22b986c6a3720426682223809f1c5ad973e181fbfe5e5b6f5fda9f42fbb480a5",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/before-owner.log"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 36,
+      "line_sha256": "5e8c67fca831f8b6eaea1cfc16fc767f05d04acf09591228d0a91b2c56eb8ece",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/before-owner.log"
+    },
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 677,
+      "line_sha256": "5438ad79edf21c9220d25e9d29cbb55ec3dc3e23a3d0c4c5058e1150597991f9",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/preserved-evidence-sha256.json"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 846,
+      "line_sha256": "f50adef79c3a8861249160f2df0471d0f6f4da8f3d106fef8c1a0154f30a0d9b",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/approved-classification-243067e5/preserved-evidence-sha256.json"
+    },
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 2112,
+      "line_sha256": "4abb7f439ca9d69cd7397773d4a13ff5862b9c8137b48b7a1afb003310b6b8b6",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/candidate-e1007b0c-verify.log"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 2113,
+      "line_sha256": "22b986c6a3720426682223809f1c5ad973e181fbfe5e5b6f5fda9f42fbb480a5",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/candidate-e1007b0c-verify.log"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 2114,
+      "line_sha256": "5e8c67fca831f8b6eaea1cfc16fc767f05d04acf09591228d0a91b2c56eb8ece",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/candidate-e1007b0c-verify.log"
+    },
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 2,
+      "line_sha256": "4abb7f439ca9d69cd7397773d4a13ff5862b9c8137b48b7a1afb003310b6b8b6",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/owner-red.log"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 3,
+      "line_sha256": "22b986c6a3720426682223809f1c5ad973e181fbfe5e5b6f5fda9f42fbb480a5",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/owner-red.log"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 4,
+      "line_sha256": "5e8c67fca831f8b6eaea1cfc16fc767f05d04acf09591228d0a91b2c56eb8ece",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/owner-red.log"
+    },
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 35,
+      "line_sha256": "913ac55b96fb5c4a49e756773a5c6d858f7aa4c246878e0cce79bbaaff9875e4",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/security-test-review.json"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 36,
+      "line_sha256": "7cf566c4712b726b37a34443a481c9dc0b57ffc72429fbc7d399762a719f45c5",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/security-test-review.json"
+    },
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 6,
+      "line_sha256": "913ac55b96fb5c4a49e756773a5c6d858f7aa4c246878e0cce79bbaaff9875e4",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/source-custody.json"
+    },
+    {
+      "basenames": [
+        "candidate4b11ea01-sandbox-verify.log"
+      ],
+      "line": 7,
+      "line_sha256": "7cf566c4712b726b37a34443a481c9dc0b57ffc72429fbc7d399762a719f45c5",
+      "path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/source-custody.json"
+    },
+    {
+      "basenames": [
+        "native-business-app-build-round2.log"
+      ],
+      "line": 83,
+      "line_sha256": "77082ba1b256763de92ee688d3b54bcf361066362f78cb2c8ef0528467e2c19f",
+      "path": "docs/evidence/console/policy/2026-09-22-native-cedar/receipt.json"
+    },
+    {
+      "basenames": [
+        "native_form_helpers_reject_expired_signed_proof_and_accept_current_control.log"
+      ],
+      "line": 7,
+      "line_sha256": "8e002d8df5e5eeeed48a98570a75db4b68ff967c06469a52a3d9f6bc324e2fba",
+      "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/clock-investigation.txt"
+    },
+    {
+      "basenames": [
+        "native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs.log"
+      ],
+      "line": 112,
+      "line_sha256": "46f325b243cd8b23cce1edb2b3d4b56581ecf09defccff795c2316bacb55ea49",
+      "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/receipt.json"
+    },
+    {
+      "basenames": [
+        "native_form_helpers_reject_expired_signed_proof_and_accept_current_control.log"
+      ],
+      "line": 114,
+      "line_sha256": "0e3def592ea58093a0b1a534a718953b3d034fb461c1a709bd43e885270d1b36",
+      "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/receipt.json"
+    },
+    {
+      "basenames": [
+        "candidate1085613a-verify.log"
+      ],
+      "line": 2053,
+      "line_sha256": "4abb7f439ca9d69cd7397773d4a13ff5862b9c8137b48b7a1afb003310b6b8b6",
+      "path": "docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log"
+    }
+  ],
+  "kind": "EXPLICIT_LOCATORS_NOT_ORIGINAL_OUTPUT",
+  "limitations": [
+    "A locator is not original log output; original bytes require exact Git recovery.",
+    "Historical values and deletion diffs remain readable in hosted Git.",
+    "Existing hosted history is not independent or confidential backup.",
+    "This receipt establishes evidence representation only; no workflow, release or production qualification."
+  ],
+  "originals": [
+    {
+      "locator": {
+        "bytes": 529,
+        "git_blob_sha": "b88593b6047fcf2ee20268a0753bf1abaa2c99c4",
+        "mode": "100644",
+        "path": "docs/evidence/console/integration/2026-09-20-cedar-ci-and-readiness/candidate1085613a-verify.log",
+        "sha256": "5caa114062156fe11b145bf8400e64f4b4491ede0872bb9f7e0916737d8d1f6a"
+      },
+      "original": {
+        "bytes": 682950,
+        "git_blob_sha": "0ede4aaa445c30c3cebc8a92dc3805a151f8e325",
+        "mode": "100644",
+        "path": "docs/evidence/console/integration/2026-09-20-cedar-ci-and-readiness/candidate1085613a-verify.log",
+        "sha256": "ab0f941ccc58e62a2be73a7d1afe35b16470395790da8cc0afc93102eea9ebe7"
+      }
+    },
+    {
+      "locator": {
+        "bytes": 535,
+        "git_blob_sha": "e86e5cb1362ccf57ce4559d09d95489b4c2c6f79",
+        "mode": "100644",
+        "path": "docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log",
+        "sha256": "64a3fc1770223db516f7d3d80e3e1bd44521c4d8f669b0343b45e4d4e755f678"
+      },
+      "original": {
+        "bytes": 606280,
+        "git_blob_sha": "de0ccb6862d4e3640c47f45fcad65ec393060a90",
+        "mode": "100644",
+        "path": "docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log",
+        "sha256": "70882bb929794167772c536b14f8fd243e5d122e16beb9d9048b65af15506f90"
+      }
+    },
+    {
+      "locator": {
+        "bytes": 521,
+        "git_blob_sha": "24b831c2078d01b9fedc6e3c1be48a888e205030",
+        "mode": "100644",
+        "path": "docs/evidence/console/policy/2026-09-22-native-cedar/native-business-app-build-round2.log",
+        "sha256": "64ed40250e5ee7bfd795ece3703e46da65c60f6ff706c2863fb8c118d25406c5"
+      },
+      "original": {
+        "bytes": 11391,
+        "git_blob_sha": "a80e4a29ef3c7cf7ebc4a771255f627b60ae1f01",
+        "mode": "100644",
+        "path": "docs/evidence/console/policy/2026-09-22-native-cedar/native-business-app-build-round2.log",
+        "sha256": "b2ecab35e567cc9147d1bad24f5e780f90f48e146a26bf984e5cdfb7537195c7"
+      }
+    },
+    {
+      "locator": {
+        "bytes": 581,
+        "git_blob_sha": "06f567538265a3d29a2138d69f0f1d5c8bdecf9e",
+        "mode": "100644",
+        "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/native_form_helpers_reject_expired_signed_proof_and_accept_current_control.log",
+        "sha256": "ec67363ae1b9aa9c65c3f7b423bdda98c31757dca31457ed44b791f14cc5bda9"
+      },
+      "original": {
+        "bytes": 5089,
+        "git_blob_sha": "b65506e29fce872663981abb0a996e7bb98761e9",
+        "mode": "100644",
+        "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/native_form_helpers_reject_expired_signed_proof_and_accept_current_control.log",
+        "sha256": "cf74a0ad119c0ff482bb6efa94efd0dc321c8e47375d0e570b52ad8c939392ea"
+      }
+    },
+    {
+      "locator": {
+        "bytes": 582,
+        "git_blob_sha": "b3f37d31adbeb760868fbf80b7f5fe9ba3140596",
+        "mode": "100644",
+        "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs.log",
+        "sha256": "4cea218735d05512915e582a659f2853499efecd1af8d8d1af6ad2324f208274"
+      },
+      "original": {
+        "bytes": 6525,
+        "git_blob_sha": "efec6a2bcdd17a9eb259ed7efaf4cd60f2a9036f",
+        "mode": "100644",
+        "path": "docs/evidence/console/policy/2026-09-22-native-session-audit-projection/native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs.log",
+        "sha256": "d6e098e64679ec4db49972102a5bbefd32a77d60563ed158073c392f66447b98"
+      }
+    }
+  ],
+  "recovery_commit": "6f15a1671e823293b2025d3b1f72d04034ab7693",
+  "schema": "console.historical_download_log_locators.v1"
+}
