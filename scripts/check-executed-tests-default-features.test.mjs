@@ -19,7 +19,7 @@ const ANCHORS = [
   ["backend/ci/gates/tenant-isolation/tests/owner_only_acl_postgres18.rs", []],
   ["backend/app/src/lib.rs", ["test-postgres"]],
 ];
-function fixture({mode = "cargo", explicit = [], literalSsr = false, pinnedSsr = false, options = [], omitDeclaration = false, metadataFault = null, defaults = ["ssr", "islands"], guard = "ssr"} = {}) {
+function fixture({mode = "cargo", explicit = [], literalSsr = false, pinnedSsr = false, options = [], omitDeclaration = false, retainReference = false, metadataFault = null, defaults = ["ssr", "islands"], guard = "ssr"} = {}) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "console-static-default-feature-test-")));
   const write = (path, value, mode) => {
     const absolute = join(root, path);
@@ -61,7 +61,7 @@ function fixture({mode = "cargo", explicit = [], literalSsr = false, pinnedSsr =
       write("tools/ci/postgres-cargo-map.json", JSON.stringify({entries: [{name: "people", in_workflow_postgres_job: true, cargo_argv: argv}]}));
     }
     if (mode === "cargo" && explicit.length) workflow.push(`${argv.join(" ")} --features ${explicit.join(",")}`);
-    if (mode === "buck") workflow.push(`tools/buck2 test ${targets.slice(ANCHORS.length).join(" ")}`);
+    if (mode === "buck") workflow.push(`tools/buck2 test ${retainReference ? "//backend/crates/payroll/ui:case_people" : targets.slice(ANCHORS.length).join(" ")}`);
     if (mode === "missing") delete counts[PEOPLE];
     write(".github/workflows/ci.yml", `jobs:\n  static-fixture:\n    steps:\n      - name: Run\n        run: |\n${workflow.map(line => `          ${line}`).join("\n")}\n`);
     write("docs/program/executed-tests-baseline.json", JSON.stringify({dark_baseline: 0, deferred_fixture: [], defined_feature_variants: pinnedSsr ? [`${PEOPLE} --features ssr`] : [], test_attribute_baseline: counts}));
@@ -88,6 +88,11 @@ it("guarded default definition survives deletion of both declaration and workflo
   assert.equal(result.status, 1);
   assert.deepEqual(result.report.dark, [DEFAULT_KEY]);
   assert.deepEqual(result.report.unresolved, []);
+});
+it("missing native declaration with retained workflow reference is an unresolved link", () => {
+  const result = fixture({mode: "buck", omitDeclaration: true, retainReference: true});
+  assert.equal(result.status, 1);
+  assert.deepEqual(result.report.unresolved, ["ci.yml names //backend/crates/payroll/ui:case_people, which is not a rust_test in any BUCK file"]);
 });
 it("no-default package retains its nonempty required guard identity", () => {
   const result = fixture({defaults: [], guard: "dev-auth", explicit: ["dev-auth"], omitDeclaration: true});
