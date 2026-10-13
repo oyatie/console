@@ -26,6 +26,9 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import shlex
+import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -53,6 +56,160 @@ def check(name: str, ok: bool, detail: str = "") -> None:
     print(f"{'PASS' if ok else 'FAIL'} {name}{'' if ok else f'  -- {detail}'}")
     if not ok:
         FAILURES.append(name)
+
+
+def qualified_red_checks() -> None:
+    # Real children distinguish ordinary failure from a killed/crashed launcher.
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        observed = []
+
+        def real_runner(cmd, **kwargs):
+            proc = subprocess.run(cmd, timeout=5, **kwargs)
+            observed.append(proc)
+            return proc
+
+        for status in (0, 1, 101, 125, 126, 127, 128, 137):
+            observed.clear()
+            error = FANOUT.admit_lane(
+                {"lane": "1", "probe": f"exit {status}"},
+                cwd=root, runner=real_runner,
+            )
+            check(f"real shell exit {status} is observed exactly",
+                  len(observed) == 1 and type(observed[0].returncode) is int
+                  and observed[0].returncode == status)
+            check(f"real shell exit {status} follows default RED admission",
+                  (error is None) == (1 <= status <= 125), repr(error))
+
+        observed.clear()
+        error = FANOUT.admit_lane(
+            {"lane": "1", "probe": "kill -KILL $$"},
+            cwd=root, runner=real_runner,
+        )
+        check("real self-killed shell yields negative SIGKILL",
+              len(observed) == 1 and observed[0].returncode == -9)
+        check("real negative SIGKILL refuses admission", error is not None)
+
+        node = shutil.which("node")
+        check("Node is available for the real missing-test control", node is not None)
+        if node is not None:
+            missing = root / "absent.test.mjs"
+            observed.clear()
+            error = FANOUT.admit_lane(
+                {"lane": "1", "red_exit": 101,
+                 "probe": f"{shlex.quote(node)} --test {shlex.quote(str(missing))}"},
+                cwd=root, runner=real_runner,
+            )
+            check("real Node missing test exits 1 without a test file",
+                  not missing.exists() and len(observed) == 1
+                  and type(observed[0].returncode) is int
+                  and observed[0].returncode == 1
+                  and str(missing).encode() in observed[0].stderr)
+            check("red_exit 101 refuses raw Node missing-test exit 1",
+                  error is not None)
+
+    def runner_of(status):
+        return lambda _cmd, **_kwargs: SimpleNamespace(returncode=status)
+
+    probe = "qualified-red-probe --fixture fixed"
+    item = {"lane": "1", "probe": probe}
+    for status in (None, "1", "0", 1.0, 0.0, True, False):
+        error = FANOUT.admit_lane(item, cwd=Path("."), runner=runner_of(status))
+        check(f"default admission refuses {type(status).__name__} {status!r}",
+              error is not None)
+
+    for expected in (1, 101, 125):
+        error = FANOUT.admit_lane(
+            {**item, "red_exit": expected}, cwd=Path("."),
+            runner=runner_of(expected),
+        )
+        check(f"red_exit {expected} admits its exact integer match", error is None)
+    for status in (0, 1, 2, 125, 126, 127, -9, 128, 137, True, 101.0, "101", None):
+        error = FANOUT.admit_lane(
+            {**item, "red_exit": 101}, cwd=Path("."), runner=runner_of(status),
+        )
+        check(f"red_exit 101 refuses {type(status).__name__} {status!r}",
+              error is not None)
+
+    for expected in (None, True, False, 0, -1, 126, 127, 128, 101.0, "101"):
+        calls = []
+
+        def invalid_option_runner(cmd, **kwargs):
+            calls.append((cmd, kwargs))
+            return SimpleNamespace(returncode=101)
+
+        error = FANOUT.admit_lane(
+            {**item, "red_exit": expected}, cwd=Path("."),
+            runner=invalid_option_runner,
+        )
+        check(f"invalid red_exit {type(expected).__name__} {expected!r} refuses before execution",
+              error is not None and not calls)
+
+    # Only this spy can implement a lane; all roots and reports are ephemeral.
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        worktree = root / "lanes" / "lane-1"
+        worktree.mkdir(parents=True)
+        spec = root / "spec.json"
+        started = []
+
+        def fake_codex(prompt, cwd, sandbox, model, log):
+            started.append(str(cwd))
+            log.write_text("")
+            return True, "done", ""
+
+        with patch.multiple(FANOUT, REPO=root, LANES_ROOT=root / "lanes",
+                            _codex=fake_codex, _changed=lambda _wt: []):
+            for boundary in (root, worktree):
+                for label, status, exact in (
+                    ("exact mismatch", 1, True),
+                    ("negative signal", -9, False),
+                    ("signal-range exit", 137, False),
+                    ("noninteger", 1.0, False),
+                    ("boolean", True, False),
+                ):
+                    lane = {**item, "prompt": "fake only", "allow": []}
+                    if exact:
+                        lane["red_exit"] = 101
+                    spec.write_text(json.dumps([lane]))
+                    started.clear()
+                    calls = []
+
+                    def refusal_runner(cmd, *, cwd, **kwargs):
+                        calls.append((cmd, Path(cwd)))
+                        code = 0 if started else status if Path(cwd) == boundary else 101
+                        return SimpleNamespace(returncode=code)
+
+                    rc = FANOUT.run_lanes(
+                        spec, "unused", "workspace-write", runner=refusal_runner,
+                    )
+                    location = "integration" if boundary == root else "worktree"
+                    check(f"{location} {label} refuses before fake Codex starts",
+                          rc == 1 and not started
+                          and calls == [(probe, root), (probe, worktree)])
+
+            for after in (0, False, 0.0, "0", None):
+                spec.write_text(json.dumps([{
+                    **item, "red_exit": 101, "prompt": "fake only", "allow": [],
+                }]))
+                started.clear()
+                calls = []
+
+                def closure_runner(cmd, *, cwd, **kwargs):
+                    calls.append((cmd, Path(cwd), kwargs))
+                    return SimpleNamespace(returncode=101 if len(calls) <= 2 else after)
+
+                rc = FANOUT.run_lanes(
+                    spec, "unused", "workspace-write", runner=closure_runner,
+                )
+                check(f"postcheck {type(after).__name__} {after!r} requires actual integer zero",
+                      rc == (0 if type(after) is int and after == 0 else 1)
+                      and started == [str(worktree)])
+                check(f"postcheck {type(after).__name__} {after!r} reruns the exact owning probe",
+                      [(cmd, cwd) for cmd, cwd, _kwargs in calls]
+                      == [(probe, root), (probe, worktree), (probe, worktree)]
+                      and all(kwargs == {"shell": True, "capture_output": True}
+                              for _cmd, _cwd, kwargs in calls))
 
 
 def main() -> int:
@@ -340,6 +497,8 @@ def main() -> int:
         FANOUT.LANES_ROOT = orig_lanes
         FANOUT._codex = orig_codex
         FANOUT._changed = orig_changed
+
+    qualified_red_checks()
 
     print()
     if FAILURES:
