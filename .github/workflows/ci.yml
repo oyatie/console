@@ -1451,7 +1451,7 @@ jobs:
           env -u DATABASE_URL tools/buck2 test \
             //backend/crates/platform/authz:console-platform-authz-unit \
             //backend/crates/platform/provisioning:console-platform-provisioning-unit \
-            //backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity
+            //backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity //backend/crates/payroll/ui:console-payroll-ui-itest-react_people
 
       - name: Buck2 console-app unit suite
         id: app-unit

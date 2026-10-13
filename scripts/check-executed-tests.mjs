@@ -75,7 +75,7 @@ import {
 } from "./lib/executed-tests-baseline.mjs";
 import { directExecutable, executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
 import { unitTestedCrateSrcRoots } from "./check-executed-tests-cfg.mjs";
-import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
+import { cargoDefaultFeatures, cargoTestKind } from "./lib/cargo-test-kind.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CI = join(ROOT, ".github/workflows/ci.yml");
@@ -145,7 +145,7 @@ function indexWrappers() {
   return byName;
 }
 
-/** Every cargo test target: repo-relative src_path → { pkg, kind, name }, and by package. */
+/** Every cargo test target and its owning manifest features, indexed by source/package. */
 function cargoGraph() {
   const raw = execFileSync(
     "cargo",
@@ -154,19 +154,22 @@ function cargoGraph() {
   );
   const bySrc = new Map();
   const byPackage = new Map();
+  const errors = [];
   for (const pkg of JSON.parse(raw).packages) {
     const targets = [];
     for (const target of pkg.targets) {
       if (!target.test) continue; // `test = false` in Cargo.toml means no test binary
       const kind = cargoTestKind(target.kind);
       if (!kind) continue;
-      const entry = { pkg: pkg.name, kind, name: target.name, src: relative(ROOT, target.src_path) };
+      const entry = { pkg: pkg.name, kind, name: target.name, src: relative(ROOT, target.src_path), features: pkg.features };
+      if (bySrc.has(entry.src)) errors.push(`ambiguous Cargo metadata owner for ${entry.src}`);
       bySrc.set(entry.src, entry);
       targets.push(entry);
     }
+    if (byPackage.has(pkg.name)) errors.push(`ambiguous Cargo metadata package ${pkg.name}`);
     byPackage.set(pkg.name, targets);
   }
-  return { bySrc, byPackage };
+  return { bySrc, byPackage, errors };
 }
 
 const invocation = (entry, features) =>
@@ -189,7 +192,17 @@ const workflowCommands = executableWorkflowCommands(ci).map((command) => ({
 }));
 
 const executed = new Map();   // key(file, features) → how it is reached
-const unresolved = [];
+const unresolved = [...cargo.errors];
+
+function owningFeatures(target, requested) {
+  try {
+    if (!target) throw new Error("missing Cargo metadata owner");
+    return cargoDefaultFeatures(target.features, requested);
+  } catch (error) {
+    unresolved.push(`${target?.src ?? "guarded source"}: ${error.message}`);
+    return null;
+  }
+}
 
 // 1. //tools/buck:<wrapper>, but only as an argument to a command that can actually invoke
 // the wrapper or Buck2. An echo/comment/disabled step is not a path to a test binary.
@@ -232,6 +245,10 @@ for (const wrapperArg of buckInvocations.flatMap(({ executable }) => executable.
           unresolved.push(`postgres-cargo-map entry ${entry.name} has non-cargo argv`);
           continue;
         }
+        if (lineTokens.some(token => /^(--all-features|--no-default-features)(=|$)/.test(token))) {
+          unresolved.push(`postgres-cargo-map entry ${entry.name} uses an unsupported feature-mode override`);
+          continue;
+        }
         const optionValues = (short, long) => {
           const values = [];
           for (let index = 2; index < lineTokens.length; index += 1) {
@@ -257,7 +274,10 @@ for (const wrapperArg of buckInvocations.flatMap(({ executable }) => executable.
             const selected = tests.length === 0 && !lib
               ? true
               : (lib && target.kind === "lib") || (target.kind === "test" && tests.includes(target.name));
-            if (selected) executed.set(key(target.src, features), `cargo-map:${entry.name}`);
+            if (selected) {
+              const effective = owningFeatures(target, features);
+              if (effective) executed.set(key(target.src, effective), `cargo-map:${entry.name}`);
+            }
           }
         }
       }
@@ -290,7 +310,7 @@ for (const { executable } of workflowCommands) {
   // files as executed.
   if (/\s--doc(\s|$)/.test(line)) continue;
   if (/--all-features|--no-default-features/.test(line)) {
-    unresolved.push(`ci.yml runs "${line.trim()}"; this resolver models explicit --features only`);
+    unresolved.push(`ci.yml runs "${line.trim()}"; this resolver models defaults plus explicit local --features only`);
     continue;
   }
   const optionValues = (short, long) => {
@@ -324,7 +344,10 @@ for (const { executable } of workflowCommands) {
       const selected = tests.length === 0 && !lib
         ? true
         : (lib && target.kind === "lib") || (target.kind === "test" && tests.includes(target.name));
-      if (selected) executed.set(key(target.src, features), `cargo test -p ${pkg}`);
+      if (selected) {
+        const effective = owningFeatures(target, features);
+        if (effective) executed.set(key(target.src, effective), `cargo test -p ${pkg}`);
+      }
     }
   }
 }
@@ -345,9 +368,8 @@ for (const { executable } of workflowCommands) {
  *     dev-auth PostgreSQL suite stopped running. `defined` must not be derived from the
  *     thing being deleted. A pinned entry survives, goes dark, and names itself.
  *   - a file-level `#![cfg(feature = "X")]`, which is the file saying that WITHOUT X it is
- *     empty. This one is filesystem-derived and outlives Buck2; it also replaces the bare
- *     entry rather than adding to it, since running such a file with no features runs
- *     nothing at all.
+ *     empty. Its owning Cargo defaults plus that minimum form the source-derived key,
+ *     independently of Buck2 declarations; explicit Buck variants and pins stay literal.
  *   - the `features = [...]` of any rust_test whose crate_root is this file. Adds new
  *     variants for free; cannot defend an existing one, per the first bullet.
  *
@@ -403,7 +425,11 @@ function definedBinaries() {
     if (isLib && !unitTested.has(crateSrc(rel))) continue;
     const variants = new Set(declared.get(rel) ?? []);
     const fileLevel = text.match(/^#!\[cfg\(feature = "([^"]+)"\)\]/m)?.[1];
-    if (fileLevel) { variants.delete(rel); variants.add(key(rel, [fileLevel])); }
+    if (fileLevel) {
+      variants.delete(rel);
+      const features = owningFeatures(cargo.bySrc.get(rel), [fileLevel]);
+      if (features) variants.add(key(rel, features));
+    }
     if (variants.size === 0) variants.add(rel);
     for (const variant of variants) out.add(variant);
   }
