@@ -226,7 +226,8 @@ describe("real tree", () => {
   });
 });
 
-function trackedRouteFixture({ testName, parentName, guarded = true, extraInclude = false, rogue = false, testApiRoute = true }) {
+function trackedRouteFixture({ testName, parentName, moduleName = "timeout_tests", guarded = true, extraInclude = false, rogue = false, testApiRoute = true }) {
+  assert.ok(["timeout_tests", "transport_tests"].includes(moduleName), "fixture module must be a known test module");
   const files = {
     "scripts/check-platform-contract-drift.mjs": readFileSync(cli, "utf8"),
     "backend/openapi/openapi.yaml": openApi(["GET /api/x"]),
@@ -237,7 +238,7 @@ function trackedRouteFixture({ testName, parentName, guarded = true, extraInclud
         .route("/api/v1/mail/mox/webhook", post(mox))
 }
 `,
-    [`backend/app/src/${parentName}`]: `${guarded ? "#[cfg(test)]\n" : ""}#[path = "${testName}"]\nmod timeout_tests;\n`,
+    [`backend/app/src/${parentName}`]: `${guarded ? "#[cfg(test)]\n" : ""}#[path = "${testName}"]\nmod ${moduleName};\n`,
     [`backend/app/src/${testName}`]: `fn router() -> Router {
     Router::new().route("${testApiRoute ? "/api/test-only" : "/internal/test-only"}", ${testApiRoute ? "any" : "get"}(handler))
 }
@@ -265,29 +266,45 @@ function trackedRouteFixture({ testName, parentName, guarded = true, extraInclud
 }
 
 describe("production route harvest", () => {
-  for (const [testName, parentName] of [
+  for (const [testName, parentName, moduleName = "timeout_tests"] of [
     ["native_payroll_timeout_tests.rs", "native_payroll.rs"],
     ["native_people_timeout_tests.rs", "native_people.rs"],
+    ["native_group_process_transport_tests.rs", "native_group_process.rs", "transport_tests"],
   ]) {
+    const isGroup = moduleName === "transport_tests";
+    const inclusionDiagnostic = `backend/app/src/${testName}: test-only route source inclusion is not solely cfg(test)`;
     it(`excludes ${testName} while its sole inclusion is cfg(test)`, () => {
-      const guarded = trackedRouteFixture({ testName, parentName });
+      const guarded = trackedRouteFixture({ testName, parentName, moduleName });
       assert.equal(guarded.status, 0, guarded.stderr || guarded.stdout);
       // The fixture has one documented route and two checked exemptions.
       assert.match(guarded.stdout, /3 backend \/api\/ operations across 1 route sources/);
     });
 
     it(`counts ${testName} when its cfg(test) guard is removed`, () => {
-      const unguarded = trackedRouteFixture({ testName, parentName, guarded: false });
+      const unguarded = trackedRouteFixture({ testName, parentName, moduleName, guarded: false, testApiRoute: !isGroup });
       assert.notEqual(unguarded.status, 0, "removing cfg(test) must fail closed");
-      assert.match(unguarded.stderr, /test-only|recognized HTTP method|inclusion/i);
+      if (isGroup) assert.equal(unguarded.stderr.trim(), inclusionDiagnostic);
+      else assert.match(unguarded.stderr, /test-only|recognized HTTP method|inclusion/i);
     });
 
     it(`counts ${testName} when production includes it too`, () => {
-      const extra = trackedRouteFixture({ testName, parentName, extraInclude: true });
+      const extra = trackedRouteFixture({ testName, parentName, moduleName, extraInclude: true, testApiRoute: !isGroup });
       assert.notEqual(extra.status, 0, "an extra production inclusion must fail closed");
-      assert.match(extra.stderr, /test-only|recognized HTTP method|inclusion/i);
+      if (isGroup) assert.equal(extra.stderr.trim(), inclusionDiagnostic);
+      else assert.match(extra.stderr, /test-only|recognized HTTP method|inclusion/i);
     });
   }
+
+  it("rejects the Group transport source when included under the wrong test module", () => {
+    const result = trackedRouteFixture({
+      testName: "native_group_process_transport_tests.rs",
+      parentName: "native_group_process.rs",
+      moduleName: "timeout_tests",
+      testApiRoute: false,
+    });
+    assert.notEqual(result.status, 0, "an incorrect test module must fail closed");
+    assert.equal(result.stderr.trim(), "backend/app/src/native_group_process_transport_tests.rs: test-only route source inclusion is not solely cfg(test)");
+  });
 
   it("still counts an unguarded new _tests.rs API router", () => {
     const result = trackedRouteFixture({
