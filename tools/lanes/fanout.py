@@ -185,8 +185,9 @@ def admit_lane(item: dict, *, cwd: Path, runner=subprocess.run) -> str | None:
     Green-on-base is the class: vacuous assertions, already-locked behaviour,
     and tests of functions nothing calls. A missing probe is the same class —
     there is no named command that could have been red. Exit 126/127 is a
-    missing binary, not a hole. Returns an error string, or None when the
-    lane is admitted.
+    missing binary, not a hole. Only integer exits 1..125 qualify, optionally
+    narrowed to the lane's exact red_exit. Returns an error string, or None
+    when the lane is admitted.
     """
     lane = str(item.get("lane", "?"))
     probe = item.get("probe")
@@ -195,7 +196,13 @@ def admit_lane(item: dict, *, cwd: Path, runner=subprocess.run) -> str | None:
             f"lane {lane}: missing probe — a lane with no currently-failing "
             "command is not admitted"
         )
+    if "red_exit" in item and (
+        type(item["red_exit"]) is not int or not 1 <= item["red_exit"] <= 125
+    ):
+        return f"lane {lane}: red_exit must be an integer in 1..125"
     proc = runner(probe, shell=True, cwd=str(cwd), capture_output=True)
+    if type(proc.returncode) is not int:
+        return f"lane {lane}: probe returned a noninteger exit status"
     if proc.returncode == 0:
         return (
             f"lane {lane}: probe GREEN on the clean tree (exit 0). "
@@ -205,6 +212,13 @@ def admit_lane(item: dict, *, cwd: Path, runner=subprocess.run) -> str | None:
         return (
             f"lane {lane}: probe is not an executable command on this tree "
             f"(exit {proc.returncode}). A missing binary is not a hole."
+        )
+    if not 1 <= proc.returncode <= 125:
+        return f"lane {lane}: probe terminated abnormally (exit {proc.returncode})"
+    if "red_exit" in item and proc.returncode != item["red_exit"]:
+        return (
+            f"lane {lane}: probe exit {proc.returncode} does not match "
+            f"required RED exit {item['red_exit']}"
         )
     return None
 
@@ -226,7 +240,7 @@ def run_lanes(spec_path: Path, model: str, sandbox: str, *,
               runner=subprocess.run) -> int:
     """Fan out one task per lane; measure isolation instead of trusting it.
 
-    Spec: [{"lane": "1", "probe": "cmd-that-is-red-on-base",
+    Spec: [{"lane": "1", "probe": "cmd-that-is-red-on-base", "red_exit": 101,
             "prompt": "...", "allow": ["path/it/may/touch"]}, ...]
 
     Admission runs first, in-process, with no agent. A refused spec never
@@ -271,7 +285,7 @@ def run_lanes(spec_path: Path, model: str, sandbox: str, *,
         changed = _changed(wt)
         out_of_slice = [f for f in changed if not _in_slice(f, item.get("allow", []))]
         after = runner(item["probe"], shell=True, cwd=str(wt), capture_output=True)
-        still_red = after.returncode != 0
+        still_red = type(after.returncode) is not int or after.returncode != 0
         if still_red:
             closed_err = (
                 f"lane {lane}: probe still RED after the implementer "
