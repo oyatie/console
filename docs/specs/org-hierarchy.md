@@ -211,7 +211,7 @@ RLS returns 0 rows if unarmed); the member set passed in is `group_members ∩ p
 
 ## 5. Scope Selector
 One shared shell control. Privileged (group-admin): full ladder `[All subsidiaries] · [KNL]·[COSS]·
-[BESTEC]·… · ▸region ▸branch`; "All" → consolidated endpoints (§4); a single 법인 → `/api/group/switch-
+[NORTHWIND]·… · ▸region ▸branch`; "All" → consolidated endpoints (§4); a single 법인 → `/api/group/switch-
 context` re-mints a tenant token whose `org`=that member after re-checking the grant (a deliberate, audited
 `group.context.switch`). Scoped user: sees ONLY their subtree, NO toggle above their anchor — enforced
 server-side (switch-context re-validates against `group_role_grants`+`AccessScope`, 403s anything outside

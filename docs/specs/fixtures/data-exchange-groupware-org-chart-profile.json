@@ -50,11 +50,11 @@
   "inferred_org_counts": {
     "coss": 52,
     "knl": 9,
-    "dsl": 8,
-    "cnl": 5,
-    "cheongun-hr": 3,
-    "lso": 3,
-    "jy-tech": 1,
+    "sample-h": 8,
+    "sample-j": 5,
+    "sample-o": 3,
+    "sample-k": 3,
+    "Adatum": 1,
     "ignored_service_or_blank": 1,
     "unmapped_requires_review": 1
   },

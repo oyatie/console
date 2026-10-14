@@ -75,7 +75,7 @@ otherwise advance.
 ### Zone E — posting composer modal (공고 등록 · dc.html 650–720, logic 10492–10511)
 Header chip: `JP- 초안`. Typed fields (§4-19, §4-27):
 - 포지션명 — text, required (fail-closed with 현장·팀).
-- 법인 — enum chips: 코스 / BESTEC / KNL / 그룹 / 스태핑.
+- 법인 — enum chips: 코스 / NORTHWIND / KNL / 그룹 / 스태핑.
 - 현장 · 팀 — text, required.
 - 고용 형태 — enum chips: 정규직 / 상주 교대 / 파트타임 / 일용직 (인력풀); picking 일용직 shows chip
   `확정 = 인력풀 등재 · 비상근` (pool posting: hire ≠ employee creation).

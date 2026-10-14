@@ -2,7 +2,7 @@
 
 # Base images pinned to their multi-arch index digest for reproducible builds;
 # Renovate (docker:pinDigests) keeps the digest current behind the tag.
-FROM rust:1.98-bookworm@sha256:93ce27a88655056a51dbdd8f5f2d7ddc071c7b0070fb288a37b5a285fc83971e AS builder
+FROM rust:1.99-bookworm@sha256:114c7a4425406451c2866b6aafe69fe29b1b298832db1277d411ac73c82d04d6 AS builder
 
 WORKDIR /workspace/backend
 
@@ -34,7 +34,7 @@ COPY docs/specs /workspace/docs/specs
 
 RUN rustc -Vv && cargo build --locked --release -p console-app
 
-FROM debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251 AS runtime
+FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587 AS runtime
 
 # ffmpeg is REQUIRED by the worker role: the evidence media pipeline shells out
 # to it to transcode mechanic video to 1080p H.264/AAC MP4 and to recompress /

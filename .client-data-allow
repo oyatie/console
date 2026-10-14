@@ -1,0 +1,88 @@
+# Client-data allow-list for the console-infra scanner (scripts/client-data-scan.py there: --tree, --staged, --history).
+# One entry per line with its reason; hashes come from --hash. No line allows a production client value: client
+# names, BRNs and e-mails come from the private list, which no hash here matches (checked 2026-10-14).
+term 04689e2bc522 -- COSS: the operating group and product brand (com.cosskorea.console, cosskorea.com); owner ruling pending
+term a921307edb1e -- the same group's Korean short name; same ruling
+term faf5af85e433 -- the same group's Korean name with its legal form; same ruling
+term 6152db1af3b6 -- KNL: the same group's former product name (knllogistic.com); same ruling
+term e07a412e2418 docs/program/* -- an ordinary technical acronym that a listed trade name also spells
+term e07a412e2418 docs/ideas/ecosystem-plan-DRAFT.md -- the same acronym
+term e07a412e2418 docs/specs/rbac-configurable.md -- the same acronym
+term 5d4608fd009b docs/ideas/payroll-statutory-sources.md -- a law.go.kr API path segment that a listed trade name also spells
+term 850600eb37ad backend/crates/platform/db/migrations/0083_correct_elso_slug.sql -- OWNER RULING PENDING (verify 2026-10-14): an applied, checksummed migration names a client; editing it breaks every installed schema
+term 5d4608fd009b backend/crates/platform/db/migrations/0083_correct_elso_slug.sql -- the same migration's tenant slug (4 lines; its file name carries the old slug); same pending ruling
+binary docs/design/oyatie-console/pii/*.pdf -- reviewed 2026-10-14: PIPC guideline PDFs; text extracted and scanned clean
+email @cosskorea.com -- the product's own domain (console, notify, status hosts)
+email @cossok.com -- the operating group's mail domain (mailbox tests); owner ruling pending
+email @knllogistic.com -- the operating group's former product/mail domain (deploy, mailbox, runbooks); owner ruling pending
+email @knl-logistics.co.kr -- the operating group's dev-seed tenant (scripts/dev-seed.sql); owner ruling pending
+path third-party/* -- vendored crates: upstream author metadata
+path tools/buck/test_reindeer_bootstrap.py -- quotes vendored crate author metadata
+value e42cc5618f17 -- phone: synthetic fixture, backend/app/src/hr.rs:4129 (baseline 2026-10-14)
+value 681381923bf8 -- crn: synthetic fixture, backend/app/src/hr.rs:4139 (baseline 2026-10-14)
+value 48e811e79665 -- rrn: synthetic fixture, backend/app/src/hr.rs:4142 (baseline 2026-10-14)
+value 880b976bd062 -- rrn: synthetic fixture, backend/app/src/hr.rs:4434 (baseline 2026-10-14)
+value cdbf68fea968 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:129 (baseline 2026-10-14)
+value db51473e4c28 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:284 (baseline 2026-10-14)
+value eb1ccd19d14d -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:386 (baseline 2026-10-14)
+value 318638a5f914 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:551 (baseline 2026-10-14)
+value 170b71620524 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:559 (baseline 2026-10-14)
+value e386b5445920 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:567 (baseline 2026-10-14)
+value 6b787d6305c9 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:886 (baseline 2026-10-14)
+value 304840243758 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:894 (baseline 2026-10-14)
+value 8f42fd6484bb -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:902 (baseline 2026-10-14)
+value 7b724cda004e -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:1233 (baseline 2026-10-14)
+value 30f25358d62a -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:1321 (baseline 2026-10-14)
+value c0e9a0e13c40 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:1405 (baseline 2026-10-14)
+value 2fa8721c32d8 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:1721 (baseline 2026-10-14)
+value 3ca665366fda -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:1885 (baseline 2026-10-14)
+value b22472686562 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:2190 (baseline 2026-10-14)
+value 79e8a6991f21 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:2321 (baseline 2026-10-14)
+value 14c40f5b5dae -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:2494 (baseline 2026-10-14)
+value c784bba790a8 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:2722 (baseline 2026-10-14)
+value e739da15a871 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:2827 (baseline 2026-10-14)
+value 5db970b2fb2b -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3018 (baseline 2026-10-14)
+value 53f2c3afcff6 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3100 (baseline 2026-10-14)
+value 4e5667bb4701 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3192 (baseline 2026-10-14)
+value 5430365d2b1d -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3198 (baseline 2026-10-14)
+value 3c4fb5e4805d -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3248 (baseline 2026-10-14)
+value 29fbfa928360 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3301 (baseline 2026-10-14)
+value 6c8b99feef2d -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3310 (baseline 2026-10-14)
+value a3a02cd03158 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3360 (baseline 2026-10-14)
+value 6257d54db666 -- phone: synthetic fixture, backend/app/tests/auth_rest.rs:3429 (baseline 2026-10-14)
+value cc9c641992c9 -- brn: synthetic fixture, backend/app/tests/entity_capture_journey.rs:221 (baseline 2026-10-14)
+value becc5f990e89 -- phone: synthetic fixture, backend/app/tests/jwt_key_rotation_api.rs:127 (baseline 2026-10-14)
+value 554c92657f58 -- crn: synthetic fixture, backend/app/tests/lifecycle_foundation_migration/seed.rs:158 (baseline 2026-10-14)
+value cadb5337972b -- brn: synthetic fixture, backend/app/tests/lifecycle_foundation_migration/seed.rs:158 (baseline 2026-10-14)
+value 71ae60f24ded -- phone: synthetic fixture, backend/app/tests/recruiting_pipeline_api.rs:283 (baseline 2026-10-14)
+value c92d7042597f -- brn: synthetic fixture, backend/crates/entity/adapter-postgres/tests/first_attach.rs:69 (baseline 2026-10-14)
+value 045670335860 -- brn: synthetic fixture, backend/crates/entity/adapter-postgres/tests/name_evidence.rs:79 (baseline 2026-10-14)
+value 9e9e7d8868eb -- brn: synthetic fixture, backend/crates/entity/adapter-postgres/tests/name_evidence.rs:79 (baseline 2026-10-14)
+value 3e9c2e6f88aa -- rrn: synthetic fixture, backend/crates/hr/adapter-postgres/tests/import2/identity.rs:28 (baseline 2026-10-14)
+value d6a91a4f9bb8 -- rrn: synthetic fixture, backend/crates/hr/domain/src/import/pii.rs:67 (baseline 2026-10-14)
+value 44d064f1e40a -- crn: synthetic fixture, backend/crates/hr/domain/src/import/pii.rs:81 (baseline 2026-10-14)
+value df9c3bd825fd -- rrn: synthetic fixture, backend/crates/hr/domain/src/import/sex.rs:45 (baseline 2026-10-14)
+value 69e5b0ef7f85 -- phone: synthetic fixture, backend/crates/kernel/core/src/kr/phone.rs:121 (baseline 2026-10-14)
+value f24a94dd10b2 -- phone: synthetic fixture, backend/crates/platform/provisioning/README.md:15 (baseline 2026-10-14)
+value 9af7b1ef6af7 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:334 (baseline 2026-10-14)
+value ca13762ba677 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:335 (baseline 2026-10-14)
+value 76f328da8f4f -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:357 (baseline 2026-10-14)
+value 520917a95352 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:358 (baseline 2026-10-14)
+value 414a7fa91dd4 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:380 (baseline 2026-10-14)
+value 88cb69d2d892 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:383 (baseline 2026-10-14)
+value bc4e3e3a7637 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:399 (baseline 2026-10-14)
+value 4b9ecd3bc120 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:404 (baseline 2026-10-14)
+value fbfa07cc188c -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:553 (baseline 2026-10-14)
+value cd67eea4eae2 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:554 (baseline 2026-10-14)
+value d10bd055d307 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:604 (baseline 2026-10-14)
+value eaf7d08d3fe8 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/account_locking.rs:605 (baseline 2026-10-14)
+value 0e23c60219ad -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/bootstrap_passkey.rs:23 (baseline 2026-10-14)
+value 17f91d32fc99 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/bootstrap_passkey.rs:197 (baseline 2026-10-14)
+value fbbdbbf6eec2 -- phone: synthetic fixture, backend/crates/platform/provisioning/tests/roster_import.rs:55 (baseline 2026-10-14)
+value ae1375221aae -- phone: synthetic fixture, backend/crates/registry/adapter-postgres/tests/create_rls_surfaces_as_runtime_role.rs:176 (baseline 2026-10-14)
+value d86b50fa54db -- email: the owner's or a vendor's own address, not a client contact, deploy/infra/cert-manager/cluster-issuer.yaml:24 (baseline 2026-10-14)
+value d3305702e82d -- email: the owner's or a vendor's own address, not a client contact, docs/program/ledger/2026-08-14-b-emp-a-employment-containment.md:276 (baseline 2026-10-14)
+value 006bb48352f1 -- email: the owner's or a vendor's own address, not a client contact, docs/program/ledger/2026-08-14-peas-employment-port-routing.md:7 (baseline 2026-10-14)
+value 5b35709da1c2 -- email: the owner's or a vendor's own address, not a client contact, scripts/check-image-release-workflow.test.mjs:112 (baseline 2026-10-14)
+value e893af62c6db -- email: the owner's or a vendor's own address, not a client contact, scripts/check-image-release-workflow.test.mjs:833 (baseline 2026-10-14)
+value 721aa9f8afe5 -- email: the owner's or a vendor's own address, not a client contact, scripts/console/converge-release-please-doc-custody.mjs:387 (baseline 2026-10-14)

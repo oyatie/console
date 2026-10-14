@@ -127,10 +127,10 @@ fn roundtrip_fill_and_read_back() {
 
         ws.cell_mut((1u32, ROW_DATA)).set_value("미"); // 구분
         ws.cell_mut((2u32, ROW_DATA)).set_value("99"); // No
-        ws.cell_mut((3u32, ROW_DATA)).set_value("태성이엔지"); // 사업장
+        ws.cell_mut((3u32, ROW_DATA)).set_value("예시물류센터"); // 사업장
         ws.cell_mut((4u32, ROW_DATA)).set_value("#290"); // 호기
         ws.cell_mut((5u32, ROW_DATA)).set_value("시동안걸림"); // 불량내용
-        ws.cell_mut((6u32, ROW_DATA)).set_value("김용현"); // 작업자
+        ws.cell_mut((6u32, ROW_DATA)).set_value("박민수"); // 작업자
         ws.cell_mut((7u32, ROW_DATA)).set_value("Priority#1"); // Warning/Priority
     }
 
@@ -210,7 +210,7 @@ fn roundtrip_fill_and_read_back() {
     assert_eq!(cell_value(ws_out, 2, ROW_DATA), "99", "No mismatch");
     assert_eq!(
         cell_value(ws_out, 3, ROW_DATA),
-        "태성이엔지",
+        "예시물류센터",
         "사업장 mismatch"
     );
     assert_eq!(cell_value(ws_out, 4, ROW_DATA), "#290", "호기 mismatch");
@@ -219,7 +219,7 @@ fn roundtrip_fill_and_read_back() {
         "시동안걸림",
         "불량내용 mismatch"
     );
-    assert_eq!(cell_value(ws_out, 6, ROW_DATA), "김용현", "작업자 mismatch");
+    assert_eq!(cell_value(ws_out, 6, ROW_DATA), "박민수", "작업자 mismatch");
     assert_eq!(
         cell_value(ws_out, 7, ROW_DATA),
         "Priority#1",
