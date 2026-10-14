@@ -310,6 +310,10 @@ async fn seed_user_in_branch(pool: &PgPool, user_id: UserId, role: &str, branch:
 fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
         ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
