@@ -18,7 +18,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
 
-import { directExecutable, executableWorkflowCommands, shellCommandTokens } from "./lib/ci-workflow-executables.mjs";
+import { directExecutable, reachableWorkflowCommands, reachableShellCommands } from "./lib/ci-workflow-executables.mjs";
 import { sweepReachableText } from "../tools/ci/gate-sweep.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -36,21 +36,6 @@ function gitLsFiles() {
 
 function loadJson(rel) {
   return JSON.parse(readFileSync(join(root, rel), "utf8"));
-}
-
-function shellCommands(text) {
-  const commands = [];
-  for (const surface of shellCommandTokens(text)) {
-    if (surface.malformed) continue;
-    let tokens = [];
-    for (const token of [...surface.tokens, ";"]) {
-      if ([";", "|", "&", "||", "&&"].includes(token)) {
-        if (tokens.length) commands.push({ tokens });
-        tokens = [];
-      } else tokens.push(token);
-    }
-  }
-  return commands;
 }
 
 function nodeFiles(tokens) {
@@ -76,7 +61,7 @@ function nativeHrChild(files) {
   const supervisor = "scripts/check-native-hr-policy-parser-contract.mjs";
   const suite = "scripts/check-native-hr-policy-parser-contract.test.mjs";
   if (![launcher, supervisor, suite].every(file => files.has(file))) return [];
-  const launches = shellCommands(readFileSync(join(root, launcher), "utf8")).some(entry => {
+  const launches = reachableShellCommands(readFileSync(join(root, launcher), "utf8")).some(entry => {
     const { tokens } = directExecutable(entry.tokens);
     return tokens[0] === "$CONSOLE_HR_POLICY_NODE" && tokens[1] === "$SCRIPT_DIR/check-native-hr-policy-parser-contract.mjs";
   });
@@ -108,7 +93,7 @@ function nativeHrChild(files) {
         const main = code.slice(0, call.index).match(/export async function main\(\)\s*\{\s*(?:let [^;]*;\s*)+try\s*\{([^}]*)$/);
         return depthAt(call.index) === 2 && main && !/\breturn\b|\bif\s*\(\s*(?:false|0|null)\s*\)/.test(main[1]);
       })
-      && [...code.matchAll(/^if \(process\.argv\[1\] === new URL\(import\.meta\.url\)\.pathname\) process\.exitCode = await main\(\);/gm)].some(call => depthAt(call.index) === 0);
+      && [...code.matchAll(/^if \(process\.argv\[1\] === new URL\(import\.meta\.url\)\.pathname\) process\.exitCode = await main\(\);/gm)].some(call => depthAt(call.index) === 0 && /return status;\s*\}\s*$/.test(code.slice(0, call.index)));
     if (fixture || owner) return [suite];
   }
   return [];
@@ -130,7 +115,7 @@ function main() {
   for (const wf of workflows) {
     const text = readFileSync(join(root, wf), "utf8");
     try {
-      commands.push(...executableWorkflowCommands(text));
+      commands.push(...reachableWorkflowCommands(text));
     } catch (error) {
       failures.push(`${wf}: cannot extract executable commands: ${error.message}`);
     }
@@ -154,14 +139,14 @@ function main() {
         failures.push(`unresolvable npm script invoked by workflow surface: ${name ?? "(missing name)"}`);
       } else if (!invoked.has(name)) {
         invoked.add(name);
-        commands.push(...shellCommands(scripts[name]));
+        commands.push(...reachableShellCommands(scripts[name]));
       }
     } else if (/(?:^|\/)node(?:\.exe)?$/.test(tokens[0] ?? "")) {
       const paths = nodeFiles(tokens);
       for (const file of paths) reached.add(file);
       if (paths[0] === "tools/ci/gate-sweep.mjs" && !sweepInvoked) {
         sweepInvoked = true;
-        commands.push(...shellCommands(sweepReachableText(root)));
+        commands.push(...reachableShellCommands(sweepReachableText(root)));
       }
     } else {
       const script = ["sh", "bash", "/bin/sh", "/bin/bash"].includes(tokens[0]) ? tokens[1] : tokens[0];
