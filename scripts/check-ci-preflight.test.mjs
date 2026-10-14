@@ -921,6 +921,8 @@ describe("CI preflight contract", () => {
     const cipher = "//backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit";
     const sdk = "//backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity";
     const people = "//backend/crates/payroll/ui:console-payroll-ui-itest-react_people";
+    const parser = "//backend/crates/identity/application:console-identity-application-itest-native_hr_policy_parser_contract";
+    const bootstrap = "//backend/crates/platform/authz:console-platform-authz-itest-native_hr_bootstrap_cedar_contract";
     const source = workflow;
     const steps = yaml.load(source).jobs.backend.steps.filter((step) =>
       step.name === "Buck2 platform-authz unit suite");
@@ -934,12 +936,12 @@ describe("CI preflight contract", () => {
         "env -u DATABASE_URL tools/buck2 test \\",
         `  ${unit} \\`,
         `  ${provisioning} \\`,
-        `  ${cipher} ${sdk} ${people}`,
+        `  ${cipher} ${sdk} ${people} ${parser} ${bootstrap}`,
         "",
       ].join("\n"),
     });
     assert.deepEqual(evaluateCiPreflight(source).failures, []);
-    for (const target of [unit, sdk, provisioning, cipher, people]) {
+    for (const target of [unit, sdk, provisioning, cipher, people, parser, bootstrap]) {
       expectFailure(
         mutateNamedStep(source, "backend", "Buck2 platform-authz unit suite", (step) => {
           assert.equal(step.split(target).length, 2);
