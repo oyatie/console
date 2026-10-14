@@ -1,0 +1,63 @@
+entity Account = {
+  "account_id": String,
+  "session_id": String,
+  "security_generation": String,
+  "state": String
+};
+entity HrPolicyBootstrap = {
+  "company_id": String,
+  "company_state": String,
+  "original_administrator_b": String,
+  "origin_account_id": String,
+  "origin_command_id": String,
+  "origin_receipt_id": String,
+  "company_actor_admission_receipt_id": String,
+  "company_actor_origin_kind": String,
+  "company_actor_origin_account_id": String,
+  "company_actor_origin_command_id": String,
+  "company_actor_origin_receipt_id": String,
+  "group_id": String,
+  "group_state": String,
+  "group_revision": String,
+  "group_incarnation": String,
+  "membership_id": String,
+  "membership_state": String,
+  "membership_revision": String,
+  "membership_incarnation": String,
+  "context_generation": String,
+  "root_assignment_id": String,
+  "root_assignment_revision": String,
+  "root_role_id": String,
+  "root_role_revision": String,
+  "assign_identity_action_id": String,
+  "assign_identity_object_type_id": String,
+  "assign_identity_registration_revision": String,
+  "assign_identity_manifest_digest": String,
+  "read_policy_action_id": String,
+  "read_policy_object_type_id": String,
+  "read_policy_registration_revision": String,
+  "read_policy_manifest_digest": String,
+  "company_epoch": String,
+  "current_policy_receipt_id": String,
+  "hr_catalog_version": String,
+  "hr_manifest_digest": String,
+  "resource_kind": String,
+  "command_id": String,
+  "owner_account_id": String,
+  "ownership_kind": String,
+  "stage": String,
+  "root_read_policy_allowed": Bool,
+  "root_assign_identity_allowed": Bool,
+  "namespace_available": Bool,
+  "own_tentative_verified": Bool
+};
+action "hr.policy.setup", "hr.policy.read" appliesTo {
+  principal: [Account], resource: [HrPolicyBootstrap],
+  context: {
+    "requested_company_id": String,
+    "resource_kind": String,
+    "command_id": String,
+    "requested_fields": Set<String>,
+    "intent": String
+  }
+};

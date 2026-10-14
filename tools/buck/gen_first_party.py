@@ -707,6 +707,9 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-identity-application': {
         'unit': 'none',
+        'integration': {
+            'tests/native_hr_policy_parser_contract.rs': 'none',
+        },
     },
     'console-identity-domain': {
         'unit': 'none',
@@ -960,6 +963,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
             'tests/cedar_pbac_readiness_cases.rs': 'none',
             'tests/cedar_sdk_identity.rs': 'none',
+            'tests/native_hr_bootstrap_cedar_contract.rs': 'none',
             'tests/policy.rs': 'postgres',
         },
     },

@@ -1417,6 +1417,32 @@ class TestTaxonomy(unittest.TestCase):
             GENERATOR.test_labels("backend/app", "test.e2e", False)
 
 class TestResourceClassification(unittest.TestCase):
+    def test_native_hr_bootstrap_cedar_reference_requires_no_database(self) -> None:
+        self.assertEqual(
+            "none",
+            GENERATOR.resource_requirement(
+                "console-platform-authz", "test.integration", "tests/cedar_sdk_identity.rs"
+            ),
+        )
+        self.assertEqual(
+            "postgres",
+            GENERATOR.resource_requirement(
+                "console-platform-authz", "test.integration", "tests/policy.rs"
+            ),
+        )
+        with self.assertRaisesRegex(ValueError, "missing reviewed resource metadata"):
+            GENERATOR.resource_requirement(
+                "console-platform-authz", "test.integration", "tests/unreviewed.rs"
+            )
+        self.assertEqual(
+            "none",
+            GENERATOR.resource_requirement(
+                "console-platform-authz",
+                "test.integration",
+                "tests/native_hr_bootstrap_cedar_contract.rs",
+            ),
+        )
+
     def test_benefit_and_facilities_units_are_hermetic_even_when_sources_mention_postgres(self) -> None:
         for package in ("console-benefit-rest", "console-facilities-rest"):
             self.assertFalse(GENERATOR.requires_postgres(package, "test.unit"))

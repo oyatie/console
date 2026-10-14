@@ -9,6 +9,11 @@ use uuid::Uuid;
 const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935";
 
 pub mod business;
+mod enrollment_initial_admin_source;
+mod hr_policy;
+mod qualification_wire;
+pub use enrollment_initial_admin_source::EnrollmentInitialAdminSourceV1;
+pub use hr_policy::{NativeHrPolicyCommandV1, decode_native_hr_policy_command_v1};
 pub mod company_information;
 mod native_business;
 pub mod org_unit_business;
