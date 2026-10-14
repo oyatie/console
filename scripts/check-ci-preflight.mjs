@@ -1035,7 +1035,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Release metadata documentation link tests", "node --test scripts/check-doc-links.test.mjs", { if: preflightReleaseMetadataCondition }),
     proofRun("Release metadata documentation manifest gate", "npm run check:doc-manifest", { if: preflightReleaseMetadataCondition }),
     proofRun("Release metadata documentation local-link gate", "npm run check:doc-links", { if: preflightReleaseMetadataCondition }),
-    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightCheckoutHeavyCondition }),
+    setupRun("Install pinned DotSlash runtime", "tools/buck/install_dotslash.sh", { if: preflightCheckoutDependentCondition }),
     proofRun("Cheap Buck2 generated-face admission", "tools/buck/preflight.sh", { if: preflightBuckHeavyCondition }),
     proofRun("Foundation gate contract", "npm run check:foundation-gates", { if: preflightNpmCiDependentCondition }),
     proofRun(reasoningLensRegressionName, reasoningLensRegressionCommand, { if: preflightNpmCiDependentCondition }),
@@ -2429,11 +2429,13 @@ function requirePreflightRustToolchainBefore(steps, failures) {
 function requireDotSlashBefore(steps, command, job, failures) {
   const commandIndex = steps.findIndex((step) => runScalar(step) === command);
   const dotSlashIndex = steps.findIndex((step) => runScalar(step) === dotSlashBootstrap);
-  const expectedIf = job === "preflight" ? preflightCheckoutHeavyCondition : runHeavyCondition;
+  const expectedIf = job === "preflight" ? preflightCheckoutDependentCondition : runHeavyCondition;
   if (dotSlashIndex < 0) {
     failures.push(`${job} must install pinned DotSlash before Buck2`);
   } else if (!hasOnlyExpectedCondition(steps[dotSlashIndex], expectedIf)) {
-    failures.push(`${job} must install DotSlash only when run_heavy`);
+    failures.push(job === "preflight"
+      ? `${job} must install DotSlash for every checkout-ready path class`
+      : `${job} must install DotSlash only when run_heavy`);
   } else if (commandIndex >= 0 && dotSlashIndex > commandIndex) {
     failures.push(`${job} must install DotSlash before ${command}`);
   }

@@ -108,11 +108,11 @@ jobs:
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
         run: npm run check:doc-links
 
-      # DotSlash + Rust follow classification so thin path classes can skip them without
-      # reading an empty steps.path_class output (GHA evaluates if before later steps).
+      # DotSlash supports the always-run native metadata checks. Rust and compilation
+      # retain their heavy-path guards after classification.
       - name: Install pinned DotSlash runtime
         id: dotslash
-        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: tools/buck/install_dotslash.sh
 
       - name: Install Rust toolchain for Cargo.lock consistency
