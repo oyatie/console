@@ -18,7 +18,12 @@ from wasm_bundle import GENERATION_INPUTS
 
 
 def run(argv, **kwargs):
-    return subprocess.check_output(argv, cwd=REPO, text=True, **kwargs)
+    try:
+        return subprocess.check_output(argv, cwd=REPO, text=True, **kwargs)
+    except subprocess.CalledProcessError as error:
+        if error.output:
+            sys.stderr.write(error.output)
+        raise
 
 
 def value(item):
