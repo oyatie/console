@@ -71,10 +71,13 @@ const ACCOUNT_ROLE_BINARY_IDS = [
   "console-app::console_route_telemetry",
   "console-app::evaluation_cycle_api",
   "console-app::health_readiness",
+  "console-app::workflow_four_eyes_publish",
   "console-comms-rest::readiness",
   "console-consulting-rest::audit_atomicity",
   "console-financial-rest::purchase_request_list",
   "console-identity-adapter-postgres::deactivate_revokes_credentials",
+  "console-identity-adapter-postgres::subject_authz_versions_freshness_rls",
+  "console-identity-adapter-postgres::user_lifecycle_noop_replay",
   "console-identity-rest::org_setup",
   "console-inbox-rest::api",
   "console-leave-rest::leave_http_personas",
@@ -228,9 +231,25 @@ threads-required = 2
 
 
 test("gate-only already-isolated auth_rest is not required in the ordinary serial union", () => {
-  assert.equal(ACCOUNT_ROLE_BINARY_IDS.length, 44);
+  assert.equal(ACCOUNT_ROLE_BINARY_IDS.length, 47);
   assert.equal(ACCOUNT_ROLE_BINARY_IDS.includes("console-app::auth_rest"), false);
   const text = gateFixture();
   assert.doesNotMatch(text, /binary_id\(=console-app::auth_rest\)/);
   assert.deepEqual(checkNextestConfig(text), []);
 });
+
+// Real-repository omission controls for the three reviewed Root+Auth7 callers.
+// A synthetic complete gateFixture must not hide their absence from the map.
+for (const id of [
+  "console-app::workflow_four_eyes_publish",
+  "console-identity-adapter-postgres::subject_authz_versions_freshness_rls",
+  "console-identity-adapter-postgres::user_lifecycle_noop_replay",
+]) {
+  test(`repo gate refuses missing serialization for new Account initializer ${id}`, () => {
+    const text = repoConfig().replaceAll(`  + binary_id(=${id})\n`, "");
+    assert.ok(
+      checkNextestConfig(text).includes(`filter must group Account fixture by binary_id(=${id})`),
+      `owner gate omitted the real initializer caller ${id}`,
+    );
+  });
+}
