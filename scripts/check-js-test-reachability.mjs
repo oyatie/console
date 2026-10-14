@@ -51,7 +51,9 @@ function nodeFiles(tokens) {
     else if (valueOptions.has(token)) index += 1;
     else if (token === "--") return testMode ? tokens.slice(index + 1) : tokens.slice(index + 1, index + 2);
     else if (!token.startsWith("-")) return testMode ? tokens.slice(index) : [token];
-    else if (!token.includes("=") && !["--test-only", "--test-force-exit", "--experimental-test-coverage", "--enable-source-maps"].includes(token)) return [];
+    else if (token.includes("=")) {
+      if (!valueOptions.has(token.slice(0, token.indexOf("=")))) return [];
+    } else if (!["--test-only", "--test-force-exit", "--experimental-test-coverage", "--enable-source-maps"].includes(token)) return [];
   }
   return [];
 }

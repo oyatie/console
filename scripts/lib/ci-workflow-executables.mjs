@@ -7,6 +7,8 @@
 // `echo cargo test ...`, or a step guarded by literal `if: false`, therefore cannot
 // manufacture test reachability.
 
+import { accessSync, constants, realpathSync, statSync } from "node:fs";
+
 function jobBlocks(workflow) {
   // Match the top-level `jobs:` key even when it carries a trailing YAML comment
   // (`jobs: # scanner bypass`), which is still a valid key.
@@ -376,6 +378,16 @@ export function reachableShellCommands(script) {
       } else {
         commands.push({ ...part, conditional: part.conditional || !certain });
         status = direct.tokens[0] === "true" ? true : direct.tokens[0] === "false" ? false : null;
+        const truthPaths = ["/usr/bin/true", "/usr/bin/false", "/bin/true", "/bin/false"];
+        if (truthPaths.includes(direct.tokens[0])) {
+          if (direct.tokens.length !== 1) return { commands, status: null };
+          try {
+            const canonical = realpathSync(direct.tokens[0]);
+            if (!truthPaths.includes(canonical) || !statSync(canonical).isFile()) return { commands, status: null };
+            accessSync(canonical, constants.X_OK);
+            status = canonical.endsWith("/true");
+          } catch { return { commands, status: null }; }
+        }
         if (["exit", "return"].includes(direct.tokens[0]) && certain) {
           const code = direct.tokens[1];
           return { commands, status: code === undefined ? status : /^\d+$/.test(code) ? Number(code) === 0 : null, stop: direct.tokens[0] };
