@@ -155,7 +155,7 @@ test(`hermetic argv-boundary ${enabled ? 'accepts executing' : 'refuses inert'} 
     const marker = markerChild(fixture, 'fixture/new.test.mjs');
     const child = fixture.execute('/bin/sh', ['-c', run], {
       PATH:dirname(realpathSync(process.execPath)) + ':' + process.env.PATH,
-      NODE_OPTIONS:'--test-reporter=tap', TEST_ONLY_CHILD_MARKER:marker});
+      NODE_OPTIONS:shape === 'Node value option' ? '' : '--test-reporter=tap', TEST_ONLY_CHILD_MARKER:marker});
     assertMarker(child, marker, enabled, enabled ? 0 : shape === 'canonical absolute truth command' ? 1 : 9);
     if (!enabled && shape === 'Node value option') assert.match(child.stderr, /bad option: --unknown-console-option=1/);
     const result = fixture.gate();
