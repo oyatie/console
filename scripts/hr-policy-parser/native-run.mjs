@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { ROOT, TARGET, LEGACY, CASES, LEGACY_CASES, hash, loadBinding, regular } from './binding.mjs';
+import { ROOT, TARGET, LEGACY, CASES, LEGACY_CASES, hash, loadBinding, regular, candidate } from './binding.mjs';
+export { candidate } from './binding.mjs';
 import { compilerAction, rustDiscovery, rustExecution, soleMissingEntry } from './observations.mjs';
 
 export function command(binding, isolation, argv, timeout = binding.timeout_ms) {
@@ -29,13 +30,6 @@ export function inspect(binding, isolation, eventPaths, started) {
   }
   return { actions: compilerAction(ROOT, rows, binding, started, ids, isolation), ids,
     logs: eventPaths.map(file => ({ file, sha256: hash(regular(file)) })) };
-}
-export function candidate(binding) {
-  const git = args => spawnSync(binding.git.path, ['-C', ROOT, ...args], { encoding: 'utf8', timeout: 10_000 });
-  for (const [args, expected] of [[['rev-parse', 'HEAD'], binding.candidate_head], [['rev-parse', 'HEAD^{tree}'], binding.candidate_tree], [['status', '--porcelain=v1', '--untracked-files=all'], '']]) {
-    const result = git(args); assert.equal(result.status, 0); assert.equal(result.signal, null);
-    assert.equal(result.stdout.trim(), expected);
-  }
 }
 export function runNative() {
   const b = loadBinding(); candidate(b);

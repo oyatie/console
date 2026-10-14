@@ -2,6 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+import { parseArgs } from 'node:util';
+import { parseSingleBuckOutput } from '../lib/dev-up-buck-output.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const SOURCE = 'backend/crates/identity/application/tests/native_hr_policy_parser_contract.rs';
@@ -95,4 +98,129 @@ export function loadBinding(env = process.env) {
   if (!/^[a-f0-9]{40}$/.test(b.candidate_head) || !/^[a-f0-9]{40}$/.test(b.candidate_tree)
       || !/^[a-f0-9]{64}$/.test(b.compiler_sha256)) throw new Error('missing candidate/compiler identities');
   return b;
+}
+
+// The exporter and native runner share the same clean-candidate boundary.
+export function candidate(binding) {
+  for (const [args, expected] of [[['rev-parse', 'HEAD'], binding.candidate_head],
+    [['rev-parse', 'HEAD^{tree}'], binding.candidate_tree],
+    [['status', '--porcelain=v1', '--untracked-files=all'], '']]) {
+    const result = spawnSync(binding.git.path, ['-C', ROOT, ...args], { encoding: 'utf8', timeout: 10_000 });
+    if (result.status !== 0 || result.signal || result.error || result.stdout.trim() !== expected)
+      throw new Error('current candidate is dirty or changed');
+  }
+}
+
+const measuredSources = [
+  'scripts/run-native-hr-policy-parser-contract.sh', 'scripts/check-native-hr-policy-parser-contract.mjs',
+  'scripts/check-native-hr-policy-parser-contract.test.mjs', 'scripts/hr-policy-parser/binding.mjs',
+  'scripts/hr-policy-parser/native-run.mjs', 'scripts/hr-policy-parser/observations.mjs',
+  'scripts/hr-policy-parser/qualify-admission.py', SOURCE,
+  'backend/crates/identity/application/tests/hr_policy_fixtures/literals.rs',
+  'backend/crates/identity/application/tests/hr_policy_fixtures/assert_fields.rs',
+  'tools/buck2', 'tools/buck/gen_first_party.py', 'backend/crates/identity/application/BUCK',
+  'scripts/lib/dev-up-buck-output.mjs',
+];
+
+export function exportCi(argv = process.argv.slice(2), env = process.env) {
+  const { values: options } = parseArgs({ args: argv, options: {
+    'export-ci': { type: 'boolean' }, output: { type: 'string' }, python: { type: 'string' },
+    git: { type: 'string' }, dotslash: { type: 'string' }, 'dotslash-cache': { type: 'string' },
+    'timeout-ms': { type: 'string' },
+  } });
+  if (options['export-ci'] !== true) throw new Error('only --export-ci is supported');
+  const exact = file => {
+    if (typeof file !== 'string' || !path.isAbsolute(file) || /[\r\n]/.test(file)
+        || fs.realpathSync(file) !== file) throw new Error('path must be canonical and absolute');
+    return file;
+  };
+  const pin = file => {
+    exact(file); const sha256 = hash(regular(file)); fs.accessSync(file, fs.constants.X_OK);
+    return { path: file, sha256 };
+  };
+  const within = (directory, file) => {
+    const relative = path.relative(directory, file);
+    if (!relative || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative))
+      throw new Error('artifact is outside its owned root');
+    return file;
+  };
+  const runner = exact(env.RUNNER_TEMP);
+  const output = options.output;
+  const environment = env.GITHUB_ENV;
+  for (const file of [output, environment]) {
+    if (typeof file !== 'string' || !path.isAbsolute(file) || /[\r\n]/.test(file)) throw new Error('invalid publication path');
+    within(runner, file); exact(path.dirname(file));
+    if (fs.existsSync(file) && (!fs.lstatSync(file).isFile() || fs.realpathSync(file) !== file))
+      throw new Error('publication path is not a regular file');
+  }
+  if (output === environment || fs.existsSync(output)) throw new Error('binding output must be fresh');
+  const timeout = Number(options['timeout-ms']);
+  if (!Number.isSafeInteger(timeout) || timeout < 1000 || timeout > 3_600_000) throw new Error('invalid acquisition timeout');
+  const b = {
+    schema: 'console.hr-policy-parser.operational-binding.v1', status: 'MEASURED_CURRENT_CI_INPUTS',
+    cwd: ROOT, probe: 'scripts/run-native-hr-policy-parser-contract.sh',
+    contract_sha256: '95b9243256fa70e50bb645aa4c4cea400d0374e13fde2336378580344ffd832d',
+    test_contract_sha256: '4b354e6c56fc3c2d06d36c488d9f7b3f3fc1f46fb57ba9e311bc5fdbd26f7d96',
+    node: pin(fs.realpathSync(process.execPath)), python: pin(options.python), git: pin(options.git),
+    dotslash: pin(options.dotslash), dotslash_cache: within(runner, exact(options['dotslash-cache'])),
+    bootstrap_utilities: {}, timeout_ms: timeout,
+    sources: measuredSources.map(file => ({ path: file, sha256: hash(regular(path.join(ROOT, file))) })),
+  };
+  if (!fs.statSync(b.dotslash_cache).isDirectory()) throw new Error('cache must be an owned directory');
+  const call = (tool, args, toolEnv = env) => {
+    const result = spawnSync(tool, args, { cwd: ROOT, env: toolEnv, encoding: 'utf8', timeout,
+      maxBuffer: 32 * 1024 * 1024 });
+    if (result.status !== 0 || result.signal || result.error)
+      throw new Error(`acquisition failed: ${result.error?.message ?? result.stderr ?? result.signal}`);
+    return result.stdout.trim();
+  };
+  b.candidate_head = call(b.git.path, ['rev-parse', 'HEAD']);
+  b.candidate_tree = call(b.git.path, ['rev-parse', 'HEAD^{tree}']);
+  candidate(b);
+  if (env.GITHUB_SHA && env.GITHUB_SHA !== b.candidate_head) throw new Error('GITHUB_SHA is not the current candidate');
+  for (const name of ['mkdir', 'tar']) {
+    const lookup = firstExecutable(name, ['/usr/bin', '/bin']);
+    if (!lookup) throw new Error(`missing ${name}`);
+    b.bootstrap_utilities[name] = { lookup_path: lookup, ...pin(fs.realpathSync(lookup)) };
+  }
+  const toolEnv = { ...env, PATH: `/usr/bin:/bin:${path.dirname(b.dotslash.path)}`, DOTSLASH_CACHE: b.dotslash_cache };
+  b.buck_binary = pin(within(b.dotslash_cache, call(b.dotslash.path, ['--', 'fetch', 'tools/buck2'], toolEnv)));
+  const host = process.platform === 'darwin' && process.arch === 'arm64' ? 'aarch64-apple-darwin'
+    : process.platform === 'linux' && process.arch === 'x64' ? 'x86_64-unknown-linux-gnu'
+    : process.platform === 'linux' && process.arch === 'arm64' ? 'aarch64-unknown-linux-gnu' : null;
+  if (!host) throw new Error('unsupported declared host');
+  const targets = [`toolchains//rust:sysroot-${host}`, 'toolchains//:cpython_archive', 'prelude//rust/tools:rustc_action'];
+  const isolation = `hr-binding-${crypto.randomBytes(16).toString('hex')}`;
+  let created = false;
+  try {
+    let stdout;
+    try {
+      stdout = call(b.buck_binary.path, ['--isolation-dir', isolation, 'build', '-j', '1', '--no-remote-cache',
+        ...targets, '--show-output'], toolEnv);
+    } finally {
+      call(b.buck_binary.path, ['--isolation-dir', isolation, 'kill'], toolEnv);
+    }
+    const artifacts = targets.map(target => within(path.join(ROOT, 'buck-out'),
+      exact(path.resolve(ROOT, parseSingleBuckOutput(target, stdout)))));
+    b.compiler_sha256 = pin(path.join(artifacts[0], 'bin/rustc')).sha256;
+    const pythonAlias = path.join(artifacts[1], 'bin/python');
+    const actionPython = path.join(artifacts[1], 'bin/python3.13');
+    if (!fs.lstatSync(pythonAlias).isSymbolicLink() || fs.readlinkSync(pythonAlias) !== 'python3.13'
+        || fs.realpathSync(pythonAlias) !== actionPython) throw new Error('unexpected action Python alias');
+    b.action_wrapper_sha256 = [pin(actionPython).sha256, hash(regular(artifacts[2]))];
+    candidate(b);
+    fs.writeFileSync(output, JSON.stringify(b) + '\n', { flag: 'wx', mode: 0o600 }); created = true;
+    const bindingEnv = { ...env, CONSOLE_HR_POLICY_NODE: b.node.path,
+      CONSOLE_HR_POLICY_BINDING: output, CONSOLE_HR_POLICY_BINDING_SHA256: hash(regular(output)) };
+    candidate(loadBinding(bindingEnv));
+    fs.appendFileSync(environment, ['CONSOLE_HR_POLICY_NODE', 'CONSOLE_HR_POLICY_BINDING',
+      'CONSOLE_HR_POLICY_BINDING_SHA256'].map(key => `${key}=${bindingEnv[key]}\n`).join(''));
+  } catch (error) {
+    if (created) fs.unlinkSync(output);
+    throw error;
+  }
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try { exportCi(); } catch (error) { process.stderr.write(`HR binding prerequisite: ${error.message}\n`); process.exitCode = 126; }
 }

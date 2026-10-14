@@ -24,6 +24,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  native-hr-policy-parser:
+    name: Native HR policy codec through the current supervisor
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up pinned Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24.16.0"
+      - name: Set up pinned native toolchains
+        uses: ./.github/actions/buck2-setup
+      - name: Measure current native inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d "$RUNNER_TEMP/hr-policy-ci.XXXXXXXX")"
+          mkdir "$work/dotslash-cache"
+          node scripts/hr-policy-parser/binding.mjs --export-ci --output "$work/binding.json" \
+            --python "$(python3 -B -I -c 'import os,sys; print(os.path.realpath(sys.executable))')" \
+            --git "$(realpath "$(command -v git)")" \
+            --dotslash "$(realpath "$(command -v dotslash)")" \
+            --dotslash-cache "$work/dotslash-cache" --timeout-ms 2700000
+          cat "$work/binding.json"
+      - name: Run the existing native HR supervisor
+        run: scripts/run-native-hr-policy-parser-contract.sh
+
   buck2-graph:
     name: Buck2 graph builds with declared inputs
     runs-on: ubuntu-latest
