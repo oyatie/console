@@ -145,6 +145,26 @@ test(`hermetic execution-boundary ${enabled ? 'accepts executing' : 'refuses ine
 });
 
 for (const enabled of [true, false])
+for (const shape of ['canonical absolute truth command', 'Node value option'])
+test(`hermetic argv-boundary ${enabled ? 'accepts executing' : 'refuses inert'} ${shape}`, () => {
+  const run = shape === 'canonical absolute truth command'
+    ? `/usr/bin/${enabled ? 'true' : 'false'} && node --test fixture/new.test.mjs`
+    : `node ${enabled ? '--test-reporter=tap' : '--unknown-console-option=1'} --test fixture/new.test.mjs`;
+  const fixture = hermeticFixture(run);
+  try {
+    const marker = markerChild(fixture, 'fixture/new.test.mjs');
+    const child = fixture.execute('/bin/sh', ['-c', run], {
+      PATH:dirname(realpathSync(process.execPath)) + ':' + process.env.PATH,
+      NODE_OPTIONS:'--test-reporter=tap', TEST_ONLY_CHILD_MARKER:marker});
+    assertMarker(child, marker, enabled, enabled ? 0 : shape === 'canonical absolute truth command' ? 1 : 9);
+    if (!enabled && shape === 'Node value option') assert.match(child.stderr, /bad option: --unknown-console-option=1/);
+    const result = fixture.gate();
+    if (enabled) {assert.equal(result.status, 0); assert.deepEqual(result.report.wired_exact, ['fixture/new.test.mjs']);}
+    else assertDark(result);
+  } finally {fixture.cleanup();}
+});
+
+for (const enabled of [true, false])
 for (const shape of ['workflow function', 'launcher function', 'bare false owner entry'])
 test(`hermetic execution-boundary ${enabled ? 'accepts executing' : 'refuses inert'} ${shape}`, () => {
   const suite = 'scripts/check-native-hr-policy-parser-contract.test.mjs';
