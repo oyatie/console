@@ -361,6 +361,14 @@ function validateReleaseInventory(registry, resolveSource) {
     require(targetExists, 'source binding names unknown leaf or support identity');
     for (const item of list(entries, 'leaf source bindings')) binding(item);
   }
+  // Reuse exact digests within this validation; never retain a mutable registry's index.
+  const catalogueBindingDigests = new Map();
+  const hasCatalogueBinding = (leaf, value) => {
+    if (!catalogueBindingDigests.has(leaf)) {
+      catalogueBindingDigests.set(leaf, new Set((bindings[leaf] ?? []).map(canonicalJsonDigest)));
+    }
+    return catalogueBindingDigests.get(leaf).has(canonicalJsonDigest(value));
+  };
   for (const name of connectorNames) require(Object.hasOwn(bindings, `connector:${name}`), 'named connector source binding required');
   for (const field of ['runtime_qualifications','models_administration_qualifications']) {
     if (Object.hasOwn(freeze, field)) for (const item of list(freeze[field], field)) binding(item);
@@ -412,7 +420,7 @@ function validateReleaseInventory(registry, resolveSource) {
     require(leaves.has(row.required_leaf) && ['F09.formula-action-library','F09.formula-chart-library','F09.formula-core-library','F09.formula-timeseries-library','F09.formula-validation-library'].includes(row.required_leaf)
       && row.console_acceptance === 'not established', 'Fusion catalogue leaf or acceptance invalid');
     binding(row.source_binding);
-    require(bindings[row.required_leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(row.source_binding)), 'Fusion catalogue exact shared source binding is required');
+    require(hasCatalogueBinding(row.required_leaf, row.source_binding), 'Fusion catalogue exact shared source binding is required');
   }
   for (const [runtime, source, count, leaf, digest] of [
     ['Quiver time-series cards', 'quiver-cards-index-time-series', 39, 'F08.time-series-transform-library', 'fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945'],
@@ -435,7 +443,7 @@ function validateReleaseInventory(registry, resolveSource) {
     for (const card of row.analytical_card_catalog) {
       require(card.category === source && card.source_binding.source_id === source && card.required_leaf === leaf && leaves.has(leaf), 'Quiver card source or leaf invalid');
       binding(card.source_binding);
-      require(bindings[leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(card.source_binding)), 'Quiver catalogue exact shared source binding is required');
+      require(hasCatalogueBinding(leaf, card.source_binding), 'Quiver catalogue exact shared source binding is required');
     }
   }
   const media = matrices.runtimes.entries.find((row) => row.runtime === 'Media operations and reference compute rates');
@@ -466,7 +474,7 @@ function validateReleaseInventory(registry, resolveSource) {
         && row.scope === 'Excluded generative/model-specific operation; Intelligence roadmap authority required', 'Media exclusion must retain the reviewed VLM scope');
     } else {
       require(leaves.has(row.required_leaf) && ['F04.media-capacity-recovery','F04.image-transform-library','F04.audio-transform-library','F04.video-transform-library','F04.document-transform-library','F04.spreadsheet-extraction','F12.inference'].includes(row.required_leaf), 'Media catalogue leaf invalid');
-      require(bindings[row.required_leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(row.source_binding)), 'Media catalogue exact shared source binding is required');
+      require(hasCatalogueBinding(row.required_leaf, row.source_binding), 'Media catalogue exact shared source binding is required');
     }
   }
   require(excludedMediaRows === 1, 'Media catalogue must retain exactly one explicit exclusion');
