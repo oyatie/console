@@ -10,8 +10,7 @@
 +    /// of third-party packages remain excluded.
 +    #[serde(default)]
 +    pub include_workspace_dev_dependencies: bool,
--
-+
+ 
      /// Generate "third-party.metadata" metadata on every `rust_library` and
      /// `rust_binary` target.
 --- a/src/index.rs
@@ -27,13 +26,13 @@
 +                }
 +            }
          }
--
-+
+ 
          Ok(index)
-@@ -225,6 +231,26 @@
+@@ -223,6 +229,26 @@
+     /// Test if there is any target from the package which is public
+     pub fn is_public_package(&self, pkg: &Manifest) -> bool {
          self.public_packages.contains_key(&pkg.id)
-     }
--
++    }
 +
 +    /// Direct dev-dependency packages of workspace members. These are the only
 +    /// dev roots that may be emitted when workspace dev dependencies are enabled.
@@ -53,15 +52,17 @@
 +            })
 +            .map(|node_dep| self.pkgid_to_pkg[&node_dep.pkg])
 +            .collect()
-+    }
-+
-     /// Test if this is a workspace member
-     pub fn is_workspace_package(&self, pkg: &Manifest) -> bool {
-         self.workspace_packages.contains(&pkg.id)
-@@ -448,6 +474,63 @@
-         Ok(())
      }
--
+ 
+     /// Test if this is a workspace member
+@@ -443,6 +469,63 @@
+                         )?;
+                     }
+                 }
++            }
++        }
++        Ok(())
++    }
 +
 +    /// Add only direct workspace dev-dependencies as test roots. The existing
 +    /// normal/build resolver owns their transitive closure, so this never pulls
@@ -115,28 +116,23 @@
 +            }
 +            for required_feature in &manifest_dep.features {
 +                self.enable_feature_for_platform(node_dep.pkg, platform_name, required_feature)?;
-+            }
-+        }
-+        Ok(())
-+    }
-+
-     fn enable_feature_for_platform(
-         &mut self,
-         pkgid: PackageId,
+             }
+         }
+         Ok(())
 --- a/src/buckify.rs
 +++ b/src/buckify.rs
-@@ -1509,6 +1509,14 @@
-                         (workspace_member, TargetReq::Lib),
-                         (workspace_member, TargetReq::EveryBin),
+@@ -1511,6 +1511,14 @@
                      ],
-+                );
-+            }
+                 );
+             }
 +            for workspace_dev_root in context.index.workspace_dev_dependency_roots() {
 +                generate_dep_rules(
 +                    context,
 +                    scope,
 +                    tx.clone(),
 +                    [(workspace_dev_root, TargetReq::Lib)],
-                 );
-             }
++                );
++            }
          });
+     }
+ 
