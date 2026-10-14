@@ -204,3 +204,38 @@ test('HOSTED binding existing owner cannot promote measured metadata to reviewed
     refused(f, exportCurrent(f, ['--status', 'REVIEWED_EXACT_TEST_CANDIDATE']));
   } finally { f.close(); }
 });
+
+test('HOSTED binding wrapper output alias inside candidate buck-out remains usable', () => {
+  const f = fixture(); try {
+    const actualDirectory = path.join(f.outputs, 'TEST_ONLY-real-wrapper-directory');
+    fs.mkdirSync(actualDirectory);
+    const actualWrapper = path.join(actualDirectory, 'rustc_action.py'); fs.copyFileSync(f.actionWrapper, actualWrapper);
+    const aliasDirectory = path.join(f.outputs, 'TEST_ONLY-wrapper-directory-alias'); fs.symlinkSync(actualDirectory, aliasDirectory);
+    const aliasWrapper = path.join(aliasDirectory, 'rustc_action.py');
+    assert(fs.lstatSync(aliasDirectory).isSymbolicLink()); assert(fs.lstatSync(aliasWrapper).isFile());
+    assert.notEqual(aliasWrapper, actualWrapper); assert.equal(fs.realpathSync(aliasWrapper), actualWrapper);
+    assert.equal(fs.realpathSync(actualWrapper), actualWrapper);
+    assert.equal(hash(regular(aliasWrapper)), f.binding.action_wrapper_sha256[1]);
+    assert(!path.relative(path.join(ROOT, 'buck-out'), actualWrapper).startsWith('..'));
+    f.value.rows[2].output = aliasWrapper; f.save();
+    cleanResult(exportCurrent(f));
+    const loaded = loadBinding({ ...f.env, CONSOLE_HR_POLICY_BINDING: f.output,
+      CONSOLE_HR_POLICY_BINDING_SHA256: hash(regular(f.output)) });
+    assert.equal(loaded.status, 'MEASURED_CURRENT_CI_INPUTS');
+    assert.deepEqual(loaded.action_wrapper_sha256, f.binding.action_wrapper_sha256); candidate(loaded);
+  } finally { f.close(); }
+});
+test('HOSTED binding wrapper output alias outside candidate buck-out is refused', () => {
+  const f = fixture(); try {
+    const foreignDirectory = path.join(f.work, 'TEST_ONLY-foreign-wrapper-directory'); fs.mkdirSync(foreignDirectory);
+    const foreignWrapper = path.join(foreignDirectory, 'rustc_action.py'); fs.copyFileSync(f.actionWrapper, foreignWrapper);
+    const aliasDirectory = path.join(f.outputs, 'TEST_ONLY-wrapper-directory-alias'); fs.symlinkSync(foreignDirectory, aliasDirectory);
+    const aliasWrapper = path.join(aliasDirectory, 'rustc_action.py');
+    assert(fs.lstatSync(aliasDirectory).isSymbolicLink()); assert(fs.lstatSync(aliasWrapper).isFile());
+    assert.equal(fs.realpathSync(aliasWrapper), foreignWrapper); assert.equal(fs.realpathSync(foreignWrapper), foreignWrapper);
+    assert.equal(hash(regular(aliasWrapper)), f.binding.action_wrapper_sha256[1]);
+    assert(!path.relative(path.join(ROOT, 'buck-out'), aliasWrapper).startsWith('..'));
+    assert(path.relative(path.join(ROOT, 'buck-out'), foreignWrapper).startsWith('..'));
+    f.value.rows[2].output = aliasWrapper; f.save(); refused(f, exportCurrent(f));
+  } finally { f.close(); }
+});
