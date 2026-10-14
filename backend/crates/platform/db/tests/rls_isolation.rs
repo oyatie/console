@@ -33,6 +33,9 @@
 
 use console_kernel_core::OrgId;
 use console_platform_db::{DbError, with_org_conn};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
@@ -493,11 +496,13 @@ async fn with_org_conn_sets_the_current_org_guc(pool: PgPool) {
 // AS1.2, approved design 7b6e4c6836750a23fc5fc38bdd37ac391e970215.
 // These are custody prerequisites, not complete Account-flow acceptance.
 // Keep actual auth continuity targets mandatory; an ACL-only outage is failure.
-#[sqlx::test(migrations = "./migrations")]
+#[sqlx::test(migrations = false)]
 async fn account_material_is_not_directly_accessible_to_company_runtime(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     let seeded_a = seed_org(&pool, ORG_A, "A").await;
     seed_org(&pool, ORG_B, "B").await;
-    let mut tx = pool.begin().await.unwrap();
+    let mut tx = runtime.begin().await.unwrap();
     set_role_and_org(&mut tx, Some(ORG_A)).await;
     let visible: Vec<Uuid> = sqlx::query_scalar("SELECT id FROM regions ORDER BY id")
         .fetch_all(&mut *tx)
@@ -563,7 +568,7 @@ async fn account_material_is_not_directly_accessible_to_company_runtime(pool: Pg
         }
     }
     for statement in statements {
-        let mut tx = pool.begin().await.unwrap();
+        let mut tx = runtime.begin().await.unwrap();
         set_role_and_org(&mut tx, Some(ORG_A)).await;
         let result = sqlx::query(statement).execute(&mut *tx).await;
         match result {
@@ -574,12 +579,15 @@ async fn account_material_is_not_directly_accessible_to_company_runtime(pool: Pg
         tx.rollback().await.unwrap();
     }
     assert!(violations.is_empty(), "{}", violations.join("\n"));
+    runtime.close().await;
 }
 
-#[sqlx::test(migrations = "./migrations")]
+#[sqlx::test(migrations = false)]
 async fn company_runtime_cannot_assume_account_custody_roles(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     let auth = sqlx::query("SELECT oid, rolsuper, rolbypassrls FROM pg_catalog.pg_roles WHERE rolname = 'console_auth_rt'")
-        .fetch_optional(&pool).await.unwrap()
+        .fetch_optional(&runtime).await.unwrap()
         .expect("AS1.2 requires a distinct console_auth_rt role supplied by real migrations/topology");
     assert!(
         !auth.get::<bool, _>("rolsuper"),
@@ -599,7 +607,7 @@ async fn company_runtime_cannot_assume_account_custody_roles(pool: PgPool) {
            FROM pg_catalog.pg_roles b CROSS JOIN pg_catalog.pg_roles target
            WHERE b.rolname = 'console_rt' AND (target.rolname = 'console_auth_rt'
            OR target.oid IN (SELECT relowner FROM pg_catalog.pg_class WHERE oid IN ('public.auth_webauthn_credentials'::regclass, 'public.auth_webauthn_ceremonies'::regclass, 'public.auth_refresh_token_families'::regclass, 'public.auth_refresh_tokens'::regclass, 'public.auth_bootstrap_credentials'::regclass, 'public.auth_webauthn_ceremony_bindings'::regclass, 'public.auth_device_login_handoffs'::regclass)))"#
-    ).fetch_all(&pool).await.unwrap();
+    ).fetch_all(&runtime).await.unwrap();
     assert!(
         capabilities.len() >= 2,
         "auth runtime and actual custody owners must be distinct"
@@ -614,7 +622,7 @@ async fn company_runtime_cannot_assume_account_custody_roles(pool: PgPool) {
         r#"SELECT c.relname::text, r.rolcanlogin, r.rolname = 'console_auth_rt'
            FROM pg_catalog.pg_roles r JOIN pg_catalog.pg_class c ON c.relowner = r.oid
            WHERE c.oid IN ('public.auth_webauthn_credentials'::regclass, 'public.auth_webauthn_ceremonies'::regclass, 'public.auth_refresh_token_families'::regclass, 'public.auth_refresh_tokens'::regclass, 'public.auth_bootstrap_credentials'::regclass, 'public.auth_webauthn_ceremony_bindings'::regclass, 'public.auth_device_login_handoffs'::regclass)"#
-    ).fetch_all(&pool).await.unwrap();
+    ).fetch_all(&runtime).await.unwrap();
     assert_eq!(
         owners.len(),
         7,
@@ -624,6 +632,7 @@ async fn company_runtime_cannot_assume_account_custody_roles(pool: PgPool) {
         owners.iter().all(|(_, login, runtime)| !login && !runtime),
         "All custody owners must be non-login and distinct from auth runtime: {owners:?}"
     );
+    runtime.close().await;
 }
 
 #[sqlx::test(migrations = "./migrations")]
