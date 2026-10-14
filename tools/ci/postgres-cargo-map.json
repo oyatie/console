@@ -5221,7 +5221,7 @@
       "in_workflow_postgres_job": true
     },
     {
-      "buck_wrapper": "//tools/buck:auth-rest-lib-pg",
+      "buck_wrapper": "//tools/buck:platform-auth-rest-unit-pg",
       "name": "auth-rest-lib-pg",
       "buck_inner": "//backend/crates/platform/auth-rest:console-platform-auth-rest-unit",
       "package": "console-platform-auth-rest",
@@ -5316,7 +5316,7 @@
       "measured_seconds": 318.8
     },
     {
-      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-company-port-as-runtime-role-pg",
+      "buck_wrapper": "//tools/buck:ontology-canonical-company-port-as-runtime-role-pg",
       "name": "ontology-canonical-adapter-postgres-company-port-as-runtime-role-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-company_port_as_runtime_role",
       "package": "console-ontology-canonical-adapter-postgres",
@@ -5340,7 +5340,7 @@
       "measured_seconds": 26.4
     },
     {
-      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-employment-port-as-runtime-role-pg",
+      "buck_wrapper": "//tools/buck:ontology-canonical-employment-port-as-runtime-role-pg",
       "name": "ontology-canonical-adapter-postgres-employment-port-as-runtime-role-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-employment_port_as_runtime_role",
       "package": "console-ontology-canonical-adapter-postgres",
@@ -5410,7 +5410,7 @@
       "in_workflow_postgres_job": true
     },
     {
-      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg",
+      "buck_wrapper": "//tools/buck:ontology-canonical-job-position-port-as-runtime-role-pg",
       "name": "ontology-canonical-adapter-postgres-job-position-port-as-runtime-role-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-job_position_port_as_runtime_role",
       "package": "console-ontology-canonical-adapter-postgres",
@@ -5458,7 +5458,7 @@
       "measured_seconds": 25.7
     },
     {
-      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-org-unit-port-as-runtime-role-pg",
+      "buck_wrapper": "//tools/buck:ontology-canonical-org-unit-port-as-runtime-role-pg",
       "name": "ontology-canonical-adapter-postgres-org-unit-port-as-runtime-role-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-org_unit_port_as_runtime_role",
       "package": "console-ontology-canonical-adapter-postgres",
@@ -5482,7 +5482,7 @@
       "measured_seconds": 25.7
     },
     {
-      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-person-port-as-runtime-role-pg",
+      "buck_wrapper": "//tools/buck:ontology-canonical-person-port-as-runtime-role-pg",
       "name": "ontology-canonical-adapter-postgres-person-port-as-runtime-role-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-person_port_as_runtime_role",
       "package": "console-ontology-canonical-adapter-postgres",
@@ -5506,7 +5506,7 @@
       "measured_seconds": 32.3
     },
     {
-      "buck_wrapper": "//tools/buck:ontology-canonical-adapter-postgres-receipt-owner-widening-pg",
+      "buck_wrapper": "//tools/buck:ontology-canonical-receipt-owner-widening-pg",
       "name": "ontology-canonical-adapter-postgres-receipt-owner-widening-pg",
       "buck_inner": "//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-receipt_owner_widening",
       "package": "console-ontology-canonical-adapter-postgres",
