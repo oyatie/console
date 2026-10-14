@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { testOnlyBindingModel } from './fixtures/command-budget-v1.mjs';
 
+const actualSpawnSync = childProcess.spawnSync;
 const externalKeys = ['CONSOLE_HR_BUDGET_OWNER_MODULE', 'CONSOLE_HR_BUDGET_OWNER_SHA256',
   'CONSOLE_HR_BOOTSTRAP_FIXTURE', 'CONSOLE_HR_BOOTSTRAP_FIXTURE_SHA256'];
 const external = externalKeys.some(key => process.env[key] !== undefined);
@@ -276,7 +277,7 @@ test('MACHINERY ONLY actual admission qualifier refuses measured and unknown inp
     for (const status of ['MEASURED_CURRENT_CI_INPUTS', 'UNKNOWN_INPUTS']) {
       const bytes = Buffer.from(JSON.stringify({...base, status})), file = path.join(dir, 'binding.json');
       fs.writeFileSync(file, bytes, {mode:0o600});
-      const result = childProcess.spawnSync('python3', [path.join(ROOT, 'scripts/hr-policy-parser/qualify-admission.py'),
+      const result = actualSpawnSync('python3', [path.join(ROOT, 'scripts/hr-policy-parser/qualify-admission.py'),
         '--binding', file, '--binding-sha256', crypto.createHash('sha256').update(bytes).digest('hex')],
         {cwd:ROOT, env:{PATH:process.env.PATH}, encoding:'utf8', timeout:10000});
       assert.equal(result.status, 126); assert.equal(result.signal, null); assert.equal(result.stdout, '');
