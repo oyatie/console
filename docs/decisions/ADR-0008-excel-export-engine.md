@@ -53,8 +53,8 @@ Round-trip sub-checks (all within the single `roundtrip_fill_and_read_back` test
 - All 16 merged ranges identical before/after (sorted string comparison)
 - Title `◈` present after round-trip
 - All 4 section headers present at correct rows after round-trip
-- Written values readable back: 구분=미, No=99, 사업장=태성이엔지, 호기=#290,
-  불량내용=시동안걸림, 작업자=김용현, Warning=Priority#1
+- Written values readable back: 구분=미, No=99, 사업장=예시물류센터, 호기=#290,
+  불량내용=시동안걸림, 작업자=박민수, Warning=Priority#1
 - Column A width > 0 (explicit width preserved)
 
 Verified with:

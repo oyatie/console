@@ -265,7 +265,7 @@ async fn substitute_candidates_filter_rank_branch_scope_and_unknown_ton(pool: Pg
             vec!["DFO25-0106", "CFO35-0075"]
         );
         assert_eq!(same_branch[0].equipment_id, exact);
-        assert_eq!(same_branch[0].site_name, "케이앤엘");
+        assert_eq!(same_branch[0].site_name, "다솔산업");
         assert_eq!(
             same_branch[0].placement_location.as_deref(),
             Some("Reserve-Exact")
@@ -691,7 +691,7 @@ async fn seed_equipment(
     let site_id: uuid::Uuid = sqlx::query_scalar(
         r#"
         INSERT INTO registry_sites (branch_id, customer_id, name, org_id)
-        VALUES ($1, $2, '케이앤엘', $3)
+        VALUES ($1, $2, '다솔산업', $3)
         ON CONFLICT (branch_id, customer_id, name) DO UPDATE SET name = EXCLUDED.name
         RETURNING id
         "#,

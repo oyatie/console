@@ -26,7 +26,7 @@ Sources (byte-exact design mirror `docs/design/oyatie-console/`, change-log 190)
 
 ## 3. Board config (prototype seed, L11138–11143)
 
-- title 게시판·공지 · primary action **공지 작성** (prototype simulates it as mail composer prefilled `전 직원 <all@kos.co.kr>` — kv "발송 · 메일 병행"; the real console's create path is a draft→publish flow).
+- title 게시판·공지 · primary action **공지 작성** (prototype simulates it as mail composer prefilled `전 직원 <user39@example.com>` — kv "발송 · 메일 병행"; the real console's create path is a draft→publish flow).
 - stats: `게시 중 4` · `수령확인 진행 1` (warn tone) — every stat is a click=filter drill (dead numbers banned).
 - rows (each: code NT-, c1 title, c2 게시 date, c3 대상 audience, st status chip + tone, `en` typed enum, `kv`, `prog`, `links`):
 

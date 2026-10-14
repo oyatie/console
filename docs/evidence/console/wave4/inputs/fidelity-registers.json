@@ -282,7 +282,7 @@
     {
      "severity": "major",
      "design_says": "§4-20: business parameters are never hardcoded constants — enums derive from the engine/settings objects; §4-27-3: every enum chip row is N+1 extensible via 「+ 직접 입력」.",
-     "code_does": "The 법인 chip set is a hardcoded array in frontend i18n (recruiting.ts:174 companies: ['코스','BESTEC','KNL','그룹','스태핑']) baked into every tenant's bundle, and neither 법인 nor 고용 형태 chip rows offer a direct-input N+1 extension (PostingComposer.tsx:106-148).",
+     "code_does": "The 법인 chip set is a hardcoded array in frontend i18n (recruiting.ts:174 companies: ['코스','NORTHWIND','KNL','그룹','스태핑']) baked into every tenant's bundle, and neither 법인 nor 고용 형태 chip rows offer a direct-input N+1 extension (PostingComposer.tsx:106-148).",
      "fix": "Load the corporation list from the server (org-entity read, same pattern as listBranches) and add the dotted 「+ 직접 입력」 affordance to the enum chip rows.",
      "backend_blocked": false
     },
@@ -418,7 +418,7 @@
     },
     {
      "severity": "major",
-     "design_says": "dc.html 1828-1832 (법인 segment filter 전체/코스/KNL/BESTEC) + 1941-1949: day rows grouped by site with fold/unfold, site name = drill to graph/map, ent chip, live group note ('무단결근 1 · 대근 미편성' → updates after cover)",
+     "design_says": "dc.html 1828-1832 (법인 segment filter 전체/코스/KNL/NORTHWIND) + 1941-1949: day rows grouped by site with fold/unfold, site name = drill to graph/map, ent chip, live group note ('무단결근 1 · 대근 미편성' → updates after cover)",
      "code_does": "DayBoard (AttendanceScreen.tsx:882-1028) renders one flat name-sorted list; HR records carry no site/team so no grouping, filter, or group notes exist",
      "fix": "Group rows by site/team (needs site attribution on attendance records or a roster join) with fold + entity segment filter; site header links to org drill",
      "backend_blocked": true
@@ -1492,7 +1492,7 @@
     },
     {
      "severity": "minor",
-     "design_says": "Search-miss empty state = 「검색 결과 없음」 + 필터 해제 button + primary action (dc.html 4770-4778); primary board action in the prototype also mail-composes to 전 직원 <all@kos.co.kr> (11229, 10882) and published rows carry 발송 메일 병행 linkage (bd1 kv)",
+     "design_says": "Search-miss empty state = 「검색 결과 없음」 + 필터 해제 button + primary action (dc.html 4770-4778); primary board action in the prototype also mail-composes to 전 직원 <user40@example.com> (11229, 10882) and published rows carry 발송 메일 병행 linkage (bd1 kv)",
      "code_does": "Empty state is one shared string for both no-data and filtered-out (ModuleScreen.tsx:338-341); composer is a board-owned draft flow (charter-aligned §3.9 draft→publish — an improvement over the mock's mail shortcut) but the 메일 병행 발송 companion path is absent",
      "fix": "Differentiate the filtered empty state with a clear-filter CTA + primary action; mail-parallel send stays a later slice once notice→mail linkage exists server-side",
      "backend_blocked": false

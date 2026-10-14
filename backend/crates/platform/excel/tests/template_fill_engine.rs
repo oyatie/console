@@ -242,7 +242,7 @@ fn pending_backlog_overflow_inserts_rows_before_section_4_and_shifts_merges() {
 }
 
 #[test]
-fn daily_log_workbook_loads_and_roundtrips_with_three_sheet_structure_intact() {
+fn daily_log_workbook_loads_and_roundtrips_with_template_and_calendar_sheets_intact() {
     let input = fixture_bytes("업무일지_26.05.27.xlsx");
     let output = roundtrip_workbook_bytes(&input).expect("daily-log round-trip should succeed");
     let book = load_from_bytes(&output);
@@ -252,10 +252,8 @@ fn daily_log_workbook_loads_and_roundtrips_with_three_sheet_structure_intact() {
     assert_eq!(daily.highest_row(), 151);
     assert_eq!(merged_ranges(daily).len(), 59);
 
-    let battery = sheet(&book, "비엔스틸라 #68배터리 점검 결과");
-    assert_eq!(battery.highest_column(), 30);
-    assert_eq!(battery.highest_row(), 35);
-    assert_eq!(merged_ranges(battery).len(), 25);
+    // The template carries no site data: a one-off site inspection sheet is not part of it.
+    assert_eq!(book.sheet_count(), 2);
 
     let monthly = sheet(&book, "2026.05월(계획)");
     assert_eq!(monthly.highest_column(), 17);

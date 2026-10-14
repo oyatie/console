@@ -8527,7 +8527,7 @@ class Component extends DCLogic {
       hq: { label: "그룹 공통", short: "그룹" },
       coss: { label: "㈜코스", short: "코스" },
       knl: { label: "KNL 물류", short: "KNL" },
-      bestec: { label: "BESTEC OEM", short: "BESTEC" },
+      Northwind: { label: "NORTHWIND OEM", short: "NORTHWIND" },
       staff: { label: "HR 스태핑", short: "스태핑" }
     };
 
@@ -8567,26 +8567,26 @@ class Component extends DCLogic {
     ];
 
     this.PEOPLE = {
-      "전성진": { title: "이사", team: "경영지원팀", entity: "㈜코스", ext: "102", email: "sj.jeon@coss.co.kr", joined: "2015.03", me: true },
-      "김성아": { title: "과장", team: "경영지원팀", entity: "㈜코스", ext: "105", email: "sa.kim@coss.co.kr", joined: "2019.07", thread: "t2" },
-      "김성호": { title: "반장", team: "정비사업팀", entity: "㈜코스", ext: "218", email: "sh.kim@coss.co.kr", joined: "2017.02" },
+      "전성진": { title: "이사", team: "경영지원팀", entity: "㈜코스", ext: "102", email: "user2@example.com", joined: "2015.03", me: true },
+      "김성아": { title: "과장", team: "경영지원팀", entity: "㈜코스", ext: "105", email: "user3@example.com", joined: "2019.07", thread: "t2" },
+      "김성호": { title: "반장", team: "정비사업팀", entity: "㈜코스", ext: "218", email: "user4@example.com", joined: "2017.02" },
       "김판규": { title: "경비원", team: "경비 1반 · 대원강업 상주", entity: "㈜코스", ext: "-", joined: "2019.05" },
       "이동혁": { title: "경비원", team: "경비 1반 · 대원강업 상주", entity: "㈜코스", ext: "-", joined: "2021.02" },
       "박성철": { title: "경비원", team: "경비 1반 · 대원강업 상주", entity: "㈜코스", ext: "-", joined: "2020.11" },
       "정재만": { title: "경비원", team: "경비 1반 · 대원강업 상주", entity: "㈜코스", ext: "-", joined: "2022.08" },
-      "이종호": { title: "팀장", team: "경비팀", entity: "㈜코스", ext: "204", email: "jh.lee@coss.co.kr", joined: "2013.11", thread: "t3" },
-      "박수진": { title: "대리", team: "HR 스태핑", entity: "HR 스태핑", ext: "310", email: "sj.park@oyatie.kr", joined: "2021.05" },
-      "박지훈": { title: "대리", team: "전산팀", entity: "그룹 공통", ext: "401", email: "jh.park@oyatie.kr", joined: "2020.09" },
-      "정하늘": { title: "주임", team: "관제센터", entity: "KNL 물류", ext: "512", email: "hn.jung@knl.co.kr", joined: "2022.03" },
-      "조이슨": { title: "사원", team: "사업운영팀", entity: "㈜코스", ext: "231", email: "es.cho@coss.co.kr", joined: "2023.08" },
-      "박진우": { title: "기사", team: "정비사업팀", entity: "KNL 물류", ext: "520", email: "jw.park@knl.co.kr", joined: "2018.06" },
-      "최민석": { title: "경비원", team: "경비팀", entity: "㈜코스", ext: "-", email: "ms.choi@coss.co.kr", joined: "2024.02" }
+      "이종호": { title: "팀장", team: "경비팀", entity: "㈜코스", ext: "204", email: "user5@example.com", joined: "2013.11", thread: "t3" },
+      "박수진": { title: "대리", team: "HR 스태핑", entity: "HR 스태핑", ext: "310", email: "user6@example.com", joined: "2021.05" },
+      "박지훈": { title: "대리", team: "전산팀", entity: "그룹 공통", ext: "401", email: "user7@example.com", joined: "2020.09" },
+      "정하늘": { title: "주임", team: "관제센터", entity: "KNL 물류", ext: "512", email: "user8@example.com", joined: "2022.03" },
+      "조이슨": { title: "사원", team: "사업운영팀", entity: "㈜코스", ext: "231", email: "user9@example.com", joined: "2023.08" },
+      "박진우": { title: "기사", team: "정비사업팀", entity: "KNL 물류", ext: "520", email: "user10@example.com", joined: "2018.06" },
+      "최민석": { title: "경비원", team: "경비팀", entity: "㈜코스", ext: "-", email: "user11@example.com", joined: "2024.02" }
     };
 
     this.ATT_SITES = [
       { id: "as1", site: "대원강업 상주", entity: "coss", ent: "코스", plan: 44, inn: 42, late: 1, absent: 1, tone: "danger", note: "야간 인계 공백 — 최민석", act: true, oi: [0, 1] },
       { id: "as2", site: "본사 (창원)", entity: "coss", ent: "코스", plan: 56, inn: 54, late: 1, absent: 0, tone: "ok", note: "", oi: [0, 0] },
-      { id: "as3", site: "안산공장", entity: "bestec", ent: "BESTEC", plan: 388, inn: 371, late: 2, absent: 3, tone: "warn", note: "조립 2라인 결원 3", act: true, oi: [2, 0] },
+      { id: "as3", site: "안산공장", entity: "Northwind", ent: "NORTHWIND", plan: 388, inn: 371, late: 2, absent: 3, tone: "warn", note: "조립 2라인 결원 3", act: true, oi: [2, 0] },
       { id: "as4", site: "인천 물류센터", entity: "knl", ent: "KNL", plan: 18, inn: 17, late: 0, absent: 0, tone: "ok", note: "", oi: [1, 0] },
       { id: "as5", site: "평택항 물류센터", entity: "knl", ent: "KNL", plan: 32, inn: 30, late: 0, absent: 1, tone: "ok", note: "", oi: [1, 1] },
       { id: "as6", site: "파견 현장 · 86개사", entity: "staff", ent: "스태핑", plan: 628, inn: 594, late: 9, absent: 4, tone: "ok", note: "", oi: [3, 1] }
@@ -8603,7 +8603,7 @@ class Component extends DCLogic {
       { id: "px1", who: "김성호", team: "정비사업팀", type: "연장수당", tone: "warn", amt: "+₩412,000", oneline: "6월 연장 14.5h — 전월 8.0h · 사전승인 없는 2h 포함", lines: ["연장근로 14.5시간 (전월 8.0시간) — 연장수당 ₩412,000 증가.", "7/2 연장 2시간은 사전승인 없음 — 근태 예외 AT-0702-07에서 확인 절차 진행."], chips: [{ kind: "근태", label: "AT-0702-07 연장 기록", hr: "hi3" }, { kind: "정비", label: "WO-2638 조립라인 3호기" }] },
       { id: "px2", who: "박수진", team: "HR 스태핑", type: "소급 인상", tone: "info", amt: "+₩180,000", oneline: "7월 인상분 6월 소급 — 명세 검증 대기", lines: ["기본급 인상(7/1 발효) 6월분 소급 ₩180,000 반영.", "김성아 과장이 소급분 명세서를 공유함 — 검증 후 확정하세요."], chips: [{ kind: "메신저", label: "김성아 · 소급분 명세서", thread: "t2" }] },
       { id: "px3", who: "최민석", team: "경비팀", type: "결근 공제", tone: "danger", amt: "−₩186,000", oneline: "7/3 미출근 1일 무급 처리 예정 — 소명 시 재계산", lines: ["7/3 미출근 1일 — 무급 공제 ₩186,000 반영 예정.", "근태 예외 AT-0703-02 소명 회신 도착 시 자동 재계산됩니다."], chips: [{ kind: "근태", label: "AT-0703-02 미출근", hr: "hi2" }] },
-      { id: "px4", who: "신규 입사 2명", team: "BESTEC 조립 2라인", type: "일할 계산", tone: "info", amt: "₩3,410,000", oneline: "6/22 입사 — 9일 일할 · 4대보험 취득신고 완료", lines: ["6/22 입사자 2명 — 근무 9일 일할 계산 ₩3,410,000.", "4대보험 취득신고 완료 · 첫 명세서는 지급일에 자동 발송됩니다."], chips: [{ kind: "인사", label: "입사 처리 2건" }], noPerson: true },
+      { id: "px4", who: "신규 입사 2명", team: "NORTHWIND 조립 2라인", type: "일할 계산", tone: "info", amt: "₩3,410,000", oneline: "6/22 입사 — 9일 일할 · 4대보험 취득신고 완료", lines: ["6/22 입사자 2명 — 근무 9일 일할 계산 ₩3,410,000.", "4대보험 취득신고 완료 · 첫 명세서는 지급일에 자동 발송됩니다."], chips: [{ kind: "인사", label: "입사 처리 2건" }], noPerson: true },
       { id: "px5", who: "조이슨", team: "사업운영팀", type: "계좌 확인", tone: "danger", amt: "지급 보류 위험", oneline: "계좌 변경 요청 — 본인 인증 미완료", lines: ["급여 계좌 변경 요청 접수 — 본인 인증이 완료되지 않았습니다.", "7/8까지 미인증 시 기존 계좌로 지급됩니다."], chips: [{ kind: "직원", label: "조이슨 인사 카드", person: "조이슨" }] }
     ];
 
@@ -8622,12 +8622,12 @@ class Component extends DCLogic {
 
     this.PAY_ENT_COST = [
       { ent: "HR 스태핑", amt: "₩15.1억", pct: 36 },
-      { ent: "BESTEC OEM", amt: "₩13.4억", pct: 32 },
+      { ent: "NORTHWIND OEM", amt: "₩13.4억", pct: 32 },
       { ent: "㈜코스", amt: "₩11.2억", pct: 27 },
       { ent: "KNL 물류", amt: "₩2.1억", pct: 5 }
     ];
 
-    this.ENT_ORDER = ["coss", "knl", "bestec", "staff"];
+    this.ENT_ORDER = ["coss", "knl", "Northwind", "staff"];
     this.CARD_META = {
       hr: { off: 214, main: ["roster"], side: ["issues"], min: { roster: 340, issues: 300 } },
       review: { off: 176, main: ["teams"], side: ["tasks"], min: { teams: 260, tasks: 240 } },
@@ -8908,7 +8908,7 @@ class Component extends DCLogic {
           { name: "인천 물류센터", hc: "18", teams: [{ name: "관제센터", head: "정하늘", hc: "18" }] },
           { name: "평택항 물류센터", hc: "32", teams: [{ name: "정비사업팀", head: "박진우", hc: "32" }] }
         ] },
-        { ent: "BESTEC OEM", meta: "제조 · 388명", sites: [
+        { ent: "NORTHWIND OEM", meta: "제조 · 388명", sites: [
           { name: "안산공장", hc: "388", teams: [{ name: "조립 1라인", head: "-", hc: "140" }, { name: "조립 2라인", head: "-", hc: "132" }, { name: "품질관리팀", head: "-", hc: "58" }, { name: "공무팀", head: "-", hc: "58" }] }
         ] },
         { ent: "HR 스태핑", meta: "파견·용역 · 490명", sites: [
@@ -8922,7 +8922,7 @@ class Component extends DCLogic {
       rcActFor: null,
       rcCand: null, rcRejMenu: false, rcOfferEdit: "", rcCandErr: null, talentPool: [],
       rcData: [
-        { id: "r1", role: "품질관리 매니저", ent: "BESTEC", site: "안산공장 품질관리팀", need: 1, hired: 0, due: "7/20", emp: "정규직", req: ["ISO 9001 심사원", "품질관리 경력 3년+"], cands: [
+        { id: "r1", role: "품질관리 매니저", ent: "NORTHWIND", site: "안산공장 품질관리팀", need: 1, hired: 0, due: "7/20", emp: "정규직", req: ["ISO 9001 심사원", "품질관리 경력 3년+"], cands: [
           { id: "c1", name: "한지원", st: 0, d: "7/1 지원 · 경력 6년", rs: ["경력 6년 — 자동차부품 품질관리 (2개사)", "ISO 9001 내부심사원 · 6시그마 GB", "안산 거주 · 즉시 합류 가능"], file: "이력서_한지원.pdf" },
           { id: "c2", name: "강태오", st: 2, d: "면접 7/10 (금) 14:00 확정", rs: ["경력 4년 — 전자부품 수입검사", "CQI-9 열처리 심사 참여", "희망 처우 월 ₩3.6M"], file: "이력서_강태오.pdf" }
         ] },
@@ -8976,7 +8976,7 @@ class Component extends DCLogic {
         { id: "a2", kind: "approval", urg: "now", ref: "AP-3119", title: "AI개발 서버 운영·유지비 (7월)", entity: "hq", site: "전산팀", who: "박지훈", due: "SLA 42분", dueTone: "danger", amount: "₩4,280,000", submitted: "오늘 08:41", detail: ["GPU 서버 2대 7월분 운영·유지 비용입니다.", "전월 대비 +₩180,000 (전기료 인상분)."], files: [{ name: "7월 클라우드 청구서.pdf", size: "204KB" }], links: [{ kind: "자산", label: "GPU-SRV-01·02" }], dup: { st: "similar", ref: "AP-3068", label: "유사 — AP-3068 (6월분) · 월 정기 청구" }, stats: { spark: [3.92, 3.95, 4.02, 4.08, 4.1, 4.28], summary: "최근 6개월 평균 ₩4.06M", delta: "전월 대비 +4.4% (전기료)", tone: "warn" }, done: false },
         { id: "a3", kind: "approval", urg: "today", ref: "AP-3116", title: "통근버스 임대료 — 6월분", entity: "coss", site: "사업운영팀", who: "조이슨", due: "오늘 17:00", dueTone: "warn", amount: "₩3,300,000", submitted: "어제 17:20", detail: ["임차 차량 2대 — 진영·창원 노선 6월분 임대료입니다."], files: [{ name: "임대차 계약서.pdf", size: "1.2MB" }, { name: "6월 운행일지.xlsx", size: "88KB" }], links: [{ kind: "계약", label: "진영·창원 노선 C-114" }], dup: { st: "similar", ref: "AP-3055", label: "유사 — AP-3055 (5월분) · 계약 고정가" }, stats: { spark: [3.3, 3.3, 3.3, 3.3, 3.3, 3.3], summary: "계약 고정가 — 6개월 변동 없음", delta: "", tone: "neutral" }, done: false },
         { id: "a4", kind: "approval", urg: "today", ref: "AP-3114", title: "경비원 특수검진비 — 대원강업", entity: "coss", site: "경비팀", who: "이종호", due: "오늘 18:00", dueTone: "warn", amount: "₩842,000", submitted: "어제 16:05", detail: ["대원강업 상주 경비원 4명 특수건강검진 비용입니다."], files: [{ name: "검진 대상자 명단.xlsx", size: "36KB" }, { name: "병원 견적서.pdf", size: "156KB" }], links: [{ kind: "현장", label: "대원강업" }, { kind: "직원", label: "경비원 4명" }], tPeople: ["김판규", "이동혁", "박성철", "정재만"], dup: { st: "clear", label: "중복 없음 · 6개월 동일 대상×유형 0건" }, stats: { spark: [0.72, 0.74, 0.78, 0.79, 0.81, 0.84], summary: "검진 단가 완만 상승 추세", delta: "전년 동기 +6.6%", tone: "neutral" }, done: false },
-        { id: "w1", kind: "work", urg: "today", ref: "WO-2638", title: "정기 예방정비 — 조립라인 3호기", entity: "bestec", site: "안산공장", who: "김성호", due: "D-2", dueTone: "warn", submitted: "6/28", detail: ["분기 정기 예방정비 계획분 — 부품 입고 완료."], files: [{ name: "예방정비 체크리스트.pdf", size: "92KB" }], links: [{ kind: "장비", label: "조립라인 3호기" }, { kind: "부품", label: "입고 4종" }], done: false },
+        { id: "w1", kind: "work", urg: "today", ref: "WO-2638", title: "정기 예방정비 — 조립라인 3호기", entity: "Northwind", site: "안산공장", who: "김성호", due: "D-2", dueTone: "warn", submitted: "6/28", detail: ["분기 정기 예방정비 계획분 — 부품 입고 완료."], files: [{ name: "예방정비 체크리스트.pdf", size: "92KB" }], links: [{ kind: "장비", label: "조립라인 3호기" }, { kind: "부품", label: "입고 4종" }], done: false },
         { id: "s1", kind: "support", urg: "today", ref: "CS-118", title: "대한제강 임대 연장 문의 회신", entity: "knl", site: "평택항 물류센터", who: "정하늘", due: "고객 대기 2시간", dueTone: "warn", mailId: "m1", done: false },
         { id: "a5", kind: "approval", urg: "wait", ref: "AP-3108", title: "연차 휴가신청서 — 박수진 (7/6 월)", entity: "staff", site: "본사", who: "박수진", due: "이번 주", dueTone: "neutral", submitted: "어제 11:30", detail: ["7/6(월) 연차 1일 — 잔여 연차 6일."], links: [{ kind: "직원", label: "박수진" }, { kind: "근태", label: "7월 근무표" }], stats: { summary: "잔여 연차 6일 · 같은 주 팀 휴가자 없음", delta: "", tone: "neutral" }, done: false },
         { id: "d2", kind: "dispatch", urg: "wait", ref: "WO-2641", title: "타이어 교체 — 렌탈 반납 전 정비", entity: "knl", site: "인천 제1물류센터", who: "미배정", due: "내일 10:00", dueTone: "neutral", submitted: "오늘 08:10", detail: ["렌탈 반납 전 타이어 2본 교체 — 내일 오전 반납 예정."], links: [{ kind: "장비", label: "FL-2641 지게차" }, { kind: "계약", label: "렌탈 R-88" }], stats: { summary: "반납 검수 체크리스트 6/8 완료", delta: "", tone: "neutral" }, done: false },
@@ -8986,7 +8986,7 @@ class Component extends DCLogic {
       schedByDay: [
         [ { id: "p01", type: "ev", t: "10:00", title: "주간 그룹 운영회의", sub: "본사 3F 회의실 A", done: true }, { id: "p02", type: "todo", t: "", title: "6월 마감 체크리스트", done: true } ],
         [ { id: "p11", type: "ev", t: "10:00", title: "인천 1센터 현장 점검", sub: "KNL 물류", done: true } ],
-        [ { id: "p21", type: "ev", t: "14:00", title: "BESTEC 라인 증설 회의", sub: "화상", done: true }, { id: "p22", type: "todo", t: "", title: "보험 신고 서류 제출", who: "@박수진", done: true }, { id: "p23", type: "todo", t: "", title: "월간 KPI 초안 검토", done: true } ],
+        [ { id: "p21", type: "ev", t: "14:00", title: "NORTHWIND 라인 증설 회의", sub: "화상", done: true }, { id: "p22", type: "todo", t: "", title: "보험 신고 서류 제출", who: "@박수진", done: true }, { id: "p23", type: "todo", t: "", title: "월간 KPI 초안 검토", done: true } ],
         [ { id: "p31", type: "ev", t: "09:00", title: "경비팀 안전교육", sub: "대원강업 현장", done: true }, { id: "p32", type: "todo", t: "", title: "거래명세표 정리", done: true } ],
         [
           { id: "p41", type: "ev", t: "09:30", title: "그룹 운영 스탠드업", sub: "화상 · 15분", done: true },
@@ -9040,34 +9040,34 @@ class Component extends DCLogic {
         ] }
       ],
       mails: [
-        { id: "m1", from: "대한제강 구매팀", addr: "purchase@daehan-steel.co.kr", to: "전성진 <cho.sj@kos.co.kr>", subj: "임대 연장 및 세금계산서 발행 요청", snippet: "6월분 지게차 임대료(3대) 세금계산서 발행을 요청드립니다. 아울러 8월 만료 예정인 임대 계약의 연장 조건을…", time: "10:12", date: "오늘", folder: "inbox", unread: true, star: true, labels: ["계약", "구매"], att: [{ n: "세금계산서_6월.pdf", sz: "84 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [{ label: "CS-118 견적", kind: "견적", to: "s1" }], tag: "CS-118", itemId: "s1", replied: false, body: [
+        { id: "m1", from: "대한제강 구매팀", addr: "user12@example.com", to: "전성진 <user13@example.com>", subj: "임대 연장 및 세금계산서 발행 요청", snippet: "6월분 지게차 임대료(3대) 세금계산서 발행을 요청드립니다. 아울러 8월 만료 예정인 임대 계약의 연장 조건을…", time: "10:12", date: "오늘", folder: "inbox", unread: true, star: true, labels: ["계약", "구매"], att: [{ n: "세금계산서_6월.pdf", sz: "84 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [{ label: "CS-118 견적", kind: "견적", to: "s1" }], tag: "CS-118", itemId: "s1", replied: false, body: [
           "안녕하세요, 대한제강 구매팀입니다.",
           "6월분 지게차 임대료(3대) 세금계산서 발행을 요청드립니다.",
           "아울러 8월 만료 예정인 임대 계약의 연장 조건(기간·단가)을 회신 부탁드립니다."
         ] },
-        { id: "m2", from: "순천세아제강 구매팀", addr: "buy@seahsc.example", to: "전성진 <cho.sj@kos.co.kr>", subj: "청소 소모품 단가 확인 요청", snippet: "6월 16일 납품된 청소 소모품 내역 확인했습니다. 7월분 단가표 회신 주시면 발주 진행하겠습니다.", time: "09:47", date: "오늘", folder: "inbox", unread: true, star: false, labels: ["구매"], att: [], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [{ label: "CS-114 견적", kind: "견적", to: "s2" }], tag: "CS-114", itemId: "s2", replied: false, body: [
+        { id: "m2", from: "순천세아제강 구매팀", addr: "buy@seahsc.example", to: "전성진 <user14@example.com>", subj: "청소 소모품 단가 확인 요청", snippet: "6월 16일 납품된 청소 소모품 내역 확인했습니다. 7월분 단가표 회신 주시면 발주 진행하겠습니다.", time: "09:47", date: "오늘", folder: "inbox", unread: true, star: false, labels: ["구매"], att: [], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [{ label: "CS-114 견적", kind: "견적", to: "s2" }], tag: "CS-114", itemId: "s2", replied: false, body: [
           "6월 16일 납품된 청소 소모품 내역 확인했습니다.",
           "7월분 단가표 회신 주시면 발주 진행하겠습니다."
         ] },
-        { id: "mc", from: "김성아 · 인사팀", addr: "kim.sa@kos.co.kr", to: "전성진 <cho.sj@kos.co.kr>", subj: "[내부] 6월 급여 명세 확인 — 최민석 결근 공제", snippet: "최민석 6월 명세에 무단결근 1일(−₩186,000) 공제가 반영되었습니다. 소명 접수 시 재계산 필요…", time: "09:20", date: "오늘", folder: "inbox", unread: true, star: false, labels: ["급여", "인사"], att: [{ n: "명세_최민석_2406.xlsx", sz: "22 KB", kind: "xlsx" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: "민감", hold: false, retain: "5년", links: [{ label: "PS-2406 급여명세", kind: "급여", to: "pay" }, { label: "최민석 직원", kind: "직원", to: "emp" }], replied: false, body: [
+        { id: "mc", from: "김성아 · 인사팀", addr: "user15@example.com", to: "전성진 <user16@example.com>", subj: "[내부] 6월 급여 명세 확인 — 최민석 결근 공제", snippet: "최민석 6월 명세에 무단결근 1일(−₩186,000) 공제가 반영되었습니다. 소명 접수 시 재계산 필요…", time: "09:20", date: "오늘", folder: "inbox", unread: true, star: false, labels: ["급여", "인사"], att: [{ n: "명세_최민석_2406.xlsx", sz: "22 KB", kind: "xlsx" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: "민감", hold: false, retain: "5년", links: [{ label: "PS-2406 급여명세", kind: "급여", to: "pay" }, { label: "최민석 직원", kind: "직원", to: "emp" }], replied: false, body: [
           "대표님, 인사팀 김성아입니다.",
           "최민석 6월 명세에 무단결근 1일(−₩186,000) 공제가 반영되었습니다.",
           "본인 소명이 접수되면 재계산이 필요하여 사전 검토 요청드립니다."
         ] },
-        { id: "m4", from: "그룹 보안팀", addr: "security@kos-group.co.kr", to: "전성진 <cho.sj@kos.co.kr>", cc: "정보보호책임자(CISO)", subj: "권한 정책 v2 초안 검토 요청 (대외비)", snippet: "법인별 위임 규칙과 비밀 구역 deny-by-omission 초안을 공유드립니다. 7/8까지 검토 의견 부탁드립니다.", time: "어제", date: "7월 3일", folder: "inbox", unread: true, star: false, labels: ["보안", "정책"], att: [{ n: "권한정책_v2_초안.docx", sz: "156 KB", kind: "docx" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "대외비", hold: false, retain: "10년", links: [{ label: "권한·정책", kind: "정책", to: "policy" }], replied: false, body: [
+        { id: "m4", from: "그룹 보안팀", addr: "user17@example.com", to: "전성진 <user18@example.com>", cc: "정보보호책임자(CISO)", subj: "권한 정책 v2 초안 검토 요청 (대외비)", snippet: "법인별 위임 규칙과 비밀 구역 deny-by-omission 초안을 공유드립니다. 7/8까지 검토 의견 부탁드립니다.", time: "어제", date: "7월 3일", folder: "inbox", unread: true, star: false, labels: ["보안", "정책"], att: [{ n: "권한정책_v2_초안.docx", sz: "156 KB", kind: "docx" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "대외비", hold: false, retain: "10년", links: [{ label: "권한·정책", kind: "정책", to: "policy" }], replied: false, body: [
           "권한 정책 v2 초안을 공유드립니다.",
           "법인별 위임 규칙과 비밀 구역 deny-by-omission 원칙을 반영했습니다.",
           "7월 8일까지 검토 의견 부탁드립니다."
         ] },
-        { id: "ma", from: "국세청 홈택스", addr: "no-reply@hometax.go.kr", to: "전성진 <cho.sj@kos.co.kr>", subj: "7월 원천세 신고·납부 안내", snippet: "2026년 7월 귀속 원천징수이행상황신고서 제출·납부 기한을 안내드립니다.", time: "어제", date: "7월 3일", folder: "inbox", unread: false, star: false, labels: ["세무"], att: [{ n: "원천세_신고서.pdf", sz: "48 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [], replied: false, body: [ "2026년 7월 귀속 원천징수이행상황신고서 제출·납부 기한을 안내드립니다.", "납부 기한: 8월 11일" ] },
-        { id: "mb", from: "근로복지공단", addr: "noreply@comwel.or.kr", to: "전성진 <cho.sj@kos.co.kr>", subj: "산재·고용 보험료 정산 통지", snippet: "2025년도 보수총액 신고분에 대한 산재·고용 보험료 정산 결과를 통지합니다.", time: "7월 2일", date: "7월 2일", folder: "inbox", unread: false, star: false, labels: ["4대보험"], att: [{ n: "보험료_정산통지서.pdf", sz: "61 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [], replied: false, body: [ "2025년도 보수총액 신고분에 대한 정산 결과를 통지합니다." ] },
-        { id: "m3", from: "국민건강보험공단", addr: "noreply@nhis.or.kr", to: "전성진 <cho.sj@kos.co.kr>", subj: "재난적의료비 지원사업 안내", snippet: "재난적의료비 지원사업 등 유용한 정보를 안내드립니다.", time: "7월 2일", date: "7월 2일", folder: "inbox", unread: false, star: false, labels: ["복지"], att: [], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.2" }, cls: "일반", hold: false, retain: "3년", links: [], replied: false, body: [ "재난적의료비 지원사업 등 유용한 정보를 안내드립니다." ] },
-        { id: "msp", from: "김성아 대표이사", addr: "ceo-urgent@kos-co-kr.example", to: "전성진 <cho.sj@kos.co.kr>", subj: "[긴급] 급여 이체 승인 요청 — 즉시 회신 요망", snippet: "지금 회의 중이라 통화가 어렵습니다. 첨부 계좌로 긴급 이체 승인 부탁드립니다.", time: "08:55", date: "오늘", folder: "spam", unread: true, star: false, labels: [], att: [], sec: { spf: "fail", dkim: "none", dmarc: "fail", tls: "없음" }, cls: "격리", hold: false, retain: "격리", links: [], replied: false, body: [ "지금 회의 중이라 통화가 어렵습니다.", "아래 첨부 계좌로 긴급 이체 승인 부탁드립니다." ] },
-        { id: "ms1", from: "전성진 (나)", addr: "cho.sj@kos.co.kr", to: "대한제강 구매팀 <purchase@daehan-steel.co.kr>", subj: "RE: 임대 연장 및 세금계산서 발행 요청", snippet: "세금계산서 발행 완료했습니다. 임대 연장 조건은 별도 계약서로 회신드리겠습니다.", time: "11:02", date: "오늘", folder: "sent", unread: false, star: false, labels: ["계약"], att: [{ n: "세금계산서_6월_발행.pdf", sz: "84 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: "일반", hold: false, retain: "5년", links: [{ label: "CS-118 견적", kind: "견적", to: "s1" }], replied: false, body: [ "세금계산서 발행 완료했습니다.", "임대 연장 조건(기간·단가)은 별도 계약서로 회신드리겠습니다." ] },
-        { id: "ms2", from: "전성진 (나)", addr: "cho.sj@kos.co.kr", to: "전 직원 <all@kos.co.kr>", subj: "7월 근무·연차촉진 안내", snippet: "7월 근무일정과 연차 사용촉진 1차 통보를 안내드립니다.", time: "어제", date: "7월 3일", folder: "sent", unread: false, star: false, labels: ["인사"], att: [], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: "일반", hold: false, retain: "3년", links: [], replied: false, body: [ "7월 근무일정과 연차 사용촉진 1차 통보를 안내드립니다." ] },
-        { id: "mdr", from: "전성진 (나)", addr: "cho.sj@kos.co.kr", to: "노무법인 정도 김세훈 <ksh@jd-labor.example>", subj: "연차촉진 절차 문의 (초안)", snippet: "미사용 연차 사용촉진 2차 통보 시점과 노무수령거부 처리 절차를 문의드립니다.", time: "임시저장", date: "오늘", folder: "draft", unread: false, star: false, labels: ["노무"], att: [], sec: { spf: "—", dkim: "—", dmarc: "—", tls: "—" }, cls: "일반", hold: false, retain: "—", links: [], replied: false, body: [ "미사용 연차 사용촉진 2차 통보 시점과 노무수령거부 처리 절차를 문의드립니다." ] },
-        { id: "mar", from: "공정거래위원회", addr: "noreply@ftc.go.kr", to: "전성진 <cho.sj@kos.co.kr>", subj: "하도급 서면실태조사 협조 요청", snippet: "2026년 하도급거래 서면실태조사 대상으로 선정되어 조사표 제출을 요청합니다.", time: "6월 28일", date: "6월 28일", folder: "archive", unread: false, star: false, labels: ["컴플라이언스"], att: [{ n: "서면실태_조사표.hwp", sz: "38 KB", kind: "hwp" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: true, retain: "10년", links: [], replied: false, body: [ "2026년 하도급거래 서면실태조사 대상으로 선정되어 조사표 제출을 요청합니다.", "제출 기한: 7월 18일" ] },
-        { id: "mtr", from: "오피스마트 프로모션", addr: "promo@officemart.example", to: "전성진 <cho.sj@kos.co.kr>", subj: "[광고] 여름 특가 사무용품 최대 40%", snippet: "여름맞이 사무용품 특가 행사를 안내드립니다.", time: "6월 30일", date: "6월 30일", folder: "trash", unread: false, star: false, labels: [], att: [], sec: { spf: "pass", dkim: "none", dmarc: "none", tls: "TLS 1.2" }, cls: "일반", hold: false, retain: "—", links: [], replied: false, body: [ "여름맞이 사무용품 특가 행사를 안내드립니다." ] }
+        { id: "ma", from: "국세청 홈택스", addr: "user19@example.com", to: "전성진 <user20@example.com>", subj: "7월 원천세 신고·납부 안내", snippet: "2026년 7월 귀속 원천징수이행상황신고서 제출·납부 기한을 안내드립니다.", time: "어제", date: "7월 3일", folder: "inbox", unread: false, star: false, labels: ["세무"], att: [{ n: "원천세_신고서.pdf", sz: "48 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [], replied: false, body: [ "2026년 7월 귀속 원천징수이행상황신고서 제출·납부 기한을 안내드립니다.", "납부 기한: 8월 11일" ] },
+        { id: "mb", from: "근로복지공단", addr: "user21@example.com", to: "전성진 <user22@example.com>", subj: "산재·고용 보험료 정산 통지", snippet: "2025년도 보수총액 신고분에 대한 산재·고용 보험료 정산 결과를 통지합니다.", time: "7월 2일", date: "7월 2일", folder: "inbox", unread: false, star: false, labels: ["4대보험"], att: [{ n: "보험료_정산통지서.pdf", sz: "61 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: false, retain: "5년", links: [], replied: false, body: [ "2025년도 보수총액 신고분에 대한 정산 결과를 통지합니다." ] },
+        { id: "m3", from: "국민건강보험공단", addr: "user23@example.com", to: "전성진 <user24@example.com>", subj: "재난적의료비 지원사업 안내", snippet: "재난적의료비 지원사업 등 유용한 정보를 안내드립니다.", time: "7월 2일", date: "7월 2일", folder: "inbox", unread: false, star: false, labels: ["복지"], att: [], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.2" }, cls: "일반", hold: false, retain: "3년", links: [], replied: false, body: [ "재난적의료비 지원사업 등 유용한 정보를 안내드립니다." ] },
+        { id: "msp", from: "김성아 대표이사", addr: "ceo-urgent@kos-co-kr.example", to: "전성진 <user25@example.com>", subj: "[긴급] 급여 이체 승인 요청 — 즉시 회신 요망", snippet: "지금 회의 중이라 통화가 어렵습니다. 첨부 계좌로 긴급 이체 승인 부탁드립니다.", time: "08:55", date: "오늘", folder: "spam", unread: true, star: false, labels: [], att: [], sec: { spf: "fail", dkim: "none", dmarc: "fail", tls: "없음" }, cls: "격리", hold: false, retain: "격리", links: [], replied: false, body: [ "지금 회의 중이라 통화가 어렵습니다.", "아래 첨부 계좌로 긴급 이체 승인 부탁드립니다." ] },
+        { id: "ms1", from: "전성진 (나)", addr: "user26@example.com", to: "대한제강 구매팀 <user27@example.com>", subj: "RE: 임대 연장 및 세금계산서 발행 요청", snippet: "세금계산서 발행 완료했습니다. 임대 연장 조건은 별도 계약서로 회신드리겠습니다.", time: "11:02", date: "오늘", folder: "sent", unread: false, star: false, labels: ["계약"], att: [{ n: "세금계산서_6월_발행.pdf", sz: "84 KB", kind: "pdf" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: "일반", hold: false, retain: "5년", links: [{ label: "CS-118 견적", kind: "견적", to: "s1" }], replied: false, body: [ "세금계산서 발행 완료했습니다.", "임대 연장 조건(기간·단가)은 별도 계약서로 회신드리겠습니다." ] },
+        { id: "ms2", from: "전성진 (나)", addr: "user28@example.com", to: "전 직원 <user29@example.com>", subj: "7월 근무·연차촉진 안내", snippet: "7월 근무일정과 연차 사용촉진 1차 통보를 안내드립니다.", time: "어제", date: "7월 3일", folder: "sent", unread: false, star: false, labels: ["인사"], att: [], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: "일반", hold: false, retain: "3년", links: [], replied: false, body: [ "7월 근무일정과 연차 사용촉진 1차 통보를 안내드립니다." ] },
+        { id: "mdr", from: "전성진 (나)", addr: "user30@example.com", to: "노무법인 정도 김세훈 <ksh@jd-labor.example>", subj: "연차촉진 절차 문의 (초안)", snippet: "미사용 연차 사용촉진 2차 통보 시점과 노무수령거부 처리 절차를 문의드립니다.", time: "임시저장", date: "오늘", folder: "draft", unread: false, star: false, labels: ["노무"], att: [], sec: { spf: "—", dkim: "—", dmarc: "—", tls: "—" }, cls: "일반", hold: false, retain: "—", links: [], replied: false, body: [ "미사용 연차 사용촉진 2차 통보 시점과 노무수령거부 처리 절차를 문의드립니다." ] },
+        { id: "mar", from: "공정거래위원회", addr: "user31@example.com", to: "전성진 <user32@example.com>", subj: "하도급 서면실태조사 협조 요청", snippet: "2026년 하도급거래 서면실태조사 대상으로 선정되어 조사표 제출을 요청합니다.", time: "6월 28일", date: "6월 28일", folder: "archive", unread: false, star: false, labels: ["컴플라이언스"], att: [{ n: "서면실태_조사표.hwp", sz: "38 KB", kind: "hwp" }], sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3" }, cls: "일반", hold: true, retain: "10년", links: [], replied: false, body: [ "2026년 하도급거래 서면실태조사 대상으로 선정되어 조사표 제출을 요청합니다.", "제출 기한: 7월 18일" ] },
+        { id: "mtr", from: "오피스마트 프로모션", addr: "promo@officemart.example", to: "전성진 <user33@example.com>", subj: "[광고] 여름 특가 사무용품 최대 40%", snippet: "여름맞이 사무용품 특가 행사를 안내드립니다.", time: "6월 30일", date: "6월 30일", folder: "trash", unread: false, star: false, labels: [], att: [], sec: { spf: "pass", dkim: "none", dmarc: "none", tls: "TLS 1.2" }, cls: "일반", hold: false, retain: "—", links: [], replied: false, body: [ "여름맞이 사무용품 특가 행사를 안내드립니다." ] }
       ],
       notifs: [
         { id: "nslo1", cat: "근태", text: "[SLO 위반] 대원강업 상주 결원 (최민석 미출근 06:00) — 커버 편성 4h 경과 · 목표 2h · 미편성", time: "방금", unread: true, link: { screen: "att" } },
@@ -9168,7 +9168,7 @@ class Component extends DCLogic {
           then: [{ label: "갱신 딜(DL-R) 생성 — 원 계약·근거 링크 · 담당 승계", icon: "activity" }, { label: "원 계약 담당 알림 + 다음 활동 「갱신 조건 제안」 기한 D-180", icon: "bell" }] },
         { id: "wf8", name: "P0 라인정지 — 근무외 무대기 승인 프로토콜", active: true, runs: 3, lastRun: "6/28 (일) 02:14", lastResult: "ok", policy: "DoA-E1",
           runLog: [
-            { t: "6/28 (일) 02:14", result: "ok", dur: "14분", note: "BESTEC 3호기 정지(P0) → 당직 김성호 응답(8분) · 한도 내 선배차 · 사후 결재 AP-3096 자동 상신 — 월요일 four-eyes 검증 완료", made: ["WO-2611", "AP-3096"] },
+            { t: "6/28 (일) 02:14", result: "ok", dur: "14분", note: "NORTHWIND 3호기 정지(P0) → 당직 김성호 응답(8분) · 한도 내 선배차 · 사후 결재 AP-3096 자동 상신 — 월요일 four-eyes 검증 완료", made: ["WO-2611", "AP-3096"] },
             { t: "6/14 (일) 23:40", result: "ok", dur: "22분", note: "당직 무응답 15분 → 차상위(공무팀장) 에스컬 · 응답 후 선배차", made: ["WO-2598"] }
           ],
           trigger: { label: "정비 접수 P0(라인정지·안전) × 근무시간 외", icon: "clock" },
@@ -9701,7 +9701,7 @@ class Component extends DCLogic {
     };
     this.setState({ wfPre: { id: null, attest: false, checks: [
       { k: "근태 예외 처리", ok: this.attIssuesLeftN() === 0, note: "미처리 0건" },
-      { k: "타법인 마감 완료", ok: true, note: "KNL·BESTEC·HR 3/3" },
+      { k: "타법인 마감 완료", ok: true, note: "KNL·NORTHWIND·HR 3/3" },
       { k: "미결 연차 신청", ok: true, warn: lvOpen > 0, note: lvOpen > 0 ? lvOpen + "건 대기 (소프트 — 승인 시 소급 반영)" : "0건" }
     ] } });
   }
@@ -10848,7 +10848,7 @@ class Component extends DCLogic {
       { id: "seoul", name: "서울 본사 (스태핑)", x: 36, y: 18, cov: "—", covT: "neutral", iss: "", issT: "neutral", ct: "본사", ctT: "neutral", wo: "", woT: "neutral", go: { scr: "org" } },
       { id: "inc1", name: "인천 제1물류센터", x: 25, y: 20, cov: "97%", covT: "ok", iss: "", issT: "ok", ct: "KNL 물류", ctT: "neutral", wo: "WO-2641", woT: "warn", go: { code: "WO-2641" } },
       { id: "inc2", name: "인천 제2물류센터", x: 19, y: 30, cov: "97%", covT: "ok", iss: "SLA 38분", issT: "danger", ct: "지게차 임대", ctT: "neutral", wo: "WO-2643 긴급", woT: "danger", go: { code: "WO-2643" } },
-      { id: "ansan", name: "안산공장 (BESTEC)", x: 34, y: 34, cov: "94%", covT: "warn", iss: "지각 2", issT: "warn", ct: "설비 유지보수", ctT: "neutral", wo: "WO-2638 D-2", woT: "warn", go: { code: "WO-2638" } },
+      { id: "ansan", name: "안산공장 (NORTHWIND)", x: 34, y: 34, cov: "94%", covT: "warn", iss: "지각 2", issT: "warn", ct: "설비 유지보수", ctT: "neutral", wo: "WO-2638 D-2", woT: "warn", go: { code: "WO-2638" } },
       { id: "pt", name: "평택항 물류센터", x: 28, y: 46, cov: "98%", covT: "ok", iss: "회신 대기 1", issT: "warn", ct: "임대 연장 협의", ctT: "warn", wo: "", woT: "neutral", go: { code: "CS-118" } },
       { id: "dw", name: "대원강업 상주 (창원)", x: 66, y: 74, cov: "96%", covT: "warn", iss: "결근 1 · 대근 1", issT: "danger", ct: "C-207 경비", ctT: "ok", wo: "", woT: "neutral", go: { node: "site_dw" } },
       { id: "sc", name: "순천세아제강", x: 45, y: 82, cov: "99%", covT: "ok", iss: "", issT: "ok", ct: "미화·소모품", ctT: "neutral", wo: "", woT: "neutral", go: { code: "CS-114" } }
@@ -11057,7 +11057,7 @@ class Component extends DCLogic {
     const dpRows = [
       { id: "dp1", code: "WO-2643", c1: "지게차 유압 누유 — 긴급 출동 · 인천 제2센터", c2: "대한제강 상차 중단", c3: "미배정", st: "SLA 38분", tone: "danger", en: [["유형", "긴급 출동"]], kv: [["접수", "오늘 10:41 — SLA 1시간"], ["후보 기사", "김성호 (안산 35분) · 박정비 (인천 12분)"], ["부품", "PO-121 긴급 발주 — 15:00 입고"]], links: [{ label: "자산 FL-2643", code: "FL-2643" }, { label: "부품 PO-121", code: "PO-121" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "wo", mapSel: "inc2" } }], acts: [{ label: "배차·처리 패널", item: "d1" }] },
       { id: "dp2", code: "WO-2641", c1: "타이어 교체 — 반납 전 정비 · 인천 제1센터", c2: "렌탈 반납 준비", c3: "미배정", st: "내일 10:00", tone: "warn", en: [["유형", "교체 정비"]], kv: [["후보 기사", "박정비 — 동일 권역"], ["재고", "IV-018 예비 타이어 이동 중"]], links: [{ label: "자산 FL-2641", code: "FL-2641" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "wo", mapSel: "inc1" } }], acts: [{ label: "배차·처리 패널", item: "d2" }] },
-      { id: "dp3", code: "WO-2638", c1: "정기 예방정비 — 조립라인 3호기 · 안산공장", c2: "BESTEC", c3: "김성호", st: "D-2 배정됨", tone: "ok", en: [["유형", "예방 정비"]], kv: [["부품", "PO-118 입고 완료"], ["일지", "JL-0702 연동"]], links: [{ label: "JL-0702", code: "JL-0702" }, { label: "담당 김성호", person: "김성호" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "wo", mapSel: "ansan" } }], acts: [{ label: "승인·처리 패널", item: "w1" }] }
+      { id: "dp3", code: "WO-2638", c1: "정기 예방정비 — 조립라인 3호기 · 안산공장", c2: "NORTHWIND", c3: "김성호", st: "D-2 배정됨", tone: "ok", en: [["유형", "예방 정비"]], kv: [["부품", "PO-118 입고 완료"], ["일지", "JL-0702 연동"]], links: [{ label: "JL-0702", code: "JL-0702" }, { label: "담당 김성호", person: "김성호" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "wo", mapSel: "ansan" } }], acts: [{ label: "승인·처리 패널", item: "w1" }] }
     ];
     return {
       finance: { title: "재무", action: { label: "전표 기안", appr: "expense", atitle: "전표 — " }, cols: ["전표", "내역", "금액", "계정"], stats: [{ label: "미결 전표", v: "2", tone: "warn" }, { label: "당월 수입", v: "₩412.8M" }, { label: "당월 지출", v: "₩389.2M" }, { label: "자동 전표 (오픈뱅킹)", v: "214", scr: "auto" }], rows: [
@@ -11155,7 +11155,7 @@ class Component extends DCLogic {
       field: { title: "고객·현장", action: { label: "이슈 접수", scr: "ingest" }, cols: ["현장", "고객", "계약", "SLA"], stats: [{ label: "SLA 위반", v: "0" }, { label: "진행 이슈", v: "2", tone: "warn" }, { label: "상주 현장", v: "12" }], rows: [
         { id: "fs1", code: "ST-01", c1: "대원강업 상주", c2: "대원강업", c3: "C-207 경비", st: "이슈 1", tone: "warn", en: [["서비스", "경비"]], kv: [["상주", "경비 44명 · 이종호"], ["이슈", "7/3 결원 → 대근 편성"], ["SLA", "100% · 무위반"]], links: [{ label: "거래처 대원강업", code: "CL-02" }, { label: "그래프 — 현장 체인", node: "site_dw" }, { label: "C-207", code: "C-207" }, { label: "근태 현황", scr: "att" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "iss", mapSel: "dw" } }], acts: [] },
         { id: "fs2", code: "ST-04", c1: "평택항 물류센터", c2: "대한제강", c3: "지게차 임대", st: "회신 대기", tone: "warn", en: [["서비스", "지게차 임대"]], kv: [["요청", "임대 연장 조건 회신 — CS-118"], ["담당", "정하늘"]], links: [{ label: "거래처 대한제강", code: "CL-01" }, { label: "CS-118", code: "CS-118" }, { label: "메일 스레드", scr: "mail" }, { label: "담당 정하늘", person: "정하늘" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "ct", mapSel: "pt" } }], acts: [{ label: "연장 계약 기안", appr: "contract", title: "대한제강 지게차 임대 연장" }] },
-        { id: "fs3", code: "ST-07", c1: "안산공장 정비", c2: "BESTEC", c3: "설비 유지보수", st: "정상", tone: "ok", en: [["서비스", "설비 유지보수"]], kv: [["진행", "WO-2638 예방정비 D-2"]], links: [{ label: "거래처 BESTEC", code: "CL-03" }, { label: "WO-2638", code: "WO-2638" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "wo", mapSel: "ansan" } }], acts: [] },
+        { id: "fs3", code: "ST-07", c1: "안산공장 정비", c2: "NORTHWIND", c3: "설비 유지보수", st: "정상", tone: "ok", en: [["서비스", "설비 유지보수"]], kv: [["진행", "WO-2638 예방정비 D-2"]], links: [{ label: "거래처 NORTHWIND", code: "CL-03" }, { label: "WO-2638", code: "WO-2638" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "wo", mapSel: "ansan" } }], acts: [] },
         { id: "fs4", code: "ST-09", c1: "순천세아제강 미화", c2: "세아제강", c3: "미화·소모품", st: "정상", tone: "ok", en: [["서비스", "미화"]], kv: [["납품", "IN-0620 · 6/16"], ["회신", "CS-114 단가 확인"]], links: [{ label: "거래처 세아제강", code: "CL-04" }, { label: "CS-114", code: "CS-114" }, { label: "IN-0620", code: "IN-0620" }, { label: "지도에서 보기", scr: "map", extra: { mapOv: "cov", mapSel: "sc" } }], acts: [] }
       ] },
       compliance: { title: "컴플라이언스", action: { label: "의무 등록 기안", appr: "general", atitle: "컴플라이언스 의무 — " }, cols: ["의무 · 규제", "근거", "기한", "담당"], stats: [{ label: "기한 임박", v: "2", tone: "warn" }, { label: "진행 의무", v: "5" }, { label: "규제 파라미터", v: "2" }, { label: "표준 프레임워크", v: "4" }, { label: "DSR 요청", v: "0" }], rows: [
@@ -11226,7 +11226,7 @@ class Component extends DCLogic {
         })),
         { id: "lc9", code: "AN-저작", c1: "인사이트 저작 — 분석 개체 만들기", c2: "AN- 초안", c3: "근거 개체 연결 · 규칙 기반 파생", st: "저작 진입", tone: "info", en: [["단위", "저작"]], kv: [["문법", "분석(AN-) = 근거 체인 + 산식 — 근거 변경 시 재계산"], ["경로", "생성 위저드(타입=분석) → 초안 → 상신·검토 (§3.9)"]], links: [{ label: "예측·리스크", scr: "forecast" }], acts: [{ label: "AN- 저작 — 위저드", onRun: () => this.anNewOpen("an") }, { label: "FC- 예측 저작", onRun: () => this.anNewOpen("fc") }] }
       ] },
-      board: { title: "게시판·공지", action: { label: "공지 작성", mailTo: "전 직원 <all@kos.co.kr>" }, cols: ["공지", "게시", "대상", "확인"], stats: [{ label: "게시 중", v: "4" }, { label: "수령확인 진행", v: "1", tone: "warn" }], rows: [
+      board: { title: "게시판·공지", action: { label: "공지 작성", mailTo: "전 직원 <user34@example.com>" }, cols: ["공지", "게시", "대상", "확인"], stats: [{ label: "게시 중", v: "4" }, { label: "수령확인 진행", v: "1", tone: "warn" }], rows: [
         { id: "bd1", code: "NT-0708", c1: "7월 근무·연차촉진 안내", c2: "오늘", c3: "전 직원", st: "게시", tone: "ok", en: [["유형", "안내"]], prog: { done: 0, total: 3, label: "촉진 대상 수령확인" }, kv: [["발송", "메일 병행 — 전 직원"], ["연동", "촉진 1차 AP-3126"]], links: [{ label: "발송 메일", scr: "mail" }, { label: "연차 촉진", scr: "leave" }], acts: [] },
         { id: "bd2", code: "NT-0707", c1: "취업규칙 개정 통지", c2: "어제", c3: "전 직원", st: "수령확인 중", tone: "warn", en: [["유형", "법정 통지"]], prog: { done: 1192, total: 1284, label: "수령확인" }, kv: [["법정", "근로기준법 §94 — 개별 수령확인"]], links: [{ label: "개인 수신함", scr: "inbox" }, { label: "컴플라이언스", scr: "compliance" }], acts: [] },
         { id: "bd3", code: "NT-0701", c1: "2026년 정기인사 명령", c2: "7/1", c3: "전 직원", st: "게시", tone: "ok", en: [["유형", "인사명령"]], kv: [["보존", "영구 — 기록물 등재"]], links: [{ label: "기록물 NT-0701", code: "NT-0701" }], acts: [] },
@@ -12453,7 +12453,7 @@ class Component extends DCLogic {
       { code: "AP-3111", title: "6월 부서 운영비 정산", type: "결재", who: "전성진", closed: "6/30", keep: "5년", ent: "코스" },
       { code: "AP-3104", title: "5월 정기급여 지급 승인", type: "결재", who: "김성아", closed: "5/12", keep: "5년", ent: "그룹" },
       { code: "JL-0703", title: "대원강업 야간조 업무일지", type: "업무일지", who: "이종호", closed: "7/3", keep: "3년", ent: "코스" },
-      { code: "JL-0702", title: "안산공장 예방정비 일지 WO-2638", type: "업무일지", who: "김성호", closed: "7/2", keep: "3년", ent: "BESTEC" },
+      { code: "JL-0702", title: "안산공장 예방정비 일지 WO-2638", type: "업무일지", who: "김성호", closed: "7/2", keep: "3년", ent: "NORTHWIND" },
       { code: "NT-0701", title: "2026년 정기인사 명령", type: "공지", who: "인사팀", closed: "7/1", keep: "영구", ent: "그룹" },
       { code: "C-207", title: "NK보안 도급 계약서", type: "계약", who: "경영지원팀", closed: "3/15", keep: "영구", ent: "코스" },
       { code: "C-114", title: "통근버스 임대차 계약 (진영·창원)", type: "계약", who: "사업운영팀", closed: "1/20", keep: "10년", ent: "코스" },
@@ -12758,7 +12758,7 @@ class Component extends DCLogic {
             return { ...rp, hired: nh, cands: rp.cands.filter((c) => c.id !== cid) };
           }
           msg = cand.name + " 입사 확정 — 직원 개체 생성 · 타임테이블 자동 연결 · 근로계약 수신함 발송 · 충원 " + nh + "/" + rp.need + (nh >= rp.need ? " · 충원 완료, 공고 마감 검토" : "");
-          const entMap = { "코스": "coss", "BESTEC": "bestec", "KNL": "knl", "그룹": "hq", "스태핑": "staff" };
+          const entMap = { "코스": "coss", "NORTHWIND": "Northwind", "KNL": "knl", "그룹": "hq", "스태핑": "staff" };
           if (!this.EMPLOYEES.some((e2) => e2.name === cand.name)) {
             this.EMPLOYEES.push({ name: cand.name, title: "사원", team: rp.site, job: rp.role, ent: rp.ent, entity: entMap[rp.ent] || "coss", ext: "-", joined: "2026.07", st: "입사 예정", tone: "info", empSt: "입사 예정", note: "온보딩 — 포지션 프리셋 상속" });
             this.PEOPLE[cand.name] = { title: "사원", team: rp.site, entity: rp.ent, ext: "-", joined: "2026.07" };
@@ -13374,7 +13374,7 @@ class Component extends DCLogic {
     return [
       { code: "CL-01", name: "대한제강", tier: "핵심 고객", terms: "월말 정산 · 신용 A · 임대 연장 협의", chain: ["VC-2607", "FL-2643", "CS-118"], site: "평택항 물류센터" },
       { code: "CL-02", name: "대원강업", tier: "핵심 고객", terms: "C-207 경비 도급 · 상주 44명 · SLA 100%", chain: ["C-207", "CP-013", "SR-206"], site: "대원강업 상주 (창원)" },
-      { code: "CL-03", name: "BESTEC", tier: "일반", terms: "설비 유지보수 · 분기 예방정비", chain: ["WO-2638", "JL-0702"], site: "안산공장" },
+      { code: "CL-03", name: "NORTHWIND", tier: "일반", terms: "설비 유지보수 · 분기 예방정비", chain: ["WO-2638", "JL-0702"], site: "안산공장" },
       { code: "CL-04", name: "세아제강", tier: "일반", terms: "미화·소모품 납품 · 단가 확정", chain: ["IN-0620"], site: "순천세아제강" }
     ];
   }
@@ -14037,7 +14037,7 @@ class Component extends DCLogic {
       { id: "w1", name: "이대체", type: "일용직", rate: "일 112,000", unit: "일당", avail: true, availLabel: "즉시 가용", skills: ["경비", "시설"], clearance: "일반", rating: "4.6", jobs: 23, dist: "인근 5분", ent: "코스", src: { jp: "JP-06", role: "대근 인력풀 — 경비·미화", at: "2024.11" } },
       { id: "w2", name: "오일당", type: "일용직", rate: "일 108,000", unit: "일당", avail: true, availLabel: "즉시 가용", skills: ["경비", "미화"], clearance: "일반", rating: "4.3", jobs: 11, dist: "인근 12분", ent: "코스" },
       { id: "w3", name: "박파트", type: "파트타임", rate: "시 12,800", unit: "시급", avail: true, availLabel: "오후 가용", skills: ["미화"], clearance: "일반", rating: "4.8", jobs: 40, dist: "상주", ent: "코스" },
-      { id: "w4", name: "정프리", type: "프리랜서", rate: "건 협의", unit: "건별", avail: false, availLabel: "타 현장", skills: ["정비", "설비"], clearance: "기술", rating: "4.9", jobs: 8, dist: "60분", ent: "BESTEC" },
+      { id: "w4", name: "정프리", type: "프리랜서", rate: "건 협의", unit: "건별", avail: false, availLabel: "타 현장", skills: ["정비", "설비"], clearance: "기술", rating: "4.9", jobs: 8, dist: "60분", ent: "NORTHWIND" },
       { id: "w5", name: "한파견", type: "파견", rate: "일 121,000", unit: "일당·파견사", avail: true, availLabel: "당일 호출", skills: ["경비", "안전"], clearance: "일반", rating: "4.5", jobs: 17, dist: "인근 20분", ent: "스태핑" },
       { id: "w6", name: "김알바", type: "알바", rate: "시 11,200", unit: "시급", avail: false, availLabel: "학업 시간", skills: ["미화", "행정"], clearance: "일반", rating: "4.1", jobs: 6, dist: "인근 8분", ent: "코스" }
     ];
@@ -14117,7 +14117,7 @@ class Component extends DCLogic {
         { name: "조이슨", title: "경비", plan: [planSeg(9, 18)], real: [realSeg("absent", 9, NOW)], chips: [{ label: "무단결근", tone: "danger" }], gap: { site: "대원강업 상주", ent: "코스", role: "경비", from: NOW, to: 18, who: "조이슨", reason: "무단결근" } },
         { name: "한지민", title: "경비", plan: [planSeg(9, 12), planSeg(12, 13), planSeg(13, 18)], real: [realSeg("work", 8.95, 12), realSeg("brk", 12, 13), realSeg("work", 13, NOW)], chips: [] }
       ] },
-      { site: "안산공장", ent: "BESTEC", dot: "var(--ok-solid)", note: "", people: [
+      { site: "안산공장", ent: "NORTHWIND", dot: "var(--ok-solid)", note: "", people: [
         { name: "김성호", title: "정비 반장", plan: [planSeg(8, 12), planSeg(12, 13), planSeg(13, 17), planSeg(17, 19, "ot")], real: [realSeg("work", 8, 12), realSeg("brk", 12, 13), realSeg("work", 13, NOW)], chips: [{ label: "연장 예정 2.0h", tone: "plan" }] }
       ] }
     ];
@@ -14393,7 +14393,7 @@ class Component extends DCLogic {
     if (this.EMPLOYEES.some((e) => e.name === nm)) { this.setState((s) => ({ hrNew: { ...s.hrNew, err: "동명 재직자 존재 — 채용 파이프라인 경유 또는 식별 구분 필요 (중복 방지 fail-closed)" } })); return; }
     if (!(f.team || "").trim()) { this.setState((s) => ({ hrNew: { ...s.hrNew, err: "소속 팀은 필수입니다" } })); return; }
     if ((f.phone || "").length > 0 && !/^01\d-\d{3,4}-\d{4}$/.test(f.phone)) { this.setState((s) => ({ hrNew: { ...s.hrNew, err: "휴대폰 형식: 010-0000-0000 (숫자만 입력하면 자동 포맷)" } })); return; }
-    const entMap = { "코스": "coss", "BESTEC": "bestec", "KNL": "knl", "스태핑": "staff" };
+    const entMap = { "코스": "coss", "NORTHWIND": "Northwind", "KNL": "knl", "스태핑": "staff" };
     const joined = (f.joined || "").slice(0, 7).replace("-", ".");
     this.EMPLOYEES.push({ name: nm, title: f.title, team: f.team.trim(), job: (f.job || "").trim() || f.team.trim(), ent: f.ent, entity: entMap[f.ent] || "coss", ext: "-", joined, st: "입사 예정", tone: "info", empSt: "재직", emp: f.emp || "정규직" });
     this.PEOPLE[nm] = { title: f.title, team: f.team.trim(), entity: f.ent, ext: "-", joined, phone: (f.phone || "").trim(), emp: f.emp || "정규직", basePay: (f.basePay || "").trim() };
@@ -14845,7 +14845,7 @@ class Component extends DCLogic {
     }
     const egDocs = (c.atts || []).map((code) => this.state.egressDocs.find((d) => d.code === code)).filter(Boolean);
     const id = "mx" + (Date.now() % 100000);
-    const entry = { id, from: "전성진 (나)", addr: "cho.sj@kos.co.kr", to: c.to, subj: c.subj, snippet: (c.body || "").replace(/\n/g, " ").slice(0, 64), time: schedWhen ? schedWhen : "방금", date: "오늘", sched: schedWhen || null, folder: schedWhen ? "sched" : "sent", unread: false, star: false, labels: [], att: egDocs.map((d) => ({ n: d.code + " · " + d.title + ".pdf", sz: d.sz, kind: "pdf" })), sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: c.cls, hold: false, retain: "5년", links: [], replied: false, body: (c.body || "").split("\n").filter((x) => x.trim()) };
+    const entry = { id, from: "전성진 (나)", addr: "user35@example.com", to: c.to, subj: c.subj, snippet: (c.body || "").replace(/\n/g, " ").slice(0, 64), time: schedWhen ? schedWhen : "방금", date: "오늘", sched: schedWhen || null, folder: schedWhen ? "sched" : "sent", unread: false, star: false, labels: [], att: egDocs.map((d) => ({ n: d.code + " · " + d.title + ".pdf", sz: d.sz, kind: "pdf" })), sec: { spf: "pass", dkim: "pass", dmarc: "pass", tls: "TLS 1.3", mox: true }, cls: c.cls, hold: false, retain: "5년", links: [], replied: false, body: (c.body || "").split("\n").filter((x) => x.trim()) };
     if (schedWhen) entry.labels = ["예약"];
     this.setState((s) => ({ mails: [entry, ...s.mails], mailCompose: null, mailSchedOn: false, mailFolder: schedWhen ? "sched" : "sent", mailScreenSel: id }));
     if (schedWhen) {
@@ -16450,7 +16450,7 @@ class Component extends DCLogic {
       { id: "all", label: "그룹 전체", meta: (4 + (s.entExtra || []).length) + "개 법인 통합 뷰" },
       { id: "coss", label: "㈜코스", meta: "생산·물류도급 · 통합시설관리 · 물류장비" },
       { id: "knl", label: "KNL 물류", meta: "물류·장비 정비" },
-      { id: "bestec", label: "BESTEC OEM", meta: "제조 · 안산공장" },
+      { id: "Northwind", label: "NORTHWIND OEM", meta: "제조 · 안산공장" },
       { id: "staff", label: "HR 스태핑", meta: "파견·용역" },
       ...((s.entExtra || []).map((x) => ({ id: x.id, label: x.label, meta: x.meta })))
     ];
@@ -17243,7 +17243,7 @@ class Component extends DCLogic {
             { l: "파이프라인", d: "데이터 트랜스폼 → 개체", icon: "M5 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4z M19 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4z M7 5h8a4 4 0 0 1 4 4v6 M5 7v6a4 4 0 0 0 4 4h8", onGo: go(() => this.pbOpen()) },
             { l: "개체", d: "typed 생성 위저드", icon: "M12 2 2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5", onGo: go(() => this.objNewOpen("기록물")) },
             { l: "자동화 규칙", d: "트리거·조건·액션", icon: "M13 2 3 14h9l-1 8 10-12h-9l1-8z", onGo: go(() => this.setState({ screen: "auto", autoTab: "workflow", wfBuilder: { trigger: null, when: [], then: [], menu: null, err: false, scope: "corp" } })) },
-            { l: "공지", d: "게시 + 메일 병행", icon: "M3 11l18-8-8 18-2-8-8-2z", onGo: go(() => { this.mailComposeOpen("new"); this.mailComposeField("to", "전 직원 <all@kos.co.kr>"); }) },
+            { l: "공지", d: "게시 + 메일 병행", icon: "M3 11l18-8-8 18-2-8-8-2z", onGo: go(() => { this.mailComposeOpen("new"); this.mailComposeField("to", "전 직원 <user36@example.com>"); }) },
             { l: "지원 티켓", d: "기술·계정·권한 문의", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", onGo: go(() => this.setState({ screen: "support", supPost: { type: "기술 지원", sev: "보통", title: "", err: false } })) },
             { l: "업무일지", d: "기록물 등재 — 현장·일지", icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6", onGo: go(() => { this.setState({ screen: "docs" }); this.docRegOpen(); }) },
             { l: "인제스트 접수", d: "파일·API — 개체 적재", icon: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3", onGo: go(() => this.setState({ screen: "ingest" })) }
@@ -18528,7 +18528,7 @@ class Component extends DCLogic {
       covertPay: [
         { who: "정만호", role: "그룹 CEO · ㈜코스", comp: "₩4.2억", meta: "성과급 연동 32%", init: "정" },
         { who: "김한결", role: "대표 · KNL 물류", comp: "₩2.8억", meta: "성과급 연동 25%", init: "김" },
-        { who: "이성우", role: "대표 · BESTEC", comp: "₩2.6억", meta: "성과급 연동 25%", init: "이" },
+        { who: "이성우", role: "대표 · NORTHWIND", comp: "₩2.6억", meta: "성과급 연동 25%", init: "이" },
         { who: "한지민", role: "대표 · HR 스태핑", comp: "₩2.1억", meta: "성과급 연동 20%", init: "한" }
       ].map((x) => ({ ...x, onOpen: () => { this.logEvent({ action: "임원 보상 열람", cat: "view", target: { type: "급여", label: x.who + " 보상 패키지", code: "EXEC-PAY" }, decision: "permit", reason: "비밀 등급 인가 — 임원 보상 원장 · 열람 기록" }); this.showToast(x.who + " 보상 패키지 — 열람 기록됨 (비밀 등급)", false); } })),
       covertPayN: "4",
@@ -19174,7 +19174,7 @@ class Component extends DCLogic {
       attCloseChipTx: s.attCossClosed ? "var(--ok-tx)" : "var(--warn-tx)",
       attCloseRows: [
         { ent: "KNL 물류", done: true, meta: "7/1 09:20 · 정하늘" },
-        { ent: "BESTEC OEM", done: true, meta: "7/1 14:05 · 공무팀" },
+        { ent: "NORTHWIND OEM", done: true, meta: "7/1 14:05 · 공무팀" },
         { ent: "HR 스태핑", done: true, meta: "7/2 10:44 · 박수진" },
         { ent: "㈜코스", done: s.attCossClosed, meta: s.attCossClosed ? "방금 · 전성진" : "근태 예외 " + attIssuesLeft + "건 미처리" }
       ].map((c) => ({ ent: c.ent, meta: c.meta, doneOn: c.done, waitOn: !c.done, metaColor: c.done ? "var(--faint)" : "var(--warn-tx)" })),
@@ -19317,7 +19317,7 @@ class Component extends DCLogic {
         stColor: r.st === "done" ? "var(--ok-tx)" : (r.st === "now" ? "var(--accent-tx)" : "var(--faint)")
       })),
       attDayOn: s.attView === "day",
-      attDayEnts: [{ v: "all", l: "전체" }, { v: "코스", l: "코스" }, { v: "KNL", l: "KNL" }, { v: "BESTEC", l: "BESTEC" }].map((o) => ({ l: o.l, bg: attDayEnt === o.v ? "var(--ink)" : "transparent", tx: attDayEnt === o.v ? "var(--surface)" : "var(--steel)", onPick: () => this.setState({ attDayEnt: o.v }) })),
+      attDayEnts: [{ v: "all", l: "전체" }, { v: "코스", l: "코스" }, { v: "KNL", l: "KNL" }, { v: "NORTHWIND", l: "NORTHWIND" }].map((o) => ({ l: o.l, bg: attDayEnt === o.v ? "var(--ink)" : "transparent", tx: attDayEnt === o.v ? "var(--surface)" : "var(--steel)", onPick: () => this.setState({ attDayEnt: o.v }) })),
       attTLNowPct: attTLd ? attTLd.nowPct : "58%",
       attTLNowLabel: attTLd ? attTLd.nowLabel : "",
       attTLTicks: attTLd ? attTLd.ticks : [],
@@ -19547,7 +19547,7 @@ class Component extends DCLogic {
         const ent = s.orgData[s.entCard].ent;
         const J = {
           "㈜코스": [["대한민국", "근로기준법 · 최저임금법 — RG-101·102", "RG-1"], ["경상남도", "도 조례 — 용역 적용 검토", "CP-01"], ["창원시", "창원권 사업장 소재 — 특수검진 CP-013", "CP-013"]],
-          "㈜케이앤엘벨": [["대한민국", "근로기준법 · 개인정보보호법", "CP"], ["경기도", "생활임금 조례", "CP"], ["안산시", "안산공장 소재 — 산업안전 조례", "CP-013"]],
+          "㈜예시차벨": [["대한민국", "근로기준법 · 개인정보보호법", "CP"], ["경기도", "생활임금 조례", "CP"], ["안산시", "안산공장 소재 — 산업안전 조례", "CP-013"]],
           "㈜에이치알": [["대한민국", "근로기준법 · 파견법", "CP"], ["서울특별시", "본사 소재 — 생활임금 조례", "CP"]],
           "AI개발": [["대한민국", "개인정보보호법 · 정보통신망법", "CP-016"], ["서울특별시", "본사 소재", "CP"]]
         };
@@ -19563,7 +19563,7 @@ class Component extends DCLogic {
       ecFinLabor: ["71.2%", "64.8%", "58.3%", "77.9%"][s.entCard || 0] || "",
       ecFinMg: ["8.1%", "11.4%", "14.2%", "5.2%"][s.entCard || 0] || "",
       ecFinMgTone: ((s.entCard || 0) === 3) ? "var(--warn-tx)" : "var(--ok-tx)",
-      onEcFinDrill: () => this.setState({ entCard: null, ecFinOpen: false, screen: "dashboard", dashScope: ["coss", "knl", "bestec", "staff"][s.entCard || 0] || "all" }),
+      onEcFinDrill: () => this.setState({ entCard: null, ecFinOpen: false, screen: "dashboard", dashScope: ["coss", "knl", "Northwind", "staff"][s.entCard || 0] || "all" }),
       // 신설 법인 = 셋업 중(초안 단계 §3.9.0-③) → 카드 필드 직접 편집 · 기존 4사 = 개정 결재 경유(편집 비활성)
       ...((() => {
         const isNew = (s.entCard || 0) >= 4;
@@ -19603,7 +19603,7 @@ class Component extends DCLogic {
       // 신설 법인(index 4+)은 위저드 입력값 사용 — 하드코딩 4사 + entExtra fallback
       ecCeo: ["정만호", "김한결", "이성우", "한지민"][s.entCard || 0] || (((s.entExtra || [])[(s.entCard || 0) - 4] || {}).ceo || "미등록 — 편집"),
       ecFounded: ["1998.04", "2004.09", "2011.06", "2019.03"][s.entCard || 0] || (((s.entExtra || [])[(s.entCard || 0) - 4] || {}).founded || "2026.07"),
-      ecReg: ["609-81-12345", "131-86-22456", "134-86-33871", "220-88-45012"][s.entCard || 0] || (((s.entExtra || [])[(s.entCard || 0) - 4] || {}).reg || "발급 대기"),
+      ecReg: ["609-81-12345", "131-86-22456", "134-86-33871", "020-88-45014"][s.entCard || 0] || (((s.entExtra || [])[(s.entCard || 0) - 4] || {}).reg || "발급 대기"),
       ecAddr: ["경남 창원시 성산구", "인천 남동구", "경기 안산시 단원구", "서울 강남구"][s.entCard || 0] || (((s.entExtra || [])[(s.entCard || 0) - 4] || {}).addr || "미등록"),
       ecTeams: s.entCard !== null ? String(s.orgData[s.entCard].sites.length) + "개 사업장·본사" : "",
       onEntClose: () => this.setState({ entCard: null }),
@@ -19820,7 +19820,7 @@ class Component extends DCLogic {
       onRcPostReqKey: (e) => { if (e.key === "Enter") { e.preventDefault(); this.rcPostReqAdd(); } },
       onRcPostReqAdd: () => this.rcPostReqAdd(),
       rcPostReqs: ((s.rcPost && s.rcPost.req) || []).map((r) => ({ r, onX: () => this.rcPostReqRemove(r) })),
-      rcPostEnts: ["코스", "BESTEC", "KNL", "그룹", "스태핑"].map((v) => { const on = !!(s.rcPost && s.rcPost.ent === v); return { v, bg: on ? "var(--ink)" : "transparent", tx: on ? "var(--surface)" : "var(--steel)", bd: on ? "var(--ink)" : "var(--border)", onPick: () => this.rcPostField("ent", v) }; }),
+      rcPostEnts: ["코스", "NORTHWIND", "KNL", "그룹", "스태핑"].map((v) => { const on = !!(s.rcPost && s.rcPost.ent === v); return { v, bg: on ? "var(--ink)" : "transparent", tx: on ? "var(--surface)" : "var(--steel)", bd: on ? "var(--ink)" : "var(--border)", onPick: () => this.rcPostField("ent", v) }; }),
       rcPostEmps: ["정규직", "상주 교대", "파트타임", "일용직 (인력풀)"].map((v) => { const on = !!(s.rcPost && s.rcPost.emp === v); return { v, bg: on ? "var(--ink)" : "transparent", tx: on ? "var(--surface)" : "var(--steel)", bd: on ? "var(--ink)" : "var(--border)", onPick: () => this.rcPostField("emp", v) }; }),
       rcPostScopes: [{ v: "외부 공개", k: "external" }, { v: "내부 공모", k: "internal" }].map((o) => { const on = !!(s.rcPost && s.rcPost.scope === o.k); return { v: o.v, bg: on ? "var(--ink)" : "transparent", tx: on ? "var(--surface)" : "var(--steel)", bd: on ? "var(--ink)" : "var(--border)", onPick: () => this.rcPostField("scope", o.k) }; }),
       rcPostNeed: String((s.rcPost && s.rcPost.need) || 1),
@@ -19843,7 +19843,7 @@ class Component extends DCLogic {
         return {
           name: f.name, team: f.team, job: f.job, joined: f.joined,
           onName: set("name"), onTeam: set("team"), onJob: set("job"), onJoined: set("joined"),
-          ents: ["코스", "KNL", "BESTEC", "스태핑"].map((x) => ({ x, bg: f.ent === x ? "var(--ink)" : "transparent", tx: f.ent === x ? "var(--surface)" : "var(--steel)", onPick: () => this.setState((ps) => ({ hrNew: { ...ps.hrNew, ent: x } })) })),
+          ents: ["코스", "KNL", "NORTHWIND", "스태핑"].map((x) => ({ x, bg: f.ent === x ? "var(--ink)" : "transparent", tx: f.ent === x ? "var(--surface)" : "var(--steel)", onPick: () => this.setState((ps) => ({ hrNew: { ...ps.hrNew, ent: x } })) })),
           titles: ["사원", "주임", "대리", "과장", "차장"].concat(f.titleExtra && ["사원", "주임", "대리", "과장", "차장"].indexOf(f.titleExtra) < 0 ? [f.titleExtra] : []).map((x) => ({ x, bg: f.title === x ? "var(--ink)" : "transparent", tx: f.title === x ? "var(--surface)" : "var(--steel)", onPick: () => this.setState((ps) => ({ hrNew: { ...ps.hrNew, title: x } })) })),
           emps: ["정규직", "계약직", "일용직", "파견"].concat(f.empExtra && ["정규직", "계약직", "일용직", "파견"].indexOf(f.empExtra) < 0 ? [f.empExtra] : []).map((x) => ({ x, bg: (f.emp || "정규직") === x ? "var(--ink)" : "transparent", tx: (f.emp || "정규직") === x ? "var(--surface)" : "var(--steel)", onPick: () => this.setState((ps) => ({ hrNew: { ...ps.hrNew, emp: x } })) })),
           // 형식 강제 (directive — 이탈 불가능): 휴대폰=자동 하이픈·숫자만, 기본급=자동 천단위·숫자만

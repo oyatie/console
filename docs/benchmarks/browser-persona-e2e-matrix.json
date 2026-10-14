@@ -11,13 +11,13 @@
   ],
   "purpose": "Machine-readable browser persona and live-org E2E matrix. This is the G003 harness contract: every domain lane must attach real screenshots, traces, scope-denial proof, and DB/API/browser/log evidence before claiming route or module maturity.",
   "liveOrgSlugs": [
-    "cheongun-hr",
-    "cheongun-logis",
-    "cnl",
+    "sample-o",
+    "sample-o",
+    "sample-j",
     "coss",
-    "dsl",
-    "lso",
-    "jy-tech",
+    "sample-h",
+    "sample-k",
+    "Adatum",
     "knl"
   ],
   "requiredUiStates": [
@@ -102,8 +102,8 @@
     },
     {
       "personaId": "cheongun-hr-manager",
-      "displayName": "청운HR HR manager",
-      "orgSlug": "cheongun-hr",
+      "displayName": "바결산업HR HR manager",
+      "orgSlug": "sample-o",
       "groupSlug": "그룹사",
       "roleProfile": ["HR_MANAGER", "ORG_ADMIN"],
       "scopeModes": ["org-selected", "own-dashboard", "denied-cross-scope"],
@@ -122,8 +122,8 @@
     },
     {
       "personaId": "cheongun-logis-dispatcher",
-      "displayName": "청운로지스 dispatcher",
-      "orgSlug": "cheongun-logis",
+      "displayName": "예시자로지스 dispatcher",
+      "orgSlug": "sample-o",
       "groupSlug": "그룹사",
       "roleProfile": ["DISPATCHER", "OFFICE_WORKER"],
       "scopeModes": ["org-selected", "own-dashboard", "denied-cross-scope"],
@@ -141,7 +141,7 @@
     {
       "personaId": "cnl-office-manager",
       "displayName": "씨앤엘 office manager",
-      "orgSlug": "cnl",
+      "orgSlug": "sample-j",
       "groupSlug": "그룹사",
       "roleProfile": ["OFFICE_MANAGER", "ORG_ADMIN"],
       "scopeModes": ["org-selected", "own-dashboard", "denied-cross-scope"],
@@ -157,9 +157,9 @@
       "liveVerification": ["db", "api", "browser", "screenshot", "trace", "logs", "rollout"]
     },
     {
-      "personaId": "dsl-asset-manager",
-      "displayName": "디에스엘 asset manager",
-      "orgSlug": "dsl",
+      "personaId": "sample-h-asset-manager",
+      "displayName": "예시나 asset manager",
+      "orgSlug": "sample-h",
       "groupSlug": "그룹사",
       "roleProfile": ["ASSET_MANAGER", "ORG_ADMIN"],
       "scopeModes": ["org-selected", "own-dashboard", "denied-cross-scope"],
@@ -175,9 +175,9 @@
       "liveVerification": ["db", "api", "browser", "screenshot", "trace", "logs", "rollout"]
     },
     {
-      "personaId": "lso-finance-manager",
-      "displayName": "엘소 finance and procurement manager",
-      "orgSlug": "lso",
+      "personaId": "sample-k-finance-manager",
+      "displayName": "가결산업 finance and procurement manager",
+      "orgSlug": "sample-k",
       "groupSlug": "그룹사",
       "roleProfile": ["FINANCE_MANAGER", "PROCUREMENT_MANAGER"],
       "scopeModes": ["org-selected", "own-dashboard", "denied-cross-scope"],
@@ -193,9 +193,9 @@
       "liveVerification": ["db", "api", "browser", "screenshot", "trace", "logs", "rollout"]
     },
     {
-      "personaId": "jy-tech-inventory-manager",
-      "displayName": "제이와이테크 inventory and import manager",
-      "orgSlug": "jy-tech",
+      "personaId": "Adatum-inventory-manager",
+      "displayName": "예시사 inventory and import manager",
+      "orgSlug": "Adatum",
       "groupSlug": "그룹사",
       "roleProfile": ["INVENTORY_MANAGER", "DATA_IMPORT_MANAGER"],
       "scopeModes": ["org-selected", "own-dashboard", "denied-cross-scope"],

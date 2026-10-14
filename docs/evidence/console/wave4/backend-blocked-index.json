@@ -657,7 +657,7 @@
    "capability_id": "CAP-ATTENDANCE-CONSOLE",
    "severity": "major",
    "finding": {
-    "design_says": "dc.html 1828-1832 (법인 segment filter 전체/코스/KNL/BESTEC) + 1941-1949: day rows grouped by site with fold/unfold, site name = drill to graph/map, ent chip, live group note ('무단결근 1 · 대근 미편성' → updates after cover)",
+    "design_says": "dc.html 1828-1832 (법인 segment filter 전체/코스/KNL/NORTHWIND) + 1941-1949: day rows grouped by site with fold/unfold, site name = drill to graph/map, ent chip, live group note ('무단결근 1 · 대근 미편성' → updates after cover)",
     "code_does": "DayBoard (AttendanceScreen.tsx:882-1028) renders one flat name-sorted list; HR records carry no site/team so no grouping, filter, or group notes exist",
     "fix": "Group rows by site/team (needs site attribution on attendance records or a roster join) with fold + entity segment filter; site header links to org drill"
    },

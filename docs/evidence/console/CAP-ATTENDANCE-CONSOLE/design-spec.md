@@ -36,7 +36,7 @@ KPI compact stat bar (`attKpis`, 1-row stat chips — never big-number cards):
 Card zone (CARD_META.att: main=[board], side=[ex, close, w52]; every card = window-model citizen: header-drag popout, dbl-click pin-split, tray minimize, resize, per-user persisted):
 
 ### Card "근무 현황" (board) — day/today view
-- Segmented control 오늘 | 월간; day view adds entity filter segment (전체/코스/KNL/BESTEC…), meta mono chip `출근 N / 예정 N`, hint `출입기록 연동 · 실시간`.
+- Segmented control 오늘 | 월간; day view adds entity filter segment (전체/코스/KNL/NORTHWIND…), meta mono chip `출근 N / 예정 N`, hint `출입기록 연동 · 실시간`.
 - 24h two-track timeline per person, grouped by **site** (group header: fold toggle preserving state, tone dot, site name = drillable object (graph/map), entity chip, collapsed headcount, exception note e.g. "무단결근 1 · 대근 미편성" danger).
 - Row: person name button (→인사 카드 pin panel), title, status chips (지각 28분 warn | 무단결근 danger | 승인 연차 · 대체 불요 leave | 예정 15:00 plan | 연장 예정 2.0h plan | 대근 편성됨 → {name} ok | 대근 투입 HH:MM ok | 체크인 HH:MM · 근무 중 (인증) ok), and **대근 편성** inline button on rows with an open gap.
 - Track 1 = plan segments (dashed outline; OT plan dashed accent; approved leave = purple dashed fill), Track 2 = actual segments (근무 teal / 휴게 muted / 지각·미출 warn / 연장 signal / 결근 danger / 휴가 purple). "지금" red now-line with time label. Cell/segment tooltips carry HH:MM ranges.
@@ -64,7 +64,7 @@ Card zone (CARD_META.att: main=[board], side=[ex, close, w52]; every card = wind
 
 ### Card "6월 근태 마감" (close)
 - Status chip: `기한 7/4 (토)` warn → `완료` ok.
-- Per-entity checklist rows: KNL 물류 ✓ 7/1 09:20 · 정하늘 / BESTEC ✓ / HR 스태핑 ✓ / ㈜코스 — pending shows "근태 예외 N건 미처리" (warn dot).
+- Per-entity checklist rows: KNL 물류 ✓ 7/1 09:20 · 정하늘 / NORTHWIND ✓ / HR 스태핑 ✓ / ㈜코스 — pending shows "근태 예외 N건 미처리" (warn dot).
 - Single contextual CTA (§4.7-6), exactly one of:
   1. blocked: warn banner-button "근태 예외 N건 처리 후 마감할 수 있습니다 — 클릭=이동" (**fix-link**: opens the first unresolved exception),
   2. ready: `㈜코스 마감 확정` (signal button) → **§4-29 preflight modal** with auto-judged checks {근태 예외 처리 ok=예외 0 · 타법인 마감 완료 · 미결 연차 신청 (soft warn — 승인 시 소급 반영)} + human attest; passing emits audit `근태 마감 확정 — 프리플라이트 통과` (code AT-CLOSE) + notification "급여 계산이 가능합니다" (→pay),

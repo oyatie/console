@@ -337,7 +337,7 @@ is optional for mechanics, status loading is not.
 **2026-06-25 legal/privacy release gate:** initial console login now needs an engineering control that
 records separate required acceptance of 개인정보 수집·이용 and service terms before first passkey
 enrollment. Public storefront work also needs cookie/privacy notice, footer copyright, semver display, and
-family-site links (COSS + Bestec). This control is not legal sign-off: the go-live checklist still blocks
+family-site links (COSS + Northwind). This control is not legal sign-off: the go-live checklist still blocks
 production until counsel/management approve and publish the formal privacy policy, location terms, and
 cookie notice.
 
