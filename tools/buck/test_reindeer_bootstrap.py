@@ -107,90 +107,25 @@ class ReindeerBootstrapTests(unittest.TestCase):
         self.assertNotIn("ossl360", openssl)
         self.assertNotIn("ossl361", openssl)
 
-    def test_ring_native_link_fixup_covers_linux_architectures(self) -> None:
-        ring = self.read("third-party/rust/fixups/ring/fixups.toml")
+    def test_active_tls_provider_propagates_real_native_link_outputs(self) -> None:
+        workspace = tomllib.loads(self.read("backend/Cargo.toml"))["workspace"]["dependencies"]
+        self.assertFalse(workspace["rustls"]["default-features"])
+        self.assertIn("aws_lc_rs", workspace["rustls"]["features"])
+        self.assertNotIn("ring", workspace["rustls"]["features"])
+        self.assertIn("tls-rustls-aws-lc-rs", workspace["sqlx"]["features"])
+        fixup = tomllib.loads(self.read("third-party/rust/fixups/aws-lc-sys/fixups.toml"))
+        self.assertEqual(fixup["buildscript"]["run"], {
+            "rustc_link_lib": True, "rustc_link_search": True,
+            "env": {"NUM_JOBS": "4", "AWS_LC_SYS_USE_SYSTEM": "0"},
+        })
         graph = self.read("third-party/rust/BUCK")
-
-        self.assertIn(
-            "cfg(all(target_arch = \"x86_64\", target_os = \"linux\"))",
-            ring,
-        )
-        self.assertIn(
-            "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))",
-            ring,
-        )
-        expected_x86_64_sources = (
-            "crypto/crypto.c",
-            "crypto/cpu_intel.c",
-            "crypto/curve25519/curve25519.c",
-            "crypto/curve25519/curve25519_64_adx.c",
-            "crypto/fipsmodule/aes/aes_nohw.c",
-            "crypto/fipsmodule/bn/montgomery.c",
-            "crypto/fipsmodule/bn/montgomery_inv.c",
-            "crypto/fipsmodule/ec/ecp_nistz.c",
-            "crypto/fipsmodule/ec/gfp_p256.c",
-            "crypto/fipsmodule/ec/gfp_p384.c",
-            "crypto/fipsmodule/ec/p256.c",
-            "crypto/fipsmodule/ec/p256-nistz.c",
-            "crypto/limbs/limbs.c",
-            "crypto/mem.c",
-            "crypto/poly1305/poly1305.c",
-            "third_party/fiat/asm/fiat_curve25519_adx_mul.S",
-            "third_party/fiat/asm/fiat_curve25519_adx_square.S",
-            "pregenerated/aes-gcm-avx2-x86_64-elf.S",
-            "pregenerated/aesni-gcm-x86_64-elf.S",
-            "pregenerated/aesni-x86_64-elf.S",
-            "pregenerated/chacha-x86_64-elf.S",
-            "pregenerated/chacha20_poly1305_x86_64-elf.S",
-            "pregenerated/ghash-x86_64-elf.S",
-            "pregenerated/p256-x86_64-asm-elf.S",
-            "pregenerated/x86_64-mont5-elf.S",
-            "pregenerated/x86_64-mont-elf.S",
-            "pregenerated/sha256-x86_64-elf.S",
-            "pregenerated/sha512-x86_64-elf.S",
-            "pregenerated/vpaes-x86_64-elf.S",
-        )
-        expected_aarch64_sources = (
-            "crypto/curve25519/curve25519.c",
-            "crypto/fipsmodule/aes/aes_nohw.c",
-            "crypto/fipsmodule/bn/montgomery.c",
-            "crypto/fipsmodule/bn/montgomery_inv.c",
-            "crypto/fipsmodule/ec/ecp_nistz.c",
-            "crypto/fipsmodule/ec/gfp_p256.c",
-            "crypto/fipsmodule/ec/gfp_p384.c",
-            "crypto/fipsmodule/ec/p256.c",
-            "crypto/fipsmodule/ec/p256-nistz.c",
-            "crypto/limbs/limbs.c",
-            "crypto/mem.c",
-            "crypto/poly1305/poly1305.c",
-            "pregenerated/aesv8-armx-linux64.S",
-            "pregenerated/aesv8-gcm-armv8-linux64.S",
-            "pregenerated/armv8-mont-linux64.S",
-            "pregenerated/chacha-armv8-linux64.S",
-            "pregenerated/chacha20_poly1305_armv8-linux64.S",
-            "pregenerated/ghash-neon-armv8-linux64.S",
-            "pregenerated/ghashv8-armx-linux64.S",
-            "pregenerated/p256-armv8-asm-linux64.S",
-            "pregenerated/sha256-armv8-linux64.S",
-            "pregenerated/sha512-armv8-linux64.S",
-            "pregenerated/vpaes-armv8-linux64.S",
-        )
-        for source in expected_x86_64_sources + expected_aarch64_sources:
-            self.assertIn(source, ring)
-
-        self.assertIn('"linux-x86_64": dict(', graph)
-        self.assertIn('"linux-arm64": dict(', graph)
-        self.assertIn(":ring-0.17-ring-c-asm-linux-x86_64", graph)
-        self.assertIn(":ring-0.17-ring-c-asm-linux-arm64", graph)
-        self.assertIn('name = "ring-0.17-ring-c-asm-linux-x86_64"', graph)
-        self.assertIn('name = "ring-0.17-ring-c-asm-linux-arm64"', graph)
-        for target, expected_sources in (
-            ("ring-0.17-ring-c-asm-linux-x86_64", expected_x86_64_sources),
-            ("ring-0.17-ring-c-asm-linux-arm64", expected_aarch64_sources),
-        ):
-            cxx_rule = graph.split(f'name = "{target}"', 1)[1].split("headers =", 1)[0]
-            for source in expected_sources:
-                self.assertIn(f":ring-0.17.14.crate[{source}]", cxx_rule)
+        native = graph.split('name = "aws-lc-sys-0.45-build-script-main-run",', 1)[1].split("\n)\n", 1)[0]
+        self.assertIn('"AWS_LC_SYS_USE_SYSTEM": "0"', native)
+        self.assertIn("rustc_link_lib = True,", native)
+        self.assertIn("rustc_link_search = True,", native)
+        rustls = graph.split('name = "rustls-0.23",', 1)[1].split("\n)\n", 1)[0]
+        self.assertIn('":aws-lc-rs-1"', rustls)
+        self.assertNotIn('":ring-0.17"', rustls)
 
 
 class ReindeerColdPatchTests(unittest.TestCase):
