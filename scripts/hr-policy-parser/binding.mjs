@@ -200,8 +200,13 @@ export function exportCi(argv = process.argv.slice(2), env = process.env) {
     } finally {
       call(b.buck_binary.path, ['--isolation-dir', isolation, 'kill'], toolEnv);
     }
-    const artifacts = targets.map(target => within(path.join(ROOT, 'buck-out'),
-      exact(path.resolve(ROOT, parseSingleBuckOutput(target, stdout)))));
+    const artifacts = targets.map(target => {
+      const buckOut = path.join(ROOT, 'buck-out');
+      const reported = within(buckOut, path.resolve(ROOT, parseSingleBuckOutput(target, stdout)));
+      // Buck aliases output directories; the final wrapper must still be regular.
+      if (target === targets[2]) regular(reported);
+      return within(buckOut, exact(fs.realpathSync(reported)));
+    });
     b.compiler_sha256 = pin(path.join(artifacts[0], 'bin/rustc')).sha256;
     const pythonAlias = path.join(artifacts[1], 'bin/python');
     const actionPython = path.join(artifacts[1], 'bin/python3.13');
