@@ -110,7 +110,7 @@ export function compilerAction(root, rows, binding, buildStart, freshBuildIds, i
     let interpreter = files[0];
     if (fs.lstatSync(interpreter).isSymbolicLink()) {
       // The pinned prelude selects this direct CPython alias in the compiler's toolchain bucket.
-      const coordinate = path.relative(root, compiler).match(/^buck-out\/(hr-policy-[a-f0-9]{32})\/art\/toolchains\/([a-f0-9]{16})\/rust\/__sysroot-aarch64-apple-darwin__\/sysroot\/bin\/rustc$/);
+      const coordinate = path.relative(root, compiler).match(/^buck-out\/(hr-policy-[a-f0-9]{32})\/art\/toolchains\/([a-f0-9]{16})\/rust\/__sysroot-(?:aarch64-apple-darwin|x86_64-unknown-linux-gnu|aarch64-unknown-linux-gnu)__\/sysroot\/bin\/rustc$/);
       assert(coordinate, 'unknown interpreter toolchain coordinate');
       const bin = path.join(root, 'buck-out', coordinate[1], 'art', 'toolchains', coordinate[2], '__cpython_archive__', 'cpython_archive', 'bin');
       assert.equal(interpreter, path.join(bin, 'python'));
