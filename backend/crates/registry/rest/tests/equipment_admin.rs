@@ -130,7 +130,7 @@ async fn equipment_crud_create_update_soft_delete_is_audited(pool: PgPool) {
         let create_body = json!({
             "equipment_no": "CFO25-7777",
             "customer_name": "K&L",
-            "site_name": "케이앤엘",
+            "site_name": "다솔산업",
             "status": "rented",
             "specification": "좌식",
             "ton_text": "2.5T",
@@ -293,7 +293,7 @@ async fn ownership_transfer_requires_ordered_legal_and_accounting_signoff(pool: 
         let create_body = json!({
             "equipment_no": "CFO25-7781",
             "customer_name": "K&L",
-            "site_name": "케이앤엘",
+            "site_name": "다솔산업",
             "status": "rented",
             "specification": "좌식",
             "ton_text": "2.5T",
@@ -307,7 +307,7 @@ async fn ownership_transfer_requires_ordered_legal_and_accounting_signoff(pool: 
         let equipment_id = body["id"].as_str().unwrap().to_owned();
 
         let transfer_body = json!({
-            "to_owner": "케이앤엘",
+            "to_owner": "다솔산업",
             "reason": "KNL에서 실제 임대 운영과 회계 관리를 수행"
         });
         let (status, body) = harness
@@ -373,7 +373,7 @@ async fn ownership_transfer_requires_ordered_legal_and_accounting_signoff(pool: 
                 .await
                 .asset_owner
                 .as_deref(),
-            Some("케이앤엘")
+            Some("다솔산업")
         );
         let event_count: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM equipment_ownership_transfer_events WHERE request_id = $1",
@@ -410,7 +410,7 @@ async fn create_equipment_rejects_non_admin(pool: PgPool) {
         let body = json!({
             "equipment_no": "CFO25-7778",
             "customer_name": "K&L",
-            "site_name": "케이앤엘",
+            "site_name": "다솔산업",
             "status": "rented",
             "specification": "좌식",
             "ton_text": "2.5T"
@@ -437,7 +437,7 @@ async fn equipment_get_by_id_returns_master_detail_without_page_scan(pool: PgPoo
         assert_eq!(body["equipment_no"].as_str(), Some("CFO25-7790"));
         assert_eq!(body["management_no"].as_str(), Some("779"));
         assert_eq!(body["customer_name"].as_str(), Some("K&L"));
-        assert_eq!(body["site_name"].as_str(), Some("케이앤엘"));
+        assert_eq!(body["site_name"].as_str(), Some("다솔산업"));
 
         let (status, _) = harness
             .send(
@@ -882,7 +882,7 @@ async fn create_equipment(harness: &Harness, equipment_no: &str, management_no: 
     let body = json!({
         "equipment_no": equipment_no,
         "customer_name": "K&L",
-        "site_name": "케이앤엘",
+        "site_name": "다솔산업",
         "status": "spare",
         "specification": "좌식",
         "ton_text": "2.5T",
@@ -980,7 +980,7 @@ async fn branch_admin_cannot_read_or_write_another_branchs_equipment(pool: PgPoo
                 "POST",
                 &format!("/api/v1/equipment/{equipment}/ownership-transfer-requests"),
                 Some(json_body(&json!({
-                    "to_owner": "케이앤엘",
+                    "to_owner": "다솔산업",
                     "reason": "지점 간 소유권 이전 기록"
                 }))),
             )

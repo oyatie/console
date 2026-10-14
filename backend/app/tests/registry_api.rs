@@ -488,7 +488,7 @@ async fn seed_equipment(
     let site_id: uuid::Uuid = sqlx::query_scalar(
         r#"
         INSERT INTO registry_sites (branch_id, customer_id, name, org_id)
-        VALUES ($1, $2, '케이앤엘', $3)
+        VALUES ($1, $2, '다솔산업', $3)
         ON CONFLICT (branch_id, customer_id, name) DO UPDATE SET name = EXCLUDED.name
         RETURNING id
         "#,

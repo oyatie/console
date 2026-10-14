@@ -23,7 +23,7 @@
 One object-centric operational platform that runs **an entire conglomerate's business** — not an FSM
 tool with add-ons. KNL (Korea Next Logistics, 창원) is the **logistics** arm (forklift maintenance ·
 rental · used-sales) of a larger **group** whose other legal entities run very different industries —
-**COSS (제조/manufacturing)**, **BESTEC (OEM 생산)**, and a **인력 파견·용역 agency** (cleaning · security ·
+**COSS (제조/manufacturing)**, **NORTHWIND (OEM 생산)**, and a **인력 파견·용역 agency** (cleaning · security ·
 labor staffing). Each entity has its own operational vertical, they share one back office (HR · payroll
 · accounting · procurement), and the group needs **consolidated visibility + central administration**
 across all of them. Today this lives across a desktop FLMS app, Excel files, and manual process. The
@@ -166,7 +166,7 @@ Platform (vendor/SaaS operator — administers all tenants for support; the exis
 └─ Group / 그룹·conglomerate            ← a holding entity; an Org belongs to 0..1 Group
    │                                      (the KNL group is the first/anchor instance)
    └─ Legal Entity / 법인  (= Org)       ← the RLS HARD-ISOLATION boundary (app.current_org), UNCHANGED
-      │  e.g. KNL(물류) · COSS(제조) · BESTEC(OEM) · 인력 agency(파견·용역) — each its own vertical
+      │  e.g. KNL(물류) · COSS(제조) · NORTHWIND(OEM) · 인력 agency(파견·용역) — each its own vertical
       └─ Region → Branch → Worksite/Site
          └─ Customer (external) → their Sites/worksites
 ```

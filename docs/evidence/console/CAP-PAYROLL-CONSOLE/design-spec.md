@@ -90,7 +90,7 @@
 ### 3c. 지급 총액 (totals)
 - Tag chip: "확정 계산" post-calc / "예상 · 전월 기준" pre-calc (truthful basis labeling).
 - Big mono total ₩41.8억 + "전월 +1.8%" (units/basis always stated).
-- Per-entity bars: HR 스태핑 ₩15.1억 · BESTEC ₩13.4억 · ㈜코스 ₩11.2억 · KNL ₩2.1억
+- Per-entity bars: HR 스태핑 ₩15.1억 · NORTHWIND ₩13.4억 · ㈜코스 ₩11.2억 · KNL ₩2.1억
   (scope = authorized-entity union, PBAC-relative "전체").
 - Divider, then: "사업자 부담 · 4대보험+퇴직 — ₩5.6억" and **지급 계좌 상태** ("오류 1건 ·
   조이슨" danger → "오류 0건" ok / "보류 1건" warn — live-derived from px5 resolution).

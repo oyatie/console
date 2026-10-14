@@ -887,7 +887,7 @@
 
 ### Bug Fixes
 
-* **group-admin:** compact subsidiary actions and lso slug ([#128](https://github.com/jason931225/maintenance/issues/128)) ([8ed19e0](https://github.com/jason931225/maintenance/commit/8ed19e0ffe26dd0b7f436425633f5e028c1175cc))
+* **group-admin:** compact subsidiary actions and a subsidiary slug ([#128](https://github.com/jason931225/maintenance/issues/128)) ([8ed19e0](https://github.com/jason931225/maintenance/commit/8ed19e0ffe26dd0b7f436425633f5e028c1175cc))
 
 ## [0.1.30](https://github.com/jason931225/maintenance/compare/v0.1.29...v0.1.30) (2026-07-01)
 

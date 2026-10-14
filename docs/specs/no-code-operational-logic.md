@@ -76,7 +76,7 @@ The editor should expose a small vocabulary that business admins can understand 
 | **Approval rule** | Required reviewers, thresholds, escalation, comments, evidence, and step-up auth. | Two approvers for high-value procurement; HR + host-site approval for cross-org assignment. |
 | **Operational quirk** | Local behavior that changes a workflow without changing code. | Site-specific shift cutoff, customer access window, required equipment checklist, offline evidence rule. |
 | **Payroll ruleset** | Legal-employer/payroll ownership, pay schedule, allowance eligibility, time classification, cost allocation, and release-gate status. | Hazard allowance at one site; host-org cost allocation for borrowed workers; wage statement blocked until validated. |
-| **Simulation case** | Saved preview scenario used before activation and for regression checks. | “COSS hourly worker assigned to BESTEC night shift on a Sunday.” |
+| **Simulation case** | Saved preview scenario used before activation and for regression checks. | “COSS hourly worker assigned to NORTHWIND night shift on a Sunday.” |
 
 ## 4. Attachment scopes
 
@@ -357,7 +357,7 @@ These cases become the acceptance examples for future implementation and review 
   cannot be completed without required evidence.
 - **Org default:** COSS production sites use a standard shift calendar and require supervisor review for
   night-shift exceptions.
-- **Worksite/cell override:** BESTEC Line A defines shift day as 06:00-to-05:59 and adds a machine lockout
+- **Worksite/cell override:** NORTHWIND Line A defines shift day as 06:00-to-05:59 and adds a machine lockout
   checklist for night maintenance.
 - **Result:** preview shows the group passkey rule and org review rule as inherited; the site-specific
   shift cutoff and checklist apply because the org template marked those fields overrideable/additive.
@@ -381,7 +381,7 @@ These cases become the acceptance examples for future implementation and review 
 
 - **Group rule:** purchases above a group-defined risk threshold require executive approval and cannot be
   self-approved.
-- **Org rule:** BESTEC requires finance review above a lower local threshold.
+- **Org rule:** NORTHWIND requires finance review above a lower local threshold.
 - **Department rule:** production office wants to auto-approve consumables below a smaller amount.
 - **Result:** the department auto-approval is allowed only below both the org finance threshold and group
   executive threshold; self-approval remains prohibited at every amount.
