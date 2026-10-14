@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Behavior locks for the repository-owned Reindeer bootstrap and closures."""
 
+import hashlib
+import shutil
+import subprocess
+import tarfile
+import tempfile
 import tomllib
 import unittest
 from pathlib import Path
@@ -186,6 +191,65 @@ class ReindeerBootstrapTests(unittest.TestCase):
             cxx_rule = graph.split(f'name = "{target}"', 1)[1].split("headers =", 1)[0]
             for source in expected_sources:
                 self.assertIn(f":ring-0.17.14.crate[{source}]", cxx_rule)
+
+
+class ReindeerColdPatchTests(unittest.TestCase):
+    # Exact post-images of the original patches applied to the authenticated
+    # archive with Apple patch; changing context must preserve these bytes.
+    POST_IMAGES = {
+        'Cargo.toml': '9e8dec432b6830633403b3d5a1115f14b452e4e670ba7346fb9de01830b981da',
+        'src/buckify.rs': 'cac71351a23e78ff21263a6b234dfd388b28cce6d3590885494762ea79525101',
+        'src/cargo.rs': '3de5446764cde0758dd225fd998e533801c5729bfd3e05c93711ed4142bce94b',
+        'src/config.rs': '153c72c9dc36001835ac2e6487b2951be7e677a84b853f9b752c81acba6417bb',
+        'src/index.rs': '11aa73245b0d4d329a8ed3d16e931a6716ef2ed9a885692867bf5b527a837ed5',
+    }
+
+    def archive(self):
+        lock = dict(line.split('=', 1) for line in
+                    (ROOT / 'third-party/rust/reindeer/upstream.lock').read_text().splitlines()
+                    if line.startswith('REINDEER_'))
+        fixture = ROOT / ('tools/buck/fixtures/reindeer-upstream-'
+                          '681727ced54a853977ac495e147ac54e1c0db115.tar.gz')
+        self.assertEqual(lock['REINDEER_ARCHIVE_SHA256'],
+                         hashlib.sha256(fixture.read_bytes()).hexdigest())
+        return fixture, 'reindeer-' + lock['REINDEER_COMMIT']
+
+    def test_cold_patch_fixture_is_the_exact_pinned_upstream_archive(self):
+        fixture, prefix = self.archive()
+        with tarfile.open(fixture) as archive:
+            for relative in self.POST_IMAGES:
+                self.assertTrue(archive.getmember(prefix + '/' + relative).isfile())
+
+    def test_both_cold_patches_preserve_exact_source_on_available_patch_tools(self):
+        fixture, prefix = self.archive()
+        tools = []
+        for name in ['patch', 'gpatch']:
+            executable = shutil.which(name)
+            if executable and str(Path(executable).resolve()) not in tools:
+                tools.append(str(Path(executable).resolve()))
+        self.assertTrue(tools, 'cold patch proof requires an executable patch tool')
+        for executable in tools:
+            with self.subTest(patch=executable), tempfile.TemporaryDirectory(
+                    prefix='reindeer-cold-patch-') as tmp:
+                with tarfile.open(fixture) as archive:
+                    archive.extractall(tmp, filter='data')
+                tree = Path(tmp) / prefix
+                expected = {entry.relative_to(tree).as_posix():
+                            hashlib.sha256(entry.read_bytes()).hexdigest()
+                            for entry in tree.rglob('*')
+                            if entry.is_file() and not entry.is_symlink()}
+                expected.update(self.POST_IMAGES)
+                for patch_name in ['0001-workspace-dev-dependency-roots.patch',
+                                   '0002-cargo-security-uplift.patch']:
+                    patch_file = ROOT / 'third-party/rust/reindeer/patches' / patch_name
+                    argv = [executable, '--batch', '--fuzz=0', '--forward',
+                            '-d', str(tree), '-p1', '--input', str(patch_file)]
+                    result = subprocess.run(argv, capture_output=True, text=True, timeout=10)
+                    self.assertEqual(0, result.returncode,
+                                     patch_name + '\n' + result.stdout + result.stderr)
+                for relative, sha in expected.items():
+                    self.assertEqual(sha, hashlib.sha256((tree / relative).read_bytes()).hexdigest(),
+                                     relative)
 
 
 if __name__ == "__main__":
