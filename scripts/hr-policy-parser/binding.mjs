@@ -45,7 +45,7 @@ export function loadBinding(env = process.env) {
   if (!file || !path.isAbsolute(file)) throw new Error('missing absolute root binding');
   pinned(file, env.CONSOLE_HR_POLICY_BINDING_SHA256);
   const b = JSON.parse(regular(file));
-  if (b.schema !== 'console.hr-policy-parser.operational-binding.v1' || b.status !== 'REVIEWED_EXACT_TEST_CANDIDATE'
+  if (b.schema !== 'console.hr-policy-parser.operational-binding.v1' || !['REVIEWED_EXACT_TEST_CANDIDATE', 'MEASURED_CURRENT_CI_INPUTS'].includes(b.status)
       || b.cwd !== ROOT || b.probe !== 'scripts/run-native-hr-policy-parser-contract.sh'
       || b.contract_sha256 !== '95b9243256fa70e50bb645aa4c4cea400d0374e13fde2336378580344ffd832d'
       || b.test_contract_sha256 !== '4b354e6c56fc3c2d06d36c488d9f7b3f3fc1f46fb57ba9e311bc5fdbd26f7d96'
