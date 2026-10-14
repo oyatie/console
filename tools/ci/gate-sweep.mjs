@@ -142,11 +142,10 @@ if (isMain) {
       shell: true,
       encoding: "utf8",
       env: { ...process.env },
-      maxBuffer: 64 * 1024 * 1024,
+      stdio: ["ignore", "inherit", "inherit"],
     });
     console.error(`${done.status === 0 ? "PASS" : "FAIL"}  ${gate.id}`);
     if (done.status !== 0) {
-      for (const output of [done.stdout, done.stderr]) if (output) process.stderr.write(output);
       if (done.error) console.error(done.error.message);
       if (done.signal) console.error(`gate-sweep: ${gate.id} terminated by ${done.signal}`);
     }
