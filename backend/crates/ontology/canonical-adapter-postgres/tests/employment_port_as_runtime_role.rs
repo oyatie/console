@@ -38,6 +38,9 @@
 //! `employment::apply_employment_change` the REST lifecycle handler now calls is
 //! the statement the port itself issues.
 
+#[path = "support/hostile_receipt_fixture.rs"]
+mod hostile_receipt_fixture;
+
 use console_kernel_core::{ErrorKind, OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::company::{
     CompanyCommand, CompanyQuery, PgCompanyPort,
@@ -1730,30 +1733,18 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
     .await
     .unwrap();
 
-    // Put back a row carrying the SAME digest — so the replay gets past the
-    // digest comparison — but a receipt naming no dispatch target, which is the
-    // shape an `ontology.action` row has. 0177's trigger refuses UPDATE and
-    // DELETE per row and TRUNCATE is statement-level, so this is the only way a
-    // test can stand a hostile row where a good one was.
-    sqlx::query("TRUNCATE ont_action_command_receipts")
-        .execute(&owner_pool)
-        .await
-        .unwrap();
-    sqlx::query(
-        "INSERT INTO ont_action_command_receipts \
-         (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
-         VALUES ($1, $2, $3, $4, $5, now())",
-    )
-    .bind(ORG)
-    .bind(*command_id.as_uuid())
-    .bind(*actor.as_uuid())
-    .bind(accepted.payload_digest().as_slice())
-    .bind(
+    // Corrupt only this real accepted row, including its original legacy metadata branch.
+    // The private helper restores/proves the ordinary guard before any owner replay.
+    hostile_receipt_fixture::corrupt_legacy(
+        &owner_pool,
+        ORG,
+        *command_id.as_uuid(),
+        *actor.as_uuid(),
+        accepted.payload_digest().as_slice(),
         serde_json::json!({ "employment_id": employment_of(&accepted).to_string(), "version": 1 }),
     )
-    .execute(&owner_pool)
     .await
-    .unwrap();
+    .expect("hostile receipt fixture must restore its guard and preserve all other rows");
 
     let refused = execute(
         &port,

@@ -74,7 +74,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-company_port_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/company_port_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/company_port_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "company_port_as_runtime_role",
@@ -107,7 +107,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-employment_port_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/employment_port_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/employment_port_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "employment_port_as_runtime_role",
@@ -140,7 +140,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-employment_reassign_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/employment_reassign_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/employment_reassign_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "employment_reassign_as_runtime_role",
@@ -173,7 +173,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-employment_reassign_identity_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/employment_reassign_identity_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/employment_reassign_identity_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "employment_reassign_identity_as_runtime_role",
@@ -206,7 +206,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-job_position_port_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/job_position_port_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/job_position_port_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "job_position_port_as_runtime_role",
@@ -239,7 +239,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-org_unit_kinds_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/org_unit_kinds_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/org_unit_kinds_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "org_unit_kinds_as_runtime_role",
@@ -272,7 +272,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-org_unit_port_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/org_unit_port_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/org_unit_port_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "org_unit_port_as_runtime_role",
@@ -305,7 +305,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-person_port_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/person_port_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/person_port_as_runtime_role.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "person_port_as_runtime_role",
@@ -338,7 +338,7 @@ rust_test(
 
 rust_test(
     name = "console-ontology-canonical-adapter-postgres-itest-receipt_owner_widening",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/receipt_owner_widening.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/canonical-adapter-postgres", ["tests/receipt_owner_widening.rs", "tests/support/hostile_receipt_fixture.rs", "tests/support/hostile_receipt_fixture_controls.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "receipt_owner_widening",
