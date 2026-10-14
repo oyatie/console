@@ -154,6 +154,93 @@ class GeneratorCliTests(unittest.TestCase):
 
 
 class GeneratorContractsResourceTests(unittest.TestCase):
+    def test_account_finalizer_getters_use_only_fixed_declared_compiler_inputs(self) -> None:
+        root = Path(GENERATOR.REPO)
+        helper = root / "backend/crates/platform/test-support/src/lib.rs"
+        source = helper.read_text()
+        external = GENERATOR.RESOURCE_CONFIG["console-platform-test-support"]["external"]
+
+        def require_static_input(body, expected):
+            literals = r'r(?P<raw_hashes>#*)".*?"(?P=raw_hashes)|"(?:\\.|[^"\\])*"'
+            body = re.sub(literals + r"|/\*.*?\*/|//[^\n]*",
+                          lambda item: "" if item[0].startswith(("/*", "//")) else item[0],
+                          body, flags=re.S)
+            literal_spans = [item.span() for item in re.finditer(literals, body, re.S)]
+            inputs = [item for item in re.finditer(
+                r'\b(include_(?:str|bytes))!\(\s*(?:"([^"]+)"|r(#*)"([^"]+)"\3)\s*\)',
+                body,
+            ) if not any(start <= item.start() < end for start, end in literal_spans)]
+            self.assertEqual(len(inputs), 1, "getter must consume one fixed compiler SQL input")
+            item = inputs[0]
+            relative = item[2] or item[4]
+            self.assertFalse(Path(relative).is_absolute(), "input must stay inside the declared source layout")
+            self.assertNotRegex(relative, r"[\\:]", "compiler input uses repository-relative POSIX paths")
+            parts = list(helper.parent.relative_to(root).parts)
+            for part in Path(relative).parts:
+                if part == "..":
+                    self.assertTrue(parts, "compiler input cannot escape its declared layout")
+                    parts.pop()
+                elif part != ".":
+                    parts.append(part)
+            self.assertEqual(tuple(parts), expected.relative_to(root).parts)
+            data = re.escape(item[0])
+            owned = r"\s*\.\s*(?:to_owned|to_string|into)\s*\(\s*\)"
+            checked = r"\s*\.\s*(?:unwrap\s*\(\s*\)|expect\s*\(\s*(?:" + literals + r")\s*\))"
+            if item[1] == "include_str":
+                expressions = [data + owned, r"String\s*::\s*from\s*\(\s*" + data + r"\s*\)"]
+            else:
+                expressions = [r"String\s*::\s*from_utf8\s*\(\s*" + data
+                               + r"\s*\.\s*to_vec\s*\(\s*\)\s*\)" + checked,
+                               r"std\s*::\s*str\s*::\s*from_utf8\s*\(\s*" + data
+                               + r"\s*\)" + checked + owned]
+            self.assertTrue(any(re.fullmatch(r"\s*(?:return\s+)?" + expression + r"\s*;?\s*", body, re.S)
+                                for expression in expressions),
+                            "fixed compiler SQL must be the returned data, not an error message or discarded input")
+
+        for getter, filename, digest in (
+            ("account_custody_finalizer_sql", "postgres-finalize-account-custody.sql",
+             "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8"),
+            ("account_credential_custody_finalizer_sql", "postgres-finalize-account-credentials.sql",
+             "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9"),
+        ):
+            with self.subTest(getter=getter):
+                expected = root / "ops" / filename
+                self.assertFalse(expected.is_symlink())
+                self.assertTrue(expected.is_file())
+                self.assertEqual(hashlib.sha256(expected.read_bytes()).hexdigest(), digest)
+                self.assertEqual(external.get("//ops:" + filename), "ops/" + filename)
+                literal = '"../../../../../ops/' + filename + '"'
+                include = "include_str!(" + literal + ")"
+                for control in (include + ".to_owned()", "String::from(" + include + ")",
+                                include + ".to_string()",
+                                include + ".into()",
+                                "return " + include.replace(literal, "r" + literal) + ".to_owned();",
+                                "String::from_utf8(include_bytes!(" + literal + ').to_vec()).expect(r#"/* // exact SQL */"#)',
+                                "std::str::from_utf8(include_bytes!(" + literal + ')).expect("UTF-8 SQL").to_owned()',
+                                "String::from_utf8(include_bytes!(" + literal + ').to_vec()).expect(r#"include_str!("unreviewed.sql")"#)',
+                                "std::str::from_utf8(include_bytes!(" + literal + ')).expect(r#"include_bytes!("unreviewed.sql")"#).into()',
+                                "String::from_utf8(include_bytes!(" + literal + ').to_vec()).expect("include_str!(\\\"unreviewed.sql\\\")")'):
+                    require_static_input(control, expected)
+                for corruption in (include.replace(filename, "unreviewed.sql") + ".to_owned()",
+                                   include + "; std::fs::read_to_string(path).unwrap()",
+                                   include + "; load_runtime_sql()",
+                                   include + "; env!(\"CARGO_MANIFEST_DIR\")",
+                                   include + '; "SELECT substituted".to_owned()',
+                                   "String::from((" + include + ', "substituted").1)',
+                                   include + '.to_owned() + "modified"',
+                                   include + '.to_owned().replace(r#"/*"#, &load_runtime_sql()).replace(r#"*/"#, "")',
+                                   include + "[1..].to_owned()",
+                                   'String::from_utf8(b"SELECT substituted".to_vec()).expect(' + include + ")",
+                                   'std::str::from_utf8(b"SELECT substituted").expect(' + include + ").to_owned()",
+                                   'include_str!("' + str(expected) + '").to_owned()',
+                                   'include_str!("../../../../../../' + root.name + "/ops/" + filename + '").to_owned()'):
+                    with self.assertRaises(AssertionError):
+                        require_static_input(corruption, expected)
+                bodies = re.findall(r"^pub fn " + getter + r"\(\) -> String \{\n(.*?)^\}",
+                                    source, flags=re.M | re.S)
+                self.assertEqual(len(bodies), 1, "existing owner getter and String API must remain unique")
+                require_static_input(bodies[0], expected)
+
     def test_compose_emits_its_semantic_manifest_input(self) -> None:
         source = Path(GENERATOR.REPO) / "backend/crates/contracts"
         with tempfile.TemporaryDirectory() as tmp:
