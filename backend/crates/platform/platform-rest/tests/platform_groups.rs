@@ -245,7 +245,7 @@ async fn platform_group_crud_assigns_subsidiaries_and_audits(pool: PgPool) {
     let account = &created_account["account"];
     let account_user_id = Uuid::parse_str(account["user_id"].as_str().unwrap()).unwrap();
     assert_eq!(account["display_name"], "개발자");
-    assert_eq!(account["phone"], "user38@example.com");
+    assert_eq!(account["phone"], "user37@example.com");
     assert_eq!(account["org_id"], tenant_a.to_string());
     assert_eq!(account["account_status"], "PENDING_SETUP");
     assert_eq!(account["tenant_roles"].as_array().unwrap()[0], "MEMBER");
