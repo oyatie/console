@@ -2,10 +2,12 @@
 """Behavior locks for the first-party Rust BUCK graph generator."""
 
 import ast
+import contextlib
 import hashlib
 from unittest.mock import patch
 import importlib.util
 import inspect
+import io
 import json
 import re
 import shutil
@@ -44,6 +46,30 @@ class GeneratorCliTests(unittest.TestCase):
             "kind": ["test"], "crate_types": ["bin"], "name": "react_people",
             "src_path": str(self.hydrate.REPO / "backend/crates/payroll/ui/tests/react_people.rs"),
         }
+
+    def test_hydration_run_preserves_captured_success_output(self):
+        output = 'real subprocess success output\n'
+        argv = [sys.executable, '-c',
+                'import sys; sys.stdout.write(sys.argv[1])', output]
+        reported = io.StringIO()
+        with contextlib.redirect_stderr(reported):
+            result = self.hydrate.run(argv, timeout=10)
+        self.assertEqual(output, result)
+        self.assertEqual('', reported.getvalue())
+
+    def test_hydration_run_reports_failure_stdout_and_preserves_error(self):
+        output = 'real subprocess failure diagnostic\nsecond diagnostic line\n'
+        argv = [sys.executable, '-c',
+                'import sys; sys.stdout.write(sys.argv[1]); sys.exit(23)', output]
+        reported = io.StringIO()
+        with contextlib.redirect_stderr(reported):
+            with self.assertRaises(subprocess.CalledProcessError) as caught:
+                self.hydrate.run(argv, timeout=10)
+        self.assertEqual(23, caught.exception.returncode)
+        self.assertEqual(argv, caught.exception.cmd)
+        self.assertEqual(output, caught.exception.output)
+        self.assertIsNone(caught.exception.stderr)
+        self.assertEqual(output, reported.getvalue())
 
     def project_hydration(self, targets):
         # Cargo metadata fixtures exercise target selection only. No compiler,
