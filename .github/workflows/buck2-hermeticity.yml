@@ -108,6 +108,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -B -I tools/buck/test_reindeer_bootstrap.py -v
           source third-party/rust/reindeer/upstream.lock
           rustup toolchain install "$REINDEER_TOOLCHAIN" --profile minimal
           cargo fetch --locked --manifest-path backend/Cargo.toml
