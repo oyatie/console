@@ -355,10 +355,7 @@ pub async fn login_test_pool(owner_pool: &PgPool, login: TestDatabaseLogin) -> P
 
 /// Read the existing operator finalizer; never emulate its grants or projection.
 pub fn account_custody_finalizer_sql() -> String {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../../ops/postgres-finalize-account-custody.sql");
-    std::fs::read_to_string(path)
-        .expect("ACCOUNT_CUSTODY_FINALIZER_PREREQUISITE: production SQL file missing")
+    include_str!("../../../../../ops/postgres-finalize-account-custody.sql").to_owned()
 }
 
 // Both disposable helpers share this protocol. Configuration and administrator
@@ -431,10 +428,7 @@ pub async fn finalize_account_custody(pool: &PgPool) {
 
 /// Read the fixed production Auth7 SQL; no fixture grants or owner emulation.
 pub fn account_credential_custody_finalizer_sql() -> String {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../../ops/postgres-finalize-account-credentials.sql");
-    std::fs::read_to_string(path)
-        .expect("AUTH7_ARTIFACT_PREREQUISITE: production credential SQL file missing")
+    include_str!("../../../../../ops/postgres-finalize-account-credentials.sql").to_owned()
 }
 
 /// Actual root+credential SQL in one marked disposable operator transaction.
