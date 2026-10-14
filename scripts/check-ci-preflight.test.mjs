@@ -1528,10 +1528,7 @@ describe("CI preflight contract", () => {
 
   it("rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation", () => {
     expectFailure(
-      workflow.replace(
-        `      - name: Install pinned DotSlash runtime\n        id: dotslash\n        if: ${preflightCheckoutHeavyIf}\n        run: tools/buck/install_dotslash.sh\n`,
-        "",
-      ),
+      mutateNamedStep(workflow, "preflight", "Install pinned DotSlash runtime", () => ""),
       "preflight must install pinned DotSlash before Buck2",
     );
   });
@@ -4261,5 +4258,82 @@ describe("native browser upload scalar expression contract", () => {
       "${{ env." + root + " & 'value' }}", "${{ format('unterminated, env." + root + ") }}",
       "${{ format('{1}', env." + root + ") }}", "${{ format('{0}', env." + root + ") }",
     ]) assert.throws(() => render(template(source), { [root]: "/root" }));
+  });
+});
+
+
+describe("preflight native metadata bootstrap", () => {
+  const installer = readFileSync(new URL("../tools/buck/install_dotslash.sh", import.meta.url), "utf8");
+  const checkoutReadyIf = "${{ !cancelled() && steps.checkout.outcome == 'success' }}";
+  const publishPath = "printf '%s\\n' \"${bin_dir}\" >>\"${GITHUB_PATH}\"";
+
+  function requireBootstrap(model, installerSource = installer) {
+    const preflight = model.jobs.preflight;
+    const steps = preflight.steps;
+    const bootstraps = steps.filter((step) => step.run === "tools/buck/install_dotslash.sh");
+    assert.equal(bootstraps.length, 1, "preflight must invoke the pinned DotSlash installer exactly once");
+    const bootstrap = bootstraps[0];
+    assert.equal(bootstrap.id, "dotslash");
+    assert.equal(
+      bootstrap.if,
+      checkoutReadyIf,
+      "DotSlash must cover every checkout-ready preflight, including thin paths",
+    );
+    assert.equal(bootstrap["continue-on-error"], undefined, "DotSlash bootstrap must fail closed");
+    const installedAt = steps.indexOf(bootstrap);
+    for (const command of [ciPreflightTests, "npm run check:ci-preflight"]) {
+      const gates = steps.filter((step) => step.run === command);
+      assert.equal(gates.length, 1, `the existing protected preflight must remain: ${command}`);
+      assert.equal(gates[0].if, npmCiIf, "preflight must retain its all-class fail-slow condition");
+      const gateAt = steps.indexOf(gates[0]);
+      assert.ok(installedAt < gateAt, "DotSlash must install before every protected preflight caller");
+      assert.equal(preflight.env?.PATH, undefined, "job PATH must retain the installed runtime");
+      for (const step of steps.slice(installedAt, gateAt + 1)) {
+        assert.equal(step.env?.PATH, undefined, "step PATH must retain the installed runtime");
+      }
+    }
+    assert.match(installerSource, /^version="v0\.5\.7"$/m, "the installed runtime must remain pinned");
+    assert.ok(installerSource.includes(publishPath), "the pinned installer must publish its bin directory through GITHUB_PATH");
+    const versionCheck = installerSource.indexOf('if [[ "${actual_version}" != "DotSlash ${version#v}" ]]');
+    assert.ok(versionCheck >= 0 && versionCheck < installerSource.indexOf(publishPath), "verify the pinned runtime before publishing PATH");
+  }
+
+  for (const [pathClass, paths] of [
+    ["docs-only", ["docs/program/bootstrap-probe.md"]],
+    ["release-metadata-only", [".release-please-manifest.json", "CHANGELOG.md"]],
+  ]) {
+    it(`installs the native metadata runtime for ${pathClass} preflight`, () => {
+      const classified = classifyChangedPaths(paths);
+      assert.equal(classified.pathClass, pathClass);
+      assert.equal(classified.runHeavy, false, "the control must exercise a real thin path class");
+      requireBootstrap(yaml.load(workflow));
+    });
+  }
+
+  it("accepts the same pinned installer before preflight for every checkout-ready path class", () => {
+    const model = yaml.load(workflow);
+    model.jobs.preflight.steps.find((step) => step.id === "dotslash").if = checkoutReadyIf;
+    requireBootstrap(model);
+    assert.equal(classifyChangedPaths(["backend/app/src/lib.rs"]).runHeavy, true);
+  });
+
+  it("refuses omitted, late, disabled or unpublished runtime prerequisites", () => {
+    const ready = yaml.load(workflow);
+    ready.jobs.preflight.steps.find((step) => step.id === "dotslash").if = checkoutReadyIf;
+    for (const fault of ["omitted", "late", "disabled"]) {
+      const model = structuredClone(ready);
+      const steps = model.jobs.preflight.steps;
+      const at = steps.findIndex((step) => step.id === "dotslash");
+      if (fault === "omitted") steps.splice(at, 1);
+      if (fault === "late") steps.push(...steps.splice(at, 1));
+      if (fault === "disabled") steps[at].if = false;
+      assert.throws(() => requireBootstrap(model), /DotSlash|pinned/, fault);
+    }
+    assert.ok(installer.includes(publishPath), "the PATH corruption must change the real installer");
+    assert.throws(
+      () => requireBootstrap(ready, installer.replace(publishPath, "")),
+      /GITHUB_PATH/,
+      "an installed binary without retained PATH must refuse",
+    );
   });
 });
