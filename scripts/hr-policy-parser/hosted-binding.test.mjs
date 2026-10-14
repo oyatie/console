@@ -28,6 +28,7 @@ const sourcePaths = [
   SOURCE, 'backend/crates/identity/application/tests/hr_policy_fixtures/literals.rs',
   'backend/crates/identity/application/tests/hr_policy_fixtures/assert_fields.rs',
   'tools/buck2', 'tools/buck/gen_first_party.py', 'backend/crates/identity/application/BUCK',
+  'scripts/lib/dev-up-buck-output.mjs',
 ];
 const host = process.platform === 'darwin' && process.arch === 'arm64' ? 'aarch64-apple-darwin'
   : process.platform === 'linux' && process.arch === 'x64' ? 'x86_64-unknown-linux-gnu'
@@ -57,6 +58,7 @@ function utility(name) {
 function fixture() {
   const work = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'TEST_ONLY-hr-hosted-binding-')));
   const outputs = path.join(ROOT, 'buck-out', path.basename(work));
+  try {
   fs.mkdirSync(outputs, { recursive: true });
   const cache = path.join(work, 'dotslash-cache'); fs.mkdirSync(cache);
   const config = path.join(work, 'TEST_ONLY-acquisition.json');
@@ -110,6 +112,11 @@ function fixture() {
     output: path.join(work, 'TEST_ONLY-measured-binding.json'),
     close() { fs.rmSync(outputs, { recursive: true }); fs.rmSync(work, { recursive: true }); },
   };
+  } catch (error) {
+    fs.rmSync(outputs, { recursive: true, force: true });
+    fs.rmSync(work, { recursive: true, force: true });
+    throw error;
+  }
 }
 function exportCurrent(f, extra = []) {
   return run(node, [owner, '--export-ci', '--output', f.output, '--python', python, '--git', git,
