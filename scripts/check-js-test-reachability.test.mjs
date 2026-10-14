@@ -108,3 +108,78 @@ test('hermetic reachability refuses an uninvoked gate-sweep manifest', () => {
     assertDark(fixture.gate());
   } finally {fixture.cleanup();}
 });
+
+function markerChild(fixture, suite) {
+  const marker = join(fixture.root, 'TEST_ONLY-child-executed');
+  fixture.write(suite, "import test from 'node:test'; import fs from 'node:fs'; test('real fixture child', () => fs.writeFileSync(process.env.TEST_ONLY_CHILD_MARKER, 'executed'));\n");
+  assert.equal(existsSync(marker), false);
+  return marker;
+}
+function assertMarker(result, marker, enabled, status = 0) {
+  assert.equal(result.signal, null, result.stderr); assert(!result.error, result.error?.message);
+  assert.equal(result.status, status, result.stderr);
+  assert.equal(existsSync(marker), enabled);
+  if (enabled) {
+    assert.equal(readFileSync(marker, 'utf8'), 'executed');
+    const stdout = result.stdout.startsWith('{') ? JSON.parse(result.stdout).host.stdout : result.stdout;
+    assert.match(stdout, /# tests 1\n[\s\S]*# pass 1\n# fail 0\n[\s\S]*# skipped 0\n/);
+  } else assert.doesNotMatch(result.stdout, /# tests [1-9]/);
+}
+for (const enabled of [true, false])
+for (const shape of ['short-circuit workflow', 'literal-if workflow'])
+test(`hermetic execution-boundary ${enabled ? 'accepts executing' : 'refuses inert'} ${shape}`, () => {
+  const condition = enabled ? 'true' : 'false';
+  const command = 'node --test fixture/new.test.mjs';
+  const run = shape === 'short-circuit workflow' ? `${condition} && ${command}` : `if ${condition}; then\n  ${command}\nfi`;
+  const fixture = hermeticFixture(run);
+  try {
+    const marker = markerChild(fixture, 'fixture/new.test.mjs');
+    const child = fixture.execute('/bin/sh', ['-c', run], {
+      PATH:dirname(realpathSync(process.execPath)) + ':' + process.env.PATH,
+      NODE_OPTIONS:'--test-reporter=tap', TEST_ONLY_CHILD_MARKER:marker});
+    assertMarker(child, marker, enabled, !enabled && shape === 'short-circuit workflow' ? 1 : 0);
+    const result = fixture.gate();
+    if (enabled) {assert.equal(result.status, 0); assert.deepEqual(result.report.wired_exact, ['fixture/new.test.mjs']);}
+    else assertDark(result);
+  } finally {fixture.cleanup();}
+});
+
+for (const enabled of [true, false])
+for (const shape of ['workflow function', 'launcher function', 'bare false owner entry'])
+test(`hermetic execution-boundary ${enabled ? 'accepts executing' : 'refuses inert'} ${shape}`, () => {
+  const suite = 'scripts/check-native-hr-policy-parser-contract.test.mjs';
+  const launcher = 'scripts/run-native-hr-policy-parser-contract.sh';
+  const supervisor = 'scripts/check-native-hr-policy-parser-contract.mjs';
+  const run = shape === 'workflow function' ? `run_fixture_native() {\n  ${launcher}\n}\n${enabled ? 'run_fixture_native' : 'true'}` : launcher;
+  const fixture = hermeticFixture(run, [suite]);
+  try {
+    let shell = readFileSync(join(repo, launcher), 'utf8');
+    if (shape === 'launcher function') {
+      const command = '"$CONSOLE_HR_POLICY_NODE" "$SCRIPT_DIR/check-native-hr-policy-parser-contract.mjs" || status=$?';
+      assert(shell.includes(command));
+      shell = shell.replace(command, `run_fixture_supervisor() {\n${command}\n}\n${enabled ? 'run_fixture_supervisor' : 'true'}`);
+    }
+    fixture.write(launcher, shell, 0o755);
+    const marker = markerChild(fixture, suite);
+    if (shape === 'bare false owner entry') {
+      // Exact owner bytes, with finite TEST_ONLY dependencies that never invoke native tools.
+      const source = readFileSync(join(repo, supervisor), 'utf8');
+      const entry = 'if (process.argv[1] === new URL(import.meta.url).pathname) process.exitCode = await main();';
+      assert(source.includes(entry));
+      fixture.write(supervisor, enabled ? source : source.replace(entry, 'if (false)\n' + entry));
+      fixture.write('scripts/hr-policy-parser/binding.mjs', "import fs from 'node:fs'; import crypto from 'node:crypto'; export const ROOT = process.cwd(); export const regular = file => fs.readFileSync(file); export const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex'); export const loadBinding = () => ({node:{path:process.execPath}, timeout_ms:5000});\n");
+      fixture.write('scripts/hr-policy-parser/native-run.mjs', "import fs from 'node:fs'; export const candidate = () => {}; export const command = () => ({status:0, signal:null}); export const logs = () => fs.existsSync(process.env.TEST_ONLY_CHILD_MARKER) ? ['TEST_ONLY-current-run-log'] : []; export const inspect = () => ({actions:[], ids:[], logs:[]});\n");
+      fixture.write('scripts/hr-policy-parser/observations.mjs', "export const classify = (_observation, child) => child.status === 0 && child.signal === null && !child.abnormal ? 0 : 126;\n");
+      fixture.write(suite, "import test from 'node:test'; import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto'; test('real TEST_ONLY owner child', () => { const run = process.env.CONSOLE_HR_POLICY_RUN; const report = 'TEST_ONLY-no-native-build\\n'; fs.writeFileSync(path.join(run, 'build-report.json'), report); fs.writeFileSync(path.join(run, 'observation.json'), JSON.stringify({build_start_ms:Date.now(), build_logs:['TEST_ONLY-current-run-log'], compiler_actions:[], fresh_build_ids:[], event_logs:[], build_report:report, build_report_sha256:crypto.createHash('sha256').update(report).digest('hex')})); fs.writeFileSync(process.env.TEST_ONLY_CHILD_MARKER, 'executed'); });\n");
+    } else {
+      fixture.write(supervisor, "import {spawn} from 'node:child_process';\nconst binding = {node:{path:process.execPath}};\nconst child = spawn(binding.node.path, ['--test', 'scripts/check-native-hr-policy-parser-contract.test.mjs'], {stdio:'inherit', env:{...process.env, NODE_OPTIONS:'--test-reporter=tap', NODE_PATH:''}});\nchild.on('close', code => {process.exitCode = code ?? 1;});\n");
+    }
+    const child = fixture.execute('/bin/sh', ['-c', run], {
+      CONSOLE_HR_POLICY_NODE:realpathSync(process.execPath), CONSOLE_HR_POLICY_BINDING:'/TEST_ONLY/unused',
+      CONSOLE_HR_POLICY_BINDING_SHA256:'1'.repeat(64), TEST_ONLY_CHILD_MARKER:marker});
+    assertMarker(child, marker, enabled);
+    const result = fixture.gate();
+    if (enabled) {assert.equal(result.status, 0); assert.deepEqual(result.report.wired_exact, [suite]);}
+    else assertDark(result, suite);
+  } finally {fixture.cleanup();}
+});
