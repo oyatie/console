@@ -6,7 +6,7 @@ import {
   evaluateBaseline,
   evaluateTestAttributeBaseline,
 } from "./executed-tests-baseline.mjs";
-import { directExecutable, executableWorkflowCommands } from "./ci-workflow-executables.mjs";
+import { allWorkflowCommands, directExecutable, executableWorkflowCommands, reachableWorkflowCommands } from "./ci-workflow-executables.mjs";
 
 const LABEL = "executed-tests-baseline.json";
 
@@ -226,4 +226,54 @@ describe("workflow executable command extraction", () => {
       assert.equal(cargo.controlFlow, true, body);
     }
   });
+});
+
+describe("workflow first-property extraction", () => {
+  const command = "node --test fixture/first-property.test.mjs";
+  const tokens = ["node", "--test", "fixture/first-property.test.mjs"];
+  const workflow = step => `jobs:\n  fixture:\n    steps:\n      - ${step}`;
+  const withoutStep = ({ step, ...entry }) => entry;
+  function sameAsNamed(raw, gating = true, shell = null) {
+    const named = `name: Named counterpart\n        ${raw}`;
+    for (const [name, collect, audit] of [
+      ["executable", executableWorkflowCommands, false],
+      ["reachable", reachableWorkflowCommands, false],
+      ["audit", allWorkflowCommands, true],
+    ]) {
+      const expected = collect(workflow(named));
+      assert.equal(expected.length, audit || gating ? 1 : 0, `${name}: named-step prerequisite`);
+      for (const entry of expected) {
+        assert.deepEqual(directExecutable(entry.tokens).tokens, tokens);
+        assert.equal(entry.gating, gating); assert.equal(entry.shell, shell);
+        assert.equal(entry.step, named, `${name}: named audit bytes`);
+      }
+      const actual = collect(workflow(raw));
+      assert.deepEqual(actual.map(withoutStep), expected.map(withoutStep), `${name}: first property has the same meaning`);
+      for (const entry of actual) assert.equal(entry.step, raw, `${name}: raw entry.step bytes are public audit evidence`);
+    }
+  }
+  it("admits an anonymous inline run as the named counterpart", () => {
+    sameAsNamed(`run: ${command}\n`);
+  });
+  it("admits an anonymous block run as the named counterpart", () => {
+    sameAsNamed(`run: |\n          ${command}\n`);
+  });
+  it("admits an anonymous folded run as the named counterpart", () => {
+    sameAsNamed("run: >-\n          node --test\n          fixture/first-property.test.mjs\n");
+  });
+  it("admits anonymous quoted run scalars as the named counterparts", () => {
+    for (const quote of ["'", '"']) sameAsNamed(`run: ${quote}${command}${quote}\n`);
+  });
+  it("keeps a first-property literal-false guard dark and visible to audit", () => {
+    for (const value of ["false", "${{ false }}"])
+      sameAsNamed(`if: ${value}\n        run: ${command}\n`, false);
+  });
+  it("keeps first-property continue-on-error dark and visible to audit", () => {
+    sameAsNamed(`continue-on-error: true\n        run: ${command}\n`, false);
+  });
+  for (const shell of ["pwsh", "bash -c 'exit 0' {0}"])
+    it(`preserves first-property shell ${shell} and independent gating`, () => {
+      for (const [fields, gating] of [["", true], ["        if: false\n", false], ["        continue-on-error: true\n", false]])
+        sameAsNamed(`shell: ${shell}\n${fields}        run: ${command}\n`, gating, shell);
+    });
 });

@@ -16,7 +16,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sweepReachableText } from "./gate-sweep.mjs";
+import { projectReachableSuites } from "../../scripts/check-js-test-reachability.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const args = new Set(process.argv.slice(2));
@@ -33,7 +33,7 @@ const SKIP_DIRS = new Set([
   "third-party",
 ]);
 
-function listTestMjs(dir, baseRoot, acc = []) {
+function listCandidateFiles(dir, baseRoot, acc = []) {
   // Prefer git inventory so worktrees / scratch clones do not inflate dark counts.
   // Include untracked (e.g. new tools/ci tests) via --others --exclude-standard.
   try {
@@ -44,12 +44,12 @@ function listTestMjs(dir, baseRoot, acc = []) {
     };
     const tracked = execFileSync(
       "git",
-      ["-C", baseRoot, "ls-files", "*.test.mjs"],
+      ["-C", baseRoot, "ls-files"],
       gitOpts,
     );
     const others = execFileSync(
       "git",
-      ["-C", baseRoot, "ls-files", "--others", "--exclude-standard", "*.test.mjs"],
+      ["-C", baseRoot, "ls-files", "--others", "--exclude-standard"],
       gitOpts,
     );
     const paths = `${tracked}\n${others}`
@@ -77,8 +77,8 @@ function listTestMjs(dir, baseRoot, acc = []) {
     } catch {
       continue;
     }
-    if (st.isDirectory()) listTestMjs(full, baseRoot, acc);
-    else if (name.endsWith(".test.mjs")) {
+    if (st.isDirectory()) listCandidateFiles(full, baseRoot, acc);
+    else {
       acc.push(relative(baseRoot, full).split("\\").join("/"));
     }
   }
@@ -89,61 +89,29 @@ export function resolveDarkSuites(repoRoot = root) {
   const pkg = JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8"));
   const scripts = pkg.scripts ?? {};
 
-  // Workflow run text (best-effort; missing dir → empty)
-  let runText = "";
+  // Workflow inventory remains best-effort; the primary owner projects commands.
+  const workflowPaths = [];
   const wfDir = join(repoRoot, ".github/workflows");
   try {
     for (const f of readdirSync(wfDir)) {
       if (!/\.ya?ml$/i.test(f)) continue;
-      runText += readFileSync(join(wfDir, f), "utf8") + "\n";
+      workflowPaths.push(`.github/workflows/${f}`);
     }
   } catch {
     /* no workflows */
   }
 
-  const invoked = new Set();
-  for (const name of Object.keys(scripts)) {
-    const re = new RegExp(
-      `npm\\s+(?:run\\s+)?${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w:-])`,
-    );
-    if (re.test(runText)) invoked.add(name);
-  }
-  for (let changed = true; changed; ) {
-    changed = false;
-    for (const name of [...invoked]) {
-      for (const other of Object.keys(scripts)) {
-        if (invoked.has(other)) continue;
-        const re = new RegExp(
-          `npm\\s+(?:run\\s+)?${other.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w:-])`,
-        );
-        if (re.test(scripts[name] || "")) {
-          invoked.add(other);
-          changed = true;
-        }
-      }
-    }
-  }
-
-  // tools/ci/gate-sweep.json is a real execution path, so it is a real
-  // reachability source. `check:ci-preflight` used to be an `&&` chain that
-  // named its test files inline in package.json, which is where this scan
-  // looks; the chain became a fail-slow sweep and moved those commands into a
-  // manifest. Without reading it, 20 suites that DO run every CI cycle report
-  // as dark -- and the natural "fix" is to baseline them, which would retire
-  // live coverage on the strength of a scanner blind spot.
-  const sweepText = sweepReachableText(repoRoot);
-  const expanded = runText + [...invoked].map((n) => scripts[n]).join("\n") + sweepText;
-  const suites = listTestMjs(repoRoot, repoRoot);
+  const files = listCandidateFiles(repoRoot, repoRoot);
+  const { reached, invoked } = projectReachableSuites({ repoRoot, files, workflowPaths, scripts });
+  const suites = files.filter(file => file.endsWith(".test.mjs"));
   const dark = [];
   const wired = [];
   for (const suite of suites) {
     const base = suite.split("/").pop();
-    const direct = expanded.includes(suite);
-    const byBase = expanded.includes(base);
     const owner = Object.entries(scripts).find(
       ([, value]) => value.includes(suite) || value.includes(base),
     );
-    if (direct || byBase) wired.push(suite);
+    if (reached.has(suite)) wired.push(suite);
     else {
       dark.push({
         suite,

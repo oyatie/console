@@ -58,18 +58,18 @@ function nodeFiles(tokens) {
   return [];
 }
 
-function nativeHrChild(files) {
+function nativeHrChild(repoRoot, files) {
   const launcher = "scripts/run-native-hr-policy-parser-contract.sh";
   const supervisor = "scripts/check-native-hr-policy-parser-contract.mjs";
   const suite = "scripts/check-native-hr-policy-parser-contract.test.mjs";
   if (![launcher, supervisor, suite].every(file => files.has(file))) return [];
-  const launches = reachableShellCommands(readFileSync(join(root, launcher), "utf8")).some(entry => {
+  const launches = reachableShellCommands(readFileSync(join(repoRoot, launcher), "utf8")).some(entry => {
     const { tokens } = directExecutable(entry.tokens);
     return tokens[0] === "$CONSOLE_HR_POLICY_NODE" && tokens[1] === "$SCRIPT_DIR/check-native-hr-policy-parser-contract.mjs";
   });
   if (!launches) return [];
 
-  const source = readFileSync(join(root, supervisor), "utf8");
+  const source = readFileSync(join(repoRoot, supervisor), "utf8");
   // Mask comments and quoted data positionally: neither can supply executable calls.
   const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g,
     text => text.replace(/[^\n]/g, " "));
@@ -101,21 +101,11 @@ function nativeHrChild(files) {
   return [];
 }
 
-function main() {
+export function projectReachableSuites({ repoRoot, files, workflowPaths, scripts }) {
   const failures = [];
-  const files = gitLsFiles();
-  const suites = files.filter((f) => f.endsWith(".test.mjs")).sort();
-  const workflows = files.filter((f) => f.startsWith(".github/workflows/") && f.endsWith(".yml"));
-
-  if (!existsSync(join(root, "package.json"))) {
-    failures.push("package.json missing on candidate");
-  }
-  const pkg = loadJson("package.json");
-  const scripts = pkg.scripts ?? {};
-
   const commands = [];
-  for (const wf of workflows) {
-    const text = readFileSync(join(root, wf), "utf8");
+  for (const wf of workflowPaths) {
+    const text = readFileSync(join(repoRoot, wf), "utf8");
     try {
       commands.push(...reachableWorkflowCommands(text));
     } catch (error) {
@@ -148,15 +138,33 @@ function main() {
       for (const file of paths) reached.add(file);
       if (paths[0] === "tools/ci/gate-sweep.mjs" && !sweepInvoked) {
         sweepInvoked = true;
-        commands.push(...reachableShellCommands(sweepReachableText(root)));
+        commands.push(...reachableShellCommands(sweepReachableText(repoRoot)));
       }
     } else {
       const script = ["sh", "bash", "/bin/sh", "/bin/bash"].includes(tokens[0]) ? tokens[1] : tokens[0];
       if (script === "scripts/run-native-hr-policy-parser-contract.sh") {
-        for (const file of nativeHrChild(tracked)) reached.add(file);
+        for (const file of nativeHrChild(repoRoot, tracked)) reached.add(file);
       }
     }
   }
+  return { reached, invoked, failures };
+}
+
+function main() {
+  const failures = [];
+  const files = gitLsFiles();
+  const suites = files.filter((f) => f.endsWith(".test.mjs")).sort();
+  const workflows = files.filter((f) => f.startsWith(".github/workflows/") && f.endsWith(".yml"));
+
+  if (!existsSync(join(root, "package.json"))) {
+    failures.push("package.json missing on candidate");
+  }
+  const pkg = loadJson("package.json");
+  const scripts = pkg.scripts ?? {};
+  const { reached, invoked, failures: projectionFailures } = projectReachableSuites({
+    repoRoot: root, files, workflowPaths: workflows, scripts,
+  });
+  failures.push(...projectionFailures);
 
   const wired = [];
   const basenameOnly = [];
@@ -248,4 +256,4 @@ function main() {
   process.exit(failures.length ? 1 : 0);
 }
 
-main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
