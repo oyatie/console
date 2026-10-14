@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import crypto from 'node:crypto';
+import { syncBuiltinESMExports } from 'node:module';
 import test from 'node:test';
 
 import { createConsoleBuckTargetResolver, createConsoleCandidateSourceResolver, promotionAuthorityDigests, validateConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
@@ -1872,3 +1874,32 @@ for (const [id, level, select, keys] of [
     }
   });
 }
+
+test('truth ledger canonical SHA256 work stays linear in catalogue bindings', (t) => {
+  const value = structuredClone(registry);
+  const catalogueRows = value.release_inventory.support_matrices.runtimes.entries.flatMap((row) =>
+    row.function_catalog ?? row.analytical_card_catalog ?? row.media_transform_catalog ?? []);
+  const leaves = new Set(catalogueRows.filter((row) => row.required_leaf !== null).map((row) => row.required_leaf));
+  const bindings = value.release_inventory.reference_freeze.source_bindings;
+  const sharedRows = [...leaves].reduce((count, leaf) => count + bindings[leaf].length, 0);
+  assert.ok(catalogueRows.length > 0 && sharedRows > 0, 'real current catalogue and shared-binding prerequisites');
+  // Include generous room for fixed catalogue pins, registry and jurisdiction digests.
+  const budget = 8 * (sharedRows + catalogueRows.length + value.capabilities.length + jurisdiction.controls.length + 1);
+  const actualCreateHash = crypto.createHash;
+  let sha256Work = 0;
+  try {
+    t.mock.method(crypto, 'createHash', function (...args) {
+      if (args[0] === 'sha256') sha256Work += 1;
+      return Reflect.apply(actualCreateHash, this, args);
+    });
+    syncBuiltinESMExports();
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true, 'actual owner successfully attests the fresh positive registry');
+    assert.ok(sha256Work > 0, 'counter must observe actual owner SHA256 work');
+    assert.ok(sha256Work <= budget,
+      `actual canonical SHA256 work ${sha256Work} exceeds linear budget ${budget} for ${sharedRows} shared bindings and ${catalogueRows.length} catalogue rows`);
+  } finally {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
+});
