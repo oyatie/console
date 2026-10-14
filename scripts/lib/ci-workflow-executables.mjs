@@ -406,13 +406,15 @@ function collectWorkflowCommands(workflow, includeNonGating, reachableOnly = fal
     const jobGating = canGate(job.block, 4);
     const jobShell = yamlValue(job.block, "shell", 4) ?? defaultsRunShell(job.block, 4);
     for (const step of stepBlocks(job.block)) {
-      const gating = jobGating && canGate(step, 8);
+      // Restore the first property's indentation while preserving raw step bytes for audits.
+      const parsedStep = `        ${step}`;
+      const gating = jobGating && canGate(parsedStep, 8);
       if (!includeNonGating && !gating) continue;
-      const script = runScript(step);
+      const script = runScript(parsedStep);
       if (!script) continue;
       // Effective shell: step override, else job default (direct or defaults.run),
       // else workflow defaults.run, else the runner default.
-      const shell = yamlValue(step, "shell", 8) ?? jobShell ?? workflowShell ?? null;
+      const shell = yamlValue(parsedStep, "shell", 8) ?? jobShell ?? workflowShell ?? null;
       // A fail-slow keep-going block collects per-invocation failures and re-raises
       // them with a summary `exit 1`, so a `set +e` inside it does NOT make the cargo
       // runs non-gating. The `ci-keep-going:` comment is an explicit contract on the
