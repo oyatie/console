@@ -4,7 +4,7 @@
     ".buckconfig": "f0f78518c2da7050b34e26adf61ef7e526cd14054342139d57ad28ede0590698",
     "BUCK": "83c25e6de38a9cc461877c52a5b7e403d29f9c3a905a040e5e2a7c8d87c193bd",
     "backend/BUCK": "132ca739f056cd8618838a6b68a9b007d308d677a8ead50cfee9ef656760b083",
-    "backend/Cargo.lock": "0eef1841d1dbc5d331066cbefada4047f4f27456976dc4aac23ca8b52408e76a",
+    "backend/Cargo.lock": "c1aaad4f9a766dd9e62ddbe3e946417740c37d4b027c1baa2522db3e9ee12b0d",
     "backend/Cargo.toml": "95263d9e0659c281acfbe47210643fce365298a80542b34767fe2fa8932a0e42",
     "backend/crates/payroll/ui/BUCK": "74e51aa4616b8e116aa7524e60df67a4a7cb1ffadb8fbce92a4c5e06b45e71ca",
     "backend/crates/payroll/ui/Cargo.toml": "29478f482fc9c30194b9bc74a8d17bf92e38359b4294b8dd79f41960f4043b68",
@@ -154,7 +154,7 @@
     "third-party/rust/hydrate/fixups/wasm-bindgen/fixups.toml": "02a1bb73095c88e749e173fe5c96beecaf8621302cd2bde44fb61383665a33e0",
     "third-party/rust/hydrate/fixups/wasm_split_helpers/fixups.toml": "ed10d4601be941bf6260672a536e4edb8e47c0fe394141933d138cc5123114b2",
     "third-party/rust/hydrate/fixups/zmij/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e",
-    "third-party/rust/hydrate/input-lock.json": "7081790a0fa9539e4fe116c066c196670bd03d8d1ef22069beac04730bb73231",
+    "third-party/rust/hydrate/input-lock.json": "d3aa7a8864b15f14a3ac0ce62eb227e901aeb45a86d9ef802b822041b775f88a",
     "third-party/rust/hydrate/reindeer.toml": "006e5584db201e52456cb03b8e915a90b877a6bbce9101dc9d96005f9694b7ca",
     "third-party/rust/hydrate/root-dependencies.json": "9bd35e365e61f09b4f608ce60145c2ed02c95b1a62cceabffded0943e102cd79",
     "third-party/rust/reindeer.toml": "784157dc41867d84e0da8899c587428e69cfd14fe927e81e91759cc3b2ee4ffd",
@@ -164,9 +164,9 @@
     "toolchains/rust/lock.bzl": "ec7f7c7b1a0ea4e3bd67cec7eb9fa70820e7b13eb41af75c605a006451b629d9",
     "toolchains/rust/sysroot.bzl": "a1ea4bce4948b707454336706c426af9c4d4307abf01f31746eef01fd9895f20",
     "toolchains/rust/wasm.bzl": "c7b6f21a453724a892e76e0b2b57e6f8c34b699fd6adc15f379948de977c3c10",
-    "tools/buck/BUCK": "3cd8904380ff4507e00be4008ace6ea0433a01e958b8b8a57774a6efdb27ab42",
-    "tools/buck/gen_first_party.py": "5886cc38b4b66ffb39bfe2fb21f9807eabcd1bee67b6bba76f7d47b0bc482f30",
-    "tools/buck/gen_hydrate.py": "62a41673819e61ccc4d90b8507a8c16612306f49b504049bb84e640c8813e94a",
+    "tools/buck/BUCK": "eb7696ab9de02d27b03288129f2b1028b2cbed223980c1dea8e01ba5e2538833",
+    "tools/buck/gen_first_party.py": "71acf18bcc9d799533a5398236c74f2e886f613f32e9f0694f0c132c0493f6e3",
+    "tools/buck/gen_hydrate.py": "537439e6f28ec46beac4c70a55ed6138d979043453313c66cf08ef5b0d0b6d31",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
     "tools/ui/build-payroll-wasm.sh": "248fc88f8c7b82bb6f090776aa33f43e4f6161c64abd156af4993256e6c4583b",
@@ -178,10 +178,10 @@
     "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "fe54756cf23662ecbea5b9b00934574fc37085c1f1843a8110a1522c1729a3fb"
   },
   "producer": {
-    "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
+    "bindgen_executable_sha256": "7b7ad24995656f98f2506a152cbb808883bbee7c4c108627a0d0d1031fff0c50",
     "compiled_wasm_sha256": "47533841cd56fd93532951aa1f478d909fe30541aff7a69dc6a03e26554a05c0",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "16b7ecaa998993db595dc19c276fc1d1497ee913a91ee48e29644fde281c6cf5"
+    "source_snapshot_sha256": "b56226d1a1895fa6acecde95a0295f1cb4766192f1b4e7410beb9c663e56b8d6"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",
