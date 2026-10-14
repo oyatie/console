@@ -92,8 +92,10 @@ const ACCOUNT_ROLE_BINARY_IDS = [
   "console-platform-auth::webauthn_ceremony",
   "console-platform-auth::webauthn_ceremony_replay",
   "console-platform-auth::webauthn_registration_deactivated_user",
+  "console-platform-db::rls_isolation",
   "console-platform-provisioning::bootstrap_passkey",
   "console-platform-provisioning::bootstrap_passkey_replay",
+  "console-platform-provisioning::onboard_mints_group_of_one",
   "console-platform-provisioning::rls_auth_chain_as_runtime_role",
   "console-platform-provisioning::roster_import",
   "console-platform-provisioning::self_enroll_handoff_as_runtime_role",
@@ -226,7 +228,7 @@ threads-required = 2
 
 
 test("gate-only already-isolated auth_rest is not required in the ordinary serial union", () => {
-  assert.equal(ACCOUNT_ROLE_BINARY_IDS.length, 42);
+  assert.equal(ACCOUNT_ROLE_BINARY_IDS.length, 44);
   assert.equal(ACCOUNT_ROLE_BINARY_IDS.includes("console-app::auth_rest"), false);
   const text = gateFixture();
   assert.doesNotMatch(text, /binary_id\(=console-app::auth_rest\)/);
