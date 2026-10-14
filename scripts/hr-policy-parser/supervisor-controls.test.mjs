@@ -226,12 +226,12 @@ test('FAKE ONLY direct missing/nonexecutable launcher, missing supervisor/child/
 });
 
 // Machinery-only: files below model the pinned prelude toolchain layout; nothing executes them.
-const interpreterFixture = () => {
+const interpreterFixture = (triple = 'aarch64-apple-darwin') => {
   const tmp = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hr-fake-interpreter-alias-'))), dir = path.join(tmp, 'source'), f = fixture();
   const isolation = `buck-out/hr-policy-${'1'.repeat(32)}`, stem = `${isolation}/art/toolchains/11a256c53bf8083e`;
   const bin = `${stem}/__cpython_archive__/cpython_archive/bin`, python = `${bin}/python3.13`;
   const wrapper = `${isolation}/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py`;
-  const compiler = `${stem}/rust/__sysroot-aarch64-apple-darwin__/sysroot/bin/rustc`;
+  const compiler = `${stem}/rust/__sysroot-${triple}__/sysroot/bin/rustc`;
   const write = (name, bytes) => { const file = path.join(dir, name); fs.mkdirSync(path.dirname(file), {recursive:true}); fs.writeFileSync(file, bytes); return file; };
   write(python, 'fake pinned CPython executable, never run'); write(wrapper, 'fake pinned wrapper, never run'); write(compiler, 'fake pinned compiler, never run');
   write(SOURCE, IMPORT + '\n'); write('diag.json', JSON.stringify(f.observation.compiler_actions[0].diagnostics[0]) + '\n');
@@ -244,15 +244,20 @@ const interpreterFixture = () => {
   const alias = (name, target) => { const file = path.join(dir, name); fs.mkdirSync(path.dirname(file), {recursive:true}); fs.symlinkSync(target, file); row.reproducer.details.command[0] = name; };
   return {...f, tmp, dir, isolation, stem, bin, python, wrapper, compiler, row, write, execute, alias};
 };
-const withInterpreterFixture = body => { const f = interpreterFixture(); try { body(f); } finally { fs.rmSync(f.tmp, {recursive:true}); } };
+const hostTriples = ['aarch64-apple-darwin', 'x86_64-unknown-linux-gnu', 'aarch64-unknown-linux-gnu'];
+const withInterpreterFixture = (body, triple) => { for (const host of triple ? [triple] : hostTriples) { const f = interpreterFixture(host); try { body(f); } finally { fs.rmSync(f.tmp, {recursive:true}); } } };
 
-test('FAKE ONLY exact current-toolchain bin/python alias authenticates pinned regular python3.13 and preserves observed command', () => withInterpreterFixture(f => {
+for (const triple of hostTriples)
+test('FAKE ONLY exact current-toolchain bin/python alias authenticates pinned regular python3.13 and preserves observed command' + (triple === hostTriples[0] ? '' : ` ${triple}`), () => withInterpreterFixture(f => {
   const observed = `${f.bin}/python`; f.alias(observed, 'python3.13');
   const action = f.execute()[0];
   assert.deepEqual(action.wrapper_sha256, f.b.action_wrapper_sha256);
   assert.equal(action.action.reproducer.details.command[0], observed);
   assert.equal(action.compiler_sha256, f.b.compiler_sha256); assert.equal(action.source_sha256, f.b.sources[0].sha256);
-}));
+}, triple));
+test('FAKE ONLY unknown sysroot triple never permits interpreter alias despite matching canonical bytes', () => {
+  withInterpreterFixture(f => { f.alias(`${f.bin}/python`, 'python3.13'); assert.throws(f.execute); }, 'x86_64-apple-darwin');
+});
 test('FAKE ONLY arbitrary/outside/undeclared interpreter aliases refuse despite matching canonical bytes', () => {
   for (const location of ['python3', 'runner', 'arbitrary', 'outside', 'other-archive']) withInterpreterFixture(f => {
     const name = location === 'arbitrary' ? 'arbitrary/python' : location === 'outside' ? '../outside/python' : location === 'other-archive' ? `${f.stem}/__other_archive__/bin/python` : `${f.bin}/${location}`;

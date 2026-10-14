@@ -261,3 +261,26 @@ for(const directory of ['/usr/bin','/bin']) {
       withDotSlashLookup(t,directory,kind,()=>assertPinnedDotSlashDispatch(t));
     });
 }
+
+// Measured verification metadata is not implementation admission authority.
+test('MACHINERY ONLY actual binder accepts measured current CI inputs', () => {
+  withBinding(value => {value.status = 'MEASURED_CURRENT_CI_INPUTS';},
+    load => assert.equal(load().status, 'MEASURED_CURRENT_CI_INPUTS'));
+});
+test('MACHINERY ONLY actual binder rejects unknown input status', () => {
+  withBinding(value => {value.status = 'UNKNOWN_INPUTS';}, load => assert.throws(load));
+});
+test('MACHINERY ONLY actual admission qualifier refuses measured and unknown inputs before lane admission', () => {
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hr-measured-admission-control-')));
+  try {
+    for (const status of ['MEASURED_CURRENT_CI_INPUTS', 'UNKNOWN_INPUTS']) {
+      const bytes = Buffer.from(JSON.stringify({...base, status})), file = path.join(dir, 'binding.json');
+      fs.writeFileSync(file, bytes, {mode:0o600});
+      const result = childProcess.spawnSync('python3', [path.join(ROOT, 'scripts/hr-policy-parser/qualify-admission.py'),
+        '--binding', file, '--binding-sha256', crypto.createHash('sha256').update(bytes).digest('hex')],
+        {cwd:ROOT, env:{PATH:process.env.PATH}, encoding:'utf8', timeout:10000});
+      assert.equal(result.status, 126); assert.equal(result.signal, null); assert.equal(result.stdout, '');
+      assert.match(result.stderr, /binding is not an independently reviewed exact candidate/);
+    }
+  } finally { fs.rmSync(dir, {recursive:true}); }
+});
