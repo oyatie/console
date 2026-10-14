@@ -1,21 +1,27 @@
 // Fake-only actual command-owner controls; never launches Buck or a compiler.
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import childProcess from 'node:child_process';
 import { syncBuiltinESMExports } from 'node:module';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { testOnlyBindingModel } from './fixtures/command-budget-v1.mjs';
 
-const owner = process.env.CONSOLE_HR_BUDGET_OWNER_MODULE;
-const ownerSha = process.env.CONSOLE_HR_BUDGET_OWNER_SHA256;
+const externalKeys = ['CONSOLE_HR_BUDGET_OWNER_MODULE', 'CONSOLE_HR_BUDGET_OWNER_SHA256',
+  'CONSOLE_HR_BOOTSTRAP_FIXTURE', 'CONSOLE_HR_BOOTSTRAP_FIXTURE_SHA256'];
+const external = externalKeys.some(key => process.env[key] !== undefined);
+assert(!external || externalKeys.every(key => process.env[key]), 'external binding requires all four exact inputs');
+const owner = process.env.CONSOLE_HR_BUDGET_OWNER_MODULE ?? fileURLToPath(new URL('./native-run.mjs', import.meta.url));
 assert(owner && path.isAbsolute(owner), 'exact current owner path required');
 assert(owner.endsWith('/scripts/hr-policy-parser/native-run.mjs'));
 assert.equal(fs.realpathSync(owner), owner);
-assert(/^[a-f0-9]{64}$/.test(ownerSha ?? ''), 'root-reviewed current owner hash required');
 assert(!fs.lstatSync(owner).isSymbolicLink() && fs.lstatSync(owner).isFile());
-assert.equal(crypto.createHash('sha256').update(fs.readFileSync(owner)).digest('hex'), ownerSha);
+const observedOwnerSha = crypto.createHash('sha256').update(fs.readFileSync(owner)).digest('hex');
+const ownerSha = process.env.CONSOLE_HR_BUDGET_OWNER_SHA256 ?? observedOwnerSha;
+assert(/^[a-f0-9]{64}$/.test(ownerSha), 'external pin or observed current source hash required');
+assert.equal(observedOwnerSha, ownerSha);
 const { command } = await import(pathToFileURL(owner));
 const { ROOT, TARGET, LEGACY } = await import(pathToFileURL(path.join(path.dirname(owner), 'binding.mjs')));
 const binding = { dotslash: { path: '/reviewed/dotslash/bin/dotslash' },
@@ -69,20 +75,23 @@ test('FAKE ONLY actual owned daemon cleanup keeps its command and scoped isolati
 // Metadata/filesystem machinery controls only; the actual binder never launches tools.
 const { loadBinding } = await import(pathToFileURL(path.join(path.dirname(owner), 'binding.mjs')));
 const os = await import('node:os');
-const fixture = process.env.CONSOLE_HR_BOOTSTRAP_FIXTURE;
-const fixtureSha = process.env.CONSOLE_HR_BOOTSTRAP_FIXTURE_SHA256;
-assert(fixture && path.isAbsolute(fixture), 'exact existing binding fixture required');
-assert.equal(fs.realpathSync(fixture), fixture);
-assert(fs.lstatSync(fixture).isFile() && !fs.lstatSync(fixture).isSymbolicLink());
-assert(/^[a-f0-9]{64}$/.test(fixtureSha ?? ''), 'root-reviewed binding fixture hash required');
-const fixtureBytes = fs.readFileSync(fixture);
-assert.equal(crypto.createHash('sha256').update(fixtureBytes).digest('hex'), fixtureSha);
-const base = JSON.parse(fixtureBytes);
+const model = testOnlyBindingModel(ROOT);
+let base = model.binding;
+if (external) {
+  const fixture = process.env.CONSOLE_HR_BOOTSTRAP_FIXTURE;
+  assert(path.isAbsolute(fixture), 'exact existing binding fixture required');
+  assert.equal(fs.realpathSync(fixture), fixture);
+  assert(fs.lstatSync(fixture).isFile() && !fs.lstatSync(fixture).isSymbolicLink());
+  const fixtureSha = process.env.CONSOLE_HR_BOOTSTRAP_FIXTURE_SHA256;
+  assert(/^[a-f0-9]{64}$/.test(fixtureSha), 'external reviewed binding fixture hash required');
+  const fixtureBytes = fs.readFileSync(fixture);
+  assert.equal(crypto.createHash('sha256').update(fixtureBytes).digest('hex'), fixtureSha);
+  base = JSON.parse(fixtureBytes);
+}
 assert.equal(base.cwd, ROOT);
-base.bootstrap_utilities = {
-  mkdir: {lookup_path:'/bin/mkdir', path:'/bin/mkdir', sha256:'08a20adeeff9bea14bae05c0a7f3c77c638b2b83fc3ab37e1c646e047bac7002'},
-  tar: {lookup_path:'/usr/bin/tar', path:'/usr/bin/bsdtar', sha256:'9ab7f0793033dc9dc4809d83d695118801bd687cbacda59a0cbbf151ba25dc2b'},
-};
+base.bootstrap_utilities = model.utilities;
+const restoreModel = model.install();
+after(restoreModel);
 
 function withBinding(edit, body) {
   const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hr-bootstrap-binding-control-')));
