@@ -111,6 +111,7 @@ test("gate-sweep CLI preserves completed failures and the active gate before the
   writeFileSync(resolve(root, "first.mjs"), 'console.error("ACTUAL_FIRST_GATE_FAILURE"); process.exit(7);\n');
   writeFileSync(resolve(root, "second.mjs"),
     'import {writeFileSync, existsSync} from "node:fs";\n' +
+    'console.error("ACTUAL_SECOND_GATE_PROGRESS");\n' +
     'writeFileSync("second.started", "started");\n' +
     'const deadline = Date.now() + 10000;\n' +
     'while (!existsSync("second.release") && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10));\n' +
@@ -150,6 +151,7 @@ test("gate-sweep CLI preserves completed failures and the active gate before the
     assert.match(during, /FAIL\s+first/, "a completed failure must survive a later interruption");
     assert.match(during, /ACTUAL_FIRST_GATE_FAILURE/, "retain actual failure output before continuing");
     assert.match(during, /RUN\s+second/, "identify the active gate before waiting for it");
+    assert.match(during, /ACTUAL_SECOND_GATE_PROGRESS/, "retain the active child's diagnostics before completion");
   } finally {
     rmSync(root, { recursive: true });
   }
