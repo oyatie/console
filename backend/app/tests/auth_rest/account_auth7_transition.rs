@@ -73,8 +73,16 @@ async fn operator(connection: &mut PgConnection) {
             true
         )
     );
-    sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='60s'; SET LOCAL lock_timeout='5s'")
-        .execute(connection).await.unwrap();
+    sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='60s'; SET LOCAL lock_timeout='5s'; SET LOCAL jit=off")
+        .execute(&mut *connection).await.unwrap();
+    let jit: String = sqlx::query_scalar("SELECT current_setting('jit')")
+        .fetch_one(connection)
+        .await
+        .unwrap();
+    assert_eq!(
+        jit, "off",
+        "match the production operator catalogue context"
+    );
 }
 
 async fn root_state(connection: &mut PgConnection) -> String {
