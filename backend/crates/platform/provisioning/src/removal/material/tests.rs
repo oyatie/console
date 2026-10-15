@@ -30,7 +30,10 @@ fn force_literal_has_independent_length_digest_and_identity() {
     let bytes = fixture();
     assert_eq!(bytes.len(), 120);
     assert_eq!(
-        format!("{:x}", Sha256::digest(&bytes)),
+        Sha256::digest(&bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
         "7eb5a17e3b74d6f8b6a65272ab6459a1ca4fd937a3a1aa10a047f08bc3b1f356"
     );
     check(&bytes).unwrap();
