@@ -972,9 +972,11 @@ async fn update_org(
 async fn delete_org(
     State(state): State<PlatformRestState>,
     Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
     Path(id): Path<Uuid>,
     Query(query): Query<DeleteOrgQuery>,
 ) -> Result<Response, PlatformError> {
+    platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
     // Same authz gate for BOTH paths: platform super-admin only. A tenant token is
     // already rejected (403) by the platform extractor before this handler runs.
     principal
