@@ -24,6 +24,36 @@ REVOKE ALL ON FUNCTION public.account_legacy_actor_presence_v1(uuid)
          console_leave_cmd,console_ontology_cmd,console_platform_force_cmd;
 GRANT EXECUTE ON FUNCTION public.account_legacy_actor_presence_v1(uuid) TO console_app;
 
+CREATE FUNCTION public.platform_legacy_removal_membership_claim_v1(
+    p_company uuid,p_expected_group uuid) RETURNS void
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on
+AS $membership_claim$
+DECLARE
+    claimed_company uuid;
+    current_group uuid;
+BEGIN
+    -- Membership assignment can hold this tuple before requesting the org lock.
+    -- Claim exactly the required tuple without waiting into that inversion.
+    SELECT m.org_id INTO claimed_company FROM public.group_memberships m
+        WHERE m.org_id=p_company AND m.group_id=p_expected_group
+        FOR UPDATE SKIP LOCKED;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_purge.topology_conflict';
+    END IF;
+    SELECT m.group_id INTO current_group FROM public.group_memberships m WHERE m.org_id=p_company;
+    IF NOT FOUND OR current_group IS DISTINCT FROM p_expected_group THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_purge.topology_conflict';
+    END IF;
+END;
+$membership_claim$;
+ALTER FUNCTION public.platform_legacy_removal_membership_claim_v1(uuid,uuid) OWNER TO console_app;
+REVOKE ALL ON FUNCTION public.platform_legacy_removal_membership_claim_v1(uuid,uuid)
+    FROM PUBLIC,console_account_owner,console_app,console_rt,console_auth_rt,
+         console_auth_startup,console_terms_owner,console_credential_owner,
+         console_leave_cmd,console_ontology_cmd,console_platform_force_cmd;
+GRANT EXECUTE ON FUNCTION public.platform_legacy_removal_membership_claim_v1(uuid,uuid) TO console_app;
+
 CREATE FUNCTION public.platform_legacy_removal_admit_v1(p_id uuid) RETURNS boolean
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
 SET search_path=pg_catalog,pg_temp SET row_security=on
@@ -61,18 +91,7 @@ BEGIN
         RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_purge.topology_conflict';
     END IF;
 
-    -- Membership assignment can hold this tuple before requesting the org lock.
-    -- Claim exactly the required tuple without waiting into that inversion.
-    SELECT m.org_id INTO claimed_company FROM public.group_memberships m
-        WHERE m.org_id=p_id AND m.group_id=discovered_group
-        FOR UPDATE SKIP LOCKED;
-    IF NOT FOUND THEN
-        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_purge.topology_conflict';
-    END IF;
-    SELECT m.group_id INTO current_group FROM public.group_memberships m WHERE m.org_id=p_id;
-    IF NOT FOUND OR current_group IS DISTINCT FROM discovered_group THEN
-        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_purge.topology_conflict';
-    END IF;
+    PERFORM public.platform_legacy_removal_membership_claim_v1(p_id,discovered_group);
 
     -- Fresh scoped owner read after all admission waits, before user/Account locks.
     IF public.account_legacy_actor_presence_v1(p_id) THEN

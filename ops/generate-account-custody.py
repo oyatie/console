@@ -3215,7 +3215,7 @@ ACCOUNT_LEGACY_REMOVAL_SOURCE_SHA256 = (
     ('ops/account-custody/legacy-removal-guard-v1.sql',
      '34ad2b37b56b95d7bfe1985658664651ae90dad7247e6d131e361a75122d1f5b'),
     ('ops/account-custody/legacy-removal-owner-v1.sql',
-     '4821fcc38b81e0c19a7164bc64cf0099476429db3c881df2201383770e573e00'),
+     '35d99fd332ca2e539c21360bcc4cf544f28b5292a13f6330b7b58262e5449d33'),
 )
 
 
@@ -3241,7 +3241,7 @@ def account_legacy_removal_snapshot_query():
          " ('audit_events'),\n ('organizations'),\n ('groups'),\n ('group_memberships')\n), relations AS ("),
         (routine_anchor,
          " WHERE (n.nspname='public' AND p.proname IN "
-         "('platform_legacy_removal_admit_v1','platform_force_remove_organization_command')) OR"
+         "('platform_legacy_removal_admit_v1','platform_legacy_removal_membership_claim_v1','platform_force_remove_organization_command')) OR"
          " p.oid IN (SELECT tgfoid FROM pg_trigger WHERE tgrelid=to_regclass('public.audit_events') AND NOT tgisinternal) OR"),
         ("count(*)=18 AND count(oid)=18", "count(*)=21 AND count(oid)=21"),
         # All three additions already occur in the legacy rights roster. Retain
