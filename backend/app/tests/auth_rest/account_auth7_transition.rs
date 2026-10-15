@@ -613,3 +613,438 @@ async fn auth7_replay_refuses_effective_column_acl_drift_without_repair(pool: Pg
         tx.rollback().await.unwrap();
     }
 }
+
+// Account-only removal controls. The hostile Actor rows below are deliberately
+// injected disposable data, not canonical Company births or control evidence.
+// Production finalizers and real LOGINs supply every privilege and owner port.
+mod native_removal_owner_boundary {
+    use super::super::account_browser::deployment_operator_designation::company_setup::all_rows;
+    use super::*;
+    use console_kernel_core::{AuditAction, AuditEvent, TraceContext};
+    use console_platform_provisioning::{PlatformProvisioner, ProvisioningError};
+    use futures::FutureExt;
+    use std::panic::AssertUnwindSafe;
+
+    type ColumnAcl = (String, String, String, String, bool);
+
+    async fn column_acl(connection: &mut PgConnection, table: &str) -> Vec<ColumnAcl> {
+        sqlx::query_as("SELECT a.attname::text,pg_catalog.pg_get_userbyid(x.grantor)::text,pg_catalog.pg_get_userbyid(x.grantee)::text,x.privilege_type,x.is_grantable FROM pg_catalog.pg_attribute a CROSS JOIN LATERAL pg_catalog.aclexplode(a.attacl) x WHERE a.attrelid=pg_catalog.to_regclass($1) AND a.attnum>0 AND NOT a.attisdropped ORDER BY 1,2,3,4,5")
+            .bind(table).fetch_all(connection).await.unwrap()
+    }
+
+    async fn narrow_owner_acl(connection: &mut PgConnection) {
+        assert_eq!(
+            column_acl(connection, "public.company_actors").await,
+            vec![
+                (
+                    "org_id".into(),
+                    "console_account_owner".into(),
+                    "console_account_owner".into(),
+                    "SELECT".into(),
+                    false
+                ),
+                (
+                    "org_id".into(),
+                    "console_account_owner".into(),
+                    "console_account_owner".into(),
+                    "UPDATE".into(),
+                    false
+                ),
+            ],
+            "NATIVE_REMOVAL_ACTOR_KEY_ACL: only the owner's exact RI key read/lock columns"
+        );
+        assert_eq!(
+            column_acl(connection, "public.auth_webauthn_credentials").await,
+            vec![(
+                "org_id".into(),
+                "console_credential_owner".into(),
+                "console_credential_owner".into(),
+                "UPDATE".into(),
+                false
+            )],
+            "NATIVE_REMOVAL_CREDENTIAL_KEY_ACL: retain SELECT/DELETE without table-wide UPDATE"
+        );
+        let narrow: bool = sqlx::query_scalar("SELECT NOT pg_catalog.has_table_privilege('console_account_owner','public.company_actors','SELECT,INSERT,UPDATE,DELETE,TRUNCATE') AND NOT pg_catalog.has_any_column_privilege('console_account_owner','public.company_actors','INSERT') AND NOT pg_catalog.has_table_privilege('console_credential_owner','public.auth_webauthn_credentials','UPDATE')")
+            .fetch_one(&mut *connection).await.unwrap();
+        assert!(narrow, "key locking must not create a dormant writer");
+        for role in [
+            "console_app",
+            "console_rt",
+            "console_auth_rt",
+            "console_platform_force_cmd",
+            "console_credential_owner",
+            "console_terms_owner",
+        ] {
+            let denied: bool = sqlx::query_scalar("SELECT NOT pg_catalog.has_table_privilege($1,'public.company_actors','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') AND NOT pg_catalog.has_any_column_privilege($1,'public.company_actors','SELECT,INSERT,UPDATE,REFERENCES')")
+                .bind(role).fetch_one(&mut *connection).await.unwrap();
+            assert!(denied, "Actor custody cannot grant generic access: {role}");
+        }
+    }
+
+    async fn boundary_metadata(connection: &mut PgConnection) -> Value {
+        let existing = metadata(connection).await;
+        let actors: Value = sqlx::query_scalar("SELECT jsonb_build_object('relation',to_jsonb(c),'columns',(SELECT jsonb_agg(to_jsonb(a) ORDER BY a.attnum) FROM pg_catalog.pg_attribute a WHERE a.attrelid=c.oid),'constraints',(SELECT jsonb_agg(to_jsonb(k) ORDER BY k.oid) FROM pg_catalog.pg_constraint k WHERE k.conrelid=c.oid),'triggers',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.oid) FROM pg_catalog.pg_trigger t WHERE t.tgrelid=c.oid),'policies',(SELECT jsonb_agg(to_jsonb(p) ORDER BY p.oid) FROM pg_catalog.pg_policy p WHERE p.polrelid=c.oid)) FROM pg_catalog.pg_class c WHERE c.oid='public.company_actors'::regclass")
+            .fetch_one(connection).await.unwrap();
+        serde_json::json!({"account_auth7": existing, "actors": actors})
+    }
+
+    async fn hostile_actor_fixture(pool: &PgPool) -> (Uuid, Uuid, Uuid) {
+        super::super::prepare_http_database(pool).await;
+        let (company, foreign, account) = (id(70_001), id(70_002), id(70_003));
+        for (org, slug) in [(company, "removal-hostile"), (foreign, "removal-foreign")] {
+            sqlx::query("INSERT INTO public.organizations(id,slug,name,status) VALUES($1,$2,'REMOVAL TEST ONLY','ARCHIVED')")
+                .bind(org).bind(slug).execute(pool).await.unwrap();
+        }
+        sqlx::query("INSERT INTO public.users(id,display_name,roles,org_id) VALUES($1,'REMOVAL TEST ONLY',ARRAY['SUPER_ADMIN']::text[],$2)")
+            .bind(account).bind(company).execute(pool).await.unwrap();
+        for org in [company, foreign] {
+            // Real dormant constraints accept this shape. The referenced event
+            // is intentionally absent: malformed retained rows must also block
+            // generic removal, not become evidence of authorized native birth.
+            sqlx::query("INSERT INTO public.company_actors(org_id,account_id,admission_receipt_id,entitlement_ref,created_at) VALUES($1,$2,$3,jsonb_build_object('kind','ACCOUNT_SECURITY_EVENT','account_id',$2::uuid::text,'event_id',$3::uuid::text),now())")
+                .bind(org).bind(account).bind(id(70_004)).execute(pool).await.unwrap();
+        }
+        sqlx::query("INSERT INTO public.auth_webauthn_credentials(id,user_id,org_id,credential_id,passkey_json) VALUES($1,$2,$3,'REMOVAL_TEST_ONLY','{\"TEST_ONLY\":true}')")
+            .bind(id(70_005)).bind(account).bind(company).execute(pool).await.unwrap();
+        let runtime = login_test_pool(pool, TestDatabaseLogin::Business).await;
+        for org in [company, foreign] {
+            // Synthetic historical data through the existing audit writer;
+            // this fixture action does not assert a product/API operation.
+            let event = AuditEvent::new(
+                None,
+                AuditAction::new("audit.native_removal_fixture").unwrap(),
+                "TEST_ONLY_REMOVAL_AUDIT",
+                org.to_string(),
+                TraceContext::generate(),
+                time::OffsetDateTime::now_utc(),
+            )
+            .with_org(OrgId::from_uuid(org))
+            .with_snapshots(
+                None,
+                Some(serde_json::json!({"fixture":"adversarial-data-only","company":org})),
+            );
+            let mut tx = runtime.begin().await.unwrap();
+            let _: String =
+                sqlx::query_scalar("SELECT pg_catalog.set_config('app.current_org',$1,true)")
+                    .bind(org.to_string())
+                    .fetch_one(tx.as_mut())
+                    .await
+                    .unwrap();
+            console_platform_db::insert_audit_event(&mut tx, &event)
+                .await
+                .unwrap();
+            tx.commit().await.unwrap();
+            let actual: (Uuid, Uuid, Option<Uuid>, String, String, String, Option<Value>) = sqlx::query_as("SELECT id,org_id,actor,action,target_type,target_id,after_snap FROM public.audit_events WHERE id=$1")
+                .bind(event.id.as_uuid()).fetch_one(pool).await.unwrap();
+            assert_eq!(
+                actual,
+                (
+                    *event.id.as_uuid(),
+                    org,
+                    None,
+                    "audit.native_removal_fixture".into(),
+                    "TEST_ONLY_REMOVAL_AUDIT".into(),
+                    org.to_string(),
+                    event.after.clone()
+                ),
+                "the actual writer must commit each exact scoped fixture audit before removers run"
+            );
+        }
+        runtime.close().await;
+        (company, foreign, account)
+    }
+
+    async fn assume_nologin_owner(connection: &mut PgConnection, owner: &str, company: Uuid) {
+        let statement = match owner {
+            "console_account_owner" => "SET LOCAL ROLE console_account_owner",
+            "console_credential_owner" => "SET LOCAL ROLE console_credential_owner",
+            _ => panic!("finite NOLOGIN owner roster only"),
+        };
+        sqlx::raw_sql(statement)
+            .execute(&mut *connection)
+            .await
+            .unwrap();
+        sqlx::raw_sql("SET LOCAL row_security=on")
+            .execute(&mut *connection)
+            .await
+            .unwrap();
+        let actual: (String, String, bool, bool, bool) = sqlx::query_as("SELECT session_user::text,current_user::text,rolcanlogin,rolsuper,rolbypassrls FROM pg_catalog.pg_roles WHERE rolname=current_user")
+            .fetch_one(&mut *connection).await.unwrap();
+        assert_eq!(
+            actual,
+            (
+                "console_buck_admin".into(),
+                owner.into(),
+                false,
+                false,
+                false
+            ),
+            "NOLOGIN owner SET ROLE is distinct from a restricted LOGIN"
+        );
+        let _: String =
+            sqlx::query_scalar("SELECT pg_catalog.set_config('app.current_org',$1,true)")
+                .bind(company.to_string())
+                .fetch_one(connection)
+                .await
+                .unwrap();
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_owner_key_locks_are_narrow_and_real_logins_remain_denied(pool: PgPool) {
+        let (company, foreign, _) = hostile_actor_fixture(&pool).await;
+        let before = all_rows(&pool).await;
+        let mut connection = pool.acquire().await.unwrap();
+        narrow_owner_acl(&mut connection).await;
+        drop(connection);
+        for (owner, table) in [
+            ("console_account_owner", "company_actors"),
+            ("console_credential_owner", "auth_webauthn_credentials"),
+        ] {
+            let mut tx = pool.begin().await.unwrap();
+            assume_nologin_owner(&mut tx, owner, company).await;
+            let statement =
+                format!("SELECT org_id FROM public.{table} WHERE org_id=$1 FOR KEY SHARE");
+            let locked: Vec<Uuid> = sqlx::query_scalar(sqlx::AssertSqlSafe(statement))
+                .bind(company)
+                .fetch_all(tx.as_mut())
+                .await
+                .expect("NATIVE_REMOVAL_OWNER_RI_KEY_LOCK");
+            assert_eq!(
+                locked,
+                vec![company],
+                "owner lock must reach a real RLS-visible row"
+            );
+            if owner == "console_account_owner" {
+                let hidden: i64 = sqlx::query_scalar(
+                    "SELECT count(*) FROM public.company_actors WHERE org_id=$1",
+                )
+                .bind(foreign)
+                .fetch_one(tx.as_mut())
+                .await
+                .unwrap();
+                assert_eq!(
+                    hidden, 0,
+                    "selected Company scope must not reveal foreign Actors"
+                );
+            }
+            tx.rollback().await.unwrap();
+        }
+        for login in [
+            TestDatabaseLogin::Business,
+            TestDatabaseLogin::Auth,
+            TestDatabaseLogin::PlatformForceCommand,
+        ] {
+            let runtime = login_test_pool(&pool, login).await;
+            let actual: (String, String, bool, bool) = sqlx::query_as("SELECT session_user::text,current_user::text,rolsuper,rolbypassrls FROM pg_catalog.pg_roles WHERE rolname=current_user")
+                .fetch_one(&runtime).await.unwrap();
+            assert_eq!(actual.0, actual.1, "authenticate the real restricted LOGIN");
+            assert_eq!((actual.2, actual.3), (false, false));
+            for statement in [
+                "SELECT org_id FROM public.company_actors",
+                "UPDATE public.company_actors SET org_id=org_id WHERE false",
+                "DELETE FROM public.company_actors WHERE false",
+                "TRUNCATE public.company_actors",
+            ] {
+                let error = sqlx::raw_sql(statement)
+                    .execute(&runtime)
+                    .await
+                    .expect_err("no generic/runtime Actor-table capability");
+                assert_eq!(
+                    error.as_database_error().unwrap().code().as_deref(),
+                    Some("42501")
+                );
+            }
+            runtime.close().await;
+        }
+        assert!(
+            all_rows(&pool).await == before,
+            "key locks and denied runtime probes must preserve every public row"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_dormant_actor_statement_guard_rejects_real_noop_and_zero_rows(
+        pool: PgPool,
+    ) {
+        use sqlx::Acquire;
+        let (company, foreign, _) = hostile_actor_fixture(&pool).await;
+        let before = all_rows(&pool).await;
+        let guarded: bool = sqlx::query_scalar("SELECT COALESCE(bit_or(t.tgtype::integer & 56)=56 AND bool_and(t.tgenabled='A' AND (t.tgtype::integer & 1)=0 AND (t.tgtype::integer & 2)=2),false) FROM pg_catalog.pg_trigger t WHERE t.tgrelid='public.company_actors'::regclass AND NOT t.tgisinternal AND (t.tgtype::integer & 56)<>0")
+            .fetch_one(&pool).await.unwrap();
+        assert!(
+            guarded,
+            "NATIVE_REMOVAL_DORMANT_ACTOR_GUARD: ALWAYS BEFORE STATEMENT UPDATE/DELETE/TRUNCATE before key grants"
+        );
+        let mut tx = pool.begin().await.unwrap();
+        assume_nologin_owner(&mut tx, "console_account_owner", company).await;
+        let visible: Vec<Uuid> = sqlx::query_scalar(
+            "SELECT org_id FROM public.company_actors WHERE org_id=$1 FOR KEY SHARE",
+        )
+        .bind(company)
+        .fetch_all(tx.as_mut())
+        .await
+        .unwrap();
+        assert_eq!(
+            visible,
+            vec![company],
+            "mutation controls cannot pass against an invisible/empty projection"
+        );
+        for statement in [
+            "UPDATE public.company_actors SET org_id=$2 WHERE org_id=$1",
+            "UPDATE public.company_actors SET org_id=org_id WHERE org_id=$1 AND $2::uuid<>org_id",
+            "UPDATE public.company_actors SET org_id=$2 WHERE org_id=$1 AND false",
+        ] {
+            let mut attempt = tx.begin().await.unwrap();
+            let error = sqlx::query(statement)
+                .bind(company)
+                .bind(foreign)
+                .execute(attempt.as_mut())
+                .await
+                .expect_err("dormant owner mutation must reach the statement refusal");
+            assert_eq!(
+                error.as_database_error().unwrap().code().as_deref(),
+                Some("P0001"),
+                "missing UPDATE privilege or an RLS refusal cannot stand in for the immutable guard"
+            );
+            attempt.rollback().await.unwrap();
+        }
+        tx.rollback().await.unwrap();
+        assert!(
+            all_rows(&pool).await == before,
+            "all real/no-op/zero-row attempts must preserve every public row"
+        );
+    }
+
+    fn exact_native_refusal(result: Result<String, sqlx::Error>) {
+        let error =
+            result.expect_err("native Actor custody must refuse before any destructive work");
+        let database = error.as_database_error().unwrap();
+        assert_eq!(database.code().as_deref(), Some("P0001"));
+        assert_eq!(
+            database.message(),
+            "auth_legacy_purge.native_actors_present"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_hostile_actor_refusal_preserves_credentials_accounts_audit_and_foreign_company(
+        pool: PgPool,
+    ) {
+        let (company, foreign, account) = hostile_actor_fixture(&pool).await;
+        let audit_scopes: Vec<(Uuid, String)> = sqlx::query_as("SELECT org_id,target_id FROM public.audit_events WHERE action='audit.native_removal_fixture' AND target_type='TEST_ONLY_REMOVAL_AUDIT' ORDER BY org_id")
+            .fetch_all(&pool).await.unwrap();
+        assert_eq!(
+            audit_scopes,
+            vec![
+                (company, company.to_string()),
+                (foreign, foreign.to_string())
+            ],
+            "target and foreign audit baselines must both be populated before removers run"
+        );
+        let before = all_rows(&pool).await;
+        let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+        let command = login_test_pool(&pool, TestDatabaseLogin::PlatformForceCommand).await;
+        let normal = sqlx::query_scalar("SELECT public.platform_remove_organization($1)")
+            .bind(company)
+            .fetch_one(&business)
+            .await;
+        let force = sqlx::query_scalar("SELECT public.platform_force_remove_organization_command($1,$2,$3::char(32),$4::char(16),$5)")
+            .bind(company).bind(account).bind("1".repeat(32)).bind("2".repeat(16)).bind(time::OffsetDateTime::now_utc()).fetch_one(&command).await;
+        let provisioner = PlatformProvisioner::new(time::Duration::minutes(15));
+        let normal_mapped = provisioner
+            .remove_tenant(&business, None, company, time::OffsetDateTime::now_utc())
+            .await;
+        let force_mapped = provisioner
+            .force_remove_tenant(
+                &command,
+                Some(console_kernel_core::UserId::from_uuid(account)),
+                company,
+                time::OffsetDateTime::now_utc(),
+            )
+            .await;
+        business.close().await;
+        command.close().await;
+        assert!(
+            all_rows(&pool).await == before,
+            "both removal paths must retain all credentials, Account roots, Actors, audit and foreign Company rows"
+        );
+        exact_native_refusal(normal);
+        exact_native_refusal(force);
+        assert!(
+            matches!(normal_mapped, Err(ProvisioningError::Conflict(_))),
+            "known native refusal must enter the existing Conflict boundary"
+        );
+        assert!(
+            matches!(force_mapped, Err(ProvisioningError::Conflict(_))),
+            "force removal must classify the same exact native refusal"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_composed_finalizer_replay_and_late_failure_preserve_exact_state(
+        pool: PgPool,
+    ) {
+        super::super::prepare_http_database_staging(&pool).await;
+        let mut connection = pool.acquire().await.unwrap();
+        seed_legacy(&mut connection).await;
+        let staged = boundary_metadata(&mut connection).await;
+        drop(connection);
+        let rows_before = all_rows(&pool).await;
+        let mut tx = pool.begin().await.unwrap();
+        let result = AssertUnwindSafe(async {
+            composed(&mut tx)
+                .await
+                .expect("actual Account+credential finalizer must install the correction");
+            narrow_owner_acl(&mut tx).await;
+            let corrected = boundary_metadata(&mut tx).await;
+            composed(&mut tx)
+                .await
+                .expect("actual corrected finalizer replay");
+            assert!(
+                boundary_metadata(&mut tx).await == corrected,
+                "replay must not repair/recreate metadata"
+            );
+            let error = sqlx::query("SELECT 1/0")
+                .execute(tx.as_mut())
+                .await
+                .unwrap_err();
+            assert_eq!(
+                error.as_database_error().unwrap().code().as_deref(),
+                Some("22012")
+            );
+        })
+        .catch_unwind()
+        .await;
+        tx.rollback().await.unwrap();
+        let mut connection = pool.acquire().await.unwrap();
+        assert!(
+            boundary_metadata(&mut connection).await == staged,
+            "late failure must roll back grants, guards, functions and profile metadata"
+        );
+        drop(connection);
+        assert!(
+            all_rows(&pool).await == rows_before,
+            "late failure must roll back every populated public row and ledger effect"
+        );
+        if let Err(panic) = result {
+            std::panic::resume_unwind(panic);
+        }
+        super::super::finalize_serving_account_custody(&pool).await;
+        let mut connection = pool.acquire().await.unwrap();
+        narrow_owner_acl(&mut connection).await;
+        let committed = boundary_metadata(&mut connection).await;
+        drop(connection);
+        let committed_rows = all_rows(&pool).await;
+        super::super::finalize_serving_account_custody(&pool).await;
+        let mut connection = pool.acquire().await.unwrap();
+        assert!(
+            boundary_metadata(&mut connection).await == committed,
+            "committed replay must be read-only"
+        );
+        drop(connection);
+        assert!(
+            all_rows(&pool).await == committed_rows,
+            "committed replay must preserve every public row"
+        );
+    }
+}
