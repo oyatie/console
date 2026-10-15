@@ -2154,7 +2154,9 @@ impl PlatformProvisioner {
                 .await?;
         let Some(updated_id) = updated else {
             tx.rollback().await?;
-            return Err(ProvisioningError::InvalidBootstrapCredential);
+            return Err(ProvisioningError::NotFound(
+                "organization not found".to_owned(),
+            ));
         };
         let organization = fetch_org_tx(&mut tx, updated_id).await?;
 
