@@ -2,7 +2,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { mock } from 'node:test';
 
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const sourcePaths = [
@@ -71,15 +70,17 @@ export function testOnlyBindingModel(root) {
   };
   return {binding, utilities, install() {
     const methods = ['existsSync', 'accessSync', 'lstatSync', 'statSync', 'realpathSync', 'readFileSync', 'readlinkSync'];
-    const original = Object.fromEntries(methods.map(name => [name, fs[name].bind(fs)]));
+    const original = Object.fromEntries(methods.map(name => [name, Object.getOwnPropertyDescriptor(fs, name)]));
     const missing = file => Object.assign(new Error(`TEST_ONLY ENOENT: ${file}`), {code: 'ENOENT'});
     const stat = entry => ({isFile: () => !entry.link && !entry.directory,
       isSymbolicLink: () => Boolean(entry.link), isDirectory: () => Boolean(entry.directory),
       mode: entry.directory ? 0o40755 : entry.link ? 0o120777 : 0o100755});
-    for (const name of methods) mock.method(fs, name, (file, ...args) => {
+    // Preserve native function properties without retaining read buffers in call history.
+    for (const name of methods) fs[name] = new Proxy(original[name].value, {apply(method, receiver, parameters) {
+      const [file, ...args] = parameters;
       if (absent.has(file)) {if (name === 'existsSync') return false; throw missing(file);}
       const entry = entries.get(file);
-      if (!entry) return original[name](file, ...args);
+      if (!entry) return Reflect.apply(method, receiver, parameters);
       const target = entry.link ? entries.get(path.resolve(path.dirname(file), entry.link)) : entry;
       if (name === 'existsSync') return true;
       if (name === 'accessSync') return;
@@ -93,7 +94,7 @@ export function testOnlyBindingModel(root) {
       if (!target.bytes) throw new Error('TEST_ONLY not a regular file');
       const encoding = typeof args[0] === 'string' ? args[0] : args[0]?.encoding;
       return encoding ? target.bytes.toString(encoding) : Buffer.from(target.bytes);
-    });
-    return () => mock.restoreAll();
+    }});
+    return () => Object.defineProperties(fs, original);
   }};
 }
