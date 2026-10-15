@@ -3210,6 +3210,63 @@ def platform_source_snapshot_query():
 
 
 
+# Capture-only Account legacy removal correction. No profile seals or activation.
+ACCOUNT_LEGACY_REMOVAL_SOURCE_SHA256 = (
+    ('ops/account-custody/legacy-removal-guard-v1.sql',
+     '34ad2b37b56b95d7bfe1985658664651ae90dad7247e6d131e361a75122d1f5b'),
+    ('ops/account-custody/legacy-removal-owner-v1.sql',
+     '4821fcc38b81e0c19a7164bc64cf0099476429db3c881df2201383770e573e00'),
+)
+
+
+def account_legacy_removal_source_sql():
+    sources = []
+    for name, expected in ACCOUNT_LEGACY_REMOVAL_SOURCE_SHA256:
+        raw = company_provenance_regular_path(name, required=True).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
+            raise SystemExit('Account legacy removal source differs from reviewed bytes: ' + name)
+        sources.append('-- source: ' + name + '\n' + raw.decode('utf-8'))
+    return ('-- Generated UNINSTALLED Account legacy removal source.\n'
+            '-- Capture-only output; no custody finalizer or serving profile is activated.\n'
+            + '\n'.join(sources))
+
+
+def account_legacy_removal_snapshot_query():
+    # Extend the frozen full serializer; preserve all metadata and startup checks.
+    query = platform_source_snapshot_query()
+    relation_anchor = " ('audit_events')\n), relations AS ("
+    routine_anchor = " WHERE p.oid IN (SELECT tgfoid FROM pg_trigger WHERE tgrelid=to_regclass('public.audit_events') AND NOT tgisinternal) OR"
+    replacements = (
+        (relation_anchor,
+         " ('audit_events'),\n ('organizations'),\n ('groups'),\n ('group_memberships')\n), relations AS ("),
+        (routine_anchor,
+         " WHERE (n.nspname='public' AND p.proname IN "
+         "('platform_legacy_removal_admit_v1','platform_force_remove_organization_command')) OR"
+         " p.oid IN (SELECT tgfoid FROM pg_trigger WHERE tgrelid=to_regclass('public.audit_events') AND NOT tgisinternal) OR"),
+        ("count(*)=18 AND count(oid)=18", "count(*)=21 AND count(oid)=21"),
+        # All three additions already occur in the legacy rights roster. Retain
+        # those entries: 30 rights rows/240 checks, with 27 distinct relations.
+        ("count(*)=27 AND count(oid)=27", "count(*)=30 AND count(oid)=30"),
+        ("count(*)=216 AND bool_and(allowed IS FALSE)",
+         "count(*)=240 AND bool_and(allowed IS FALSE)"),
+    )
+    for before, after in replacements:
+        if query.count(before) != 1:
+            raise ValueError('Account legacy removal capture anchor missing or duplicate: ' + before)
+        query = query.replace(before, after)
+    if query.count("count(DISTINCT name)=27 AND bool_and(allowed IS FALSE)") != 1:
+        raise ValueError('Account legacy removal startup column census drift')
+    return query
+
+
+def account_legacy_removal_capture_files():
+    return {
+        'ops/postgres-account-legacy-removal-source-v1.sql': account_legacy_removal_source_sql(),
+        'ops/postgres-capture-account-legacy-removal-v1-custody.sql':
+            account_legacy_removal_snapshot_query() + ';\n',
+    }
+
+
 # Filled only from independently reviewed source-bound captures.
 PLATFORM_SOURCE_PRIOR_SHA256 = ('0f2db80a4afeacb1d6d6aaf0bbaef9d8f7968e77500322cf691774f02d88e8ea', '93236c9a9e850db234f4dc777553e4eb829bbb76a0f6cc27551f761cc28bffe7')
 PLATFORM_SOURCE_FINALIZED_SHA256 = ('5aee358ff0bea94268d40b5f16f86779952ea95a74cab48cbf99984eedf6e2da', '475c1f9a43b402539e0469f31adc6f06848669abfa34c08350aa1ee006664103')
@@ -8386,7 +8443,9 @@ def native_company_information_manager_current_serving_custody_files():
 
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--native-company-information-manager-current-serving-custody'],
+    if arguments in (['--account-legacy-removal-capture'],
+                     ['--account-legacy-removal-capture', '--check'],
+                     ['--native-company-information-manager-current-serving-custody'],
                      ['--native-company-information-manager-current-serving-custody', '--check'],
                      ['--native-company-information-manager-current-capture'],
                      ['--native-company-information-manager-current-capture', '--check'],
@@ -8412,7 +8471,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--native-company-information-manager-current-serving-custody':
+        if arguments[0] == '--account-legacy-removal-capture':
+            files = account_legacy_removal_capture_files()
+        elif arguments[0] == '--native-company-information-manager-current-serving-custody':
             files = native_company_information_manager_current_serving_custody_files()
         elif arguments[0] == '--native-company-information-manager-current-capture':
             files = native_company_information_manager_current_capture_files()
@@ -8451,7 +8512,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--native-company-information-manager-current-serving-custody | --native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--account-legacy-removal-capture | --native-company-information-manager-current-serving-custody | --native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
