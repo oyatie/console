@@ -1359,3 +1359,6 @@ async fn removal_classifies_only_exact_owner_refusals_and_preserves_every_row(ow
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
+
+#[path = "remove_tenant/native_removal_races.rs"]
+mod native_removal_races;
