@@ -4,7 +4,7 @@
     ".buckconfig": "f0f78518c2da7050b34e26adf61ef7e526cd14054342139d57ad28ede0590698",
     "BUCK": "83c25e6de38a9cc461877c52a5b7e403d29f9c3a905a040e5e2a7c8d87c193bd",
     "backend/BUCK": "132ca739f056cd8618838a6b68a9b007d308d677a8ead50cfee9ef656760b083",
-    "backend/Cargo.lock": "c1aaad4f9a766dd9e62ddbe3e946417740c37d4b027c1baa2522db3e9ee12b0d",
+    "backend/Cargo.lock": "22d8ef8e55a043e4eafdadb9ff9e74e3ee60e47374aff69eee2aea4cc58e0b92",
     "backend/Cargo.toml": "95263d9e0659c281acfbe47210643fce365298a80542b34767fe2fa8932a0e42",
     "backend/crates/payroll/ui/BUCK": "74e51aa4616b8e116aa7524e60df67a4a7cb1ffadb8fbce92a4c5e06b45e71ca",
     "backend/crates/payroll/ui/Cargo.toml": "29478f482fc9c30194b9bc74a8d17bf92e38359b4294b8dd79f41960f4043b68",
@@ -154,7 +154,7 @@
     "third-party/rust/hydrate/fixups/wasm-bindgen/fixups.toml": "02a1bb73095c88e749e173fe5c96beecaf8621302cd2bde44fb61383665a33e0",
     "third-party/rust/hydrate/fixups/wasm_split_helpers/fixups.toml": "ed10d4601be941bf6260672a536e4edb8e47c0fe394141933d138cc5123114b2",
     "third-party/rust/hydrate/fixups/zmij/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e",
-    "third-party/rust/hydrate/input-lock.json": "d3aa7a8864b15f14a3ac0ce62eb227e901aeb45a86d9ef802b822041b775f88a",
+    "third-party/rust/hydrate/input-lock.json": "6b374397233f3bd38dab3695dbfce86c90cd4ebc15fb6df1314a81a2be10e83a",
     "third-party/rust/hydrate/reindeer.toml": "006e5584db201e52456cb03b8e915a90b877a6bbce9101dc9d96005f9694b7ca",
     "third-party/rust/hydrate/root-dependencies.json": "9bd35e365e61f09b4f608ce60145c2ed02c95b1a62cceabffded0943e102cd79",
     "third-party/rust/reindeer.toml": "784157dc41867d84e0da8899c587428e69cfd14fe927e81e91759cc3b2ee4ffd",
@@ -178,10 +178,10 @@
     "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "fe54756cf23662ecbea5b9b00934574fc37085c1f1843a8110a1522c1729a3fb"
   },
   "producer": {
-    "bindgen_executable_sha256": "7b7ad24995656f98f2506a152cbb808883bbee7c4c108627a0d0d1031fff0c50",
+    "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "47533841cd56fd93532951aa1f478d909fe30541aff7a69dc6a03e26554a05c0",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "b56226d1a1895fa6acecde95a0295f1cb4766192f1b4e7410beb9c663e56b8d6"
+    "source_snapshot_sha256": "cb3a80844a807955645ae7a98a76032ecfce2c7516176a392d6e146852138af7"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",
