@@ -39,6 +39,8 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
+console-attendance-adapter-postgres = { path = "../../attendance/adapter-postgres" }
+console-attendance-application = { path = "../../attendance/application" }
 console-governance-application = { path = "../../governance/application" }
 # Dev-only: publishing an object type is four ordered HTTP calls, two of which
 # are governance approvals. Driving that ladder over HTTP ONLY — which is the

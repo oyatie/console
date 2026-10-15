@@ -65,6 +65,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -113,6 +115,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -162,6 +166,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -211,6 +217,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -260,6 +268,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -309,6 +319,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -358,6 +370,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -407,6 +421,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -456,6 +472,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -505,6 +523,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",
@@ -554,6 +574,8 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/ontology/rest", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.ontology.rest", "domain.ontology", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/attendance/adapter-postgres:console-attendance-adapter-postgres",
+        "//backend/crates/attendance/application:console-attendance-application",
         "//backend/crates/contracts:console-contracts",
         "//backend/crates/governance/adapter-postgres:console-governance-adapter-postgres",
         "//backend/crates/governance/application:console-governance-application",

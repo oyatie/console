@@ -1072,15 +1072,20 @@ async fn the_attach_route_refuses_unauthorized_unrepresentable_and_malformed_pol
         malformed.body
     );
 
-    // A validly SIGNED token for a principal with no `users` row. `created_by`
-    // FKs `(created_by, org_id) -> users(id, org_id)` on both tables written by
-    // the definer (0150:41, and the same shape on ont_object_policies), so an
-    // unresolvable principal reaches the database and comes back as a raw
-    // constraint violation. Whatever the verdict, it must be a mapped client
-    // error -- a 500 here tells a caller it found an unhandled server path.
+    let policy_rows_sql = "SELECT jsonb_build_object( \
+        'catalog', (SELECT coalesce(jsonb_agg(to_jsonb(c) ORDER BY c.id), '[]'::jsonb) FROM cedar_policy_catalog_entries c), \
+        'attachments', (SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.id), '[]'::jsonb) FROM ont_object_policies p), \
+        'audits', (SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY a.id), '[]'::jsonb) FROM audit_events a))";
+    let before_ghost: Value = sqlx::query_scalar(policy_rows_sql)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+
+    // A valid signature does not admit a subject absent from current Auth.
+    let ghost_id = Uuid::new_v4();
     let ghost = issue_token(
         &SIGNING_KEY.with(SigningKey::clone),
-        UserId::from_uuid(Uuid::new_v4()),
+        UserId::from_uuid(ghost_id),
         fx.org,
     );
     let ghost_attach = fx
@@ -1099,16 +1104,14 @@ async fn the_attach_route_refuses_unauthorized_unrepresentable_and_malformed_pol
     );
     assert_eq!(
         ghost_attach.status,
-        StatusCode::UNPROCESSABLE_ENTITY,
-        "the 23503 mapping (`rest/src/lib.rs:755-762`) is the whole reason this is not \
-         a 500; `is_client_error` alone is also satisfied by a 400 from a body parser \
-         that never reached the database: {:?}",
+        StatusCode::UNAUTHORIZED,
+        "current Auth must reject a nonexistent subject before policy authoring: {:?}",
         ghost_attach.body
     );
-    // `rest/src/lib.rs:761` keeps the message deliberately generic and leaves the
-    // constraint name in the log. Nothing asserted that, so a later "let's include
-    // the DB error, it helps debugging" would ship the schema to any caller holding
-    // a token for a since-removed user.
+    assert_eq!(
+        ghost_attach.body,
+        json!({"error": {"code": "unauthorized", "message": "invalid bearer token"}})
+    );
     let ghost_text = body_text(&ghost_attach.body);
     for leaked in [
         "fkey",
@@ -1122,6 +1125,55 @@ async fn the_attach_route_refuses_unauthorized_unrepresentable_and_malformed_pol
              belongs in the log, not in the response body: {ghost_text}"
         );
     }
+
+    // Independently reach the real creator FK through its armed command LOGIN.
+    // This SQL control does not exercise the HTTP 23503-to-422 mapper.
+    let org_uuid = *fx.org.as_uuid();
+    let ghost_creator = fx
+        .as_command_role(move |tx| {
+            Box::pin(async move {
+                sqlx::query_scalar::<_, Uuid>(
+                    "SELECT ont_policy_api.attach_object_policy($1,$2,$3,$4,$5,$6,$7,$8)",
+                )
+                .bind(org_uuid)
+                .bind(ghost_id)
+                .bind(*good_id.as_uuid())
+                .bind("permit")
+                .bind(canonical_normalized_row("permit", "policygood", vec![]))
+                .bind("ontology-runtime-filter-v1")
+                .bind(PROBE_TRACE_ID)
+                .bind(PROBE_SPAN_ID)
+                .fetch_one(&mut **tx)
+                .await
+                .err()
+                .map(|error| {
+                    let database = error.as_database_error();
+                    (
+                        database.and_then(|error| error.code().map(|code| code.into_owned())),
+                        database.and_then(|error| error.table().map(str::to_owned)),
+                        database.and_then(|error| error.constraint().map(str::to_owned)),
+                    )
+                })
+            })
+        })
+        .await;
+    assert_eq!(
+        ghost_creator,
+        Some((
+            Some("23503".to_owned()),
+            Some("cedar_policy_catalog_entries".to_owned()),
+            Some("cedar_policy_catalog_entries_created_by_org_id_fkey".to_owned()),
+        )),
+        "only the actual missing-creator FK is a valid SQL refusal"
+    );
+    let after_ghost: Value = sqlx::query_scalar(policy_rows_sql)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+    assert!(
+        after_ghost == before_ghost,
+        "ghost HTTP and SQL refusals must preserve every catalog, attachment and audit row"
+    );
 
     let unknown_type = fx
         .post(

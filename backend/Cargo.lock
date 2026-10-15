@@ -2696,6 +2696,8 @@ name = "console-ontology-rest"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "console-attendance-adapter-postgres",
+ "console-attendance-application",
  "console-contracts",
  "console-governance-adapter-postgres",
  "console-governance-application",
