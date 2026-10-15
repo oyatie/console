@@ -702,3 +702,6 @@ mod legacy_platform_ops_reads;
 
 #[path = "legacy_platform_group_reads.rs"]
 mod legacy_platform_group_reads;
+
+#[path = "legacy_platform_removal_current_source.rs"]
+mod legacy_platform_removal_current_source;
