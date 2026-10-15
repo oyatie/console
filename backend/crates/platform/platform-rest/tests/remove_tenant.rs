@@ -983,3 +983,382 @@ async fn tenant_token_cannot_force_remove_a_tenant(owner_pool: PgPool) {
         "the tenant must be untouched after a rejected force-remove"
     );
 }
+
+// Transient faults replace only the existing removal bodies in this disposable
+// database. They never provide a successful owner, grant, or custody profile.
+#[sqlx::test(migrations = false)]
+async fn removal_classifies_only_exact_owner_refusals_and_preserves_every_row(owner_pool: PgPool) {
+    async fn rows(pool: &PgPool) -> std::collections::BTreeMap<String, Value> {
+        let tables: Vec<String> = sqlx::query_scalar(
+            "SELECT c.relname::text FROM pg_catalog.pg_class c
+             JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+             WHERE n.nspname='public' AND c.relkind IN ('r','p') ORDER BY c.relname",
+        )
+        .fetch_all(pool)
+        .await
+        .unwrap();
+        let mut result = std::collections::BTreeMap::new();
+        for table in tables {
+            let sql = sqlx::AssertSqlSafe(format!(
+                "SELECT coalesce(jsonb_agg(value ORDER BY value::text COLLATE \"C\"),'[]'::jsonb)
+                 FROM (SELECT to_jsonb(t) AS value FROM public.\"{}\" t) captured",
+                table.replace('"', "\"\"")
+            ));
+            result.insert(
+                table,
+                sqlx::query_scalar(sql).fetch_one(pool).await.unwrap(),
+            );
+        }
+        result
+    }
+
+    async fn routine(pool: &PgPool, signature: &str) -> Value {
+        sqlx::query_scalar(
+            "SELECT to_jsonb(p) FROM pg_catalog.pg_proc p
+             WHERE p.oid=pg_catalog.to_regprocedure($1)",
+        )
+        .bind(signature)
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    async fn hits(pool: &PgPool, schema: &str) -> i64 {
+        let sql = sqlx::AssertSqlSafe(format!(
+            "SELECT CASE WHEN is_called THEN last_value+1 ELSE 0 END FROM {schema}.hits"
+        ));
+        sqlx::query_scalar(sql).fetch_one(pool).await.unwrap()
+    }
+
+    struct Observation {
+        state: &'static str,
+        message: &'static str,
+        expected: StatusCode,
+        force: bool,
+        origin: Option<(String, String)>,
+        control_hits: i64,
+        http_hits: i64,
+        status: StatusCode,
+        body: Value,
+        unchanged: bool,
+    }
+
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let harness = Harness::new(&owner_pool).await;
+    let admin = seed_platform_admin(&owner_pool).await;
+    let token = harness.token(admin, OrgId::platform(), true);
+    let service = harness.service().await;
+    let target = onboard(&service, &token, "classification-target").await;
+    let foreign = onboard(&service, &token, "classification-foreign").await;
+    archive_org(&service, &token, target).await;
+    assert!(target != foreign);
+    for company in [target, foreign] {
+        assert!(count_in_org(&owner_pool, "audit_events", company).await > 0);
+        assert!(count_in_org(&owner_pool, "auth_bootstrap_credentials", company).await > 0);
+    }
+    let before = rows(&owner_pool).await;
+    assert!(!before["accounts"].as_array().unwrap().is_empty());
+    let mut originals = Vec::new();
+    for signature in [
+        "public.platform_remove_organization(uuid)",
+        "public.platform_force_remove_organization_command(uuid,uuid,character,character,timestamp with time zone)",
+    ] {
+        let metadata = routine(&owner_pool, signature).await;
+        let definition: String = sqlx::query_scalar(
+            "SELECT pg_catalog.pg_get_functiondef(pg_catalog.to_regprocedure($1))",
+        )
+        .bind(signature)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            definition
+                .matches(metadata["prosrc"].as_str().unwrap())
+                .count(),
+            1
+        );
+        originals.push((signature, definition, metadata));
+    }
+
+    let owner: i64 = sqlx::query_scalar(
+        "SELECT oid::bigint FROM pg_catalog.pg_roles WHERE rolname='console_app'",
+    )
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    for (signature, _, _) in &originals {
+        let owned: bool = sqlx::query_scalar(
+            "SELECT p.proowner=$2::bigint::oid FROM pg_catalog.pg_proc p
+             WHERE p.oid=pg_catalog.to_regprocedure($1)",
+        )
+        .bind(signature)
+        .bind(owner)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        assert!(
+            owned,
+            "exact removal routine must retain console_app ownership"
+        );
+    }
+    let schema = format!("removal_fault_{}", Uuid::new_v4().simple());
+    let instrument = sqlx::AssertSqlSafe(format!(
+        "CREATE SCHEMA {schema} AUTHORIZATION console_app;
+         REVOKE ALL ON SCHEMA {schema} FROM PUBLIC;
+         CREATE SEQUENCE {schema}.hits MINVALUE 0 START WITH 0;
+         ALTER SEQUENCE {schema}.hits OWNER TO console_app;
+         REVOKE ALL ON SEQUENCE {schema}.hits FROM PUBLIC"
+    ));
+    let mut instrument_tx = owner_pool.begin().await.unwrap();
+    sqlx::raw_sql(instrument)
+        .execute(instrument_tx.as_mut())
+        .await
+        .unwrap();
+    instrument_tx.commit().await.unwrap();
+
+    let database = owner_pool.clone();
+    let expected_rows = before.clone();
+    let fault_targets = originals.clone();
+    let request_token = token.clone();
+    let witness_schema = schema.clone();
+    // Joining the owned task lets restoration run even if a fixture assertion
+    // panics. Every classification is collected before the final RED verdict.
+    let task = tokio::spawn(async move {
+        let private: bool = sqlx::query_scalar(
+            "SELECT n.nspowner=$2::bigint::oid AND c.relowner=n.nspowner
+             AND NOT EXISTS(SELECT 1 FROM pg_catalog.aclexplode(coalesce(n.nspacl,pg_catalog.acldefault('n',n.nspowner))) x WHERE x.grantee<>n.nspowner)
+             AND NOT EXISTS(SELECT 1 FROM pg_catalog.aclexplode(coalesce(c.relacl,pg_catalog.acldefault('s',c.relowner))) x WHERE x.grantee<>c.relowner)
+             FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_class c ON c.relnamespace=n.oid
+             WHERE n.nspname=$1 AND c.relname='hits' AND c.relkind='S'",
+        )
+        .bind(&witness_schema)
+        .bind(owner)
+        .fetch_one(&database)
+        .await
+        .unwrap();
+        assert!(
+            private,
+            "fault witness must remain private to the existing function owner"
+        );
+        let mut observations = Vec::new();
+        for (state, message, expected) in [
+            (
+                "P0001",
+                "auth_legacy_purge.native_actors_present",
+                StatusCode::CONFLICT,
+            ),
+            (
+                "P0001",
+                "auth_legacy_purge.topology_conflict",
+                StatusCode::CONFLICT,
+            ),
+            (
+                "P0001",
+                "auth_legacy_purge.retained_custody",
+                StatusCode::CONFLICT,
+            ),
+            (
+                "P0001",
+                "private_unknown_removal_refusal",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            (
+                "42501",
+                "auth_legacy_purge.native_actors_present",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            (
+                "42501",
+                "auth_legacy_purge.topology_conflict",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            (
+                "42501",
+                "auth_legacy_purge.retained_custody",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            (
+                "55P03",
+                "private_unrelated_lock_failure",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            (
+                "40P01",
+                "private_unrelated_deadlock_failure",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+        ] {
+            let body = format!(
+                "BEGIN
+                   PERFORM pg_catalog.nextval('{witness_schema}.hits'::pg_catalog.regclass);
+                   RAISE EXCEPTION USING ERRCODE='{state}', MESSAGE='{message}',
+                     DETAIL='private-removal-classification-fault';
+                 END;"
+            );
+            for (signature, definition, metadata) in &fault_targets {
+                let fault = sqlx::AssertSqlSafe(definition.replacen(
+                    metadata["prosrc"].as_str().unwrap(),
+                    &body,
+                    1,
+                ));
+                sqlx::raw_sql(fault).execute(&database).await.unwrap();
+                let mut changed = routine(&database, signature).await;
+                assert_ne!(changed["prosrc"], metadata["prosrc"]);
+                changed["prosrc"] = metadata["prosrc"].clone();
+                assert_eq!(changed, *metadata, "fault changed more than the owner body");
+            }
+
+            for force in [false, true] {
+                // Independent restricted-pool invocation proves the real owning
+                // SQL call raises the intended code/message before HTTP mapping.
+                let control_before = hits(&database, &witness_schema).await;
+                let direct: Result<String, sqlx::Error> = if force {
+                    let trace = console_kernel_core::TraceContext::generate();
+                    sqlx::query_scalar(
+                        "SELECT public.platform_force_remove_organization_command($1,$2,$3,$4,$5)",
+                    )
+                    .bind(target)
+                    .bind(admin.as_uuid())
+                    .bind(trace.trace_id())
+                    .bind(trace.span_id())
+                    .bind(OffsetDateTime::now_utc())
+                    .fetch_one(&harness.force_pool)
+                    .await
+                } else {
+                    sqlx::query_scalar("SELECT public.platform_remove_organization($1)")
+                        .bind(target)
+                        .fetch_one(&harness.rt_pool)
+                        .await
+                };
+                let origin = direct.err().and_then(|error| {
+                    error.as_database_error().map(|database| {
+                        (
+                            database.code().unwrap().into_owned(),
+                            database.message().to_owned(),
+                        )
+                    })
+                });
+                let http_before = hits(&database, &witness_schema).await;
+                let (status, body) = if force {
+                    force_delete_org(&service, &request_token, target).await
+                } else {
+                    delete_org(&service, &request_token, target).await
+                };
+                observations.push(Observation {
+                    state,
+                    message,
+                    expected,
+                    force,
+                    origin,
+                    status,
+                    body,
+                    control_hits: http_before - control_before,
+                    http_hits: hits(&database, &witness_schema).await - http_before,
+                    unchanged: rows(&database).await == expected_rows,
+                });
+            }
+        }
+        harness.rt_pool.close().await;
+        harness.force_pool.close().await;
+        observations
+    });
+    let outcome = task.await;
+    let mut restored_all = true;
+    for (_, definition, _) in &originals {
+        let restored = sqlx::raw_sql(sqlx::AssertSqlSafe(definition.as_str()))
+            .execute(&owner_pool)
+            .await;
+        restored_all &= restored.is_ok();
+    }
+    let dropped = sqlx::raw_sql(sqlx::AssertSqlSafe(format!("DROP SCHEMA {schema} CASCADE")))
+        .execute(&owner_pool)
+        .await;
+    let absent: bool = sqlx::query_scalar("SELECT pg_catalog.to_regnamespace($1) IS NULL")
+        .bind(&schema)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+    assert!(
+        dropped.is_ok() && absent,
+        "private fault instrumentation must be removed"
+    );
+    assert!(
+        restored_all,
+        "both exact removal definitions must be restored"
+    );
+    for (signature, _, metadata) in originals {
+        assert!(
+            routine(&owner_pool, signature).await == metadata,
+            "exact owner metadata restoration"
+        );
+    }
+    assert!(
+        rows(&owner_pool).await == before,
+        "target, foreign, Account, credential and audit rows"
+    );
+    let observations = match outcome {
+        Ok(value) => value,
+        Err(error) if error.is_panic() => std::panic::resume_unwind(error.into_panic()),
+        Err(error) => panic!("owned classification task failed: {error}"),
+    };
+    assert_eq!(observations.len(), 18);
+    let mut failures = Vec::new();
+    for observed in observations {
+        let label = format!(
+            "{} / {} / force={}",
+            observed.state, observed.message, observed.force
+        );
+        if observed.origin != Some((observed.state.into(), observed.message.into())) {
+            failures.push(format!("{label}: intended owner SQL fault was not reached"));
+        }
+        if observed.control_hits != 1 || observed.http_hits != 1 {
+            failures.push(format!(
+                "{label}: each SQL control and HTTP request must enter the fault exactly once"
+            ));
+        }
+        if observed.status != observed.expected {
+            failures.push(format!(
+                "{label}: HTTP {} expected {}",
+                observed.status, observed.expected
+            ));
+        }
+        let valid_body = if observed.expected == StatusCode::INTERNAL_SERVER_ERROR {
+            observed.body
+                == serde_json::json!({"error":{"code":"internal","message":"internal server error"}})
+        } else {
+            observed
+                .body
+                .as_object()
+                .is_some_and(|outer| outer.len() == 1)
+                && observed.body["error"]
+                    .as_object()
+                    .is_some_and(|error| error.len() == 2)
+                && observed.body["error"]["code"] == "conflict"
+                && observed.body["error"]["message"]
+                    .as_str()
+                    .is_some_and(|message| !message.is_empty())
+        };
+        let encoded = observed.body.to_string();
+        if !valid_body
+            || [
+                observed.state,
+                observed.message,
+                "private-removal-classification-fault",
+                &token,
+            ]
+            .iter()
+            .any(|secret| encoded.contains(secret))
+        {
+            failures.push(format!(
+                "{label}: response envelope or nondisclosure failed"
+            ));
+        }
+        if !observed.unchanged {
+            failures.push(format!("{label}: complete row census changed"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[path = "remove_tenant/native_removal_races.rs"]
+mod native_removal_races;

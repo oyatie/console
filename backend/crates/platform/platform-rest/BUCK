@@ -41,7 +41,7 @@ rust_library(
 
 rust_test(
     name = "console-platform-rest-itest-onboard_seeds_config_objects",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/onboard_seeds_config_objects.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/onboard_seeds_config_objects.rs", "tests/remove_tenant/native_removal_races.rs", "tests/remove_tenant/native_removal_races/admission_races.rs", "tests/remove_tenant/native_removal_races/effects.rs", "tests/remove_tenant/native_removal_races/support.rs", "tests/remove_tenant/native_removal_races/unknown_lock_races.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "onboard_seeds_config_objects",
@@ -77,7 +77,7 @@ rust_test(
 
 rust_test(
     name = "console-platform-rest-itest-ops_dashboard",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/ops_dashboard.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/ops_dashboard.rs", "tests/remove_tenant/native_removal_races.rs", "tests/remove_tenant/native_removal_races/admission_races.rs", "tests/remove_tenant/native_removal_races/effects.rs", "tests/remove_tenant/native_removal_races/support.rs", "tests/remove_tenant/native_removal_races/unknown_lock_races.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "ops_dashboard",
@@ -113,7 +113,7 @@ rust_test(
 
 rust_test(
     name = "console-platform-rest-itest-platform_groups",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/platform_groups.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/platform_groups.rs", "tests/remove_tenant/native_removal_races.rs", "tests/remove_tenant/native_removal_races/admission_races.rs", "tests/remove_tenant/native_removal_races/effects.rs", "tests/remove_tenant/native_removal_races/support.rs", "tests/remove_tenant/native_removal_races/unknown_lock_races.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "platform_groups",
@@ -149,7 +149,7 @@ rust_test(
 
 rust_test(
     name = "console-platform-rest-itest-remove_tenant",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/remove_tenant.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/remove_tenant.rs", "tests/remove_tenant/native_removal_races.rs", "tests/remove_tenant/native_removal_races/admission_races.rs", "tests/remove_tenant/native_removal_races/effects.rs", "tests/remove_tenant/native_removal_races/support.rs", "tests/remove_tenant/native_removal_races/unknown_lock_races.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "remove_tenant",
@@ -185,7 +185,7 @@ rust_test(
 
 rust_test(
     name = "console-platform-rest-itest-view_as",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/view_as.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/platform-rest", ["tests/remove_tenant/native_removal_races.rs", "tests/remove_tenant/native_removal_races/admission_races.rs", "tests/remove_tenant/native_removal_races/effects.rs", "tests/remove_tenant/native_removal_races/support.rs", "tests/remove_tenant/native_removal_races/unknown_lock_races.rs", "tests/view_as.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "view_as",

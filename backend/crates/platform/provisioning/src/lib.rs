@@ -106,15 +106,24 @@ pub enum ProvisioningError {
 }
 
 fn tenant_removal_error(error: sqlx::Error) -> ProvisioningError {
-    if matches!(&error, sqlx::Error::Database(db)
-        if db.code().as_deref() == Some("P0001")
-            && db.message() == "auth_legacy_purge.retained_custody")
-    {
-        ProvisioningError::Conflict(
-            "organization retains Account credentials and cannot be removed".to_owned(),
-        )
-    } else {
-        ProvisioningError::Sqlx(error)
+    let explanation = match &error {
+        sqlx::Error::Database(db) if db.code().as_deref() == Some("P0001") => match db.message() {
+            "auth_legacy_purge.retained_custody" => {
+                Some("organization retains Account credentials and cannot be removed")
+            }
+            "auth_legacy_purge.native_actors_present" => {
+                Some("organization retains protected identity records and cannot be removed")
+            }
+            "auth_legacy_purge.topology_conflict" => Some(
+                "organization membership is unavailable or has changed; reopen before retrying removal",
+            ),
+            _ => None,
+        },
+        _ => None,
+    };
+    match explanation {
+        Some(message) => ProvisioningError::Conflict(message.to_owned()),
+        None => ProvisioningError::Sqlx(error),
     }
 }
 
@@ -2145,7 +2154,9 @@ impl PlatformProvisioner {
                 .await?;
         let Some(updated_id) = updated else {
             tx.rollback().await?;
-            return Err(ProvisioningError::InvalidBootstrapCredential);
+            return Err(ProvisioningError::NotFound(
+                "organization not found".to_owned(),
+            ));
         };
         let organization = fetch_org_tx(&mut tx, updated_id).await?;
 
