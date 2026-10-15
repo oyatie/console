@@ -331,6 +331,69 @@ pub enum LegacyPlatformSourceError {
     Unavailable,
 }
 
+/// Verified signed input only; no current source, policy decision or authority.
+pub struct VerifiedLegacyPlatformCredential {
+    claims: AccessClaims,
+    subject: Uuid,
+    absolute_family_ttl: Duration,
+}
+
+impl VerifiedLegacyPlatformCredential {
+    /// Validate the original direct credential without database work or locks.
+    pub fn verify(
+        verifier: &JwtVerifier,
+        access: &str,
+        absolute_family_ttl: Duration,
+    ) -> Result<Self, LegacyPlatformSourceError> {
+        use LegacyPlatformSourceError::{Unauthorized, Unavailable};
+        let claims = verifier
+            .verify_access_token(access)
+            .map_err(|_| Unauthorized)?;
+        let subject = Uuid::parse_str(&claims.sub).map_err(|_| Unauthorized)?;
+        let home = Uuid::parse_str(&claims.org).map_err(|_| Unauthorized)?;
+        if subject.is_nil()
+            || home != *OrgId::platform().as_uuid()
+            || !claims.platform
+            || claims.view_as
+            || claims.read_only
+            || claims.tenant_context.is_some()
+            || claims.group_context_id.is_some()
+            || claims.actor_home_org.is_some()
+            || claims.scope_level.is_some()
+            || claims.scope_node.is_some()
+        {
+            return Err(Unauthorized);
+        }
+        if claims.legacy_session.as_ref().is_some_and(|binding| {
+            binding.version != 1
+                || binding.family_id.is_nil()
+                || binding.home_org != home
+                || binding.kind != LegacySessionKind::Direct
+        }) {
+            return Err(Unauthorized);
+        }
+        if absolute_family_ttl <= Duration::ZERO {
+            return Err(Unavailable);
+        }
+        Ok(Self {
+            claims,
+            subject,
+            absolute_family_ttl,
+        })
+    }
+
+    pub fn subject(&self) -> console_kernel_core::UserId {
+        console_kernel_core::UserId::from_uuid(self.subject)
+    }
+
+    pub fn family_id(&self) -> Option<Uuid> {
+        self.claims
+            .legacy_session
+            .as_ref()
+            .map(|binding| binding.family_id)
+    }
+}
+
 /// Verified direct credential and facts whose locks belong to the caller's
 /// transaction. This value is not a transferable authorization permit.
 pub struct LegacyPlatformSource {
@@ -444,52 +507,18 @@ fn platform_source_bridge_error(error: sqlx::Error) -> LegacyPlatformSourceError
     }
 }
 
-/// Acquire current source locks in the caller's READ COMMITTED transaction.
-/// The caller retains it through projection, final freshness and commit.
-pub async fn live_legacy_platform_source_in_tx(
-    tx: &mut Transaction<'_, Postgres>,
-    verifier: &JwtVerifier,
-    access: &str,
-    absolute_family_ttl: Duration,
+/// Parse only material returned by the locked Auth source owner.
+/// The caller must retain that transaction and perform its freshness checks.
+pub fn legacy_platform_source_from_material(
+    credential: VerifiedLegacyPlatformCredential,
+    row: &sqlx::postgres::PgRow,
 ) -> Result<LegacyPlatformSource, LegacyPlatformSourceError> {
-    use LegacyPlatformSourceError::{Unauthorized, Unavailable};
-    let claims = verifier
-        .verify_access_token(access)
-        .map_err(|_| Unauthorized)?;
-    let subject = Uuid::parse_str(&claims.sub).map_err(|_| Unauthorized)?;
-    let home = Uuid::parse_str(&claims.org).map_err(|_| Unauthorized)?;
-    if subject.is_nil()
-        || home != *OrgId::platform().as_uuid()
-        || !claims.platform
-        || claims.view_as
-        || claims.read_only
-        || claims.tenant_context.is_some()
-        || claims.group_context_id.is_some()
-        || claims.actor_home_org.is_some()
-        || claims.scope_level.is_some()
-        || claims.scope_node.is_some()
-    {
-        return Err(Unauthorized);
-    }
-    if claims.legacy_session.as_ref().is_some_and(|binding| {
-        binding.version != 1
-            || binding.family_id.is_nil()
-            || binding.home_org != home
-            || binding.kind != LegacySessionKind::Direct
-    }) {
-        return Err(Unauthorized);
-    }
-    if absolute_family_ttl <= Duration::ZERO {
-        return Err(Unavailable);
-    }
-    sqlx::query("SELECT set_config('app.current_org', $1, true)")
-        .bind(home.to_string())
-        .execute(tx.as_mut())
-        .await
-        .map_err(|_| Unavailable)?;
-    let row = sqlx::query("SELECT roles,family_id,family_user_id,family_org_id,family_protocol,family_created_at,family_revoked_at,family_account_security_generation,family_auth_time,family_assurance FROM public.auth_legacy_platform_source_material_v1($1,$2)")
-        .bind(subject).bind(claims.legacy_session.as_ref().map(|binding| binding.family_id))
-        .fetch_one(tx.as_mut()).await.map_err(platform_source_bridge_error)?;
+    use LegacyPlatformSourceError::Unavailable;
+    let VerifiedLegacyPlatformCredential {
+        claims,
+        subject,
+        absolute_family_ttl,
+    } = credential;
     let roles = row.try_get("roles").map_err(|_| Unavailable)?;
     let family = if claims.legacy_session.is_some() {
         Some(LegacyPlatformFamily(LegacySelfReadFamily {
@@ -515,6 +544,31 @@ pub async fn live_legacy_platform_source_in_tx(
         family,
         absolute_family_ttl,
     };
+    Ok(source)
+}
+
+/// Acquire current source locks in the caller's READ COMMITTED transaction.
+/// The caller retains it through projection, final freshness and commit.
+pub async fn live_legacy_platform_source_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    verifier: &JwtVerifier,
+    access: &str,
+    absolute_family_ttl: Duration,
+) -> Result<LegacyPlatformSource, LegacyPlatformSourceError> {
+    use LegacyPlatformSourceError::Unavailable;
+    let credential =
+        VerifiedLegacyPlatformCredential::verify(verifier, access, absolute_family_ttl)?;
+    let home = *OrgId::platform().as_uuid();
+    let subject = credential.subject;
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(home.to_string())
+        .execute(tx.as_mut())
+        .await
+        .map_err(|_| Unavailable)?;
+    let row = sqlx::query("SELECT roles,family_id,family_user_id,family_org_id,family_protocol,family_created_at,family_revoked_at,family_account_security_generation,family_auth_time,family_assurance FROM public.auth_legacy_platform_source_material_v1($1,$2)")
+        .bind(subject).bind(credential.family_id())
+        .fetch_one(tx.as_mut()).await.map_err(platform_source_bridge_error)?;
+    let source = legacy_platform_source_from_material(credential, &row)?;
     ensure_legacy_platform_source_fresh_in_tx(tx, &source).await?;
     Ok(source)
 }
