@@ -173,3 +173,102 @@ pub(super) fn assert_topology_backfill(
         );
     }
 }
+
+// Pure evidence-oracle fixture only: no database writes or alternate oracle.
+fn current_schema_topology_backfill_fixture() -> (BTreeMap<String, String>, BTreeMap<String, String>)
+{
+    let group = "10000000-0000-4000-8000-000000000001";
+    let org = "10000000-0000-4000-8000-000000000002";
+    let membership = "10000000-0000-4000-8000-000000000003";
+    let head_incarnation = "10000000-0000-4000-8000-000000000004";
+    let incarnation = "10000000-0000-4000-8000-000000000005";
+    let created_at = "2026-09-19T09:08:07.123456+09:00";
+    let groups = json!([{"id": group}]);
+    let old_members = json!([{"group_id": group, "org_id": org, "created_at": created_at}]);
+    let heads = json!([{"group_id": group, "revision": 1,
+        "incarnation": head_incarnation, "state": "ACTIVE"}]);
+    let members = json!([{"group_id": group, "org_id": org, "created_at": created_at,
+        "membership_id": membership, "current_revision": 1, "incarnation": incarnation}]);
+    let history = json!([{"group_id": group, "org_id": org, "membership_id": membership,
+        "revision": 1, "incarnation": incarnation, "from_time": created_at, "to_time": null,
+        "state": "ACTIVE", "provenance_kind": "LEGACY_BACKFILL", "native_account_id": null,
+        "legacy_actor_user_id": null, "force_actor_user_id": null,
+        "command_id": null, "command_receipt": null}]);
+    for rows in [&groups, &old_members, &heads, &members, &history] {
+        assert_eq!(rows.as_array().unwrap().len(), 1);
+    }
+    assert_eq!(history[0].as_object().unwrap().len(), 14);
+    assert_eq!(heads[0]["group_id"], groups[0]["id"]);
+    assert_eq!(history[0]["group_id"], old_members[0]["group_id"]);
+    assert_eq!(history[0]["org_id"], old_members[0]["org_id"]);
+    assert_eq!(history[0]["membership_id"], members[0]["membership_id"]);
+    assert_eq!(history[0]["incarnation"], members[0]["incarnation"]);
+    assert_eq!(history[0]["from_time"], old_members[0]["created_at"]);
+    assert_eq!(history[0]["revision"], json!(1));
+    assert_eq!(history[0]["from_time"], json!(created_at));
+    assert!(history[0]["force_actor_user_id"].is_null());
+    let before = BTreeMap::from([
+        ("groups".into(), groups.to_string()),
+        ("group_memberships".into(), old_members.to_string()),
+    ]);
+    let after = BTreeMap::from([
+        ("group_authority_heads".into(), heads.to_string()),
+        ("group_memberships".into(), members.to_string()),
+        ("group_membership_revisions".into(), history.to_string()),
+        ("company_enrollment_effect_bindings".into(), "[]".into()),
+        ("platform_legacy_topology_receipts".into(), "[]".into()),
+    ]);
+    assert_eq!(after["company_enrollment_effect_bindings"], "[]");
+    assert_eq!(after["platform_legacy_topology_receipts"], "[]");
+    (before, after)
+}
+
+#[test]
+fn topology_oracle_accepts_current_fourteen_field_legacy_backfill() {
+    let (before, after) = current_schema_topology_backfill_fixture();
+    assert!(
+        topology_backfill_matches(&before, &after),
+        "current full-row LEGACY_BACKFILL includes a null force_actor_user_id"
+    );
+}
+
+#[test]
+fn topology_oracle_rejects_omitted_force_actor_field() {
+    let (before, mut after) = current_schema_topology_backfill_fixture();
+    let mut history: Vec<Value> =
+        serde_json::from_str(&after["group_membership_revisions"]).unwrap();
+    assert_eq!(
+        history[0]
+            .as_object_mut()
+            .unwrap()
+            .remove("force_actor_user_id"),
+        Some(Value::Null)
+    );
+    assert_eq!(history[0].as_object().unwrap().len(), 13);
+    after.insert(
+        "group_membership_revisions".into(),
+        serde_json::to_string(&history).unwrap(),
+    );
+    assert!(
+        !topology_backfill_matches(&before, &after),
+        "omitted current-schema column must not qualify as a complete census"
+    );
+}
+
+#[test]
+fn topology_oracle_rejects_nonnull_force_actor_for_legacy_backfill() {
+    let (before, mut after) = current_schema_topology_backfill_fixture();
+    let mut history: Vec<Value> =
+        serde_json::from_str(&after["group_membership_revisions"]).unwrap();
+    assert!(history[0]["force_actor_user_id"].is_null());
+    history[0]["force_actor_user_id"] = json!("10000000-0000-4000-8000-000000000006");
+    assert_eq!(history[0].as_object().unwrap().len(), 14);
+    after.insert(
+        "group_membership_revisions".into(),
+        serde_json::to_string(&history).unwrap(),
+    );
+    assert!(
+        !topology_backfill_matches(&before, &after),
+        "LEGACY_BACKFILL cannot claim a force-removal actor"
+    );
+}
