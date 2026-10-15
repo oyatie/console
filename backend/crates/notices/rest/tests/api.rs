@@ -44,8 +44,8 @@ async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPo
 
         let manager = UserId::new();
         let plain_admin = UserId::new();
-        seed_user(&pool, manager, "Manager").await;
-        seed_user(&pool, plain_admin, "Plain Admin").await;
+        seed_user(&pool, manager, "Manager", "SUPER_ADMIN").await;
+        seed_user(&pool, plain_admin, "Plain Admin", "ADMIN").await;
 
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
@@ -221,9 +221,9 @@ async fn notice_board_rest_scoped_audience_draft_edit_and_receipts(pool: PgPool)
         let manager = UserId::new();
         let member_in = UserId::new();
         let member_out = UserId::new();
-        seed_user(&pool, manager, "Manager").await;
-        seed_user(&pool, member_in, "Member In").await;
-        seed_user(&pool, member_out, "Member Out").await;
+        seed_user(&pool, manager, "Manager", "SUPER_ADMIN").await;
+        seed_user(&pool, member_in, "Member In", "ADMIN").await;
+        seed_user(&pool, member_out, "Member Out", "ADMIN").await;
         let branch_a = seed_branch(&pool, "창원지사").await;
         let branch_b = seed_branch(&pool, "부산지사").await;
         let branch_empty = seed_branch(&pool, "신설지사").await;
@@ -614,8 +614,9 @@ async fn join_branch(pool: &PgPool, user: UserId, branch: BranchId) {
         .unwrap();
 }
 
-async fn seed_user(pool: &PgPool, user_id: UserId, name: &str) {
+async fn seed_user(pool: &PgPool, user_id: UserId, name: &str, role: &str) {
     let name = name.to_owned();
+    let role = role.to_owned();
     let event = AuditEvent::new(
         None,
         AuditAction::new("test.seed_user").unwrap(),
@@ -632,7 +633,7 @@ async fn seed_user(pool: &PgPool, user_id: UserId, name: &str) {
             )
             .bind(user_id.as_uuid())
             .bind(format!("{name} {}", uuid::Uuid::new_v4()))
-            .bind(Vec::from(["ADMIN"]))
+            .bind(Vec::from([role]))
             .bind(OrgId::knl().as_uuid())
             .execute(tx.as_mut())
             .await
