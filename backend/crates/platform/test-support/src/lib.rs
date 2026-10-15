@@ -431,10 +431,24 @@ pub fn account_credential_custody_finalizer_sql() -> String {
     include_str!("../../../../../ops/postgres-finalize-account-credentials.sql").to_owned()
 }
 
+/// Execute the fixed serving SQL inside the caller's existing transaction.
+pub async fn finalize_serving_account_custody_on_connection(
+    connection: &mut sqlx::PgConnection,
+) -> Result<(), sqlx::Error> {
+    // Read both artifacts before either executes; never fall back to root-only.
+    let root = account_custody_finalizer_sql();
+    let credentials = account_credential_custody_finalizer_sql();
+    sqlx::raw_sql(sqlx::AssertSqlSafe(root))
+        .execute(&mut *connection)
+        .await?;
+    sqlx::raw_sql(sqlx::AssertSqlSafe(credentials))
+        .execute(connection)
+        .await?;
+    Ok(())
+}
+
 /// Actual root+credential SQL in one marked disposable operator transaction.
 pub async fn finalize_serving_account_custody(pool: &PgPool) {
-    // Missing SQL is a prerequisite; never fall back to root-only behavior.
-    let credentials = account_credential_custody_finalizer_sql();
     let mut tx = pool.begin().await.expect("begin disposable finalization");
     sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
         .execute(tx.as_mut())
@@ -460,14 +474,9 @@ pub async fn finalize_serving_account_custody(pool: &PgPool) {
         )
     );
     coordinate_initial_account_role(&mut tx).await;
-    sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
-        .execute(tx.as_mut())
+    finalize_serving_account_custody_on_connection(tx.as_mut())
         .await
-        .expect("actual production Account custody finalizer");
-    sqlx::raw_sql(sqlx::AssertSqlSafe(credentials))
-        .execute(tx.as_mut())
-        .await
-        .expect("actual production Account credential custody finalizer");
+        .expect("actual production Account and credential custody finalizers");
     tx.commit().await.expect("commit disposable finalization");
 }
 

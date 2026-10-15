@@ -691,9 +691,34 @@ mod native_removal_owner_boundary {
 
     async fn boundary_metadata(connection: &mut PgConnection) -> Value {
         let existing = metadata(connection).await;
-        let actors: Value = sqlx::query_scalar("SELECT jsonb_build_object('relation',to_jsonb(c),'columns',(SELECT jsonb_agg(to_jsonb(a) ORDER BY a.attnum) FROM pg_catalog.pg_attribute a WHERE a.attrelid=c.oid),'constraints',(SELECT jsonb_agg(to_jsonb(k) ORDER BY k.oid) FROM pg_catalog.pg_constraint k WHERE k.conrelid=c.oid),'triggers',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.oid) FROM pg_catalog.pg_trigger t WHERE t.tgrelid=c.oid),'policies',(SELECT jsonb_agg(to_jsonb(p) ORDER BY p.oid) FROM pg_catalog.pg_policy p WHERE p.polrelid=c.oid)) FROM pg_catalog.pg_class c WHERE c.oid='public.company_actors'::regclass")
-            .fetch_one(connection).await.unwrap();
-        serde_json::json!({"account_auth7": existing, "actors": actors})
+        let relations: Value = sqlx::query_scalar(
+            r#"SELECT jsonb_agg(jsonb_build_object(
+                'relation',to_jsonb(c),
+                'columns',(SELECT COALESCE(jsonb_agg(to_jsonb(a) ORDER BY a.attnum),'[]'::jsonb)
+                    FROM pg_catalog.pg_attribute a WHERE a.attrelid=c.oid),
+                'defaults',(SELECT COALESCE(jsonb_agg(to_jsonb(d) ORDER BY d.oid),'[]'::jsonb)
+                    FROM pg_catalog.pg_attrdef d WHERE d.adrelid=c.oid),
+                'indexes',(SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                    'index',to_jsonb(i),'relation',to_jsonb(ic),
+                    'definition',pg_catalog.pg_get_indexdef(i.indexrelid)) ORDER BY i.indexrelid),'[]'::jsonb)
+                    FROM pg_catalog.pg_index i JOIN pg_catalog.pg_class ic ON ic.oid=i.indexrelid
+                    WHERE i.indrelid=c.oid),
+                'constraints',(SELECT COALESCE(jsonb_agg(to_jsonb(k) ORDER BY k.oid),'[]'::jsonb)
+                    FROM pg_catalog.pg_constraint k WHERE k.conrelid=c.oid),
+                'triggers',(SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY t.oid),'[]'::jsonb)
+                    FROM pg_catalog.pg_trigger t WHERE t.tgrelid=c.oid),
+                'policies',(SELECT COALESCE(jsonb_agg(to_jsonb(p) ORDER BY p.oid),'[]'::jsonb)
+                    FROM pg_catalog.pg_policy p WHERE p.polrelid=c.oid)
+            ) ORDER BY c.relname COLLATE "C")
+            FROM pg_catalog.pg_class c WHERE c.oid=ANY(ARRAY[
+                'public.company_actors'::regclass,'public.organizations'::regclass,
+                'public.groups'::regclass,'public.group_memberships'::regclass])"#,
+        )
+        .fetch_one(connection)
+        .await
+        .unwrap();
+        assert_eq!(relations.as_array().unwrap().len(), 4);
+        serde_json::json!({"account_auth7": existing, "removal_relations": relations})
     }
 
     async fn hostile_actor_fixture(pool: &PgPool) -> (Uuid, Uuid, Uuid) {
@@ -1000,14 +1025,20 @@ mod native_removal_owner_boundary {
         let rows_before = all_rows(&pool).await;
         let mut tx = pool.begin().await.unwrap();
         let result = AssertUnwindSafe(async {
-            composed(&mut tx)
-                .await
-                .expect("actual Account+credential finalizer must install the correction");
+            operator(&mut tx).await;
+            console_platform_test_support::finalize_serving_account_custody_on_connection(
+                tx.as_mut(),
+            )
+            .await
+            .expect("actual Account+credential finalizer must install the correction");
             narrow_owner_acl(&mut tx).await;
             let corrected = boundary_metadata(&mut tx).await;
-            composed(&mut tx)
-                .await
-                .expect("actual corrected finalizer replay");
+            operator(&mut tx).await;
+            console_platform_test_support::finalize_serving_account_custody_on_connection(
+                tx.as_mut(),
+            )
+            .await
+            .expect("actual corrected finalizer replay");
             assert!(
                 boundary_metadata(&mut tx).await == corrected,
                 "replay must not repair/recreate metadata"
