@@ -389,6 +389,20 @@ async fn apply_current_and_require_account_catalog(pool: &PgPool, fixture: &Lega
         fixture.credential_count,
         fixture.audit_ids.len()
     );
+    let staged_accounts: i64 = sqlx::query_scalar("SELECT count(*) FROM public.accounts")
+        .fetch_one(pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        staged_accounts, 0,
+        "numbered migrations must stage Accounts before privileged backfill"
+    );
+    let staged = material_snapshot(pool, &fixture.subjects, &fixture.audit_ids).await;
+    assert!(
+        staged == fixture.snapshot,
+        "numbered migrations changed retained historical material; no sensitive dump"
+    );
+    console_platform_test_support::finalize_serving_account_custody(pool).await;
 }
 
 #[sqlx::test(migrations = false)]

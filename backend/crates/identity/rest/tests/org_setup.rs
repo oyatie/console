@@ -4197,12 +4197,27 @@ async fn workspace_me_endpoint_scopes_layout_to_current_principal(pool: PgPool) 
 
     let org_c = OrgId::from_uuid(uuid::Uuid::from_u128(0xc0ffee));
     seed_org(&pool, org_c, "workspace-c").await;
-    // `users.id` is globally unique in the current schema, so a realistic
-    // cross-tenant duplicate user row cannot be inserted. The leak-prone case
-    // this endpoint must still reject is the same verified subject id presented
-    // under a different tenant claim: without the org-armed RLS lookup, the
-    // adapter's `WHERE user_id = $1` read would return user A's KNL layout here.
-    let token_c = harness.token_for_org(org_c, user_a, &["MECHANIC"], vec![]);
+    // A signature cannot bind an existing user to a different organization.
+    let wrong_org_token = harness.token_for_org(org_c, user_a, &["MECHANIC"], vec![]);
+    let (status, body) = send(
+        &harness,
+        "GET",
+        "/api/v1/me/workspace",
+        &wrong_org_token,
+        None,
+    )
+    .await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED, "{body:?}");
+    assert_eq!(
+        body,
+        json!({"error": {"code": "unauthorized", "message": "invalid bearer token"}}),
+        "a wrong-org refusal must not disclose a saved layout or identity"
+    );
+
+    let user_c =
+        seed_user_in_org_with_team(&pool, org_c, "Workspace User C", &["MECHANIC"], None, None)
+            .await;
+    let token_c = harness.token_for_org(org_c, user_c, &["MECHANIC"], vec![]);
 
     let (status, body) = send(&harness, "GET", "/api/v1/me/workspace", &token_c, None).await;
     assert_eq!(status, StatusCode::OK, "{body:?}");
@@ -4211,4 +4226,31 @@ async fn workspace_me_endpoint_scopes_layout_to_current_principal(pool: PgPool) 
         json!({}),
         "a different org's principal must not receive another tenant's /me workspace row"
     );
+
+    let (status, body) = send(
+        &harness,
+        "PUT",
+        "/api/v1/me/workspace",
+        &token_c,
+        Some(json!({ "layout": { "owner": "C" } })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{body:?}");
+    for (token, owner) in [(token_a, "A"), (token_b, "B"), (token_c, "C")] {
+        let (status, body) = send(&harness, "GET", "/api/v1/me/workspace", &token, None).await;
+        assert_eq!(status, StatusCode::OK, "{body:?}");
+        assert_eq!(body["layout"], json!({ "owner": owner }));
+    }
+
+    // Probe adapter isolation separately from HTTP's live identity admission.
+    let store = PgOrgStore::new(harness.pool.clone());
+    for (org, expected) in [(OrgId::knl(), json!({ "owner": "A" })), (org_c, json!({}))] {
+        let layout = scope_org(org, store.get_workspace_layout(user_a))
+            .await
+            .unwrap();
+        assert_eq!(
+            layout, expected,
+            "the real Business adapter must confine the same user ID to the armed org"
+        );
+    }
 }
