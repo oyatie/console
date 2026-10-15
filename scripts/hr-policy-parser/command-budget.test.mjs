@@ -285,3 +285,61 @@ test('MACHINERY ONLY actual admission qualifier refuses measured and unknown inp
     }
   } finally { fs.rmSync(dir, {recursive:true}); }
 });
+
+for (const retain of [false, true]) {
+  test(`MACHINERY ONLY filesystem fixture ${retain ? 'resource oracle detects deliberate retention' : 'bounds retained bytes and restores native functions'}`, () => {
+    const result = actualSpawnSync(process.execPath, ['--expose-gc', '--input-type=module', '-e', `
+      import assert from 'node:assert/strict';
+      import fs from 'node:fs';
+      import path from 'node:path';
+      import crypto from 'node:crypto';
+      import { testOnlyBindingModel } from './scripts/hr-policy-parser/fixtures/command-budget-v1.mjs';
+      const methods = ['existsSync', 'accessSync', 'lstatSync', 'statSync', 'realpathSync', 'readFileSync', 'readlinkSync'];
+      const originals = methods.map(name => [name, Object.getOwnPropertyDescriptor(fs, name)]);
+      const native = Object.getOwnPropertyDescriptor(fs.realpathSync, 'native');
+      const nodeBytes = fs.statSync(fs.realpathSync(process.execPath)).size;
+      assert(nodeBytes > 1024 * 1024, 'real current Node executable is the resource input');
+      const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
+      const model = testOnlyBindingModel(process.cwd()), restore = model.install();
+      const retained = [];
+      let measured;
+      try {
+        assert.deepEqual(Object.getOwnPropertyDescriptor(fs.realpathSync, 'native'), native);
+        const source = model.binding.sources[0], file = path.join(process.cwd(), source.path);
+        let bytes = fs.readFileSync(file);
+        assert.equal(hash(bytes), source.sha256);
+        bytes[0] ^= 1; bytes = null;
+        assert.equal(hash(fs.readFileSync(file)), source.sha256, 'pass-through reads remain fresh');
+        global.gc(); global.gc();
+        const baseline = process.memoryUsage().arrayBuffers;
+        for (let index = 0; index < 3; index++) {
+          let value = fs.readFileSync(model.binding.python.path);
+          assert.equal(value.byteLength, nodeBytes);
+          assert.equal(hash(value), model.binding.python.sha256, 'actual current tool bytes and pin');
+          value[0] ^= 1;
+          if (${retain}) retained.push(value);
+          value = null;
+        }
+        global.gc(); global.gc();
+        measured = { nodeBytes, reads: 3, growth: process.memoryUsage().arrayBuffers - baseline,
+          budget: 2 * nodeBytes + 1024 * 1024,
+          injected: retained.reduce((total, bytes) => total + bytes.byteLength, 0) };
+      } finally { restore(); }
+      for (const [name, descriptor] of originals) {
+        assert.equal(fs[name], descriptor.value, name + ' function identity restored');
+        assert.deepEqual(Object.getOwnPropertyDescriptor(fs, name), descriptor);
+      }
+      assert.deepEqual(Object.getOwnPropertyDescriptor(fs.realpathSync, 'native'), native);
+      process.stdout.write(JSON.stringify(measured));
+    `], { cwd: ROOT, encoding: 'utf8', timeout: 15_000, maxBuffer: 1024 * 1024 });
+    assert.equal(result.error, undefined);
+    assert.equal(result.signal, null);
+    assert.equal(result.status, 0, result.stderr);
+    const measured = JSON.parse(result.stdout);
+    assert.equal(measured.reads, 3);
+    assert.equal(measured.injected, retain ? 3 * measured.nodeBytes : 0);
+    const detail = `retained buffer growth ${measured.growth} exceeds budget ${measured.budget} for Node bytes ${measured.nodeBytes}`;
+    if (retain) assert.ok(measured.growth > measured.budget, 'injected retained buffers must fail the same resource bound: ' + detail);
+    else assert.ok(measured.growth <= measured.budget, detail);
+  });
+}
