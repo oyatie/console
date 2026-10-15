@@ -4,10 +4,14 @@
 
 mod account;
 pub mod legacy_topology;
+mod removal;
 pub use account::{
     AccountRegistrationFinishInput, AccountRegistrationIssued, AccountRegistrationStartInput,
     AccountTermsArtifacts, AccountTermsItem, finish_account_registration_in_tx,
     start_account_registration_in_tx,
+};
+pub use removal::{
+    TenantRemovalAssembly, TenantRemovalError, TenantRemovalMode, TenantRemovalRequest,
 };
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -2861,7 +2865,37 @@ async fn check_platform_read_authority(
         ),
         PlatformRead::GroupTopology => (PlatformFeature::GroupManage, PlatformTarget::Groups),
     };
-    let input = PlatformPolicyInput {
+    let input = direct_platform_policy_input(
+        source,
+        absolute_family_ttl,
+        now,
+        feature,
+        target,
+        PlatformUse::ReadProjection,
+    );
+    match policy.evaluate_current(&input) {
+        PlatformPolicyDecision::Allow { .. } => Ok(now),
+        PlatformPolicyDecision::Deny {
+            reason:
+                PlatformPolicyDenyReason::InvalidMaterial | PlatformPolicyDenyReason::PolicyDenied,
+        } => Err(read.forbidden()),
+        PlatformPolicyDecision::Deny {
+            reason: PlatformPolicyDenyReason::EvaluatorUnavailable,
+        }
+        | PlatformPolicyDecision::UpgradeRequired => Err(read.unavailable()),
+    }
+}
+
+fn direct_platform_policy_input(
+    source: &console_platform_auth::LegacyPlatformSource,
+    absolute_family_ttl: Duration,
+    now: OffsetDateTime,
+    feature: console_platform_authz::PlatformFeature,
+    target: console_platform_authz::platform_policy::PlatformTarget,
+    use_kind: console_platform_authz::platform_policy::PlatformUse,
+) -> console_platform_authz::platform_policy::PlatformPolicyInput {
+    use console_platform_authz::platform_policy::*;
+    PlatformPolicyInput {
         credential: PlatformCredentialFacts {
             subject: source.subject(),
             home: source.home(),
@@ -2899,18 +2933,7 @@ async fn check_platform_read_authority(
         now,
         feature,
         target,
-        use_kind: PlatformUse::ReadProjection,
+        use_kind,
         call_site: PlatformCallSite::DirectPlatformOwner,
-    };
-    match policy.evaluate_current(&input) {
-        PlatformPolicyDecision::Allow { .. } => Ok(now),
-        PlatformPolicyDecision::Deny {
-            reason:
-                PlatformPolicyDenyReason::InvalidMaterial | PlatformPolicyDenyReason::PolicyDenied,
-        } => Err(read.forbidden()),
-        PlatformPolicyDecision::Deny {
-            reason: PlatformPolicyDenyReason::EvaluatorUnavailable,
-        }
-        | PlatformPolicyDecision::UpgradeRequired => Err(read.unavailable()),
     }
 }
