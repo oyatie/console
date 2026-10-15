@@ -1086,4 +1086,297 @@ mod native_removal_owner_boundary {
             "committed replay must preserve every public row"
         );
     }
+
+    // These tests use the new standalone production finalizer directly. They
+    // do not replay historical root SQL onto the corrected successor profile.
+    fn removal_transition_artifacts() -> (String, String, String) {
+        // Resolve every required artifact before migrations or fault injection.
+        // Missing source is a prerequisite failure, never the intended RED.
+        (
+            artifact("ops/postgres-finalize-account-legacy-removal-v1.sql"),
+            artifact("backend/app/src/account_legacy_removal_v1_custody_state.sql"),
+            artifact("ops/postgres-capture-account-legacy-removal-v1-custody.sql"),
+        )
+    }
+
+    async fn removal_transition_state(connection: &mut PgConnection, state: &str) -> String {
+        sqlx::query_scalar(sqlx::AssertSqlSafe(state.to_owned()))
+            .fetch_one(connection)
+            .await
+            .unwrap()
+    }
+
+    async fn removal_transition_metadata(connection: &mut PgConnection, capture: &str) -> Value {
+        let (snapshot, digest): (Value, String) =
+            sqlx::query_as(sqlx::AssertSqlSafe(capture.to_owned()))
+                .fetch_one(&mut *connection)
+                .await
+                .unwrap();
+        assert_eq!(snapshot["tables"].as_array().unwrap().len(), 21);
+        assert_eq!(digest.len(), 64);
+        serde_json::json!({
+            "full21": snapshot,
+            "full21_sha256": digest,
+            "raw_boundary": boundary_metadata(connection).await,
+        })
+    }
+
+    async fn removal_transition_predecessor(pool: &PgPool, state: &str) {
+        super::super::prepare_http_database_staging(pool).await;
+        let mut connection = pool.acquire().await.unwrap();
+        seed_legacy(&mut connection).await;
+        drop(connection);
+        // Fixed frozen artifacts produce the real complete Account predecessor.
+        // The serving helper will later gain the correction and is not used here.
+        let root = artifact("ops/postgres-finalize-account-custody.sql");
+        let credentials = auth7_sql();
+        let mut tx = pool.begin().await.unwrap();
+        operator(&mut tx).await;
+        sqlx::raw_sql(sqlx::AssertSqlSafe(root))
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+        sqlx::raw_sql(sqlx::AssertSqlSafe(credentials))
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+        assert_eq!(
+            root_state(&mut tx).await,
+            "account_custody.native_finalized"
+        );
+        let credential_state: String = sqlx::query_scalar(sqlx::AssertSqlSafe(auth7_state_sql()))
+            .fetch_one(tx.as_mut())
+            .await
+            .unwrap();
+        assert_eq!(credential_state, "account_credentials.native_finalized");
+        let absent: bool = sqlx::query_scalar(
+            "SELECT to_regprocedure('public.platform_legacy_removal_admit_v1(uuid)') IS NULL
+             AND to_regprocedure('public.account_legacy_actor_mutation_guard_v1()') IS NULL",
+        )
+        .fetch_one(tx.as_mut())
+        .await
+        .unwrap();
+        assert!(absent, "unmodified complete Account predecessor required");
+        assert_eq!(
+            removal_transition_state(&mut tx, state).await,
+            "account_legacy_removal_v1.install_required"
+        );
+        tx.commit().await.unwrap();
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_plain_transition_commits_and_standalone_replay_is_read_only(
+        pool: PgPool,
+    ) {
+        let (finalizer, state, capture) = removal_transition_artifacts();
+        removal_transition_predecessor(&pool, &state).await;
+        let before = all_rows(&pool).await;
+        let mut tx = pool.begin().await.unwrap();
+        operator(&mut tx).await;
+        assert_eq!(
+            removal_transition_state(&mut tx, &state).await,
+            "account_legacy_removal_v1.install_required"
+        );
+        sqlx::raw_sql(sqlx::AssertSqlSafe(finalizer.clone()))
+            .execute(tx.as_mut())
+            .await
+            .expect("actual standalone Account correction must upgrade the exact predecessor");
+        assert_eq!(
+            removal_transition_state(&mut tx, &state).await,
+            "account_legacy_removal_v1.finalized"
+        );
+        narrow_owner_acl(&mut tx).await;
+        tx.commit().await.unwrap();
+        assert!(
+            all_rows(&pool).await == before,
+            "committed plain correction must preserve every public row and migration ledger"
+        );
+        let mut tx = pool.begin().await.unwrap();
+        operator(&mut tx).await;
+        assert_eq!(
+            removal_transition_state(&mut tx, &state).await,
+            "account_legacy_removal_v1.finalized",
+            "a new transaction must observe the committed successor"
+        );
+        let corrected = removal_transition_metadata(&mut tx, &capture).await;
+        sqlx::raw_sql(sqlx::AssertSqlSafe(finalizer))
+            .execute(tx.as_mut())
+            .await
+            .expect("standalone successor replay must certify without rewriting");
+        assert!(
+            removal_transition_metadata(&mut tx, &capture).await == corrected,
+            "committed replay must preserve the full21 snapshot and exact raw metadata"
+        );
+        assert_eq!(
+            removal_transition_state(&mut tx, &state).await,
+            "account_legacy_removal_v1.finalized"
+        );
+        tx.commit().await.unwrap();
+        assert!(
+            all_rows(&pool).await == before,
+            "replay must preserve every public row"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_observer_transition_and_replay_are_rollback_only(pool: PgPool) {
+        let (finalizer, state, capture) = removal_transition_artifacts();
+        let observer = artifact("ops/postgres-install-durability-observer.sql");
+        removal_transition_predecessor(&pool, &state).await;
+        let mut connection = pool.acquire().await.unwrap();
+        let absent: bool = sqlx::query_scalar(
+            "SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles
+               WHERE rolname='console_durability_observer')
+             AND to_regprocedure('public.console_durability_observation_v1(name,oid)') IS NULL",
+        )
+        .fetch_one(&mut *connection)
+        .await
+        .unwrap();
+        assert!(
+            absent,
+            "OBSERVER_PREREQUISITE: this rollback-only fixture requires absent global observer custody"
+        );
+        let baseline = removal_transition_metadata(&mut connection, &capture).await;
+        drop(connection);
+        let all_before = all_rows(&pool).await;
+        let mut tx = pool.begin().await.unwrap();
+        let result = AssertUnwindSafe(async {
+            operator(&mut tx).await;
+            sqlx::raw_sql(sqlx::AssertSqlSafe(observer))
+                .execute(tx.as_mut())
+                .await
+                .expect("actual optional observer installer");
+            let present: bool = sqlx::query_scalar(
+                "SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles
+                   WHERE rolname='console_durability_observer' AND NOT rolcanlogin)
+                 AND to_regprocedure('public.console_durability_observation_v1(name,oid)') IS NOT NULL
+                 AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
+                   CROSS JOIN LATERAL pg_catalog.aclexplode(COALESCE(p.proacl,
+                     pg_catalog.acldefault('f',p.proowner))) a
+                   WHERE p.oid='pg_catalog.pg_control_system()'::regprocedure
+                     AND a.grantee=0 AND a.privilege_type='EXECUTE')",
+            )
+            .fetch_one(tx.as_mut())
+            .await
+            .unwrap();
+            assert!(present, "actual observer role, function and native PUBLIC denial required");
+            assert_eq!(
+                removal_transition_state(&mut tx, &state).await,
+                "account_legacy_removal_v1.install_required",
+                "the exact observer predecessor must be recognized"
+            );
+            let retained = rows(&mut tx).await;
+            sqlx::raw_sql(sqlx::AssertSqlSafe(finalizer.clone()))
+                .execute(tx.as_mut())
+                .await
+                .expect("actual observer predecessor correction");
+            assert_eq!(
+                removal_transition_state(&mut tx, &state).await,
+                "account_legacy_removal_v1.finalized"
+            );
+            narrow_owner_acl(&mut tx).await;
+            assert!(rows(&mut tx).await == retained, "observer upgrade must retain Account/Auth7/users/audit rows");
+            let corrected = removal_transition_metadata(&mut tx, &capture).await;
+            sqlx::raw_sql(sqlx::AssertSqlSafe(finalizer))
+                .execute(tx.as_mut())
+                .await
+                .expect("observer correction replay within the rollback-only transaction");
+            assert!(removal_transition_metadata(&mut tx, &capture).await == corrected);
+            assert!(rows(&mut tx).await == retained);
+        })
+        .catch_unwind()
+        .await;
+        tx.rollback().await.unwrap();
+        let mut connection = pool.acquire().await.unwrap();
+        assert!(
+            removal_transition_metadata(&mut connection, &capture).await == baseline,
+            "rollback must restore full21/raw metadata, observer roles/memberships and pg_control_system ACL"
+        );
+        drop(connection);
+        assert!(
+            all_rows(&pool).await == all_before,
+            "observer rollback must preserve every public row and ledger"
+        );
+        if let Err(panic) = result {
+            std::panic::resume_unwind(panic);
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_removal_wrong_partial_and_drifted_profiles_refuse_without_repair(pool: PgPool) {
+        use sqlx::Acquire;
+        let (finalizer, state, capture) = removal_transition_artifacts();
+        removal_transition_predecessor(&pool, &state).await;
+        let all_before = all_rows(&pool).await;
+        for (successor, fault) in [
+            (
+                false,
+                "ALTER TABLE public.auth_webauthn_credentials ADD CONSTRAINT removal_test_unreviewed_input CHECK (true)",
+            ),
+            (
+                true,
+                "ALTER TABLE public.company_actors DISABLE TRIGGER account_legacy_actor_mutation_guard_v1",
+            ),
+            (
+                true,
+                "GRANT EXECUTE ON FUNCTION public.platform_legacy_removal_membership_claim_v1(uuid,uuid) TO PUBLIC",
+            ),
+        ] {
+            let mut tx = pool.begin().await.unwrap();
+            operator(&mut tx).await;
+            assert_eq!(
+                removal_transition_state(&mut tx, &state).await,
+                "account_legacy_removal_v1.install_required"
+            );
+            if successor {
+                sqlx::raw_sql(sqlx::AssertSqlSafe(finalizer.clone()))
+                    .execute(tx.as_mut())
+                    .await
+                    .unwrap();
+                assert_eq!(
+                    removal_transition_state(&mut tx, &state).await,
+                    "account_legacy_removal_v1.finalized"
+                );
+            }
+            sqlx::raw_sql(sqlx::AssertSqlSafe(fault.to_owned()))
+                .execute(tx.as_mut())
+                .await
+                .unwrap();
+            assert_eq!(
+                removal_transition_state(&mut tx, &state).await,
+                "account_legacy_removal_v1.profile_mismatch",
+                "the intentional wrong/partial metadata must be observed before the refusal"
+            );
+            let faulted = removal_transition_metadata(&mut tx, &capture).await;
+            let retained = rows(&mut tx).await;
+            let mut attempt = tx.begin().await.unwrap();
+            let error = sqlx::raw_sql(sqlx::AssertSqlSafe(finalizer.clone()))
+                .execute(attempt.as_mut())
+                .await
+                .expect_err("unknown/partial metadata must refuse rather than repair");
+            let db = error
+                .as_database_error()
+                .expect("actual PostgreSQL refusal");
+            assert_eq!(db.code().as_deref(), Some("P0001"));
+            assert_eq!(
+                db.message(),
+                "account_legacy_removal_v1.predecessor_mismatch"
+            );
+            attempt.rollback().await.unwrap();
+            assert!(
+                removal_transition_metadata(&mut tx, &capture).await == faulted,
+                "refusal must preserve the exact deliberately faulted metadata"
+            );
+            assert!(rows(&mut tx).await == retained);
+            assert_eq!(
+                removal_transition_state(&mut tx, &state).await,
+                "account_legacy_removal_v1.profile_mismatch"
+            );
+            tx.rollback().await.unwrap();
+            assert!(
+                all_rows(&pool).await == all_before,
+                "each refusal/outer rollback must preserve every public row and ledger"
+            );
+        }
+    }
 }
