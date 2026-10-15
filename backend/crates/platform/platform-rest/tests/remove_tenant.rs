@@ -1086,8 +1086,20 @@ async fn removal_classifies_only_exact_owner_refusals_and_preserves_every_row(ow
     .fetch_one(&owner_pool)
     .await
     .unwrap();
-    for (_, _, metadata) in &originals {
-        assert_eq!(metadata["proowner"].as_i64(), Some(owner));
+    for (signature, _, _) in &originals {
+        let owned: bool = sqlx::query_scalar(
+            "SELECT p.proowner=$2::bigint::oid FROM pg_catalog.pg_proc p
+             WHERE p.oid=pg_catalog.to_regprocedure($1)",
+        )
+        .bind(signature)
+        .bind(owner)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        assert!(
+            owned,
+            "exact removal routine must retain console_app ownership"
+        );
     }
     let schema = format!("removal_fault_{}", Uuid::new_v4().simple());
     let instrument = sqlx::AssertSqlSafe(format!(
