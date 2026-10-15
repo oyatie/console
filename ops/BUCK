@@ -376,3 +376,20 @@ export_file(
     name = "native-company-information/acl-v1.sql",
     visibility = ["PUBLIC"],
 )
+
+# Exact additive Account removal transition inputs; no profile activation.
+
+export_file(
+    name = "postgres-finalize-account-legacy-removal-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-account-legacy-removal-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-account-legacy-removal-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
