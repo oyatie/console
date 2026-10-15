@@ -21,7 +21,7 @@
     "clients/desktop-web/src/people.css": "16fbb57ef0a01ad366b7907b1824109f3887c638ee3a984e3578c943dc546a5f",
     "clients/desktop-web/src/people.tsx": "b7358c8a333e2210db2c938cd186238f809bfe4a41f55758032b67a9d9395ece",
     "clients/desktop-web/tsconfig.json": "1ecc3c38e332a8a65618a1f3658fd82b3584fc504f7b43850b57287cd51bb719",
-    "tools/buck/gen_first_party.py": "5886cc38b4b66ffb39bfe2fb21f9807eabcd1bee67b6bba76f7d47b0bc482f30",
+    "tools/buck/gen_first_party.py": "71acf18bcc9d799533a5398236c74f2e886f613f32e9f0694f0c132c0493f6e3",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
     "tools/ui/react.bzl": "715001cf5f214140b6858013702af96bfb73c514ec5f1641e6821caef5c498f9",
