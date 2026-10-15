@@ -195,3 +195,8 @@ async fn removal_retains_membership_against_late_assignment_through_its_commit(o
         .await;
     }
 }
+
+#[path = "native_removal_races/admission_races.rs"]
+mod admission_races;
+#[path = "native_removal_races/unknown_lock_races.rs"]
+mod unknown_lock_races;

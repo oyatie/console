@@ -20,6 +20,14 @@ pub(super) struct Fixture {
 }
 
 impl Fixture {
+    pub(super) fn removal_pool(&self, force: bool) -> PgPool {
+        if force {
+            self.harness.force_pool.clone()
+        } else {
+            self.harness.rt_pool.clone()
+        }
+    }
+
     pub async fn new(owner: &PgPool, tag: &str) -> Arc<Self> {
         use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
         let mut harness = Harness::new(owner).await;
