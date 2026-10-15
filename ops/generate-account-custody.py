@@ -3267,6 +3267,116 @@ def account_legacy_removal_capture_files():
     }
 
 
+# Additive full21 profiles independently captured from the pinned correction.
+# The plain/observer ordering preserves each exact predecessor-to-successor pair.
+ACCOUNT_LEGACY_REMOVAL_PRIOR_SHA256 = (
+    '472c53cab4d70ab62e2369ec08f34a50db176298f2b52b6f8f6cf1efb2352ed2',
+    '7658ccb5c91bab6585f965abd64a58ad5eec9a6d10eacc18b92ae9e7058d3f2f',
+)
+ACCOUNT_LEGACY_REMOVAL_FINALIZED_SHA256 = (
+    '8e6e4aac93c1a2cc7ea8b79b0cff86139dfc8cf048e7314cf99e8a32ca906320',
+    'ca3499f9f5c22d85ef92a6ca4072f2810c4e3152f673a538063d3d51ebf4d8fb',
+)
+
+
+def account_legacy_removal_profiles():
+    prior = ACCOUNT_LEGACY_REMOVAL_PRIOR_SHA256
+    finalized = ACCOUNT_LEGACY_REMOVAL_FINALIZED_SHA256
+    values = (*prior, *finalized)
+    if len(prior) != 2 or len(finalized) != 2 or len(set(values)) != 4 or any(
+            not isinstance(value, str) or len(value) != 64
+            or any(c not in '0123456789abcdef' for c in value) for value in values):
+        raise SystemExit('Account legacy removal requires independently reviewed paired captures')
+    return prior, finalized
+
+
+def account_legacy_removal_state_query():
+    prior, finalized = account_legacy_removal_profiles()
+    old = ','.join("'" + value + "'" for value in prior)
+    final = ','.join("'" + value + "'" for value in finalized)
+    return f"""WITH full_capture AS (
+{account_legacy_removal_snapshot_query()}
+)
+SELECT CASE WHEN snapshot_sha256 IN ({final})
+ AND snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb
+ THEN 'account_legacy_removal_v1.finalized'
+ WHEN snapshot_sha256 IN ({old})
+ AND snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb
+ THEN 'account_legacy_removal_v1.install_required'
+ ELSE 'account_legacy_removal_v1.profile_mismatch' END AS state FROM full_capture"""
+
+
+def account_legacy_removal_finalizer_sql():
+    prior, finalized = account_legacy_removal_profiles()
+    correction = account_legacy_removal_source_sql()
+    if '$account_legacy_removal_v1_custody$' in correction:
+        raise SystemExit('Account legacy removal correction delimiter collision')
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+                    'account_context_candidates', 'deployment_operator_receipts',
+                    'deployment_operator_head', 'audit_events', 'organizations',
+                    'groups', 'group_memberships'))
+    if len(names) != 21 or len(set(names)) != 21:
+        raise ValueError('Account legacy removal custody relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    final = ','.join("'" + value + "'" for value in finalized)
+    inspect = ("SELECT snapshot_sha256,\n"
+               " snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb\n"
+               " INTO observed,rights_valid FROM (\n"
+               + account_legacy_removal_snapshot_query() + '\n) captured;')
+    return f"""-- Generated additive Account legacy removal custody correction.
+-- The authenticated operator transport owns target/ledger validation and the
+-- outer statement_timeout before invoking this statement in its transaction.
+DO $account_legacy_removal_v1_custody$
+DECLARE observed text; rights_valid boolean; expected_final text;
+ relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user<>current_user
+  OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+  OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+   'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+   'console_platform_force_cmd','console_account_owner','console_terms_owner','console_credential_owner',
+   'console_durability_observer') THEN
+  RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_legacy_removal_v1.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+  RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_legacy_removal_v1.unsupported_isolation'; END IF;
+ PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+ PERFORM pg_catalog.set_config('lock_timeout','5s',true);
+ FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c
+  JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind='r' AND c.relname IN ({literals})
+  ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ IF locked_relations<>21 THEN
+  RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_legacy_removal_v1.predecessor_mismatch'; END IF;
+ {inspect}
+ IF observed IN ({final}) AND rights_valid IS TRUE THEN RETURN; END IF;
+ expected_final:=CASE observed
+  WHEN '{prior[0]}' THEN '{finalized[0]}'
+  WHEN '{prior[1]}' THEN '{finalized[1]}' ELSE NULL END;
+ IF expected_final IS NULL OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_legacy_removal_v1.predecessor_mismatch'; END IF;
+{correction}
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_legacy_removal_v1.profile_mismatch'; END IF;
+END
+$account_legacy_removal_v1_custody$;
+"""
+
+
+def account_legacy_removal_finalized_files():
+    query = account_legacy_removal_state_query() + ';\n'
+    return {
+        'ops/postgres-finalize-account-legacy-removal-v1.sql': account_legacy_removal_finalizer_sql(),
+        'ops/postgres-account-legacy-removal-v1-custody-state.sql': query,
+        'backend/app/src/account_legacy_removal_v1_custody_state.sql': query,
+    }
+
+
 # Filled only from independently reviewed source-bound captures.
 PLATFORM_SOURCE_PRIOR_SHA256 = ('0f2db80a4afeacb1d6d6aaf0bbaef9d8f7968e77500322cf691774f02d88e8ea', '93236c9a9e850db234f4dc777553e4eb829bbb76a0f6cc27551f761cc28bffe7')
 PLATFORM_SOURCE_FINALIZED_SHA256 = ('5aee358ff0bea94268d40b5f16f86779952ea95a74cab48cbf99984eedf6e2da', '475c1f9a43b402539e0469f31adc6f06848669abfa34c08350aa1ee006664103')
@@ -8443,7 +8553,9 @@ def native_company_information_manager_current_serving_custody_files():
 
 def main():
     arguments = sys.argv[1:]
-    if arguments in (['--account-legacy-removal-capture'],
+    if arguments in (['--account-legacy-removal-finalized'],
+                     ['--account-legacy-removal-finalized', '--check'],
+                     ['--account-legacy-removal-capture'],
                      ['--account-legacy-removal-capture', '--check'],
                      ['--native-company-information-manager-current-serving-custody'],
                      ['--native-company-information-manager-current-serving-custody', '--check'],
@@ -8471,7 +8583,9 @@ def main():
                      ['--native-org-unit-closed-perimeter-capture', '--check'],
                      ['--native-org-unit-closed-perimeter-custody'],
                      ['--native-org-unit-closed-perimeter-custody', '--check']):
-        if arguments[0] == '--account-legacy-removal-capture':
+        if arguments[0] == '--account-legacy-removal-finalized':
+            files = account_legacy_removal_finalized_files()
+        elif arguments[0] == '--account-legacy-removal-capture':
             files = account_legacy_removal_capture_files()
         elif arguments[0] == '--native-company-information-manager-current-serving-custody':
             files = native_company_information_manager_current_serving_custody_files()
@@ -8512,7 +8626,7 @@ def main():
                 paths[name].write_bytes(expected.encode())
         return
     if arguments not in ([], ['--check']):
-        raise SystemExit('usage: generate-account-custody.py [--account-legacy-removal-capture | --native-company-information-manager-current-serving-custody | --native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
+        raise SystemExit('usage: generate-account-custody.py [--account-legacy-removal-finalized | --account-legacy-removal-capture | --native-company-information-manager-current-serving-custody | --native-company-information-manager-current-capture | --native-org-unit-closed-bounded-reader | --native-org-unit-account-actor-staging | --native-org-unit-account-actor-capture | --native-org-unit-account-actor-capture-v2 | --native-group-process-navigation-serving-custody | --native-group-process-navigation-finalizer | --native-group-process-navigation-custody | --native-group-process-custody | --native-group-process-capture | --company-provenance-capture | --company-provenance-custody | --native-org-unit-closed-perimeter-capture | --native-org-unit-closed-perimeter-custody] [--check]')
     for name, expected in generated_files().items():
         path = ROOT / name
         if arguments:
