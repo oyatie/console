@@ -1234,8 +1234,13 @@ mod live_authority_regressions {
         let admitted: bool = sqlx::query_scalar("SELECT pg_catalog.has_function_privilege(current_user,'public.auth_legacy_session_context_v1(uuid,uuid)','EXECUTE')")
             .fetch_one(session.auth_pool()).await.unwrap();
         assert!(admitted, "real Auth LOGIN initially has function execution");
-        let before: String = sqlx::query_scalar("SELECT proacl::text FROM pg_catalog.pg_proc WHERE oid='public.auth_legacy_session_context_v1(uuid,uuid)'::regprocedure")
-            .fetch_one(&owner).await.unwrap();
+        const ACL_SQL: &str = "SELECT acl.grantor::bigint,acl.grantee::bigint,acl.privilege_type,acl.is_grantable \
+            FROM pg_catalog.pg_proc AS routine \
+            CROSS JOIN LATERAL pg_catalog.aclexplode(COALESCE(routine.proacl,pg_catalog.acldefault('f',routine.proowner))) AS acl \
+            WHERE routine.oid='public.auth_legacy_session_context_v1(uuid,uuid)'::regprocedure \
+            ORDER BY acl.grantor::bigint,acl.grantee::bigint,acl.privilege_type,acl.is_grantable";
+        let before: Vec<(i64, i64, String, bool)> =
+            sqlx::query_as(ACL_SQL).fetch_all(&owner).await.unwrap();
         sqlx::query("REVOKE EXECUTE ON FUNCTION public.auth_legacy_session_context_v1(uuid,uuid) FROM console_auth_rt")
             .execute(&owner).await.unwrap();
         // Keep failure injection/verification in a joined task so even a panic
@@ -1243,7 +1248,12 @@ mod live_authority_regressions {
         let fault_session = session.clone();
         let fault_business = business.clone();
         let fault_token = token.clone();
+        let fault_owner = owner.clone();
+        let fault_before = before.clone();
         let outcome = tokio::spawn(async move {
+            let revoked: Vec<(i64, i64, String, bool)> = sqlx::query_as(ACL_SQL)
+                .fetch_all(&fault_owner).await.unwrap();
+            assert_ne!(revoked, fault_before, "real revoke changes the ACL projection");
             let admitted: bool = sqlx::query_scalar("SELECT pg_catalog.has_function_privilege(current_user,'public.auth_legacy_session_context_v1(uuid,uuid)','EXECUTE')")
                 .fetch_one(fault_session.auth_pool()).await.unwrap();
             assert!(!admitted, "real Auth LOGIN lost exactly this function execution");
@@ -1253,8 +1263,8 @@ mod live_authority_regressions {
         // or asserting the expected RED, so baseline failure leaves no ACL change.
         sqlx::query("GRANT EXECUTE ON FUNCTION public.auth_legacy_session_context_v1(uuid,uuid) TO console_auth_rt")
             .execute(&owner).await.unwrap();
-        let restored: String = sqlx::query_scalar("SELECT proacl::text FROM pg_catalog.pg_proc WHERE oid='public.auth_legacy_session_context_v1(uuid,uuid)'::regprocedure")
-            .fetch_one(&owner).await.unwrap();
+        let restored: Vec<(i64, i64, String, bool)> =
+            sqlx::query_as(ACL_SQL).fetch_all(&owner).await.unwrap();
         assert_eq!(restored, before, "fault injection restores the exact ACL");
         let admitted: bool = sqlx::query_scalar("SELECT pg_catalog.has_function_privilege(current_user,'public.auth_legacy_session_context_v1(uuid,uuid)','EXECUTE')")
             .fetch_one(session.auth_pool()).await.unwrap();
