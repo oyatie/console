@@ -95,6 +95,45 @@ const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && step
 const pythonFanoutProofName = "Python lane fan-out harness regression";
 const pythonFanoutProofCommand = "python3 tools/lanes/fanout.test.py";
 
+const censusReadinessIf = "${{ steps.path_class.outcome == 'success' && steps.path_class.outputs.path_class != '' && (steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false') }}";
+const censusLeafIf = "${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}";
+const censusPostsubmitIf = "${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}";
+const censusNonEvaluationIf = "${{ needs.preflight.outputs.classification_ready != 'true' }}";
+const censusThinIf = "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'false' }}";
+const censusLiveIf = "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'true' }}";
+const censusPresubmitLeaves = ["repo-gates", "api-contract", "kubernetes-manifests", "postgres-reachability-app", "postgres-reachability-platform", "postgres-reachability-ontology", "postgres-reachability-domain-a", "postgres-reachability-domain-b"];
+const censusPostsubmitLeaves = ["domain-unit", "company-conformance", "generated-face-authority", "backend", "migration-expand-contract"];
+
+function independentCensusWorkflow() {
+  let source = replaceJob(workflow, "preflight", (block) => {
+    const output = `      classification_ready: ${censusReadinessIf}`;
+    return /^      classification_ready:/m.test(block)
+      ? block.replace(/^      classification_ready:.*$/m, output)
+      : block.replace("    outputs:\n", `    outputs:\n${output}\n`);
+  });
+  for (const job of [...censusPresubmitLeaves, ...censusPostsubmitLeaves]) {
+    source = replaceJob(source, job, (block) => {
+      const condition = `    if: ${censusPostsubmitLeaves.includes(job) ? censusPostsubmitIf : censusLeafIf}`;
+      return /^    if:/m.test(block)
+        ? block.replace(/^    if:.*$/m, condition)
+        : block.replace("    needs: preflight\n", `    needs: preflight\n${condition}\n`);
+    });
+  }
+  return replaceJob(source, "postgres-domain-reachability", (block) => block
+    .replace("${{ needs.preflight.result != 'success' }}", censusNonEvaluationIf)
+    .replace("${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}", censusThinIf)
+    .replace("${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}", censusLiveIf));
+}
+
+// An unimplemented positive fixture must not make every mutant appear rejected.
+function expectCensusMutationFailure(source, label) {
+  const positive = independentCensusWorkflow();
+  assert.notEqual(source, positive, `${label}: mutation changed no source`);
+  const baseline = new Set(evaluateCiPreflight(positive).failures);
+  const added = evaluateCiPreflight(source).failures.filter((failure) => !baseline.has(failure));
+  assert.ok(added.length > 0, `${label}: no independent rejection beyond ${baseline.size} positive-fixture contract failures`);
+}
+
 function expectFailure(
   source,
   message,
@@ -1043,40 +1082,24 @@ describe("CI preflight contract", () => {
     }
   });
 
-  it("keeps PostgreSQL reachability non-evaluated when preflight fails", () => {
-    const model = yaml.load(workflow);
-    const aggregate = model.jobs["postgres-domain-reachability"];
+  it("keeps PostgreSQL reachability gated by classification readiness rather than unrelated preflight failure", () => {
+    const source = independentCensusWorkflow();
+    const aggregate = yaml.load(source).jobs["postgres-domain-reachability"];
     assert.equal(aggregate.if, "${{ always() }}");
     assert.deepEqual(
       aggregate.steps.map((step) => ({ name: step.name, if: step.if })),
       [
-        {
-          name: "Preflight failure non-evaluation",
-          if: "${{ needs.preflight.result != 'success' }}",
-        },
-        {
-          name: "Path-class skip proof",
-          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}",
-        },
-        {
-          name: "Require all PostgreSQL reachability facets",
-          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}",
-        },
+        { name: "Preflight failure non-evaluation", if: censusNonEvaluationIf },
+        { name: "Path-class skip proof", if: censusThinIf },
+        { name: "Require all PostgreSQL reachability facets", if: censusLiveIf },
       ],
     );
-    assert.match(
-      aggregate.steps[0].run,
-      /PostgreSQL reachability not evaluated because preflight result=/,
-    );
-
-    for (const condition of [
-      "${{ needs.preflight.result != 'success' }}",
-      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}",
-      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}",
-    ]) {
-      expectFailure(
-        workflow.replace(`        if: ${condition}\n`, "        if: ${{ always() }}\n"),
-        "PostgreSQL aggregate must distinguish preflight failure, thin skip, and heavy facets",
+    assert.match(aggregate.steps[0].run, /PostgreSQL reachability not evaluated because preflight result=/);
+    for (const step of aggregate.steps) {
+      expectCensusMutationFailure(
+        mutateNamedStep(source, "postgres-domain-reachability", step.name, (block) =>
+          block.replace(`        if: ${step.if}\n`, "        if: ${{ always() }}\n")),
+        `${step.name} must retain its readiness state`,
       );
     }
   });
@@ -2019,22 +2042,19 @@ describe("CI preflight contract", () => {
     }
   });
 
-  it("rejects failure-insensitive job-level conditions on protected jobs", () => {
-    const postsubmitIf =
-      "    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}\n";
-    expectFailure(
-      replaceJob(workflow, "backend", (block) => block.replace(postsubmitIf, "    if: always()\n")),
-      "backend must run only on push/workflow_dispatch when run_heavy",
-    );
-    expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    if: ${{ !cancelled() }}\n"), "repo-gates must not define job-level if");
-    expectFailure(
-      replaceJob(workflow, "company-conformance", (block) => block.replace(postsubmitIf, "    if: false\n")),
-      "company-conformance must run only on push/workflow_dispatch when run_heavy",
-    );
-    expectFailure(
-      replaceJob(workflow, "migration-expand-contract", (block) => block.replace(postsubmitIf, "    if: false\n")),
-      "migration-expand-contract must run only on push/workflow_dispatch when run_heavy",
-    );
+  it("rejects job-level conditions without classification readiness and event guards", () => {
+    const source = independentCensusWorkflow();
+    for (const [job, condition] of [
+      ["backend", "always()"],
+      ["repo-gates", "${{ !cancelled() }}"],
+      ["company-conformance", "false"],
+      ["migration-expand-contract", "false"],
+    ]) {
+      expectCensusMutationFailure(
+        replaceJob(source, job, (block) => block.replace(/^    if:.*$/m, `    if: ${condition}`)),
+        `${job} must retain readiness, cancellation and its event scope`,
+      );
+    }
     for (const job of ["backend", "api-contract", "company-conformance", "migration-expand-contract", "rust-fmt"]) {
       expectFailure(
         workflow.replace(`  ${job}:\n`, `  ${job}:\n    continue-on-error: true\n`),
@@ -4337,5 +4357,127 @@ describe("preflight native metadata bootstrap", () => {
       /GITHUB_PATH/,
       "an installed binary without retained PATH must refuse",
     );
+  });
+});
+
+describe("Independent hosted job census", () => {
+  const source = independentCensusWorkflow();
+  const candidate = yaml.load(source);
+  const current = yaml.load(workflow);
+  const leaves = [...censusPresubmitLeaves, ...censusPostsubmitLeaves];
+
+  it("accepts ready-classified independent jobs after an unrelated preflight gate fails", () => {
+    assert.deepEqual(evaluateCiPreflight(source).failures, []);
+  });
+
+  it("requires the real workflow to adopt the complete classification-ready boundary", () => {
+    assert.equal(current.jobs.preflight.outputs.classification_ready, censusReadinessIf);
+    for (const job of leaves) {
+      assert.equal(current.jobs[job].if, censusPostsubmitLeaves.includes(job) ? censusPostsubmitIf : censusLeafIf, job);
+    }
+    assert.deepEqual(current.jobs["postgres-domain-reachability"].steps.map((step) => step.if),
+      [censusNonEvaluationIf, censusThinIf, censusLiveIf]);
+  });
+
+  it("preserves all owned setup, topology/browser dependencies, event scopes and matrix behavior", () => {
+    for (const job of leaves) {
+      const { if: originalIf, ...original } = current.jobs[job];
+      const { if: nextIf, ...next } = candidate.jobs[job];
+      assert.deepEqual(next, original, job);
+      assert.equal(candidate.jobs[job].needs, "preflight", job);
+    }
+    const { classification_ready: originalReady, ...originalOutputs } = current.jobs.preflight.outputs;
+    const { classification_ready: nextReady, ...nextOutputs } = candidate.jobs.preflight.outputs;
+    assert.deepEqual(nextOutputs, originalOutputs);
+    assert.equal(candidate.jobs.backend.strategy["fail-fast"], false);
+    assert.deepEqual(candidate.jobs["required-ci"], current.jobs["required-ci"]);
+    assert.deepEqual(candidate.jobs["rust-fmt"], current.jobs["rust-fmt"]);
+  });
+
+  const readinessMutations = [
+    ["missing readiness output", (block) => block.replace(/^      classification_ready:.*\n/m, "")],
+    ["constant true readiness", (block) => block.replace(censusReadinessIf, "${{ true }}")],
+    ["constant false readiness", (block) => block.replace(censusReadinessIf, "${{ false }}")],
+    ["failed/skipped classifier accepted", (block) => block.replace("steps.path_class.outcome == 'success'", "steps.path_class.outcome != 'cancelled'")],
+    ["missing classifier-success prerequisite", (block) => block.replace("steps.path_class.outcome == 'success' && ", "")],
+    ["missing path-class prerequisite", (block) => block.replace("steps.path_class.outputs.path_class != '' && ", "")],
+    ["missing heavy-output validation", (block) => block.replace("(steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && ", "")],
+    ["missing live-output validation", (block) => block.replace(" && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false')", "")],
+    ["empty heavy value treated as false", (block) => block.replace("steps.path_class.outputs.run_heavy == 'false'", "steps.path_class.outputs.run_heavy != 'true'")],
+    ["empty live value treated as false", (block) => block.replace("steps.path_class.outputs.run_live_postgres == 'false'", "steps.path_class.outputs.run_live_postgres != 'true'")],
+    ["remapped heavy output", (block) => block.replace("run_heavy: ${{ steps.path_class.outputs.run_heavy }}", "run_heavy: ${{ false }}")],
+    ["remapped live output", (block) => block.replace("run_live_postgres: ${{ steps.path_class.outputs.run_live_postgres }}", "run_live_postgres: ${{ false }}")],
+    ["missing mapped class output", (block) => block.replace(/^      path_class:.*\n/m, "")],
+    ["missing mapped heavy output", (block) => block.replace(/^      run_heavy:.*\n/m, "")],
+    ["missing mapped live output", (block) => block.replace(/^      run_live_postgres:.*\n/m, "")],
+  ];
+  for (const [label, mutate] of readinessMutations) {
+    it(`rejects ${label} before any classified-dependent leaf starts`, () => {
+      expectCensusMutationFailure(replaceJob(source, "preflight", mutate), label);
+    });
+  }
+
+  for (const job of leaves) {
+    for (const [label, mutate] of [
+      ["missing job guard", (block) => block.replace(/^    if:.*\n/m, "")],
+      ["bare always", (block) => block.replace(/^    if:.*$/m, "    if: ${{ always() }}")],
+      ["missing readiness", (block) => block.replace("needs.preflight.outputs.classification_ready == 'true'", "true")],
+      ["false readiness", (block) => block.replace("classification_ready == 'true'", "classification_ready == 'false'")],
+      ["string truthiness for missing/false readiness", (block) => block.replace("classification_ready == 'true'", "classification_ready")],
+      ["missing cancellation guard", (block) => block.replace("!cancelled() && ", "")],
+      ["global success suppression", (block) => block.replace("!cancelled() && ", "!cancelled() && needs.preflight.result == 'success' && ")],
+      ["missing direct prerequisite", (block) => block.replace("    needs: preflight\n", "    needs: []\n")],
+    ]) {
+      it(`rejects ${job}: ${label}`, () => {
+        expectCensusMutationFailure(replaceJob(source, job, mutate), `${job}: ${label}`);
+      });
+    }
+  }
+
+  for (const job of censusPostsubmitLeaves) {
+    for (const [label, mutate] of [
+      ["event guard removed", (block) => block.replace(" && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')", "")],
+      ["pull_request admitted", (block) => block.replace("github.event_name == 'workflow_dispatch')", "github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')")],
+      ["heavy requirement removed", (block) => block.replace(" && needs.preflight.outputs.run_heavy == 'true'", "")],
+    ]) {
+      it(`rejects ${job}: ${label}`, () => {
+        expectCensusMutationFailure(replaceJob(source, job, mutate), `${job}: ${label}`);
+      });
+    }
+  }
+
+  for (const [name, before, after] of [
+    ["Preflight failure non-evaluation", censusNonEvaluationIf, "${{ needs.preflight.result != 'success' }}"],
+    ["Path-class skip proof", censusThinIf, "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres != 'true' }}"],
+    ["Require all PostgreSQL reachability facets", censusLiveIf, "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}"],
+    ["Require all PostgreSQL reachability facets", censusLiveIf, "${{ needs.preflight.outputs.run_live_postgres == 'true' }}"],
+  ]) {
+    it(`rejects aggregate ${name}: ${after}`, () => {
+      expectCensusMutationFailure(mutateNamedStep(source, "postgres-domain-reachability", name,
+        (block) => block.replace(before, after)), name);
+    });
+  }
+
+  const facets = ["app", "platform", "ontology", "domain-a", "domain-b"].map((id) => `postgres-reachability-${id}`);
+  const fanIn = candidate.jobs["postgres-domain-reachability"].steps[2].run;
+  for (const [failedJob, result] of [[null, "success"], ...facets.flatMap((job) => ["failure", "skipped", "cancelled"].map((result) => [job, result]))]) {
+    it(`executes the real PostgreSQL fan-in: ${failedJob ?? "all facets"}=${result}`, () => {
+      const command = fanIn.replace(/\$\{\{ needs\.([\w-]+)\.result \}\}/g,
+        (_, job) => job === failedJob ? result : "success");
+      assert.doesNotMatch(command, /\$\{\{/);
+      const outcome = spawnSync("bash", ["-e", "-c", command], { encoding: "utf8" });
+      assert.equal(outcome.status, failedJob ? 1 : 0, outcome.stderr);
+    });
+  }
+
+  it("executes Required / CI's real preflight failure even when every independent proof succeeds", () => {
+    const command = candidate.jobs["required-ci"].steps[0].run.replace(/\$\{\{ needs\.([\w-]+)\.result \}\}/g,
+      (_, job) => job === "preflight" ? "failure" : "success");
+    assert.doesNotMatch(command, /\$\{\{/);
+    const outcome = spawnSync("bash", ["-e", "-c", command], { encoding: "utf8" });
+    assert.equal(outcome.status, 1, outcome.stderr);
+    expectCensusMutationFailure(mutateNamedStep(source, "required-ci", "Require every CI proof to succeed",
+      (block) => block.replace('          test "${{ needs.preflight.result }}" = success &&\n', "")),
+    "Required / CI cannot discard the preflight failure");
   });
 });
