@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "decision": "APPROVE_EXACT_CI_TARGET_PRESERVATION_TEST_ADDITION",
+  "base": "7043494b394a4f57c9ddf272e67aed2984ba57a9",
+  "addition_sha256": "35adef45d349bec84fef6e5b527dc85c0c6a6f4c28afc23a405c43cbcd03d9c2",
+  "existing_checker_sha256": "363a98836b8c5af580f2183ca12f947a258f7808a009e8be514e72dbd5388784",
+  "existing_test_sha256": "482c9e94181e8faa5a8343e6bdf1ab8d2475446258e595f33c19b672c49835ef",
+  "findings": [],
+  "checks": [
+    "One positive control requires zero failures for complete current workflow; therefore existing baseline failures cannot masquerade as target-removal coverage.",
+    "Two separately applied target-removal mutations each assert target occurs exactly once; mutateNamedStep also asserts named job/step exists and mutated bytes differ. Authz and provisioning coverage are independently required by expected existing exact multiset failure.",
+    "No existing test deletion, gate relaxation, condition changes or exception. Proposed implementation is bounded replacement of two exact pinned commands: raw proofRun contract must match YAML run bytes including terminal newline; ordered command check uses normalized command without terminal newline.",
+    "Enclosing lane gains only scripts/check-ci-preflight.mjs and scripts/check-ci-preflight.test.mjs; root commits test first and demonstrates RED at real checker before pin update."
+  ],
+  "counts": {
+    "new_tests": 1,
+    "positive_controls": 1,
+    "negative_target_mutations": 2,
+    "reviewer_runtime_executed": 0
+  },
+  "limits": [
+    "Test-source approval only. Exact applied source, RED/green execution counts and implementation diff remain for root execution and subsequent review."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "status": "PROPOSED_PRIVATE_PRESERVATION_AND_RESOURCE_TEST_SOURCE",
+  "source_head": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+  "repository_writes": false,
+  "executed_tests": 0,
+  "unchanged_existing_buck_test_methods": 67,
+  "new_buck_test_method_count": 68,
+  "preserved_generated_predecessor_count": 9,
+  "files": {
+    "CONTRACT.md": "7a9d3a234cf20d884f72c83fd7112655a83bdb3cb1707a16081b1fd488ad0495",
+    "buck-test-method.py": "994b40b7959da80223b78b255556d44532d7c090ddcaf1797c040a5a96329a65",
+    "source-lock.json": "7554e2eb35c7c6f6ab73aeae03ba2a2ead4e404b0545a541993cf34f2358b337",
+    "test_company_enrollment_input_generator.py": "632010c33c33ea262af9ddfe380b2825ad4aa5c337f8428785b30fbd040bd745",
+    "test_company_enrollment_input_generator.py.patch": "31f9f85c0bf7c0e4fed07710f67e1e567adfbc8277c8b3c505082bc15a707b94",
+    "test_gen_first_party.py.patch": "c3c9cad49176a910134d1f11902e72b4f38d99bdcc1350ab8dbef91ea2fa9695"
+  }
+}

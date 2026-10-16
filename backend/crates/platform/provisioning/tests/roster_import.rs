@@ -2,6 +2,9 @@
 
 use console_kernel_core::OrgId;
 use console_platform_provisioning::RosterProvisioner;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 
@@ -31,8 +34,10 @@ async fn seed_branch(pool: &PgPool, region: &str, branch: &str) -> uuid::Uuid {
     .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn bulk_roster_import_is_idempotent_and_reports_reconciliation_counts(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     let seoul = seed_branch(&pool, "수도권", "서울").await;
     let incheon = seed_branch(&pool, "수도권", "인천").await;
     let provisioner = RosterProvisioner::new(Duration::hours(2));
@@ -64,7 +69,10 @@ async fn bulk_roster_import_is_idempotent_and_reports_reconciliation_counts(pool
     }
     "#;
 
-    let first = provisioner.import_json(&pool, roster, now).await.unwrap();
+    let first = provisioner
+        .import_json(&business, roster, now)
+        .await
+        .unwrap();
     assert_eq!(first.users_created, 2);
     assert_eq!(first.users_updated, 0);
     assert_eq!(first.users_unchanged, 0);
@@ -74,7 +82,7 @@ async fn bulk_roster_import_is_idempotent_and_reports_reconciliation_counts(pool
     assert_eq!(first.changed_count(), 7);
 
     let second = provisioner
-        .import_json(&pool, roster, now + Duration::minutes(1))
+        .import_json(&business, roster, now + Duration::minutes(1))
         .await
         .unwrap();
     assert_eq!(second.users_created, 0);
@@ -130,8 +138,10 @@ async fn bulk_roster_import_is_idempotent_and_reports_reconciliation_counts(pool
     assert!(branch_ids.contains(&incheon));
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn roster_with_unknown_branch_rolls_back_without_partial_writes(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     seed_branch(&pool, "수도권", "서울").await;
     let provisioner = RosterProvisioner::new(Duration::hours(2));
 
@@ -161,7 +171,7 @@ async fn roster_with_unknown_branch_rolls_back_without_partial_writes(pool: PgPo
     "#;
 
     let err = provisioner
-        .import_json(&pool, roster, OffsetDateTime::now_utc())
+        .import_json(&business, roster, OffsetDateTime::now_utc())
         .await
         .unwrap_err();
     assert!(err.to_string().contains("unknown branch"));

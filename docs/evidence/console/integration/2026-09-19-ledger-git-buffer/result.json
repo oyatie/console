@@ -1,0 +1,34 @@
+{
+  "test_base_sha": "1d21e972",
+  "source_sha256": "cf9b4afd53665b38b0a15daa46988660e514e4861a6326a77d064def299b93c8",
+  "test_sha256": "edd175dbdca29850fcec6226b91cda0834445fc06b610d3c9f9b6b3633a158f1",
+  "red": {
+    "executed": 3,
+    "passed": 1,
+    "failed": 2
+  },
+  "same_green": {
+    "executed": 3,
+    "passed": 3
+  },
+  "regression_commands": [
+    {
+      "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs scripts/console/verify-console-authority-train.test.mjs scripts/console/plan-console-frontier.test.mjs",
+      "executed": 107,
+      "passed": 107,
+      "qualification": "Last named path does not exist and Node ignored it; no planner coverage claimed by this invocation."
+    },
+    {
+      "command": "node --test scripts/console/plan-fanout.test.mjs",
+      "executed": 29,
+      "passed": 29
+    }
+  ],
+  "census": "102scanned,3knownresiduals,0unknown,0stale",
+  "reviewer": "integration_security",
+  "verdict": "bounded reader repair accepted locally; no complete release qualification",
+  "remaining_holds": [
+    "Full repository verification on updated candidate pending.",
+    "Full release remains incomplete."
+  ]
+}

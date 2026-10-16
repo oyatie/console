@@ -1,0 +1,26 @@
+F
+======================================================================
+FAIL: test_auth_rest_maps_literal_fixture_inputs (__main__.FirstPartyBuckGeneratorTests.test_auth_rest_maps_literal_fixture_inputs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-client-release-20260919/tools/buck/test_gen_first_party.py", line 43, in test_auth_rest_maps_literal_fixture_inputs
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        [], sorted(str(path.relative_to(app)) for path in required - declared),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "auth_rest has undeclared compile-time fixture inputs",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: Lists differ: [] != ['tests/auth_rest/fixtures/account-company[638 chars]sql']
+
+Second list contains 10 additional elements.
+First extra element 0:
+'tests/auth_rest/fixtures/account-company-eligibility-26d78648-credential-state.sql'
+
+Diff is 720 characters long. Set self.maxDiff to None to see it. : auth_rest has undeclared compile-time fixture inputs
+
+----------------------------------------------------------------------
+Ran 1 test in 0.005s
+
+FAILED (failures=1)

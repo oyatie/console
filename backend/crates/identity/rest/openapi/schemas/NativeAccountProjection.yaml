@@ -1,0 +1,23 @@
+type: object
+additionalProperties: false
+required:
+- account_id
+- session
+- permitted_self_actions
+properties:
+  account_id:
+    type: string
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    not:
+      const: 00000000-0000-0000-0000-000000000000
+    description: Canonical lowercase hyphenated, non-nil UUID.
+  session:
+    $ref: '#/components/schemas/NativeAccountSession'
+  permitted_self_actions:
+    type: array
+    maxItems: 16
+    items:
+      $ref: '#/components/schemas/NativeAccountActionRef'
+    description: Validated owner projection. Current native owner emits exactly account.session.logout
+      with registration_revision "1". This projection grants no tenant or Company context.

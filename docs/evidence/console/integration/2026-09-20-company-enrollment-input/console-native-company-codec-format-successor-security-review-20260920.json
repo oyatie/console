@@ -1,0 +1,14 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact format-only codec test successor",
+  "original_sha256": "01f4b97dc45eda4dd706b1997a21e9b875c40880d5f3281b913c4211de66e19c",
+  "formatted_sha256": "91a919cc22d7b6cf0fce16060c0e7e4b47f2c5cdc9ff40d4e3bb81a1040723b6",
+  "checks": [
+    "Inspected formatting diff and independently compared literal/comment-preserving token streams, ignoring whitespace and optional trailing commas before closing brackets/parentheses; normalized streams identical.",
+    "All raw JSON strings,hex vectors,escaped JSON keys,Unicode/name/slug values,offsets,loop ranges and assertions remain exact. Eight test functions retained.",
+    "Root reports pinned Rust1.98.1 rustfmt via stdin; reviewer did not run formatter/build/tests."
+  ],
+  "prior_test_review_sha256": "68d22a90ad7412ac249797301a86865cc6626b79b137c2c26af2bfa78287cfe8",
+  "runtime_executed": 0,
+  "repository_mutations": 0
+}

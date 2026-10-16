@@ -42,12 +42,11 @@ use console_ontology_adapter_postgres::seed::seed_governed_config_object_types;
 use console_ontology_rest::OntologyRestState;
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
 use console_platform_request_context::scope_org;
-use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
+use console_platform_test_support::seed_org_and_super_admin;
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use time::macros::datetime;
 use time::{Duration, OffsetDateTime};
 
@@ -86,6 +85,7 @@ pub struct Harness {
     pub approver: UserId,
     pub runtime_pool: PgPool,
     pub command_pool: PgPool,
+    auth_database: PgPool,
     pub admin_token: String,
     pub executive_token: String,
     public_pem: String,
@@ -93,6 +93,12 @@ pub struct Harness {
 
 impl Harness {
     pub async fn bootstrap(owner_pool: PgPool) -> Self {
+        console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+        let auth_database = console_platform_test_support::login_test_pool(
+            &owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let org = OrgId::knl();
         let admin =
             seed_org_and_super_admin(&owner_pool, *org.as_uuid(), "company-conformance").await;
@@ -118,7 +124,11 @@ impl Harness {
         })
         .await;
 
-        let runtime_pool = runtime_role_pool(&owner_pool).await;
+        let runtime_pool = console_platform_test_support::login_test_pool(
+            &owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Business,
+        )
+        .await;
 
         // BOTH tokens from ONE keypair. Two keypairs yields 401
         // `invalid bearer token` and destroys CC-12 / CTL-5.
@@ -144,6 +154,7 @@ impl Harness {
             approver,
             runtime_pool,
             command_pool,
+            auth_database,
             admin_token,
             executive_token,
             public_pem,
@@ -178,7 +189,12 @@ impl Harness {
                 .with_command_pool(self.command_pool.clone()),
             PgInstanceStore::new(self.runtime_pool.clone()),
             PgGovernanceStore::new(self.runtime_pool.clone()),
-            verifier,
+            verifier.map(|verifier| {
+                console_platform_auth::SessionVerification::new(
+                    verifier,
+                    self.auth_database.clone(),
+                )
+            }),
         )
     }
 
@@ -306,18 +322,9 @@ fn token(issuer: &JwtIssuer, subject: UserId, org: OrgId, role: &str) -> String 
 }
 
 async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_ontology_cmd")
-                    .execute(conn)
-                    .await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .expect("connect console_ontology_cmd-role test pool")
+    console_platform_test_support::login_test_pool(
+        owner_pool,
+        console_platform_test_support::TestDatabaseLogin::OntologyCommand,
+    )
+    .await
 }

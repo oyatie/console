@@ -1,0 +1,24 @@
+{
+  "status": "OPTIONAL_SEMANTIC_SUCCESSOR_PENDING_INDEPENDENT_REVIEW",
+  "base": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "predecessor_manifest_sha256": "b4e1ca5eeebf7a1309589becae70ca0bb179c0f89dae6e18548fb3576d7e58eb",
+  "predecessor_source_sha256": "049c190a95794710dbb630de9ff5936f552bac39d50080e29f40d84a50a6e51e",
+  "original_three_leaves_unchanged": true,
+  "authored_original": 3,
+  "authored_proposed": 1,
+  "runtime_executed": 0,
+  "files": [
+    {
+      "path": "REVIEW.md",
+      "sha256": "6f5d1ec2c4afd22685dd2caa2659fcf3fb9160cb7ec5dc6263e16f5b587adc8b"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "sha256": "9ad846c50c504d4fcfba883b4558ea80b5debc25177f6b4cdb624bd8af33da4d"
+    },
+    {
+      "path": "strict-parser-successor.patch",
+      "sha256": "95eeafa9e988b34c7eb8625b26435e7b76b38a74f838d3358254967b4c6d8113"
+    }
+  ]
+}

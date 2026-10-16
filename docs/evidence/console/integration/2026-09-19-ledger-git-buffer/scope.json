@@ -1,0 +1,17 @@
+{
+  "owner": "root sole writer",
+  "base_sha": "c2ee1e4e",
+  "allowed_paths": [
+    "scripts/console/validate-console-truth-ledger.mjs",
+    "scripts/console/validate-console-truth-ledger.test.mjs",
+    "docs/evidence/console/integration/2026-09-19-ledger-git-buffer"
+  ],
+  "forbidden": "Authority semantics, historical signatures/records, other Git helper changes without observed defect",
+  "pre_mortem": "Larger output might silently truncate or skip late markers.",
+  "detection": "Actual signed-candidate full-byte positive, late-marker negative,16MiBoverflow plus retained resolver cases.",
+  "rollback": "Revert bounded maxBuffer option; preserve evidence.",
+  "stop": "Unreviewed semantics or test change, truncation, check bypass.",
+  "remaining_holds": [
+    "No release qualification."
+  ]
+}

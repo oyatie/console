@@ -1,0 +1,186 @@
+{
+  "kind": "Company-input-codec-substep",
+  "implementation_head": "f3d7df5ab77ee1d6f79442a2d017deb9c17e8786",
+  "approved_test_commit": "7601134f1",
+  "source_sha256": {
+    "backend/crates/identity/application/src/company.rs": "9c1cecbc57a1c55b2a90d958a2ceae6046a97e04866da935e3ebf2c595a2899c",
+    "backend/crates/identity/application/src/lib.rs": "a5588a66f9de56ba57d7092eefc999aaf03d504f7aba27a8850ee480756e99fa",
+    "backend/crates/identity/application/src/company_enrollment_tests.rs": "7b8957c76a9233872da50284b07f4309267434214dea90bf0ea65eb851e1f484",
+    "docs/program/executed-tests-baseline.json": "ec5c148fa0fbbe857889001bf09a5f189c9109b7159d4979c6e47c37a2edec71"
+  },
+  "native_test_artifact_sha256": "592c5c8db774f2e1759a6f7e8dae3fe10f1d6ebc9ecbfec408935ccaca4eb7b9",
+  "tests": {
+    "discovered": 10,
+    "executed": 10,
+    "passed": 10,
+    "new": 8,
+    "existing": 2,
+    "focused_run_not_double_counted": true
+  },
+  "checks": {
+    "native_Buck_library_metadata_build": true,
+    "native_Buck_layer_gate_crates": 176,
+    "native_Buck_layer_violations": 0,
+    "reachability_tests_passed": 15,
+    "baseline_tests_passed": 26,
+    "transitional_Cargo_Clippy": "passed; not a native build qualification claim"
+  },
+  "enclosing_lane": {
+    "name": "native-company-enrollment",
+    "status": "open",
+    "actual_red_executed": 1,
+    "actual_red_failed": 1,
+    "actual_red_filtered": 475,
+    "observed_http": 404,
+    "required_http": 201
+  },
+  "limits": [
+    "No persisted enrollment request or receipt yet",
+    "No Company workflow or five-area MVP acceptance",
+    "No historical command bytes, SQL migrations or custody profiles changed",
+    "No production exposure or payment execution"
+  ],
+  "files": {
+    "console-company-codec-baseline-tests-20260920.log.gz": {
+      "sha256": "71875959db86de19c788bb9278ca67d011a9329ae9414897ca41a111ecba05f1",
+      "source_sha256": "0532ccee2f2a0ad37311bbfb3aaf09544afb5c37e555ff675f13913f12aea778",
+      "source_bytes": 2568,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-clippy-20260920.log.gz": {
+      "sha256": "59439b9134891a4d50d086ac1ad19139016cd0ef651d7545badc6d03040e4a00",
+      "source_sha256": "980ab92e4e9aca994359a12ff15b09f282c160f7480ea05fb35b7a82e67a4a4b",
+      "source_bytes": 1309,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-clippy-green-20260920.log.gz": {
+      "sha256": "f8150c27a035a16f264d8d4ada61053e492fd05276976f46e8875082ec1da074",
+      "source_sha256": "a89afca3fa56cc33a23c2521d758c4fa5db77a0fb701dc3d5e973c869888c70a",
+      "source_bytes": 204,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-final-security-review-20260920.json": {
+      "sha256": "c34d73e93bcd57b13b0dfa5b830a383a305e51be30281f839487f21a75975801",
+      "source_sha256": "c34d73e93bcd57b13b0dfa5b830a383a305e51be30281f839487f21a75975801",
+      "source_bytes": 2981,
+      "content_kind": "review-or-lane-record"
+    },
+    "console-company-codec-native-build-20260920.log.gz": {
+      "sha256": "537f1b7891bbd4c5717580860ae8e557eb447a0de1ff5e625bcf083fbed5b5c7",
+      "source_sha256": "d9d44d3236622bb3e0f0930ad22990b935438804df7254dbc35091a816412575",
+      "source_bytes": 1020,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-discovery-20260920.log.gz": {
+      "sha256": "26b379d2505ba4b315475f0bdc0055483c7c16baf1ca4bc3e061851b569dca5c",
+      "source_sha256": "3e0ba49cec2bdf94326c4454c2fbc26b96d66cb31af8933f72fadff2695f68c9",
+      "source_bytes": 789,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-final-20260920.log.gz": {
+      "sha256": "bc008109dea546bc2d0a8fa53036b165c42c18fe317b61ea38f84ad85e3a4ea4",
+      "source_sha256": "bb8324366d3953c0d4f556d72b1963a2874e8d482bef5d0a6bf1e681212e7084",
+      "source_bytes": 2528,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-focused-20260920.log.gz": {
+      "sha256": "6c1dc01e0b56262515dced118ef3bd4fba0090571bf5acbb77af0c8eda1cfbcd",
+      "source_sha256": "e26fec88b2ae1ac9046c168248b1ccd2c5d73cc8f2e7d0850584f27f30b65149",
+      "source_bytes": 819,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-full-20260920.log.gz": {
+      "sha256": "731005f51af388734ed188ffd1163255e6df8a0748041ba1c6f44da23715c9ec",
+      "source_sha256": "34b9cbaad1f5bb98e8e43e91c5896ae0e3cca704cbf573611f89ee33eaeeef19",
+      "source_bytes": 1948,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-layer-gate-20260920.log.gz": {
+      "sha256": "733a12388f4397d20a991f239f590c4ce312fcb6b2a8f7820428231d806c337e",
+      "source_sha256": "cefc3336a611e9a4be846b6663030006373272f454fae51e5472a6dbab7720a8",
+      "source_bytes": 363,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-library-20260920.log.gz": {
+      "sha256": "b85c7b647e0a08b0ee2cf23ca5f712daabcaf5370c8b8660475614d233bd67e4",
+      "source_sha256": "3d4d5718d3caf8695180a4852c8cf587af3fdccf85c95934d0bda1ba13e35794",
+      "source_bytes": 933,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-native-runtime-security-review-20260920.json": {
+      "sha256": "1657cf644b875b3c1ffb1b6bff24cbd07bc81d063f3338aeae0e1ab46035a79a",
+      "source_sha256": "1657cf644b875b3c1ffb1b6bff24cbd07bc81d063f3338aeae0e1ab46035a79a",
+      "source_bytes": 1943,
+      "content_kind": "review-or-lane-record"
+    },
+    "console-company-codec-reachability-20260920.log.gz": {
+      "sha256": "f14c94ee99ee96b8318e8558af5a2fc4383e02a6d316a21878a9778045677219",
+      "source_sha256": "8c311fe1decff7bc952671ac8d3da7c26595d0fee597ffbe73914d04cc432c8f",
+      "source_bytes": 2399,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-codec-reachability-green-20260920.log.gz": {
+      "sha256": "7ebdcaf9a922969daa1d7ee88d44280a3a4e4144df6f3f5327a49a2cfa82ab27",
+      "source_sha256": "c6d908760a411a46a7b5db131568a2202021b7e4c505fcfd3a7addd6f4f02f34",
+      "source_bytes": 2286,
+      "content_kind": "raw-tool-output"
+    },
+    "console-company-owner-red-20260920.log.gz": {
+      "sha256": "c3dc6187ef62e7346aa0287cac63ae045142cfdffccadb572de5c66e55285ecc",
+      "source_sha256": "7fb903fd80f7d84340a489bd7187f53cbc33d20033f360cf118050485c70674d",
+      "source_bytes": 4455,
+      "content_kind": "raw-tool-output"
+    },
+    "console-native-company-codec-format-successor-security-review-20260920.json": {
+      "sha256": "cd9a632a62cea594915b443fc80f1d53846faf12d8c6acfcd154524aae199c79",
+      "source_sha256": "cd9a632a62cea594915b443fc80f1d53846faf12d8c6acfcd154524aae199c79",
+      "source_bytes": 942,
+      "content_kind": "review-or-lane-record"
+    },
+    "console-native-company-codec-implementation-security-review-20260920.json": {
+      "sha256": "2aacc72ad6e93f218414b0a168497e34857b1199d43ffffcc43680e2f5deb487",
+      "source_sha256": "2aacc72ad6e93f218414b0a168497e34857b1199d43ffffcc43680e2f5deb487",
+      "source_bytes": 2617,
+      "content_kind": "review-or-lane-record"
+    },
+    "console-native-company-codec-tests-round2-security-review-20260920.json": {
+      "sha256": "68d22a90ad7412ac249797301a86865cc6626b79b137c2c26af2bfa78287cfe8",
+      "source_sha256": "68d22a90ad7412ac249797301a86865cc6626b79b137c2c26af2bfa78287cfe8",
+      "source_bytes": 3234,
+      "content_kind": "review-or-lane-record"
+    },
+    "console-native-company-enrollment-admission-20260920.log.gz": {
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "source_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "source_bytes": 48,
+      "content_kind": "raw-tool-output"
+    },
+    "console-native-company-enrollment-lane-boundary-review-20260920.json": {
+      "sha256": "db68e876a04f08c4bbf769589a927ad3d4a2ac6aa6d4d6ec8d317216bad40eb9",
+      "source_sha256": "db68e876a04f08c4bbf769589a927ad3d4a2ac6aa6d4d6ec8d317216bad40eb9",
+      "source_bytes": 2458,
+      "content_kind": "review-or-lane-record"
+    },
+    "console-native-company-enrollment-lane-codec-20260920.json": {
+      "sha256": "eb40e5fc71a95a90e3e0dd2827ae04b80ad4cfc12c18d61208015092a0fb42fd",
+      "source_sha256": "eb40e5fc71a95a90e3e0dd2827ae04b80ad4cfc12c18d61208015092a0fb42fd",
+      "source_bytes": 3287,
+      "content_kind": "review-or-lane-record"
+    },
+    "input-contract.txt": {
+      "sha256": "d3903ba36f8e8be6111d500a7e6f52412f25981ec2219d0865702bb9b7554dcd",
+      "source_bytes": 7430,
+      "content_kind": "archived-test-contract"
+    },
+    "golden-vectors.json": {
+      "sha256": "c5262e41bcab37c00063cbedf5dfb42936776af798e08eb3bda10a0b4bae22a0",
+      "source_bytes": 3369,
+      "content_kind": "archived-test-contract"
+    },
+    "test-candidate-manifest.json": {
+      "sha256": "820dc2376fe778eb4450c79c3621599475a4e61de1eb3a3b1b116de60100212e",
+      "source_bytes": 2000,
+      "content_kind": "archived-test-contract"
+    }
+  }
+}

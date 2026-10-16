@@ -1,0 +1,28 @@
+{
+  "base_sha": "755271767e3553b12fe822dac740fac0e376ae76",
+  "kind": "proposed-semantic-oracle-successor-requires-independent-approval",
+  "reason": "Preserve the existing owner-rendered native HTML413 document and privacy headers through the shared mapper; retain API/plain JSON behavior.",
+  "rust_consumers": [
+    "account_browser::native_root_cookie_refusals_preserve_native_parser_precedence",
+    "account_browser::deployment_operator_designation::company_setup::entry_read::company_entry_preview_metadata_cookie_and_method_contract_is_current"
+  ],
+  "helper": "native_entry_ui_cases.rs::native_root_parser_refusal",
+  "old": "413 asserted generic JSON payload_too_large; other statuses asserted native HTML.",
+  "new": "Every native parser rejection asserts existing native document privacy;413 additionally requires generic refusal heading and no protected form/account/setup/action markup.",
+  "retained": "All consumer vectors, status/precedence, full public snapshots and root/Account body equality. No removed/skipped tests.",
+  "browser": {
+    "base_sha256": "e14a328f59f263f5a64e86287545779cec8b03ad2b9872f120640e4caa3f10f0",
+    "rust_leaf": "native_company_real_browser_preview_preserves_enter_without_commands",
+    "change": "Existing driver successor adds actual transmitted oversized Cookie witness, native413 privacy, unchanged Account cookie objects and200reopening inside existing owner checkpoint. Exact document history expands five to seven; mutation history unchanged.",
+    "history_preserved": true
+  },
+  "supplementary_unit": "New existing cfg(test) module unit calls reviewed but not-yet-defined preserve_native_html_error helper; parent explicitly authorized. It is frozen before implementation, not used as executable admissionRED.",
+  "successor_of_manifest_sha256": "a5e9296b50e9ec247908a80b9defeaaa52f8598bea26ab75ecc859066a682f65",
+  "ssr_privacy_dependency": {
+    "receipt": "/private/tmp/console-ssr-private-document-design-security-review.json",
+    "sha256": "c69853bc45e2dac5e3bbd6b2ed62370324d92de6df92f0e73b35ea3a9080cd15",
+    "required_vary": "one field; exactly Authorization, Cookie, Origin case-insensitive set; no extra/duplicate keys",
+    "prerequisite": "SSR owner privacy repair precedes renderer positive; missing Authorization is not HTML413 mapper admission RED."
+  },
+  "round2_changes": "Only new mounted/browser Vary oracles and directly related controls/custody/documentation; six Rust leaves unchanged."
+}

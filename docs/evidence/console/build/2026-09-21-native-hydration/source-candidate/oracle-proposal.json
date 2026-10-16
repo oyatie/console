@@ -1,0 +1,40 @@
+{
+  "status": "EXACT_ORACLE_AND_SCHEDULING_SUCCESSOR_AWAITING_INDEPENDENT_ROOT_REVIEW",
+  "author": "/root/integration_tests",
+  "base_head": "d59e4d6a1bae6ae7a7ed6492c61516f6f49877ef",
+  "base_sources": {
+    "tools/ui/test_native_hydration.py": "494a8c7298d404086d9071e82dfa4c88e0afc5588b8d640c88df7656bde72c94",
+    "tools/ui/build-payroll-wasm.sh": "16c49e95592aa02f108f766de0c3e3c3ac597e20567402c8c59ab39adf10b221"
+  },
+  "repository_targets": {
+    "test_native_hydration.py": "tools/ui/test_native_hydration.py",
+    "test_cas_action_binding.py": "tools/ui/test_cas_action_binding.py",
+    "build-payroll-wasm.sh": "tools/ui/build-payroll-wasm.sh"
+  },
+  "files": {
+    "test_native_hydration.py": "588167b0e2f3f7a20216447289543107ba23af4e00aef5301a68c2eee3555431",
+    "test_cas_action_binding.py": "d694270705cfaa7367489fe62452aaa391d4056b2d8bb405fca5b02ccd1c401f",
+    "build-payroll-wasm.sh": "248fc88f8c7b82bb6f090776aa33f43e4f6161c64abd156af4993256e6c4583b",
+    "candidate.patch": "1c7b20333e0ef8384f0ee8f56132831769a6aea699580f7f1dd3e6d659a74a72",
+    "controls.log": "0b4e5a6c68d08d000c4c7878d3061b58646a0dbbcd9115cb6dd81177a181d5fc",
+    "actual-retained-binding.json": "0d5654567cd4fb039c2f742717339af511dec175e9b14ad3348df42f0c2e7051",
+    "REVIEW.md": "ba8882592663a1b40e1ea9bb7a6d5935b9edd41100eda2ca73fc2c9227b78b3e"
+  },
+  "synthetic_controls": {
+    "executed": 10,
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0,
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 /private/tmp/console-native-hydration-cas-oracle-proposal-round3-20260921/test_cas_action_binding.py"
+  },
+  "product_tests": 0,
+  "builds": 0,
+  "database_sessions": 0,
+  "browser_sessions": 0,
+  "product_writes": false,
+  "required": [
+    "Independent root exact semantic review before adoption.",
+    "Native bundle rebuild/manifest publication after recipe wrapper changes.",
+    "Commit exact complete fixture; run bounded producer/consumer qualification with required positive/corruption/restoration controls."
+  ]
+}

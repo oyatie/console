@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/integration_tests",
+  "author": "/root/reference_inventory",
+  "decision": "APPROVED_BOUNDED_EMPTY_SCHEMA_EXECUTABLE_TEST_SOURCE",
+  "packet": "/private/tmp/console-native-company-schema-sqlx-tests-20260920-round1",
+  "manifest_sha256": "af58719e367e368d719b7abc2edfbc6dcd57ba67f335932ced96e4d909f52c22",
+  "source_head": "4dad954dcd387252e1eb885f31f5266d5ae47915",
+  "checks": [
+    "All four packet file hashes match. The ACL DO block is byte-identical to the approved round4 oracle; only client and transaction wrappers are removed so the caller can own rollback.",
+    "Existing designated fixture and login_test_pool APIs match the candidate. The SQLx leaf uses actual Account enrollment and startup designation, checks finalized root/credential classifiers before installation, and requires both unchanged classifiers to report profile_mismatch afterward.",
+    "Private parser/schema installation uses the real generated resources under marked console_buck_admin in a bounded transaction. No application operation is called after deliberate profile invalidation. Source inclusion paths follow the accepted parser test pattern; concrete Buck and generator mappings are not included and require root review.",
+    "Twelve distinct FK tuples match the approved declaration: three request, seven receipt, two event constraints. Source and target column order is retained through ordinality. Cardinality plus bidirectional set difference rejects missing, extra or duplicate roster entries. The second query requires public targets, validated constraints, MATCH SIMPLE, RESTRICT update/delete, and the exact initially deferred mode for both deferred edges.",
+    "ACL checks require the real tables before FK introspection. A NULL aggregate or empty FK roster fails explicitly. Catalog Boolean fields are non-null. Five known serving participant names must remain absent; this is not a universal proof that no unrelated function was installed.",
+    "Six actual restricted login pools each attempt SELECT, INSERT, UPDATE, DELETE and TRUNCATE on all three tables: 90 required 42501 denials. Missing relations, NOT NULL errors, trigger P0001 errors, syntax failures and successful zero-row statements cannot be mistaken for authorization denial.",
+    "SET LOCAL ROLE is used only to test the no-login owner, not as a substitute for the six real-login proofs. Empty receipt SELECT FOR KEY SHARE establishes statement permission only. Zero-row UPDATE must reach the unconditional statement guard and return P0001 with exact sanitized message company_enrollment_receipts.immutable. This new error refinement follows existing immutable-guard conventions and is approved for this private contract.",
+    "Two transaction-local positive corruption controls change actual metadata: unexpected Business SELECT and weakening ALWAYS to ordinary trigger firing. Each requires the exact ACL oracle diagnostic, rolls back, and reruns the unchanged oracle successfully. No swallowed expected error or fabricated success path was found.",
+    "Final all_rows uses the complete public base-table census. Only the three explicitly new relations are removed from comparison, after requiring each absent from the original snapshot and exactly empty afterward. All preexisting durable histories must match. Metadata changes remain deliberately outside the row snapshot and are governed by separate catalog checks and profile mismatch."
+  ],
+  "counts": {
+    "sqlx_leaves": 1,
+    "new_empty_tables": 3,
+    "foreign_keys": 12,
+    "initially_deferred_foreign_keys": 2,
+    "actual_login_table_denials_required": 90,
+    "owner_empty_keyshare_statements": 1,
+    "owner_zero_row_immutable_denials": 1,
+    "catalog_corruption_controls": 2
+  },
+  "limits": [
+    "No approval of production schema bodies, request/event guards, installed migration, generated artifact wiring, canonical assignment revision expansion, prepare/status/cancel/effect owners, populated FK behavior, lock contention or serving profile activation.",
+    "Existing user_role_assignments.id is a real FK target, but its current legacy user_id shape is not native Account/revision authority. root_revision=1 remains only a CHECK until the later assignment owner adds the exact native revision and Company correlation contract.",
+    "This candidate establishes empty physical schema, catalog ACL/FK shape, restricted login denial and receipt statement immutability only. Full CHECK/column/schema fingerprints, arbitrary additional metadata, immutable body behavior for every event, and populated rollback/recovery remain separate source/runtime obligations.",
+    "Root must preserve all historical generated outputs and the now-existing parser output, inspect the exact new generator/DDL/guard source, wire native resources, execute the admitted RED and GREEN probes, and record actual counts. Printed counters in this source are expectations, not observed results."
+  ],
+  "execution": {
+    "repository_edits": 0,
+    "sql": 0,
+    "native_tests": 0,
+    "builds": 0,
+    "browser": 0,
+    "python_hash_and_structural_comparisons": true
+  }
+}

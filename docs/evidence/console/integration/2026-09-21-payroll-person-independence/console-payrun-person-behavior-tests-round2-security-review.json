@@ -1,0 +1,28 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_SIX_ADDITIVE_PAYROLL_BEHAVIOR_LEAVES_AND_THREE_FIXTURE_SUCCESSORS",
+  "packet_manifest_sha256": "df3ff84cb9721143d5b27462e27fc43ac4fc514331923bb75c8f830a4558161f",
+  "source_hashes": {
+    "natural_person_guard_tests.rs": "201fc4f01dfcfdb1fc416a5d160c3ab9003f61da5d2c4fac48e90222f348bdcf",
+    "rest_fixture_helper.rs": "d99784cf3f69c3672fead3d9b4a07a6da41501577084312c28e3035c0a8549f1",
+    "fixture_insertions.json": "b2a2f90c022e3f56d48572f8213afdee9b4f6242513f124439c529a6bbac280a"
+  },
+  "source_base": "bb215ee2ac706238d051d75ac623ccf92cc2a90b",
+  "integration_head_read": "9b9baed6a3ad471635fdaee27f8c0f5ab0168e72",
+  "facts": [
+    "All three packet file hashes and six current/exact-base source locks verified; three insertions each have one exact existing anchor.",
+    "Round2 changes only quoted-metadata census SQLx safety wrapper/comment; predecessor retained.",
+    "Actual Business LOGIN and canonical Person Create/Revise establish distinct Users and Employees mapping to same or distinct Persons; fixture uniqueness preserved with third unused Employee.",
+    "Same-Person APPROVE/reason-valid REJECT and fourteen missing/foreign cases invoke existing canonical PayRun owner and require exact SodViolation plus complete public-row no-effect census.",
+    "Distinct-Person positives verify run/actor/time/reason and exact canonical receipt replay without effects.",
+    "Eight direct shared-owner histories retain both User and both binding row locks through commit/rollback, with actual pg_blocking_pids witness and bounded task completion. Submitter same-value UPDATE still meaningfully conflicts with FOR SHARE.",
+    "Writer-first User rebind or binding DELETE/INSERT to samePerson waits at actual owner and denies stale approval; exact55P03 timeout rolls back before canonical repair/replay.",
+    "Fixture-only insertions add explicit distinct Person bindings to two original canonical positive journeys and original REST full lifecycle, preserving every prior assertion and root privilege leaf."
+  ],
+  "limits": [
+    "Direct shared-owner contention tests establish lock/effect boundary, not canonical receipt/audit delivery. Whole-table masks in positive concurrency census are not per-row payroll effect proof; separate canonical positive test verifies target run.",
+    "Privilege0229 prerequisite is already independently accepted; business RED must reach existing decision owner, not schema/login/permission failure.",
+    "No test/build/SQL/browser execution by reviewer; root must compile, register, execute actual RED then same GREEN/full suites.",
+    "Native Account-to-Person/current-policy integration, Governance owner correction and full payroll release/UI qualification remain separate required work."
+  ]
+}

@@ -11,6 +11,9 @@ use console_kernel_core::{ErrorKind, OrgId};
 use console_platform_auth::{
     AuthError, PasskeyRegistrationStart, PasskeyService, WebauthnSettings,
 };
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use time::Duration;
 use url::Url;
@@ -40,14 +43,16 @@ fn service() -> PasskeyService {
     .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn finish_registration_on_deactivated_user_is_refused(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let service = service();
 
     let registration = service
         .start_registration(
-            &pool,
+            &auth,
             OrgId::knl(),
             PasskeyRegistrationStart {
                 user_id,
@@ -74,7 +79,7 @@ async fn finish_registration_on_deactivated_user_is_refused(pool: PgPool) {
         .unwrap();
 
     let result = service
-        .finish_registration(&pool, OrgId::knl(), registration.ceremony_id, credential)
+        .finish_registration(&auth, OrgId::knl(), registration.ceremony_id, credential)
         .await;
 
     match result {

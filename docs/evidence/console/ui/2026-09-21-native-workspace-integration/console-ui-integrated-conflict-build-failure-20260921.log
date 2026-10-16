@@ -1,0 +1,77 @@
+[2026-09-21T15:06:46.121-04:00] Build ID: 81c432f8-55ad-4154-bf57-080d0fb00e5a
+[2026-09-21T15:06:46.121-04:00] File changed (since mergebase): root//backend/crates/payroll/ui/src/lib.rs
+[2026-09-21T15:06:46.121-04:00] File changed (since mergebase): root//rustfmt.toml
+[2026-09-21T15:06:46.121-04:00] File changed (since mergebase): root//backend/crates/payroll/ui/src/people.rs
+[2026-09-21T15:06:46.121-04:00] 4 additional file change events (since mergebase)
+[2026-09-21T15:06:46.121-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:06:53.058-04:00] Action failed: root//backend/crates/payroll/ui:console-payroll-ui-unit (prelude//platforms:default#39893c7e49283da4) (rustc link [pic])
+[2026-09-21T15:06:53.058-04:00] Local command returned non-zero exit code 1
+[2026-09-21T15:06:53.058-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/3c830bc0a614c308/rustc/_buck_c5a998e79d3a718a' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py @buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-unit__/f22fb4aab86dad2d/XIPL/console_payroll_ui-link-diag.args
+[2026-09-21T15:06:53.058-04:00] Stdout: <empty>
+[2026-09-21T15:06:53.058-04:00] Stderr:
+error: this file contains an unclosed delimiter
+    --> backend/crates/payroll/ui/backend/crates/payroll/ui/src/lib.rs:1775:34
+     |
+ 362 | fn Companies(companies: Vec<CompanyView>) -> impl IntoView {
+     |                                                            - unclosed delimiter
+...
+ 365 |         .map(|company| {
+     |             -          - unclosed delimiter
+     |             |
+     |             unclosed delimiter
+...
+ 423 | fn OrgUnits(units: Vec<OrgUnitView>) -> impl IntoView {
+     |                                                       - unclosed delimiter
+...
+ 426 |         .map(|unit| {
+     |             - unclosed delimiter
+...
+1775 | mod workflow_presentation_tests;
+     |                                 ^
+
+
+error: aborting due to 1 previous error
+
+
+
+[2026-09-21T15:06:53.106-04:00] Cache hits: 0%
+[2026-09-21T15:06:53.106-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T15:06:53.106-04:00] Network: Up: 0B  Down: 0B
+[2026-09-21T15:06:53.106-04:00]
+[2026-09-21T15:06:53.106-04:00] BUILD ERRORS (1)
+[2026-09-21T15:06:53.106-04:00] The following actions failed during the execution of this command:
+[2026-09-21T15:06:53.106-04:00] Action failed: root//backend/crates/payroll/ui:console-payroll-ui-unit (prelude//platforms:default#39893c7e49283da4) (rustc link [pic])
+[2026-09-21T15:06:53.106-04:00] Local command returned non-zero exit code 1
+[2026-09-21T15:06:53.106-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/3c830bc0a614c308/rustc/_buck_c5a998e79d3a718a' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py @buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-unit__/f22fb4aab86dad2d/XIPL/console_payroll_ui-link-diag.args
+[2026-09-21T15:06:53.106-04:00] Stdout: <empty>
+[2026-09-21T15:06:53.106-04:00] Stderr:
+error: this file contains an unclosed delimiter
+    --> backend/crates/payroll/ui/backend/crates/payroll/ui/src/lib.rs:1775:34
+     |
+ 362 | fn Companies(companies: Vec<CompanyView>) -> impl IntoView {
+     |                                                            - unclosed delimiter
+...
+ 365 |         .map(|company| {
+     |             -          - unclosed delimiter
+     |             |
+     |             unclosed delimiter
+...
+ 423 | fn OrgUnits(units: Vec<OrgUnitView>) -> impl IntoView {
+     |                                                       - unclosed delimiter
+...
+ 426 |         .map(|unit| {
+     |             - unclosed delimiter
+...
+1775 | mod workflow_presentation_tests;
+     |                                 ^
+
+
+error: aborting due to 1 previous error
+
+
+
+[2026-09-21T15:06:53.106-04:00]
+Failed to build 'root//backend/crates/payroll/ui:console-payroll-ui-unit (prelude//platforms:default#39893c7e49283da4)'
+1 BUILDS FAILED
+Tests finished: Pass 0. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. [mBuild failure 1[m
+NO TESTS RAN

@@ -1,0 +1,28 @@
+{
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "scope": "Additive finalizer and SQL capability test packet; runtime acceptance pending",
+  "reviewer": "integration_security",
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "manifest_sha256": "cb1c0d473532da713b89299add8d6a05cf53f0d28761d44b7756afe0d2868dc9",
+  "counts": {
+    "sqlx": 11,
+    "pure": 3,
+    "executed": 0
+  },
+  "review_conclusions": [
+    "All20manifest files verified; five frozen Company fixtures byte-equal exact26d78648 Git blobs and five SQL capture fixtures exact approved round3 bytes",
+    "Existing eligibility parent unchanged except nested child include; historical assertions preserved",
+    "Actual current finalizer over fresh/populated plain/observer prior with exact whole-state two-object metadata delta, replay, rollback and genuine Account session reopening",
+    "12actual catalog/ACL/profile corruptions each variant require exact denial without resealing; nested faults preserve corrupt and healthy state",
+    "Three malformed prior overloads plus actual CREATE/final-context-GRANT interruptions require exact marker and atomic rollback",
+    "Actual Business/Auth login privilege probes and closed scope/isolation/material refusal cases; exact ten-column raw facts distinguish selected family from authorization",
+    "Shared positive/corruption oracle detects omitted/extra effects and unrelated metadata; no captured private rows embedded"
+  ],
+  "remaining_holds": [
+    "Root actual14leaf compilation/runtime",
+    "Existing historical transition regression and any independently reviewed boundary-preserving repair",
+    "Final candidate acceptance and fullrelease"
+  ],
+  "repository_writes": 0,
+  "database_executions": 0
+}

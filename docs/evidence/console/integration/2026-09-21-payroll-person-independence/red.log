@@ -1,0 +1,43 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T06:29:19.388-04:00] Build ID: 06575431-a862-4b4d-bbc6-6d0d15effe3a
+[2026-09-21T06:29:19.391-04:00] Directory changed (since mergebase): root//docs/evidence/console/integration/2026-09-21-person-binding-row-locks
+[2026-09-21T06:29:19.391-04:00] File changed (since mergebase): root//docs/evidence/console/integration/2026-09-21-person-binding-row-locks/historical-test.rs.txt
+[2026-09-21T06:29:19.391-04:00] File changed (since mergebase): root//docs/evidence/console/integration/2026-09-21-person-binding-row-locks/result.json
+[2026-09-21T06:29:19.391-04:00] 25 additional file change events (since mergebase)
+[2026-09-21T06:29:19.391-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:29:26.391-04:00] Waiting on root//third-party/rust:crossbeam-queue-0.3 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 546 other actions
+[2026-09-21T06:29:33.556-04:00] Cache hits: 0%
+[2026-09-21T06:29:33.556-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T06:29:33.556-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T06:29:33.570-04:00] Build ID: ad6bb949-35c9-4ebc-91fb-2b27ae038b35
+[2026-09-21T06:29:33.572-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:29:40.671-04:00] Waiting on root//third-party/rust:time-core-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 530 other actions
+[2026-09-21T06:29:45.548-04:00] ✗ Fail: root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg (1.8s)
+[2026-09-21T06:29:45.548-04:00] ---- STDOUT ----
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] running 1 test
+[2026-09-21T06:29:45.548-04:00] test natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject ... FAILED
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] failures:
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] ---- natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject stdout ----
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] thread 'natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject' (75404464) panicked at backend/crates/payroll/adapter-postgres/backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs:1880:64:
+[2026-09-21T06:29:45.548-04:00] called `Result::unwrap_err()` on an `Ok` value: CommandReceipt { org_id: OrgId(e3b00000-0000-0000-0000-000000000011), command_id: CommandId(7db1b095-2272-4841-b62a-ef98b05923eb), owner: Canonical(PayRun), target: PayrollDecideRun, actor_id: UserId(334f99e3-a025-479b-8836-8ea31ec65dab), payload_digest: [233, 19, 242, 170, 208, 53, 173, 177, 153, 34, 69, 94, 180, 206, 153, 35, 174, 216, 85, 60, 234, 55, 170, 107, 103, 99, 4, 194, 213, 183, 223, 110], result: Object {"run_id": String("6cf6aea6-2e23-4d0a-a0c3-31a856ee74a4"), "created": Bool(true), "target": String("payroll.decide_run")}, created_at: 2026-09-21 10:29:45.586504 +00:00:00 }
+[2026-09-21T06:29:45.548-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] failures:
+[2026-09-21T06:29:45.548-04:00]     natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 23 filtered out; finished in 1.38s
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.548-04:00] ---- STDERR ----
+[2026-09-21T06:29:45.548-04:00]
+[2026-09-21T06:29:45.555-04:00] Network: Up: 0B  Down: 0B
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg

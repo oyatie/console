@@ -1,0 +1,6 @@
+{
+  "tools/buck/test_needs_postgres.sh": "1d8f1f71e52443c8128f4590e5d7b09074f1145db671d57cbe6ce26cdcab6018",
+  "tools/buck/run_test_with_postgres_env.sh": "8a208f88833dd49e8c0fddc901c5ac47b9c79cf448171e13429fc1ca575df1af",
+  "tools/buck/test_needs_postgres.test.sh": "0f5f395c4f7bae201f01c1671bc4dea7be6ae44727a073ef2a1c2e1aa62f239e",
+  "tools/buck/run_test_with_postgres_env.test.sh": "1166ee1b2e1a2d455140f1fcba8449528b3e74e2b2a3f125decaa204285ec319"
+}

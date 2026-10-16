@@ -1,0 +1,46 @@
+{
+  "source_design_base": "d06ae6379f2bb096b653a641041aa089b58c61c0",
+  "admitted_test_base": "03463f3c0fd0e08e9e9a7b50fc34058f7044d33f",
+  "oracle_correction_commit": "c003e7c4",
+  "source_bytes": "all six unchanged from independently approved source packet; only test oracle and generated bundle updated",
+  "status": "implemented_targeted_runtime_verified_final_independent_review_pending",
+  "tests_known": {
+    "discovery_owner": {
+      "passed": 1,
+      "failed": 0
+    },
+    "eligibility": {
+      "passed": 11,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 1,
+      "failed": 0
+    },
+    "ui": {
+      "passed": 8,
+      "failed": 0
+    },
+    "drift": {
+      "passed": 18,
+      "failed": 0
+    },
+    "asset_http": {
+      "passed": 1,
+      "failed": 0
+    },
+    "entry_http": {
+      "passed": 6,
+      "failed": 0
+    }
+  },
+  "holds": [
+    "Independent visual and final exact candidate acceptance pending",
+    "Actual authorized WASM hydration proof pending",
+    "Full Company enrollment and release"
+  ],
+  "checks": {
+    "clippy": "four changed packages --lib -D warnings passed",
+    "diff_check": "passed"
+  }
+}

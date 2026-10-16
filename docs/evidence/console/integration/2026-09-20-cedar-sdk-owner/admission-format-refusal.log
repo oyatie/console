@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/private/tmp/console-client-release-20260919/tools/lanes/fanout.py", line 416, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/private/tmp/console-client-release-20260919/tools/lanes/fanout.py", line 404, in main
+    refused = admit_spec(spec, cwd=Path.cwd())
+  File "/private/tmp/console-client-release-20260919/tools/lanes/fanout.py", line 219, in admit_spec
+    err = admit_lane(item, cwd=cwd, runner=runner)
+  File "/private/tmp/console-client-release-20260919/tools/lanes/fanout.py", line 191, in admit_lane
+    lane = str(item.get("lane", "?"))
+               ^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'

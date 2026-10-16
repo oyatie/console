@@ -1,0 +1,75 @@
+{
+  "kind": "private analytical matrix design data/source custody only",
+  "observed_head_sha": "3908eefcda5fb5263b3b3accf6bc446f91c38031",
+  "inputs": {
+    "README.md": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+    "docs/current/ROADMAP.md": "f37adb9e9e487e19deb7753934a1f0fd7a0b4e9667f3db4ff136165e9434398c",
+    "docs/current/DELIVERY.md": "2a746d23c9ac7864013a8f3b3a33a37df2b667a00395776575031a107a45dc20",
+    "docs/program/console-capability-registry.json": "d16cebf023d9ce19e473841815b068ce68c4a9a937eb9bbf32f78bd0724e717c",
+    "scripts/console/validate-console-truth-ledger.mjs": "863d4a24910d021127433b6c124fe0dd59699c4a5a2118dc0c9932d79826c75c",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "14e17a51766f6bbe4d946a054da6cf81b9a80f3a7ce1e8194bfbee34cbcf21e9",
+    "scripts/console/plan-fanout.mjs": "a8a53569d9eb68ac86b5fa77a122729e1a06f52302963205244f732302e5db44",
+    "scripts/console/verify-console-authority-train.mjs": "3809bde7bf9bd085e5376ea0deba2d5e5cf576f945235fd3d502d3af9bead20b",
+    "tools/ci/assess-tip-contention.mjs": "4f93632242b2a428b8ea8d1246e3e7c1e4f1ab57ac15fd20e14421179f27d8c5",
+    ".github/workflows/ci.yml": "3fde3529edf7c59c6f3bd489e68907a54dc78250d658c152a5ce75957d301cb8",
+    "package.json": "86f60cf9c4e1954c4fdfab25ef270d8592d8dc7d8ec535f625002f5a5bd3f391",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/proposal.json": "b205746d1400a1bd9a663826545c7ec97bf4b09bacd5fb13893ab6e405776d59",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/independent-review.json": "803eb52dcf238307b62b5ed0f8ad29558ab743a71c98170379bb2fb8426f6de2",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/integration.json": "c494b8304825513d48a78fe7e37d8689edb93f17bd6c11a1287c6dd69ca3289a",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz": "55804771bed958fa5f512ea4d58f4fe2d22934aa15b641af9b8faaf960d5ca25",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz": "70fedbe46c7104d5972c89d0ededd93d4eab12c8925e501487c5e5b3b47d5423"
+  },
+  "source_captures": [
+    {
+      "id": "quiver-cards-index-time-series",
+      "path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+      "compressed_sha256": "55804771bed958fa5f512ea4d58f4fe2d22934aa15b641af9b8faaf960d5ca25",
+      "compressed_bytes": 54563,
+      "raw_sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+      "raw_bytes": 455140,
+      "retrieved_utc": "2026-09-20T01:49:02.959779+00:00",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Reference target is 2026-09-19 America/New_York; captures retain actual 2026-09-20 UTC timestamps. No pre-September20UTC retrieval or authenticated historical vendor release date is claimed. Mutable public documentation captured on the target NewYork calendar date; no Console implementation, exhaustive equivalence or executable acceptance established."
+    },
+    {
+      "id": "quiver-cards-index-charts",
+      "path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+      "compressed_sha256": "70fedbe46c7104d5972c89d0ededd93d4eab12c8925e501487c5e5b3b47d5423",
+      "compressed_bytes": 54057,
+      "raw_sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+      "raw_bytes": 451643,
+      "retrieved_utc": "2026-09-20T01:49:48.828565+00:00",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Reference target is 2026-09-19 America/New_York; captures retain actual 2026-09-20 UTC timestamps. No pre-September20UTC retrieval or authenticated historical vendor release date is claimed. Mutable public documentation captured on the target NewYork calendar date; no Console implementation, exhaustive equivalence or executable acceptance established."
+    }
+  ],
+  "catalogue": {
+    "rows": 60,
+    "category_counts": {
+      "quiver-cards-index-time-series": 39,
+      "quiver-cards-index-charts": 21
+    },
+    "required_leaf_counts": {
+      "F08.time-series-transform-library": 39,
+      "F08.chart-library": 21
+    },
+    "original_order_preserved_by_concatenation": true,
+    "ordered_canonical_sha256": "8a5a2f82f724e5d3d41b5f9a96e6d6ffe2746367c19aaf323ae286c84b4af82e",
+    "per_runtime_pins": {
+      "Quiver time-series cards": "fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945",
+      "Quiver chart cards": "3b34ea79d416110e8ddb259566a80cf53073747d4a3325a4ee938df1a714bc5a"
+    },
+    "canonical_algorithm": "Sorted object keys; arrays/order/literal strings retained; compact UTF-8 JSON. Root independently confirms via existing JS canonicalJsonDigest helper before approval.",
+    "exact_shared_bindings_present": 60
+  },
+  "counts_before": {
+    "runtime_rows": 89,
+    "leaves": 401
+  },
+  "counts_proposed": {
+    "runtime_rows": 91,
+    "leaves": 401
+  },
+  "runtime_tests": 0,
+  "repo_edits": 0,
+  "network_calls": 0
+}

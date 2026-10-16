@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root",
+  "verdict": "approve acceptance-only tests",
+  "manifest_sha256": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31",
+  "superseded_finding": "round1 pure wrapper test lacked shaped Authorization, masking intended fallback with correct401",
+  "checks": [
+    "controlled fallback now reached through shaped header; no authentication claim",
+    "mounted malformed headers remain actual App401 GET/HEAD with no effects",
+    "all4 owner503 faults verified/restored exact catalog",
+    "actual3s outertimeout held until observed408, cancellation cleanup and recovery",
+    "unchanged prior test bodies and narrow helper visibility"
+  ],
+  "runtime_tests_executed": 0,
+  "remaining": [
+    "initial real ownerRED/admission",
+    "real runtime count/acceptance",
+    "retained list regression"
+  ]
+}

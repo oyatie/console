@@ -1,0 +1,11 @@
+type: object
+required:
+- type
+- alg
+properties:
+  type:
+    type: string
+    description: Normally public-key. The pinned Rust field is String, not an enum.
+  alg:
+    type: integer
+    format: int64

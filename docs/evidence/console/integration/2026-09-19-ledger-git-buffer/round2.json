@@ -1,0 +1,27 @@
+{
+  "reviewer": "integration_tests",
+  "round": 2,
+  "verdict": "APPROVE_BOUNDED_DESIGN",
+  "design_path": "/private/tmp/console-ledger-git-buffer-design.txt",
+  "design_sha256": "79f101ebeab1c54955d25c8bfb708f38315d330d8eccd1e9f09a395f3cdfe989",
+  "reviewed_utc": "2026-09-20T01:48:08.494236+00:00",
+  "findings": [],
+  "basis": [
+    "Existing private git helper is sole shared synchronous blob reader at validate-console-truth-ledger.mjs:50 and currently has default1MiB output bound. Fixed16MiB option does not change commands, signature validation, source path/mode checks, authority-only diff or marker detection.",
+    "createConsoleCandidateSourceResolver invokes real git show for authority marker scan and returns candidate readText backed by same helper. Existing signed local Git fixtures can exercise both actual readers without mocks.",
+    "Late marker test must specifically expect unresolved merge marker (not generic throw), so old ENOBUFS does not count as intended refusal. Positive control must compare full bytes/hash and tail beyond1MiB.",
+    "Overflow must exercise actual readText or authority scan above16MiB and require failclosed; a truncated prefix must never be returned. Existing readText intentionally maps subprocess failure to candidate source missing, which is preserved.",
+    "Finite synchronous memory increase is accepted for demonstrated source size. Above16MiB remains a measured trigger for separately reviewed streaming reader rather than silently removing limit."
+  ],
+  "test_requirements": [
+    "Real SSH-signed candidate and direct authority-child commits with existing test signing policy and fixtures.",
+    "Marker-free authority ledger >1MiB; resolver must construct, then return full candidate blob including late suffix.",
+    "Marker after1MiB in authority ledger must produce unresolved merge marker refusal.",
+    "Above16MiB source blob read must throw; do not accept nonempty truncated return.",
+    "Do not alter existing3ENOBUFS cases or fixture assertions to manufacture green."
+  ],
+  "limits": [
+    "Design approval only; exact additive test bytes require independent review before root admission.",
+    "No implementation, repository edit or product/runtime tests by this review."
+  ]
+}

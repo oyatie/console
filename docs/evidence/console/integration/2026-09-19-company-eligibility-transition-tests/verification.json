@@ -1,0 +1,20 @@
+{
+  "base_sha": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+  "compiler": "Rust1.98.1",
+  "discovered_total": 359,
+  "new_discovered": 6,
+  "new_sqlx": 5,
+  "new_pure": 1,
+  "pure_oracle_executed": 1,
+  "pure_oracle_passed": 1,
+  "pure_oracle_filtered": 358,
+  "generator_executed": 59,
+  "generator_passed": 59,
+  "owner_sql_tests_executed": 0,
+  "production_implementation": false,
+  "holds": [
+    "Exact current clean ownerRED/admission must follow this approved test commit",
+    "Source helper/serializer/fingerprint review required",
+    "No Company workflow or release acceptance"
+  ]
+}

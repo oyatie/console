@@ -1,0 +1,41 @@
+{
+  "reviewer": "integration_security",
+  "decision": "ACCEPT_BOUNDED_PRIVATE_GUARD_SOURCE_PENDING_NATIVE_RUNTIME",
+  "base": "458fb682eee64bb72af264bfe2b542343d0acff7",
+  "source_lock": "/private/tmp/console-company-guards-implementation-source-lock-20260920.json",
+  "source_lock_sha256": "ea0b3a11e631515eebe98e35432d15219c1f8ac9290183d25f1dd9ae50880fe6",
+  "files": {
+    "backend/app/BUCK": "72ae6c9e19fd3b7842962cc3a96af614d2e7a3f08bd2a8bb93a416c8512fa251",
+    "ops/BUCK": "83b2a44a5166f6b7557f4c29d0696bac2d58c5ab077064f1e0c0cbc95de0a96d",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "ops/postgres-company-enrollment-guards.sql": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a",
+    "tools/buck/gen_first_party.py": "4eeb806a10282f7b4fe6d9d75e9c25295a4e4b8a72f7b3a66217f3f2e571d652"
+  },
+  "verified": [
+    "Exactly five staged/working files match source-lock hashes.",
+    "Generator introduces one tenth UNINSTALLED output and one additive generator function; nine predecessor generated outputs unchanged in staged tree.",
+    "App BUCK changes only 69 newly admitted guard-test source appearances and two guard-resource entries; generator resource mapping plus ops target additive.",
+    "Six exact trigger routines/eight ALWAYS triggers match reviewed contract. Routine owner fixed console_account_owner, no arguments, fixed pg_catalog/pg_temp search path and row_security on; all immediate guards invoker and closure alone definer.",
+    "Empty-only install checks READ COMMITTED and acquires requests/request_events/receipts ACCESS EXCLUSIVE in order before fresh emptiness query; one-second local lock timeout retained.",
+    "INSERT decodes exact input and validates Account/command/codec/digest/same-Account DESIGNATE origin; immutable update tuple uses IS DISTINCT FROM; conjunctions use IS NOT TRUE to reject nulls.",
+    "Only pending cancellation with retained exact payload or due expiry with cleared payload admitted; COMMITTED and receipt insertion explicitly unavailable. Statement mutation barriers cover zero-row requests/events/receipt operations.",
+    "AFTER event guard sees final inserted tuple, requires exact revision/time/state and current native family/account-generation correlation; only reacquires already-held family guard along canonical owner path.",
+    "Deferred closure reads final key-local request/events/receipt state, requires exact one/two-event correlation and null-safe terminal shape; no new Account/family locks or historical current-session revalidation.",
+    "Routine ACL installation revokes PUBLIC/owner then enumerates actual ACL grantees, preserving unknown-default ACL denial.",
+    "Generator log reports68executed/68passed; preservation log reports1executed/1passed; generation-check log empty. Reviewer did not independently execute those checks."
+  ],
+  "reviewed_log_sha256": {
+    "/private/tmp/console-company-guards-buck-generator-20260920.log": "ed28f58b89c954d93e63a3ae7346c7ce4ba01c2c6d7cad2f1018b74f5d9e20f3",
+    "/private/tmp/console-company-guards-preservation-20260920.log": "26a2157691aecf52871e13521306b611618cafe5bfc90d41154d52b360a51897",
+    "/private/tmp/console-company-guards-generation-check-20260920.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "tests_executed_by_reviewer": 0,
+  "sql_executed_by_reviewer": 0,
+  "repository_files_changed_by_reviewer": 0,
+  "remaining_holds": [
+    "Root six actual native SQLx leaves and independent runtime evidence review still pending.",
+    "Actual168hour expiry-positive, terminal cleanup and populated guard rollout remain unqualified.",
+    "Trusted schema owner can alter triggers or submit a valid paired transition; invariants do not establish signed browser authority. Opaque Auth guard finish before commit remains required.",
+    "Private intake guard source does not satisfy Company effects/current context, original HTTP lane, milestones or release."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "reviewer": "/root/integration_security",
+  "candidate_sha": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "decision": "accepted-bounded-list30-runtime-evidence-transition-lane-still-HOLD",
+  "custody_sha256": "6bfec304a37e7f9b7d828a7b2e4ba6eacbf2b8aa9730d3341a72f66311addfe4",
+  "resolved_finding": "PLATFORM-LIST-MOUNTED503-EVIDENCE: actual6fault GET/HEAD attempts and3recoveries passed inside full30 and independently repeated focused1leaf; this closes the identified mounted503 gap only.",
+  "verified_results": [
+    {
+      "invocation": "platform-list-owner",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 443,
+      "seconds": 10.04
+    },
+    {
+      "invocation": "platform-list-full30",
+      "executed": 30,
+      "passed": 30,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 414,
+      "seconds": 273.92
+    },
+    {
+      "invocation": "platform-list-mounted503",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 443,
+      "seconds": 13.86
+    }
+  ],
+  "deduplication": "Original owner and mounted503 leaves are already included in full30;3invocations are not32distinct tests. Runner map order owner thenfull30thenfocused503 verified.",
+  "checks": [
+    "Three archived verification artifacts hash/regularfile/originalbyte matched.",
+    "Exact original named owner command unchanged from26dRED; full30 includes real current-source/family histories, signed/configured expiry, independent progress, cancellation/outerprivacy, lostCOMMIT and complete-effect oracle controls.",
+    "Clippy log completes42.28s with no source diagnostic error; root reports exit0. Existing dependency future-incompatibility note remains."
+  ],
+  "transition_status": {
+    "full52_run2": {
+      "passed": 49,
+      "failed": 3,
+      "ignored": 0,
+      "filtered": 391,
+      "seconds": 678.68,
+      "failed_leaves": [
+        "platform_source_fresh_observer_upgrade_and_rollback",
+        "platform_source_fresh_plain_upgrade_and_replay",
+        "platform_source_populated_observer_upgrade_preserves_history"
+      ]
+    },
+    "diagnostic_successor_run1": {
+      "fresh_passed": 2,
+      "fresh_seconds": 35.87,
+      "populated_passed": 2,
+      "populated_seconds": 40.5
+    },
+    "interpretation": "Intermittent exact metadata-equality failures remain undiagnosed. Four diagnostic passes do not erase failed52run or establish maintenance/replay cause. No fixture-normalization approval."
+  },
+  "remaining_holds": [
+    "Diagnose three transition failures, independently review any actual correction and complete required retained transition acceptance.",
+    "Final candidate after current path-only diagnostic successor still needs exact source/evidence binding.",
+    "No production performance/durability/workflow UX/release qualification inferred from disposable correctness runs.",
+    "OtherPlatform owners/rawSQL and full0-10release requirements remain open."
+  ],
+  "review_runtime_executed": 0
+}

@@ -1,0 +1,1313 @@
+// Include INSIDE reviewed intake_owner. Auth seam proposal; runtime tests0.
+mod signed_credentials {
+    use super::*;
+    use console_platform_auth::account::{AccountEnrollmentCredentials, AccountOperationError};
+    use console_platform_auth::{JwtSettings, JwtVerifier};
+
+    struct Signed {
+        account: Uuid,
+        session: Uuid,
+        access: String,
+        csrf: String,
+        other_family_csrf: String,
+        foreign_csrf: String,
+        key: SigningKey,
+        verifier: JwtVerifier,
+        ttl: time::Duration,
+        business: PgPool,
+        startup: PgPool,
+        designation: Uuid,
+    }
+
+    async fn fixture(pool: &PgPool, revoked: bool) -> Signed {
+        let (app, key) = signed_fixture(pool).await;
+        let (mut account, cookies) = enrolled(&app).await;
+        let csrf = proof(&app, &cookies).await;
+        let other = fresh_login(&app, &mut account).await;
+        let other_family_csrf = proof(&app, &other).await;
+        let (_, foreign) = enrolled(&app).await;
+        let foreign_csrf = proof(&app, &foreign).await;
+        let startup = startup(pool).await;
+        let designation = designation(pool, account.account).await;
+        let receipt = designate(&startup, &designation).await.unwrap();
+        assert!(!receipt.0.is_nil() && receipt.1 == 1 && !receipt.2);
+        let config = account_browser_config(pool, app._artifacts.root.clone(), &key);
+        let jwt = config.jwt.unwrap();
+        let ttl = config.auth_rest.unwrap().refresh_family_absolute_ttl;
+        let verifier = JwtVerifier::from_es256_public_pem(
+            JwtSettings {
+                issuer: jwt.issuer,
+                audience: jwt.audience,
+                access_token_ttl: time::Duration::minutes(15),
+            },
+            jwt.public_key_pem.as_bytes(),
+        )
+        .unwrap();
+        let claims = signed_claims(&cookies.0[ACCESS], &key).unwrap();
+        let session = Uuid::parse_str(claims["sid"].as_str().unwrap()).unwrap();
+        assert_eq!(claims["sub"], json!(account.account));
+        if revoked {
+            let response = request(
+                &app,
+                "POST",
+                "/api/v2/auth/logout",
+                &cookies,
+                Some(json!({})),
+                &[("X-Console-CSRF", &csrf)],
+            )
+            .await;
+            assert_eq!(response.status, StatusCode::OK);
+            let actual:bool=sqlx::query_scalar("SELECT revoked_at IS NOT NULL FROM public.auth_refresh_token_families WHERE id=$1 AND user_id=$2")
+                .bind(session).bind(account.account).fetch_one(pool).await.unwrap();
+            assert!(actual, "real logout owner must revoke selected family");
+        }
+        let business = install(pool).await;
+        Signed {
+            account: account.account,
+            session,
+            access: cookies.0[ACCESS].clone(),
+            csrf,
+            other_family_csrf,
+            foreign_csrf,
+            key,
+            verifier,
+            ttl,
+            business,
+            startup,
+            designation: designation.command,
+        }
+    }
+
+    async fn prepare_signed(
+        f: &Signed,
+        command: Uuid,
+        access: &str,
+        csrf: &str,
+    ) -> Result<(), AccountOperationError> {
+        let mut tx = f.business.begin().await?;
+        let result = async {
+            let credentials = AccountEnrollmentCredentials::for_mutation(access, csrf)?;
+            let account = credentials
+                .account_id_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await?;
+            assert_eq!(account, f.account);
+            let input = bytes(account, command, account);
+            let mut guard = credentials
+                .lock_submit_in_tx(&mut tx, &f.verifier, f.ttl, command, &input)
+                .await?;
+            let rows: Vec<(String, Option<Uuid>)> = sqlx::query_as(
+                "SELECT state,receipt_id FROM public.company_enrollment_prepare_v1($1,$2,$3,$4)",
+            )
+            .bind(guard.account_id())
+            .bind(guard.session_id())
+            .bind(command)
+            .bind(&input)
+            .fetch_all(guard.connection())
+            .await?;
+            assert_eq!(rows, vec![("PENDING".into(), None)]);
+            guard.finish().await?;
+            Ok(())
+        }
+        .await;
+        match result {
+            Ok(()) => {
+                tx.commit().await?;
+                Ok(())
+            }
+            Err(error) => {
+                tx.rollback().await?;
+                Err(error)
+            }
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_signed_current_credentials_prepare_reopen_and_cancel_exact_history(
+        pool: PgPool,
+    ) {
+        let f = fixture(&pool, false).await;
+        let command = Uuid::new_v4();
+        let input = bytes(f.account, command, f.account);
+        let before = all_rows(&pool).await;
+        let lower = now(&pool).await;
+        prepare_signed(&f, command, &f.access, &f.csrf)
+            .await
+            .unwrap();
+        let upper = now(&pool).await;
+        pending(
+            &pool,
+            f.account,
+            f.session,
+            command,
+            &input,
+            f.designation,
+            (lower, upper),
+        )
+        .await;
+        let prepared = all_rows(&pool).await;
+        unrelated_unchanged(&before, &prepared);
+        for relation in [
+            "company_enrollment_requests",
+            "company_enrollment_request_events",
+        ] {
+            assert_eq!(
+                added_rows(&before[relation], &prepared[relation])
+                    .unwrap()
+                    .len(),
+                1
+            );
+        }
+        let mut tx = f.business.begin().await.unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        assert!(matches!(
+            read.lock_submit_in_tx(&mut tx, &f.verifier, f.ttl, command, &input)
+                .await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        assert!(matches!(
+            read.lock_cancel_in_tx(&mut tx, &f.verifier, f.ttl, command)
+                .await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        let mut guard = read
+            .lock_status_in_tx(&mut tx, &f.verifier, f.ttl, command)
+            .await
+            .unwrap();
+        assert!(guard.planned_recipient().is_none());
+        assert_eq!(
+            guard.planned_input_digest(),
+            Some(Sha256::digest(&input).as_slice())
+        );
+        let rows = sqlx::query("SELECT * FROM public.company_enrollment_status_v1($1,$2,$3)")
+            .bind(f.account)
+            .bind(f.session)
+            .bind(command)
+            .fetch_all(guard.connection())
+            .await
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].get::<String, _>("state"), "PENDING");
+        assert_eq!(rows[0].get::<i16, _>("codec_version"), 1);
+        assert!(rows[0].get::<Vec<u8>, _>("input_bytes") == input);
+        for name in [
+            "receipt_id",
+            "org_id",
+            "group_id",
+            "administrative_account_id",
+        ] {
+            assert!(rows[0].get::<Option<Uuid>, _>(name).is_none());
+        }
+        guard.finish().await.unwrap();
+        tx.commit().await.unwrap();
+        assert!(prepared == all_rows(&pool).await);
+        let mut tx = f.business.begin().await.unwrap();
+        let credentials = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let lower = now(&pool).await;
+        let mut guard = credentials
+            .lock_cancel_in_tx(&mut tx, &f.verifier, f.ttl, command)
+            .await
+            .unwrap();
+        let rows = sqlx::query("SELECT * FROM public.company_enrollment_cancel_v1($1,$2,$3)")
+            .bind(f.account)
+            .bind(f.session)
+            .bind(command)
+            .fetch_all(guard.connection())
+            .await
+            .unwrap();
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].get::<String, _>("state"), "CANCELLED");
+        for name in [
+            "receipt_id",
+            "org_id",
+            "group_id",
+            "administrative_account_id",
+        ] {
+            assert!(rows[0].get::<Option<Uuid>, _>(name).is_none());
+        }
+        guard.finish().await.unwrap();
+        tx.commit().await.unwrap();
+        let upper = now(&pool).await;
+        assert!(cancel_successor(
+            &prepared,
+            &all_rows(&pool).await,
+            f.account,
+            command,
+            f.session
+        ));
+        let bounded:bool=sqlx::query_scalar("SELECT terminal_at >= $3 AND terminal_at <= $4 FROM public.company_enrollment_requests WHERE account_id=$1 AND command_id=$2").bind(f.account).bind(command).bind(lower).bind(upper).fetch_one(&pool).await.unwrap();
+        assert!(bounded);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_signed_invalid_access_and_bound_proofs_preserve_every_row(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let access_claims = signed_claims(&f.access, &f.key).unwrap();
+        let proof_claims = signed_claims(&f.csrf, &f.key).unwrap();
+        let bad_key_access = sign_proof_claims(&access_claims, &SigningKey::random(&mut OsRng));
+        assert!(
+            f.verifier
+                .verify_account_access_token(&bad_key_access, now(&pool).await)
+                .is_err()
+        );
+        let mut cases = vec![
+            ("".to_owned(), f.csrf.clone(), false),
+            (f.csrf.clone(), f.csrf.clone(), false),
+            (bad_key_access.clone(), f.csrf.clone(), false),
+            (f.access.clone(), "".to_owned(), true),
+            (f.access.clone(), f.access.clone(), true),
+            (f.access.clone(), f.other_family_csrf.clone(), true),
+            (f.access.clone(), f.foreign_csrf.clone(), true),
+        ];
+        // Actual signature damage, not only a different otherwise-trusted key.
+        let mut damaged = f.access.clone();
+        let signature = damaged.rfind('.').unwrap() + 1;
+        let replacement = if &damaged[signature..signature + 1] == "A" {
+            "B"
+        } else {
+            "A"
+        };
+        damaged.replace_range(signature..signature + 1, replacement);
+        assert!(
+            f.verifier
+                .verify_account_access_token(&damaged, now(&pool).await)
+                .is_err()
+        );
+        cases.push((damaged, f.csrf.clone(), false));
+        let expiry = access_claims["iat"].as_i64().unwrap() + 1;
+        sqlx::query("SELECT pg_sleep(GREATEST(0.0,$1::double precision-extract(epoch FROM clock_timestamp()))+0.025)").bind(expiry as f64).execute(&pool).await.unwrap();
+        let at = now(&pool).await.unix_timestamp();
+        let mut expired = access_claims.clone();
+        expired["exp"] = json!(expiry);
+        let expired = sign_proof_claims(&expired, &f.key);
+        assert!(matches!(
+            f.verifier
+                .verify_account_access_token(&expired, now(&pool).await)
+                .unwrap(),
+            console_platform_auth::AccountAccessVerification::Expired(_)
+        ));
+        cases.push((expired, f.csrf.clone(), false));
+        let mut wrong = access_claims.clone();
+        wrong["auth_time"] = json!(0);
+        cases.push((sign_proof_claims(&wrong, &f.key), f.csrf.clone(), false));
+        let mut wrong = proof_claims.clone();
+        wrong["security_generation"] = json!((claim_generation(&proof_claims) + 1).to_string());
+        cases.push((f.access.clone(), sign_proof_claims(&wrong, &f.key), true));
+        let mut expired = proof_claims;
+        expired["iat"] = json!(at - 10);
+        expired["nbf"] = json!(at - 10);
+        expired["exp"] = json!(at);
+        cases.push((f.access.clone(), sign_proof_claims(&expired, &f.key), true));
+        assert_eq!(cases.len(), 12);
+        for (access, csrf, proof_error) in cases {
+            let result = prepare_signed(&f, Uuid::new_v4(), &access, &csrf).await;
+            assert!(if proof_error {
+                matches!(result, Err(AccountOperationError::CsrfInvalid))
+            } else {
+                matches!(result, Err(AccountOperationError::AuthenticationInvalid))
+            });
+            assert!(
+                before == all_rows(&pool).await,
+                "signed refusal changed complete history"
+            );
+        }
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_signed_real_logout_revocation_denies_retained_access_and_proof(pool: PgPool) {
+        let f = fixture(&pool, true).await;
+        let before = all_rows(&pool).await;
+        assert!(matches!(
+            prepare_signed(&f, Uuid::new_v4(), &f.access, &f.csrf).await,
+            Err(AccountOperationError::AuthenticationInvalid)
+        ));
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_signed_expiry_after_material_wait_and_after_owner_rolls_back(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        for after_owner in [false, true] {
+            for proof_expires in [false, true] {
+                let before = all_rows(&pool).await;
+                let command = Uuid::new_v4();
+                let input = bytes(f.account, command, f.account);
+                let expires = if after_owner {
+                    now(&pool).await.unix_timestamp() + 3
+                } else {
+                    // Real integer-second JWT deadline, chosen with ~650-750ms left.
+                    // Release after expiry stays inside the SQL owner's fixed1s wait.
+                    tokio::time::timeout(std::time::Duration::from_secs(2), async {
+                        loop {
+                            let at = now(&pool).await;
+                            if (250_000_000..=350_000_000).contains(&at.nanosecond()) {
+                                break at.unix_timestamp() + 1;
+                            }
+                            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+                        }
+                    })
+                    .await
+                    .unwrap()
+                };
+                let mut access = f.access.clone();
+                let mut csrf = f.csrf.clone();
+                let token = if proof_expires {
+                    &mut csrf
+                } else {
+                    &mut access
+                };
+                let mut claims = signed_claims(token, &f.key).unwrap();
+                claims["exp"] = json!(expires);
+                *token = sign_proof_claims(&claims, &f.key);
+                let mut tx = f.business.begin().await.unwrap();
+                sqlx::raw_sql("SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='5s'")
+                    .execute(tx.as_mut())
+                    .await
+                    .unwrap();
+                let credentials =
+                    AccountEnrollmentCredentials::for_mutation(&access, &csrf).unwrap();
+                assert_eq!(
+                    credentials
+                        .account_id_in_tx(&mut tx, &f.verifier, f.ttl)
+                        .await
+                        .unwrap(),
+                    f.account
+                );
+                if after_owner {
+                    let mut guard = credentials
+                        .lock_submit_in_tx(&mut tx, &f.verifier, f.ttl, command, &input)
+                        .await
+                        .unwrap();
+                    let rows:Vec<(String,Option<Uuid>)>=sqlx::query_as("SELECT state,receipt_id FROM public.company_enrollment_prepare_v1($1,$2,$3,$4)").bind(f.account).bind(f.session).bind(command).bind(&input).fetch_all(guard.connection()).await.unwrap();
+                    assert_eq!(rows, vec![("PENDING".into(), None)]);
+                    let reached:Vec<(String,Option<Vec<u8>>)>=sqlx::query_as("SELECT state,input_bytes FROM public.company_enrollment_status_v1($1,$2,$3)").bind(f.account).bind(f.session).bind(command).fetch_all(guard.connection()).await.unwrap();
+                    assert_eq!(reached, vec![("PENDING".into(), Some(input.clone()))]);
+                    sqlx::query("SELECT pg_sleep(GREATEST(0.0,$1::double precision-extract(epoch FROM clock_timestamp()))+0.025)").bind(expires as f64).execute(guard.connection()).await.unwrap();
+                    let result = guard.finish().await;
+                    assert!(if proof_expires {
+                        matches!(result, Err(AccountOperationError::CsrfInvalid))
+                    } else {
+                        matches!(result, Err(AccountOperationError::AuthenticationInvalid))
+                    });
+                } else {
+                    let mut blocker = pool.begin().await.unwrap();
+                    let holder: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+                        .fetch_one(blocker.as_mut())
+                        .await
+                        .unwrap();
+                    sqlx::query("SELECT * FROM public.account_security_lock_exclusive_v1($1)")
+                        .bind(f.account)
+                        .fetch_one(blocker.as_mut())
+                        .await
+                        .unwrap();
+                    let waiter: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+                        .fetch_one(tx.as_mut())
+                        .await
+                        .unwrap();
+                    let observe = async {
+                        let reached=tokio::time::timeout(std::time::Duration::from_millis(500),async {
+                        loop {let waiting:bool=sqlx::query_scalar("SELECT $2=ANY(pg_blocking_pids($1)) AND extract(epoch FROM clock_timestamp()) < $3::bigint").bind(waiter).bind(holder).bind(expires).fetch_one(&pool).await.unwrap();if waiting {break;}tokio::time::sleep(std::time::Duration::from_millis(5)).await;}
+                    }).await.is_ok();
+                        if reached {
+                            sqlx::query("SELECT pg_sleep(GREATEST(0.0,$1::double precision-extract(epoch FROM clock_timestamp()))+0.025)").bind(expires as f64).execute(&pool).await.unwrap();
+                        }
+                        blocker.rollback().await.unwrap();
+                        reached
+                    };
+                    let acquire = async {
+                        let result = credentials
+                            .lock_submit_in_tx(&mut tx, &f.verifier, f.ttl, command, &input)
+                            .await;
+                        match result {
+                            Ok(guard) => {
+                                drop(guard);
+                                false
+                            }
+                            Err(error) => {
+                                if proof_expires {
+                                    matches!(error, AccountOperationError::CsrfInvalid)
+                                } else {
+                                    matches!(error, AccountOperationError::AuthenticationInvalid)
+                                }
+                            }
+                        }
+                    };
+                    let (refused, reached) =
+                        tokio::time::timeout(std::time::Duration::from_secs(12), async {
+                            tokio::join!(acquire, observe)
+                        })
+                        .await
+                        .unwrap();
+                    assert!(
+                        reached && refused,
+                        "actual material lockwait before expiry and exact Auth refusal required"
+                    );
+                }
+                tx.rollback().await.unwrap();
+                assert!(
+                    before == all_rows(&pool).await,
+                    "expired proof left request/event or other history"
+                );
+            }
+        }
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[test]
+    fn company_signed_capture_bounds_are_exact_without_claiming_authentication() {
+        // Raw capture success is deliberately not signature/current authority.
+        let access = "a".repeat(16 * 1024);
+        let proof = "p".repeat(4 * 1024);
+        assert!(AccountEnrollmentCredentials::for_read(&access).is_ok());
+        assert!(AccountEnrollmentCredentials::for_mutation(&access, &proof).is_ok());
+        for candidate in [String::new(), "a".repeat(16 * 1024 + 1)] {
+            assert!(matches!(
+                AccountEnrollmentCredentials::for_read(&candidate),
+                Err(AccountOperationError::AuthenticationInvalid)
+            ));
+            assert!(matches!(
+                AccountEnrollmentCredentials::for_mutation(&candidate, &proof),
+                Err(AccountOperationError::AuthenticationInvalid)
+            ));
+        }
+        for candidate in [String::new(), "p".repeat(4 * 1024 + 1)] {
+            assert!(matches!(
+                AccountEnrollmentCredentials::for_mutation(&access, &candidate),
+                Err(AccountOperationError::CsrfInvalid)
+            ));
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_signed_nonpositive_configured_ttl_never_acquires_authority(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let command = Uuid::new_v4();
+        let input = bytes(f.account, command, f.account);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        for ttl in [time::Duration::ZERO, time::Duration::seconds(-1)] {
+            let mut tx = f.business.begin().await.unwrap();
+            assert!(matches!(
+                mutation.account_id_in_tx(&mut tx, &f.verifier, ttl).await,
+                Err(AccountOperationError::AuthorityUnavailable)
+            ));
+            assert!(matches!(
+                read.account_id_in_tx(&mut tx, &f.verifier, ttl).await,
+                Err(AccountOperationError::AuthorityUnavailable)
+            ));
+            assert!(matches!(
+                mutation
+                    .lock_submit_in_tx(&mut tx, &f.verifier, ttl, command, &input)
+                    .await,
+                Err(AccountOperationError::AuthorityUnavailable)
+            ));
+            assert!(matches!(
+                read.lock_status_in_tx(&mut tx, &f.verifier, ttl, command)
+                    .await,
+                Err(AccountOperationError::AuthorityUnavailable)
+            ));
+            assert!(matches!(
+                mutation
+                    .lock_cancel_in_tx(&mut tx, &f.verifier, ttl, command)
+                    .await,
+                Err(AccountOperationError::AuthorityUnavailable)
+            ));
+            tx.rollback().await.unwrap();
+            assert!(before == all_rows(&pool).await);
+        }
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_signed_ids_take_no_authority_locks_and_read_retains_both(pool: PgPool) {
+        use sqlx::Connection as _;
+        use std::time::Duration as Wait;
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let credentials = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let probes = [
+            (
+                "SELECT account_id FROM public.account_security WHERE account_id=$1 FOR NO KEY UPDATE",
+                f.account,
+            ),
+            (
+                "SELECT id FROM public.auth_refresh_token_families WHERE id=$1 FOR NO KEY UPDATE",
+                f.session,
+            ),
+        ];
+        let mut tx = f.business.begin().await.unwrap();
+        let login: bool =
+            sqlx::query_scalar("SELECT session_user=current_user AND current_user='console_rt'")
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        assert!(
+            login,
+            "wrapper must run through actual restricted Business login"
+        );
+        assert_eq!(
+            credentials
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap(),
+            (f.account, f.session)
+        );
+        // Exact competing non-key write locks succeed before the IDs transaction
+        // ends. NOWAIT fails promptly if either authority guard was acquired.
+        for (query, id) in probes {
+            let mut observer = sqlx::PgConnection::connect_with(&pool.connect_options())
+                .await
+                .unwrap();
+            let mut probe = observer.begin().await.unwrap();
+            let no_wait = format!("{query} NOWAIT");
+            let result: Result<Uuid, _> = sqlx::query_scalar(sqlx::AssertSqlSafe(no_wait))
+                .bind(id)
+                .fetch_one(&mut *probe)
+                .await;
+            probe.rollback().await.unwrap();
+            assert_eq!(result.unwrap(), id);
+        }
+        tx.rollback().await.unwrap();
+        // Positive controls use the same actual rows and lock modes. A resolver
+        // that merely returns IDs cannot satisfy these exact PID witnesses.
+        for (query, id) in probes {
+            let mut tx = f.business.begin().await.unwrap();
+            let current = credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap();
+            assert_eq!(
+                (current.account_id, current.session_id),
+                (f.account, f.session)
+            );
+            let claims = signed_claims(&f.access, &f.key).unwrap();
+            assert_eq!(current.security_generation, claim_generation(&claims));
+            assert_eq!(
+                current.auth_time.unix_timestamp(),
+                claims["auth_time"].as_i64().unwrap()
+            );
+            assert_eq!(
+                current.expires_at.unix_timestamp(),
+                claims["exp"].as_i64().unwrap()
+            );
+            let holder: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+            let mut observer = sqlx::PgConnection::connect_with(&pool.connect_options())
+                .await
+                .unwrap();
+            let waiter: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+                .fetch_one(&mut observer)
+                .await
+                .unwrap();
+            assert_ne!(holder, waiter);
+            let mut work = tokio::spawn(async move {
+                let mut probe = observer.begin().await.unwrap();
+                sqlx::raw_sql("SET LOCAL statement_timeout='12s'; SET LOCAL lock_timeout='0'")
+                    .execute(&mut *probe)
+                    .await
+                    .unwrap();
+                let result: Result<Uuid, _> = sqlx::query_scalar(query)
+                    .bind(id)
+                    .fetch_one(&mut *probe)
+                    .await;
+                probe.rollback().await.unwrap();
+                result
+            });
+            let reached = tokio::time::timeout(Wait::from_secs(4), async {
+                loop {
+                    let blocked: bool = sqlx::query_scalar("SELECT $2=ANY(pg_catalog.pg_blocking_pids($1)) AND EXISTS(SELECT 1 FROM pg_catalog.pg_stat_activity WHERE pid=$1 AND query=$3)")
+                        .bind(waiter).bind(holder).bind(query).fetch_one(&pool).await.unwrap();
+                    if blocked { break true; }
+                    if work.is_finished() { break false; }
+                    tokio::time::sleep(Wait::from_millis(10)).await;
+                }
+            }).await;
+            tx.rollback().await.unwrap();
+            let completed = tokio::time::timeout(Wait::from_secs(5), &mut work).await;
+            if completed.is_err() {
+                work.abort();
+                let _ = tokio::time::timeout(Wait::from_secs(5), &mut work).await;
+            }
+            assert!(
+                matches!(reached, Ok(true)),
+                "exact authority row writer must wait on retained read transaction"
+            );
+            assert_eq!(
+                completed
+                    .expect("writer completes after reader rollback")
+                    .unwrap()
+                    .unwrap(),
+                id
+            );
+        }
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_wrapper_rejects_real_revocation_and_signed_wrong_binding(pool: PgPool) {
+        let f = fixture(&pool, true).await;
+        let before = all_rows(&pool).await;
+        let credentials = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mut tx = f.business.begin().await.unwrap();
+        // Signed namespace is intentionally not current authority.
+        assert_eq!(
+            credentials
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap(),
+            (f.account, f.session)
+        );
+        assert!(matches!(
+            credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await,
+            Err(AccountOperationError::AuthenticationInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        let mut wrong = signed_claims(&f.access, &f.key).unwrap();
+        let foreign = signed_claims(&f.foreign_csrf, &f.key).unwrap();
+        let foreign_family = Uuid::parse_str(foreign["sid"].as_str().unwrap()).unwrap();
+        assert_ne!(foreign["sub"], wrong["sub"]);
+        // Bind the Account's genuine signed subject to another real Account's
+        // existing native family; a nonexistent UUID is not this oracle.
+        wrong["sid"] = foreign["sid"].clone();
+        let access = sign_proof_claims(&wrong, &f.key);
+        let credentials = AccountEnrollmentCredentials::for_read(&access).unwrap();
+        let mut tx = f.business.begin().await.unwrap();
+        assert_eq!(
+            credentials
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap(),
+            (f.account, foreign_family)
+        );
+        assert!(matches!(
+            credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await,
+            Err(AccountOperationError::AuthenticationInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_wrappers_reject_invalid_and_expired_signed_access(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let claims = signed_claims(&f.access, &f.key).unwrap();
+        let wrong_key = sign_proof_claims(&claims, &SigningKey::random(&mut OsRng));
+        let expiry = claims["iat"].as_i64().unwrap() + 1;
+        sqlx::query("SELECT pg_sleep(GREATEST(0.0,$1::double precision-extract(epoch FROM clock_timestamp()))+0.025)").bind(expiry as f64).execute(&pool).await.unwrap();
+        let mut expired = claims;
+        expired["exp"] = json!(expiry);
+        let expired = sign_proof_claims(&expired, &f.key);
+        assert!(matches!(
+            f.verifier
+                .verify_account_access_token(&expired, now(&pool).await)
+                .unwrap(),
+            console_platform_auth::AccountAccessVerification::Expired(_)
+        ));
+        for access in [wrong_key, f.csrf.clone(), expired] {
+            let credentials = AccountEnrollmentCredentials::for_read(&access).unwrap();
+            let mut tx = f.business.begin().await.unwrap();
+            assert!(matches!(
+                credentials
+                    .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                    .await,
+                Err(AccountOperationError::AuthenticationInvalid)
+            ));
+            assert!(matches!(
+                credentials
+                    .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                    .await,
+                Err(AccountOperationError::AuthenticationInvalid)
+            ));
+            tx.rollback().await.unwrap();
+        }
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_wrappers_reject_nonpositive_ttl_without_effects(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        for credentials in [&read, &mutation] {
+            for ttl in [time::Duration::ZERO, time::Duration::seconds(-1)] {
+                let mut tx = f.business.begin().await.unwrap();
+                assert!(matches!(
+                    credentials
+                        .session_ids_in_tx(&mut tx, &f.verifier, ttl)
+                        .await,
+                    Err(AccountOperationError::AuthorityUnavailable)
+                ));
+                assert!(matches!(
+                    credentials
+                        .read_session_in_tx(&mut tx, &f.verifier, ttl)
+                        .await,
+                    Err(AccountOperationError::AuthorityUnavailable)
+                ));
+                tx.rollback().await.unwrap();
+            }
+        }
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_transport_capture_forwards_exact_signed_access_and_mutation_proof(
+        pool: PgPool,
+    ) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let state = console_platform_auth_rest::AuthRestState::new(
+            f.business.clone(),
+            console_platform_auth_rest::AuthRestConfig {
+                rp_id: "example.com".into(),
+                rp_origin: TEST_ORIGIN.into(),
+                rp_name: "Console".into(),
+                ceremony_ttl: time::Duration::minutes(5),
+                jwt_issuer: TEST_ISSUER.into(),
+                jwt_audience: TEST_AUDIENCE.into(),
+                jwt_private_key_pem: f.key.to_pkcs8_pem(LineEnding::LF).unwrap().to_string(),
+                jwt_public_key_pem: f
+                    .key
+                    .verifying_key()
+                    .to_public_key_pem(LineEnding::LF)
+                    .unwrap(),
+                refresh_token_ttl: time::Duration::days(30),
+                refresh_family_absolute_ttl: f.ttl,
+                cookie_secure: true,
+            },
+        )
+        .unwrap();
+        let mut headers = http::HeaderMap::new();
+        headers.insert(
+            http::header::COOKIE,
+            http::HeaderValue::from_str(&format!("{ACCESS}={}", f.access)).unwrap(),
+        );
+        let read = state.company_api_read_credentials(&headers).unwrap();
+        headers.insert("sec-fetch-site", http::HeaderValue::from_static("none"));
+        headers.insert("sec-fetch-mode", http::HeaderValue::from_static("navigate"));
+        headers.insert("sec-fetch-dest", http::HeaderValue::from_static("document"));
+        let document = state
+            .company_document_credentials(&headers)
+            .unwrap_or_else(|_| panic!("genuine document capture"));
+        headers.remove("sec-fetch-mode");
+        headers.remove("sec-fetch-dest");
+        headers.insert(
+            "sec-fetch-site",
+            http::HeaderValue::from_static("same-origin"),
+        );
+        headers.insert(
+            http::header::ORIGIN,
+            http::HeaderValue::from_static(TEST_ORIGIN),
+        );
+        headers.insert(
+            http::header::CONTENT_TYPE,
+            http::HeaderValue::from_static("application/json"),
+        );
+        headers.insert(
+            "x-console-csrf",
+            http::HeaderValue::from_str(&f.csrf).unwrap(),
+        );
+        let mutation = state.company_api_mutation_credentials(&headers).unwrap();
+        for credentials in [&read, &document, &mutation] {
+            let mut tx = f.business.begin().await.unwrap();
+            let runtime: bool = sqlx::query_scalar(
+                "SELECT session_user=current_user AND current_user='console_rt'",
+            )
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+            assert!(runtime);
+            assert_eq!(
+                credentials
+                    .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                    .await
+                    .unwrap(),
+                (f.account, f.session)
+            );
+            let current = credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap();
+            assert_eq!(
+                (current.account_id, current.session_id),
+                (f.account, f.session)
+            );
+            tx.rollback().await.unwrap();
+        }
+        // Transport captures bounded bytes; only the actual Auth owner rejects
+        // a genuine proof belonging to another current family of this Account.
+        headers.insert(
+            "x-console-csrf",
+            http::HeaderValue::from_str(&f.other_family_csrf).unwrap(),
+        );
+        let wrong_proof = state.company_api_mutation_credentials(&headers).unwrap();
+        let mut tx = f.business.begin().await.unwrap();
+        assert!(matches!(
+            wrong_proof
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        assert!(
+            before == all_rows(&pool).await,
+            "capture/read/refusal changed complete owner history"
+        );
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    fn intake_store(f: &Signed) -> console_identity_adapter_postgres::PgOrgStore {
+        console_identity_adapter_postgres::PgOrgStore::new(f.business.clone())
+            .with_native_account_auth(f.verifier.clone(), f.ttl)
+    }
+
+    fn assert_intake_pending(
+        status: console_identity_application::company_enrollment::CompanyEnrollmentStatus,
+        command: Uuid,
+        administrator: Uuid,
+    ) {
+        use console_identity_application::company_enrollment::CompanyEnrollmentStatus;
+        let CompanyEnrollmentStatus::Pending(input) = status else {
+            panic!("owning transaction did not confirm expected pending draft");
+        };
+        assert_eq!(input.command_id(), command);
+        assert_eq!(input.administrative_account_id(), administrator);
+        assert_eq!(input.group_id(), None);
+        assert_eq!(input.slug(), format!("native-{}", command.simple()));
+        assert_eq!(input.name(), "연결된 업무 회사");
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_prepares_reopens_conflicts_and_cancels_exact_history(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, CompanyEnrollmentStatus, cancel_company_enrollment,
+            company_enrollment_status, prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let command = Uuid::new_v4();
+        let input = enrollment(command, f.account);
+        let raw = serde_json::to_vec(&input).unwrap();
+        let before = all_rows(&pool).await;
+        let lower = now(&pool).await;
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        let upper = now(&pool).await;
+        pending(
+            &pool,
+            f.account,
+            f.session,
+            command,
+            &bytes(f.account, command, f.account),
+            f.designation,
+            (lower, upper),
+        )
+        .await;
+        let prepared = all_rows(&pool).await;
+        unrelated_unchanged(&before, &prepared);
+        for table in [
+            "company_enrollment_requests",
+            "company_enrollment_request_events",
+        ] {
+            assert_eq!(
+                added_rows(&before[table], &prepared[table]).unwrap().len(),
+                1
+            );
+        }
+        // A newly composed store must reopen persisted state, not local memory.
+        let reopened = intake_store(&f);
+        assert_intake_pending(
+            company_enrollment_status(&reopened, &read, command)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert_intake_pending(
+            prepare_company_enrollment(&reopened, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert!(prepared == all_rows(&pool).await);
+        let mut changed = input;
+        changed["name"] = json!("다른 회사 이름");
+        assert!(matches!(
+            prepare_company_enrollment(&store, &mutation, &serde_json::to_vec(&changed).unwrap())
+                .await,
+            Err(CompanyEnrollmentError::Conflict)
+        ));
+        assert!(
+            prepared == all_rows(&pool).await,
+            "conflict modified retained command bytes/history"
+        );
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        let cancelled = all_rows(&pool).await;
+        assert!(cancel_successor(
+            &prepared, &cancelled, f.account, command, f.session
+        ));
+        assert!(matches!(
+            company_enrollment_status(&reopened, &read, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&reopened, &mutation, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        assert!(matches!(
+            prepare_company_enrollment(&reopened, &mutation, &raw)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        let unknown = Uuid::new_v4();
+        assert!(matches!(
+            company_enrollment_status(&store, &read, unknown)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Missing
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, unknown)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Missing
+        ));
+        assert!(
+            cancelled == all_rows(&pool).await,
+            "terminal replay/healthy absence changed history"
+        );
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_rejects_invalid_transport_configuration_and_input(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, cancel_company_enrollment, company_enrollment_status,
+            prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let wrong =
+            AccountEnrollmentCredentials::for_mutation(&f.access, &f.other_family_csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        let before = all_rows(&pool).await;
+        for credentials in [&read, &wrong] {
+            assert!(matches!(
+                prepare_company_enrollment(&store, credentials, &raw).await,
+                Err(CompanyEnrollmentError::CsrfInvalid)
+            ));
+            assert!(matches!(
+                cancel_company_enrollment(&store, credentials, command).await,
+                Err(CompanyEnrollmentError::CsrfInvalid)
+            ));
+            assert!(before == all_rows(&pool).await);
+        }
+        for unconfigured in [
+            console_identity_adapter_postgres::PgOrgStore::new(f.business.clone()),
+            console_identity_adapter_postgres::PgOrgStore::new(f.business.clone())
+                .with_native_account_auth(f.verifier.clone(), time::Duration::ZERO),
+        ] {
+            assert!(matches!(
+                prepare_company_enrollment(&unconfigured, &mutation, &raw).await,
+                Err(CompanyEnrollmentError::Unavailable)
+            ));
+            assert!(matches!(
+                company_enrollment_status(&unconfigured, &read, command).await,
+                Err(CompanyEnrollmentError::Unavailable)
+            ));
+            assert!(matches!(
+                cancel_company_enrollment(&unconfigured, &mutation, command).await,
+                Err(CompanyEnrollmentError::Unavailable)
+            ));
+            assert!(before == all_rows(&pool).await);
+        }
+        let duplicate =
+            String::from_utf8(raw.clone())
+                .unwrap()
+                .replacen("{", "{\"name\":\"duplicate\",", 1);
+        for malformed in [b"[]".to_vec(), duplicate.into_bytes(), vec![b' '; 4097]] {
+            assert!(matches!(
+                prepare_company_enrollment(&store, &mutation, &malformed).await,
+                Err(CompanyEnrollmentError::InvalidInput)
+            ));
+        }
+        assert!(matches!(
+            company_enrollment_status(&store, &read, Uuid::nil()).await,
+            Err(CompanyEnrollmentError::InvalidInput)
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, Uuid::nil()).await,
+            Err(CompanyEnrollmentError::InvalidInput)
+        ));
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_real_logout_cannot_become_missing_or_pending(pool: PgPool) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, cancel_company_enrollment, company_enrollment_status,
+            prepare_company_enrollment,
+        };
+        let f = fixture(&pool, true).await;
+        let store = intake_store(&f);
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        let before = all_rows(&pool).await;
+        assert!(matches!(
+            company_enrollment_status(&store, &read, command).await,
+            Err(CompanyEnrollmentError::AuthenticationInvalid)
+        ));
+        assert!(matches!(
+            prepare_company_enrollment(&store, &mutation, &raw).await,
+            Err(CompanyEnrollmentError::AuthenticationInvalid)
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, command).await,
+            Err(CompanyEnrollmentError::AuthenticationInvalid)
+        ));
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_designation_revocation_denies_new_work_preserves_recovery(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, CompanyEnrollmentStatus, cancel_company_enrollment,
+            company_enrollment_status, prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        let current_designation = designation(&pool, f.account).await;
+        let receipt = revoke(
+            &f.startup,
+            &current_designation,
+            Uuid::new_v4(),
+            1,
+            "intake usecase recovery test",
+        )
+        .await
+        .unwrap();
+        assert!(!receipt.0.is_nil() && receipt.1 == 2 && !receipt.2);
+        let revoked = all_rows(&pool).await;
+        let new_command = Uuid::new_v4();
+        let new_raw = serde_json::to_vec(&enrollment(new_command, f.account)).unwrap();
+        assert!(matches!(
+            prepare_company_enrollment(&store, &mutation, &new_raw).await,
+            Err(CompanyEnrollmentError::Forbidden)
+        ));
+        assert_intake_pending(
+            company_enrollment_status(&store, &read, command)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert!(
+            revoked == all_rows(&pool).await,
+            "revocation/recovery changed existing pending command"
+        );
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        let cancelled = all_rows(&pool).await;
+        assert!(cancel_successor(
+            &revoked, &cancelled, f.account, command, f.session
+        ));
+        assert!(matches!(
+            company_enrollment_status(&intake_store(&f), &read, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        assert!(cancelled == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_deferred_commit_refusal_rolls_back_before_view_and_recovers(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        let before = all_rows(&pool).await;
+        for (code, message, expected) in [
+            (
+                "23514",
+                "test.intake_deferred_refusal",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "P0001",
+                "company_enrollment.intake_closure_invalid",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "P0001",
+                "company_enrollment.effect_unavailable",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "P0001",
+                "company_enrollment.guard_context_invalid",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "40003",
+                "test.statement_completion_unknown",
+                CompanyEnrollmentError::Unconfirmed,
+            ),
+            (
+                "P0001",
+                "test.unrecognized_deferred_refusal",
+                CompanyEnrollmentError::Unconfirmed,
+            ),
+        ] {
+            // Finite test-only server error injection at an actual deferred
+            // transaction boundary; not a simulation of network response loss.
+            sqlx::raw_sql(
+                r#"
+                CREATE SEQUENCE public.intake_usecase_commit_witness;
+                CREATE FUNCTION public.intake_usecase_refuse_commit() RETURNS trigger
+                LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+                BEGIN
+                    PERFORM nextval('public.intake_usecase_commit_witness'::regclass);
+                    RAISE EXCEPTION USING ERRCODE=TG_ARGV[0],MESSAGE=TG_ARGV[1];
+                END $$;
+            "#,
+            )
+            .execute(&pool)
+            .await
+            .unwrap();
+            // Inputs are the fixed strings above, never caller-provided SQL.
+            let trigger = format!(
+                "CREATE CONSTRAINT TRIGGER zz_intake_usecase_refuse_commit AFTER INSERT ON public.company_enrollment_requests DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.intake_usecase_refuse_commit('{code}','{message}')"
+            );
+            sqlx::raw_sql(sqlx::AssertSqlSafe(trigger))
+                .execute(&pool)
+                .await
+                .unwrap();
+            let result = prepare_company_enrollment(&store, &mutation, &raw).await;
+            let witnessed: bool = sqlx::query_scalar(
+                "SELECT is_called AND last_value=1 FROM public.intake_usecase_commit_witness",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            sqlx::raw_sql("DROP TRIGGER zz_intake_usecase_refuse_commit ON public.company_enrollment_requests; DROP FUNCTION public.intake_usecase_refuse_commit(); DROP SEQUENCE public.intake_usecase_commit_witness;")
+                .execute(&pool).await.unwrap();
+            assert!(witnessed, "actual deferred commit boundary was not reached");
+            match result {
+                Err(error) => assert_eq!(error, expected),
+                Ok(_) => panic!("unconfirmed/rejected commit released a provisional view"),
+            }
+            assert!(
+                before == all_rows(&pool).await,
+                "rejected commit leaked intake or partial history"
+            );
+        }
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        let complete = all_rows(&pool).await;
+        assert_intake_pending(
+            prepare_company_enrollment(&intake_store(&f), &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert!(complete == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+}

@@ -1,0 +1,209 @@
+    Checking tokio v1.53.1
+    Checking console-workorder-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/domain)
+   Compiling async-stream-impl v0.3.6
+   Compiling console-platform-test-support v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/test-support)
+   Compiling num-derive v0.4.2
+    Checking serde_bytes v0.11.19
+    Checking bitflags v1.3.2
+   Compiling webauthn-authenticator-rs v0.5.5
+    Checking async-stream v0.3.6
+    Checking console-workorder-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/application)
+    Checking console-dispatch-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/application)
+    Checking tokio-util v0.7.18
+    Checking tokio-tungstenite v0.29.0
+    Checking tokio-rustls v0.26.5
+    Checking hickory-net v0.26.3
+    Checking async-imap v0.11.3
+    Checking tower-http v0.7.1
+    Checking tokio-stream v0.1.18
+    Checking tower v0.5.3
+    Checking h2 v0.4.16
+    Checking tokio-postgres v0.7.18
+    Checking sqlx-core v0.9.0
+    Checking sqlx-core v0.8.6
+    Checking lettre v0.11.23
+    Checking tower-http v0.6.11
+    Checking apalis v1.0.0-rc.9
+    Checking hyper v1.10.1
+    Checking hyper-util v0.1.20
+    Checking tokio-postgres-rustls v0.14.0
+    Checking axum v0.8.9
+    Checking hyper-timeout v0.5.2
+    Checking tonic v0.14.6
+    Checking tonic-prost v0.14.6
+    Checking tonic-types v0.14.6
+    Checking console-payroll-ui v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/ui)
+    Checking hickory-resolver v0.26.3
+    Checking reqwest v0.13.5
+    Checking sqlx-postgres v0.8.6
+    Checking sqlx-postgres v0.9.0
+    Checking console-platform-email v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/email)
+    Checking console-platform-push v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/push)
+    Checking console-comms-adapter-mox v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-mox)
+    Checking opentelemetry-http v0.32.0
+    Checking console-comms-adapter-imap v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-imap)
+    Checking console-comms-adapter-smtp v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-smtp)
+    Checking opentelemetry-proto v0.32.0
+    Checking sqlx v0.8.6
+    Checking sqlx v0.9.0
+    Checking opentelemetry-otlp v0.32.0
+    Checking apalis-postgres v1.0.0-rc.8
+    Checking console-platform-db v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/db)
+    Checking console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+    Checking console-platform-jobs v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/jobs)
+    Checking console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+    Checking console-platform-group v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/group)
+    Checking console-attendance-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/attendance/adapter-postgres)
+    Checking console-workflow-runtime-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workflow/adapter-postgres)
+    Checking console-platform-audit-chain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/audit-chain)
+    Checking console-platform-request-context v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/request-context)
+    Checking console-platform-provisioning v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/provisioning)
+    Checking console-workflow-runtime v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workflow/runtime)
+    Checking console-platform-storage v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/storage)
+    Checking console-governance-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/governance/adapter-postgres)
+    Checking console-dispatch-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/adapter-postgres)
+    Checking console-inbox-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inbox/adapter-postgres)
+    Checking console-workorder-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/adapter-postgres)
+    Checking console-logistics-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/logistics/adapter-postgres)
+    Checking console-todos-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/todos/adapter-postgres)
+    Checking console-orgchange-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/orgchange/adapter-postgres)
+    Checking console-benefit-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/benefit/adapter-postgres)
+    Checking console-financial-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/adapter-postgres)
+    Checking console-ontology-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/adapter-postgres)
+    Checking console-compliance-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/adapter-postgres)
+    Checking console-sales-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/adapter-postgres)
+    Checking console-finance-gl-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/finance-gl/adapter-postgres)
+    Checking console-evaluation-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/evaluation/adapter-postgres)
+    Checking console-leave-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/leave/adapter-postgres)
+    Checking console-registry-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/registry/adapter-postgres)
+    Checking console-comms-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-postgres)
+    Checking console-equipment-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/equipment/adapter-postgres)
+    Checking console-identity-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/identity/adapter-postgres)
+    Checking console-docs-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/adapter-postgres)
+    Checking console-support-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/support/adapter-postgres)
+    Checking console-notifications-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notifications/adapter-postgres)
+    Checking console-inspection-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/inspection/adapter-postgres)
+    Checking console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/adapter-postgres)
+    Checking console-notices-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notices/adapter-postgres)
+    Checking console-messenger-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/adapter-postgres)
+    Checking console-recruiting-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/recruiting/adapter-postgres)
+    Checking console-reporting-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/adapter-postgres)
+    Checking console-platform-authz-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz-rest)
+    Checking console-inventory-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inventory/adapter-postgres)
+    Checking console-financial-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/rest)
+    Checking console-workorder-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/rest)
+    Checking console-compliance-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/rest)
+    Checking console-registry-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/registry/rest)
+    Checking console-sales-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/rest)
+    Checking console-equipment-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/equipment/rest)
+    Checking console-inspection-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/inspection/rest)
+    Checking console-notifications-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notifications/rest)
+    Checking console-notices-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notices/rest)
+    Checking console-identity-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/identity/rest)
+    Checking console-docs-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/rest)
+    Checking console-support-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/support/rest)
+    Checking console-messenger-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/rest)
+    Checking console-recruiting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/recruiting/rest)
+    Checking console-ontology-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/rest)
+    Checking console-comms-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/rest)
+    Checking console-inventory-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inventory/rest)
+    Checking console-payroll-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/rest)
+    Checking console-orgchange-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/orgchange/rest)
+    Checking console-dispatch-worker v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/worker)
+    Checking console-dispatch-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/rest)
+    Checking console-evaluation-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/evaluation/rest)
+    Checking console-leave-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/leave/rest)
+    Checking console-benefit-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/benefit/rest)
+    Checking console-logistics-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/logistics/rest)
+    Checking console-governance-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/governance/rest)
+    Checking console-finance-gl-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/finance-gl/rest)
+    Checking console-todos-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/todos/rest)
+    Checking console-inbox-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inbox/rest)
+    Checking console-platform-auth-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth-rest)
+    Checking console-platform-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/platform-rest)
+    Checking console-analytics-quant-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/analytics-quant/rest)
+    Checking console-facilities-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/facilities/rest)
+    Checking console-consulting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/consulting/rest)
+    Checking console-attendance-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/attendance/rest)
+    Checking console-integrity v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/integrity)
+    Checking console-production-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/production/rest)
+    Checking console-platform-realtime v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/realtime)
+    Checking console-ontology-canonical-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/canonical-adapter-postgres)
+    Checking console-reporting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/rest)
+    Checking console-app v0.1.0 (/private/tmp/console-client-release-20260919/backend/app)
+error: this `if` statement can be collapsed
+  --> app/tests/auth_rest/legacy_bound_passkey_extended.rs:43:5
+   |
+43 | /     if let Ok(verified) = verifier(f).verify_access_token(token) {
+44 | |         if let Some(binding) = verified.legacy_session {
+45 | |             secrets.push(binding.family_id.to_string());
+46 | |         }
+47 | |     }
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+   = note: `-D clippy::collapsible-if` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+   |
+43 ~     if let Ok(verified) = verifier(f).verify_access_token(token)
+44 ~         && let Some(binding) = verified.legacy_session {
+45 |             secrets.push(binding.family_id.to_string());
+46 ~         }
+   |
+
+error: this `if` statement can be collapsed
+  --> app/tests/auth_rest/legacy_bound_passkey_extended.rs:60:5
+   |
+60 | /     if let Ok(verified) = verifier(f).verify_access_token(token) {
+61 | |         if let Some(binding) = verified.legacy_session {
+62 | |             secrets.push(binding.family_id.to_string());
+63 | |         }
+64 | |     }
+   | |_____^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+   |
+60 ~     if let Ok(verified) = verifier(f).verify_access_token(token)
+61 ~         && let Some(binding) = verified.legacy_session {
+62 |             secrets.push(binding.family_id.to_string());
+63 ~         }
+   |
+
+error: this `if` statement can be collapsed
+   --> app/tests/auth_rest/legacy_platform_list_credentials.rs:466:17
+    |
+466 | /                 if let Ok(value) = std::str::from_utf8(&value) {
+467 | |                     if !value.is_empty() {
+468 | |                         secrets.push(value.to_owned());
+469 | |                     }
+470 | |                 }
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+466 ~                 if let Ok(value) = std::str::from_utf8(&value)
+467 ~                     && !value.is_empty() {
+468 |                         secrets.push(value.to_owned());
+469 ~                     }
+    |
+
+error: this function has too many arguments (11/7)
+  --> app/tests/auth_rest/legacy_platform_list_locks.rs:44:1
+   |
+44 | / fn revocation_delta(
+45 | |     before: &Rows,
+46 | |     after: &Rows,
+47 | |     actor: UserId,
+...  |
+55 | |     read: bool,
+56 | | ) -> bool {
+   | |_________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#too_many_arguments
+   = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: could not compile `console-app` (test "auth_rest") due to 4 previous errors

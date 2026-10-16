@@ -1,0 +1,141 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT_BOUNDED_AUTHORITY_INTEGRATION_AND_FAST_VERIFICATION",
+  "frozen_head": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+  "worktree_clean_during_run": "Root attestation; reviewer observed frozen clean tree before later codec test/implementation changes. Current successor is not covered by this full-run acceptance.",
+  "source_hashes": {
+    "docs/current/PRODUCT.md": "57e88283204471127306a9f3d20ac39baa58a066fda50be99a41275ed4d63472",
+    "docs/current/ROADMAP.md": "630047f5c57df9d1a46449080b3a853ebbdb3be44b5cfbb26dfb0f07118c9848",
+    "docs/current/DELIVERY.md": "87e9e99708c2cdeda026d29a83b9c662c3377ef076a383fab6e33bc0874abf73",
+    "docs/documentation-index.json": "fb317206da83c6cb1aad78f9256cc97e8d0be0f0d0ad6d6e8cbfdc6790702583",
+    "docs/documentation-manifest.seed.json": "695a446c36aba37f3fda98f72d7825a1aa2cd201c50f80bf209d3552ca3e73c8"
+  },
+  "reused_source_review": {
+    "path": "/private/tmp/console-buck-native-authority-integrated-source-review-20260920.json",
+    "sha256": "63ee3727d36f5cb02eb114cd852d889bdae912919c2397c103b089c3f7265dc0"
+  },
+  "gates": [
+    {
+      "command": [
+        "node",
+        "scripts/check-doc-links.mjs"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-0-20260920.log",
+      "sha256": "48a645f4d7e4db26498a865cd73cdb2e708d490880e3fc7279e28b686f87709a"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/console/generate-documentation-manifest.mjs",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-1-20260920.log",
+      "sha256": "b9af0fa9b4e1564aaaf449725898fd39bfd37f50244f069758260bd2b77023a2"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-adrs.mjs"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-2-20260920.log",
+      "sha256": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995"
+    },
+    {
+      "command": [
+        "npm",
+        "run",
+        "check:doc-citations"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-3-20260920.log",
+      "sha256": "06e9b465b7ef70b6bafb2ea61eaa1cedefd9533545e184a35a3bed6376f31d9a"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-foundation-gates.mjs"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-4-20260920.log",
+      "sha256": "8d5956d1ede4e434f33dc78ff6420ddbaf5cada2f01beccd295a869fb3e5cdaa"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-ci-preflight.mjs"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-5-20260920.log",
+      "sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-buck-native-authority-gate-6-20260920.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "authority_tests": {
+    "path": "/private/tmp/console-buck-native-authority-tests-authorized-20260920.log",
+    "sha256": "3e2c6bdcdd3949f4aa32dcd779230d4c43000963a7d91c75c10dca2ea510c841",
+    "discovered": 190,
+    "executed": 190,
+    "passed": 190,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "full_verify": {
+    "command": "npm run verify",
+    "path": "/private/tmp/console-buck-native-authority-verify-recheck-20260920.log",
+    "sha256": "5eaad20786820bd95fc580702a410b05c32c13241697c32089ea21e327389678",
+    "stages": 74,
+    "result": "verify(fast) passed.",
+    "execution": "Mixed Cargo/Buck, not all-native",
+    "empty_rust_summaries": 175,
+    "zero_count_interpretation": "Do not count zero-test summaries as executed acceptance.",
+    "nonzero_failure_summaries": 0,
+    "request_body_composite": 622
+  },
+  "preserved_failures": [
+    "/private/tmp/console-buck-native-authority-verify-20260920.log",
+    "/private/tmp/console-buck-native-authority-tests-20260920.log"
+  ],
+  "reviewed_ratchet_repairs": [
+    "/private/tmp/console-prototype-baseline-line-rebind-security-review-20260920.json",
+    "/private/tmp/console-executed-tests-gain-security-review-20260920.json"
+  ],
+  "limits": [
+    "No full Company/Group journey acceptance",
+    "No all-native CI/WASM/image acceptance",
+    "No load, durability, production qualification, exposure or complete release acceptance",
+    "Reviewer executed no product tests or builds"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Contrarian / outside-the-box",
+    "Socratic",
+    "Pragmatism",
+    "Red Team",
+    "Systems Thinking",
+    "Operability / Day-2",
+    "Opportunity Cost",
+    "Blast-radius / cell-based",
+    "Constant-work / anti-fragility",
+    "Shared-nothing / eventual consistency",
+    "FinOps / unit-cost",
+    "Telemetry-first",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": []
+}

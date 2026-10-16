@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "verdict": "APPROVE_EXACT_ONE_NUMBER_REBIND_ONLY",
+  "head": "6380fc42d9e88d1b89b69139bd81c0528a6e2f9a",
+  "historical_expression_parent": "3bdebb726ccf568ab566547ab64ece6990bb69a8",
+  "change": {
+    "path": "scripts/prototype-chain-lookup-baseline.json",
+    "old_line": 303,
+    "new_line": 454,
+    "kind": "optional-computed",
+    "key": "area",
+    "snippet_unchanged": true,
+    "reason_unchanged": true,
+    "baseline_count_unchanged": 3
+  },
+  "digests": {
+    "source": "9456d18f2e87bc50b8bd1bc0bff8c1edb51bfc55269ebb57f337c91bf8300d88",
+    "baseline_before": "b732aff706aaa097819da679753ec5a66c91914852adffecf4ce35133075801b",
+    "baseline_proposed": "a62b2c6ff1d8108db1cfc194142619b0f25d06a070860afb61df9ae1873ad3d9"
+  },
+  "evidence": {
+    "red": {
+      "scanned": 102,
+      "findings": 3,
+      "unknown": 1,
+      "stale": 1
+    },
+    "candidate_control": {
+      "scanned": 102,
+      "findings": 3,
+      "unknown": 0,
+      "stale": 0
+    },
+    "new_lookup_injection_detected": true
+  },
+  "scope": [
+    "Same expression appears verbatim at historical303 and current454; scanner returns identical finding except line.",
+    "No repository write; candidate baseline only in temporary review directory.",
+    "No scanner/test change, added residual or new expression suppressed.",
+    "Actual lane RED admission and same gate GREEN after root application still required.",
+    "Existing inherited-property lookup remains acknowledged residual; this review does not claim that residual is corrected."
+  ]
+}

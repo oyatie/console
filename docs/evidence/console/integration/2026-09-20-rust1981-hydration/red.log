@@ -1,0 +1,3 @@
+Committed hydration bundle is stale:
+- the bundle was built with channel nightly-2026-09-10 but rust-toolchain.toml says 1.98.1. A different compiler emits different wasm. Rebuild with: bash tools/ui/build-payroll-wasm.sh
+- backend/crates/payroll/ui/src/native_account.rs has changed since the bundle was built. Rebuild with: bash tools/ui/build-payroll-wasm.sh

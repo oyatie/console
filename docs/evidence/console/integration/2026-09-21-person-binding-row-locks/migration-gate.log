@@ -1,0 +1,9 @@
+[2026-09-21T06:19:43.374-04:00] Build ID: 6209543b-71fd-4374-ab62-b028abebfad2
+[2026-09-21T06:19:44.047-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:19:44.124-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:19:44.969-04:00] Cache hits: 0%
+[2026-09-21T06:19:44.969-04:00] Commands: 4 (cached: 0, remote: 0, local: 4)
+[2026-09-21T06:19:44.969-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+console-gate-migration-safety: checking workspace at /private/tmp/console-mvp-dev-integrate-20260921
+console-gate-migration-safety: PASSED

@@ -13,13 +13,8 @@ def _rust_sysroot_impl(ctx):
     out = ctx.actions.declare_output("sysroot", dir = True)
 
     # `cp -a` preserves modes and any links rather than dereferencing them.
-    #
-    # An earlier revision justified this by claiming the rustc tree contains
-    # symlinks that dangle until the tree is whole. Review measured it: there
-    # are ZERO symlinks in either host's extracted rustc archive or in either
-    # assembled sysroot, and gcc-ld/ld.lld is a regular file. The reason was
-    # wrong even though the command is fine, so it is corrected rather than
-    # left to mislead whoever edits this next.
+    # The macOS linker runtime link below is assembled explicitly from the
+    # pinned compiler archive; it never resolves outside the resulting tree.
     script = ctx.actions.write(
         "assemble.sh",
         [
@@ -49,6 +44,11 @@ def _rust_sysroot_impl(ctx):
             'for tree in "$@"; do',
             '  cp -a "$tree"/. "$out"/',
             'done',
+            '# macOS rust-lld expects libLLVM beside its host rustlib bin directory.',
+            'if [ -f "$out/lib/libLLVM.dylib" ] && [ ! -e "$out/lib/rustlib/{0}/lib/libLLVM.dylib" ] && [ ! -L "$out/lib/rustlib/{0}/lib/libLLVM.dylib" ]; then'.format(ctx.attrs.triple),
+            '  mkdir -p "$out/lib/rustlib/{}/lib"'.format(ctx.attrs.triple),
+            '  ln -s ../../../libLLVM.dylib "$out/lib/rustlib/{}/lib/libLLVM.dylib"'.format(ctx.attrs.triple),
+            'fi',
         ],
         is_executable = True,
     )

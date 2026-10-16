@@ -1,0 +1,27 @@
+{
+  "kind": "independent_native_html413_design_successor_review",
+  "reviewer": "/root/integration_tests",
+  "author": "/root/reference_inventory",
+  "status": "APPROVED_FOR_EXACT_TEST_AUTHORING_ONLY",
+  "candidate_manifest_sha256": "767c791dcd8bb68a16c1dbec031426aa6eb1cffb8afe3d1e6c714e51ce418709",
+  "design_sha256": "67a06e93ab01af454556ab4c6e28e834d26be7231571c6c2914edc5f9102b540",
+  "predecessor_review_sha256": "fd2a3b3d3290058e62860ba752acd3a3d37982e1b7777700b929870b1386723c",
+  "resolved": [
+    "HTML413-ORACLE-1: matching marker+singleHTML+413 preserves native response; all nonmatches follow unchanged mapper. Existing marked JSON and JSON-first duplicate behavior explicitly retained; nonJSON/HTML-first rewrite controls explicit."
+  ],
+  "verification": [
+    "Manifest hashes verified; source custody byte-identical to reviewed predecessor.",
+    "Diff limited to two clarified contract/test paragraphs and revision annotation.",
+    "Two-production-file scope, server-only marker, exact native status/privacy, two affected retained helper consumers, API behavior and real-cookie wire-size acceptance unchanged."
+  ],
+  "unresolved_design_findings": [],
+  "execution": {
+    "cargo": 0,
+    "db": 0,
+    "browser": 0
+  },
+  "limits": [
+    "Exact test/source independently reviewed before admission.",
+    "No implementation, RED/GREEN or release acceptance."
+  ]
+}

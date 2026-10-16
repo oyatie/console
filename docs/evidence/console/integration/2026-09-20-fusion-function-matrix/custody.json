@@ -1,0 +1,86 @@
+{
+  "console-fusion-function-matrix-design-consensus-root-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-design-consensus-root-20260920.json",
+    "sha256": "21518055c04538f7e685de5b87ec51ba1776c249c020d27888e471c0a08d79e2"
+  },
+  "console-fusion-function-matrix-design-round4-security-review-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-design-round4-security-review-20260920.json",
+    "sha256": "4c24e6ee9028d582e40dc9ac1ba2b0d2b37bc1034d6d45e659843ae2e9152bcb"
+  },
+  "console-fusion-function-matrix-design-fourth-final-integration-tests-review-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-design-fourth-final-integration-tests-review-20260920.json",
+    "sha256": "400433dcf589b4bfc6daece9759297cf0e0b60786447b474d3d12f992fccd209"
+  },
+  "console-fusion-function-matrix-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-tests-round1-security-review-20260920.json",
+    "sha256": "2bff6ab95d645b047e0909a9cef64ba1d665ca281f9a02abb704754b98e926ee"
+  },
+  "console-fusion-function-matrix-tests-round1-root-review-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-tests-round1-root-review-20260920.json",
+    "sha256": "7b5c6a161e9a8d15e02c6f693abe863c4641c1c5199687bc19af2cdad2867d98"
+  },
+  "console-fusion-function-matrix-source-round1-security-findings-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-source-round1-security-findings-20260920.json",
+    "sha256": "1225be588b3192864464bd0b9099b8bddecddf8c7ec6d8d2d87fea605c7d090f"
+  },
+  "console-fusion-function-matrix-source-round2-security-review-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-source-round2-security-review-20260920.json",
+    "sha256": "9726eb8d62ca1c72f6ec5f4dc1cd94ab7b9f877ca4ba7d77ffb580375a1d9709"
+  },
+  "console-fusion-enumerable-tests-root-review-20260920.json": {
+    "source": "/private/tmp/console-fusion-enumerable-tests-root-review-20260920.json",
+    "sha256": "90902367a17a6c45cd9fd0766eb679a8316632744c79e83c0eefc4e76b0aeb05"
+  },
+  "console-fusion-lane-scope-20260920.json": {
+    "source": "/private/tmp/console-fusion-lane-scope-20260920.json",
+    "sha256": "3970901c200499dfe36ecc0250693fdff1f3a32dab1b67cbb304f63d1597ac08"
+  },
+  "console-fusion-tests-prerequisites-20260920.log": {
+    "source": "/private/tmp/console-fusion-tests-prerequisites-20260920.log",
+    "sha256": "aa8a79d3bd1fe1b60eb178e47f9da35c6e109f32a615a23299b7e384b7f410d8"
+  },
+  "console-fusion-owner-red-20260920.log": {
+    "source": "/private/tmp/console-fusion-owner-red-20260920.log",
+    "sha256": "22b76c0ae7ff2a396af52a4bb94c1a7a854b9f81b9c47b16c055185212900790"
+  },
+  "console-fusion-admission-20260920.log": {
+    "source": "/private/tmp/console-fusion-admission-20260920.log",
+    "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  },
+  "console-fusion-owner-green-20260920.log": {
+    "source": "/private/tmp/console-fusion-owner-green-20260920.log",
+    "sha256": "d4d9c9ac72194632ecd92ea47ab033a78d3bff93bb169e445bb0872ffc4f766c"
+  },
+  "console-fusion-planner-20260920.log": {
+    "source": "/private/tmp/console-fusion-planner-20260920.log",
+    "sha256": "2d0e4f639e16db97332d4436b8934e435170aec3378d9151f77ea97e5b4b6246"
+  },
+  "console-fusion-final135-20260920.log": {
+    "source": "/private/tmp/console-fusion-final135-20260920.log",
+    "sha256": "747387212b2d4bf6b1addbc89925c23e99c9bc0fb50e881a5a15a4f5e32b2594"
+  },
+  "design-manifest.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-design-20260920-round3/manifest.json",
+    "sha256": "c6a3923089706addc6f3e691a7651646675fca9ebf0984b05c00ee73d4b013c6"
+  },
+  "tests-manifest.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-tests-20260920-round1/manifest.json",
+    "sha256": "91bbb22ca9c589493f7b24b451fd604e3e253c9e96976f428adef0cccde01773"
+  },
+  "enumerable-tests-manifest.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-enumerable-tests-20260920-round1/manifest.json",
+    "sha256": "0b06cd931f6e9ce88cd7a9e62693e721baebaa70233f36bf755321750a34e6d4"
+  },
+  "design.txt": {
+    "source": "/private/tmp/console-fusion-function-matrix-design-20260920-round3/design.md",
+    "sha256": "e1b1f777692c5339f5a8f2196c209951c6074e4789a15490b987aa3ec86e8025"
+  },
+  "test-method.txt": {
+    "source": "/private/tmp/console-fusion-function-matrix-tests-20260920-round1/README.md",
+    "sha256": "a0f994e859fd63f38b6b6eacd40c92b08f835989d6c09e750638bbcfa6b36b1b"
+  },
+  "console-fusion-function-matrix-final-security-audit-20260920.json": {
+    "source": "/private/tmp/console-fusion-function-matrix-final-security-audit-20260920.json",
+    "sha256": "e11aa0c109e24b7dbbde78b68ab85f590159b9292e7f9fd59b6323356aa5639d"
+  }
+}

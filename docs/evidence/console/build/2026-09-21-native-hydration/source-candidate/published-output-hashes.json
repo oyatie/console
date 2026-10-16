@@ -1,0 +1,5 @@
+{
+  "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
+  "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "9e90572c893e7d4c4ec7f36ea38d1aa93ad28bdbc0320556bef0633679d17989",
+  "backend/crates/payroll/ui/bundle.lock.json": "364d92cd494bf718b643ed4ad516cad75264588c7bd884165b367c49ae41f7f9"
+}

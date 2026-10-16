@@ -1,0 +1,62 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "round": 4,
+  "scope": "final exact candidate authority consensus",
+  "decision": "approved for root integration, generated documentation projection and required gates only",
+  "packet_path": "/private/tmp/console-buck-native-authority-design-20260920-round1",
+  "manifest_sha256": "73a89553c7867074dd88dd9bcf51c9330fe8a448468242186f2004d15184d733",
+  "design_base_sha": "209af958af44fba8577ce8e2cae1068150a1b410",
+  "current_head_sha": "84e7bcd324f13f5176b33881de913de4fb4bcabc",
+  "preimage_proof": [
+    {
+      "path": "docs/current/PRODUCT.md",
+      "preimage_sha256": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+      "base_head_and_working_identical": true,
+      "candidate_sha256": "57e88283204471127306a9f3d20ac39baa58a066fda50be99a41275ed4d63472"
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "preimage_sha256": "f37adb9e9e487e19deb7753934a1f0fd7a0b4e9667f3db4ff136165e9434398c",
+      "base_head_and_working_identical": true,
+      "candidate_sha256": "630047f5c57df9d1a46449080b3a853ebbdb3be44b5cfbb26dfb0f07118c9848"
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "preimage_sha256": "2a746d23c9ac7864013a8f3b3a33a37df2b667a00395776575031a107a45dc20",
+      "base_head_and_working_identical": true,
+      "candidate_sha256": "87e9e99708c2cdeda026d29a83b9c662c3377ef076a383fab6e33bc0874abf73"
+    }
+  ],
+  "prior_approved_rounds": [
+    {
+      "round": 1,
+      "path": "/private/tmp/console-buck-native-authority-round1-reference-review-20260920.json",
+      "sha256": "0729f1d194042c3ce72830b8e6ee8c2bb769592ef0864b50a10037803c03bf64"
+    },
+    {
+      "round": 2,
+      "path": "/private/tmp/console-buck-native-authority-round2-reference-review-20260920.json",
+      "sha256": "bc443e2ca6b4fa4a4f0edb609f7a38e19d727ddb1c1b455d4dac11283b2638ff"
+    },
+    {
+      "round": 3,
+      "path": "/private/tmp/console-buck-native-authority-round3-reference-review-20260920.json",
+      "sha256": "9b6c4eb93e0dc779e661bbd03946ca15f8a0ae7d11c84f7b2d8a01127c9b65a4"
+    }
+  ],
+  "findings": [],
+  "final_conclusions": [
+    "All packet hashes and prior review receipt hashes reverified.",
+    "All three authority preimages remain byte-identical between design base, current HEAD and working files.",
+    "Exact candidate still consists of PRODUCT:48 target replacement, ROADMAP:39 convergence replacement, DELIVERY native-qualification paragraph insertion; no amendments are necessary.",
+    "Four review rounds bind to the same immutable candidate; prior source/scope/security/operability conclusions remain valid.",
+    "Root may integrate only these reviewed authority changes, generate corresponding documentation projections under single-writer control, and execute required documentation/repository gates.",
+    "No native execution success, product artifact qualification, assembled release completion or production exposure is approved or claimed."
+  ],
+  "remaining_work": [
+    "Root integration and generated documentation projection.",
+    "Required gates at final assembled candidate and exact changed-path/readback review.",
+    "Separate native build/test/WASM/CI/image implementation and complete release qualification."
+  ],
+  "executed_tests": 0
+}

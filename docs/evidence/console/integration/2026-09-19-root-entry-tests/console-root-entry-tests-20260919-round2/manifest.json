@@ -1,0 +1,12 @@
+{
+  "files": {
+    "comment-only-successor.diff": "20139932e5a39f723842d2c9513d0c19990226e2365825a341538cb9ea86f51f",
+    "health_readiness.rs": "29a7c4fb9341e4c19ade8eeed672d96950d082e803eb659e31068b8604fc711b",
+    "native_document_cases.rs": "f1082edf27121cea88ce8056eeb8dd45dd8360a46dcd61e00087e7f158096722",
+    "native_entry_ui_cases.rs": "d86781610aaae305cd7ba662f3b9fcd0484e0f5c3a453c11ca897f5c3801ad29",
+    "proposal.md": "b368cf598da9b186601cb414913002c033991df40abbb924be66c4ac4bfd245a",
+    "proposal.patch": "1d22bab6e4a3e604b02fc0ea0ada6095069f42381005bdfe89cf702fbb7b3442",
+    "source-custody.json": "6d2f9b7e8d951a4f15e79b3135ddb4ffb5e6e5c75d536fea65410ed5f24f13fe",
+    "verification-plan.json": "95f27f528f12188307a2d478f43225ec161fc6eddac9ba62646a74366faab757"
+  }
+}

@@ -109,7 +109,7 @@ function git(args) {
   return execFileSync(
     "git",
     ["-C", root, ...args],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: gitEnvironment },
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: gitEnvironment, maxBuffer: 16 * 1024 * 1024 },
   );
 }
 

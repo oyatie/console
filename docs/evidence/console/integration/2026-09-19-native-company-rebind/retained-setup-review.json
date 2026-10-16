@@ -1,0 +1,53 @@
+{
+  "kind": "independent-company-test-exact-base-rebind-review",
+  "reviewer": "/root/operator_review",
+  "at_utc": "2026-09-18T02:59:15.549537+00:00",
+  "status": "APPROVE_EXACT_ADDITIVE_TEST_REBIND_FOR_COMPILE_DISCOVERY_AND_ENTRY_PROBE",
+  "base_sha": "8ab9a7fc9bdb4dc657a6f4a31809fd0c673c6b6b",
+  "candidate": "/private/tmp/console-native-company-setup-tests-retained-rebind-8ab9a7fc-v1/manifest.json",
+  "candidate_sha256": "4887aec8aa61ce95dbf58392ef8b7f755fa5315901f2ce56833ce1b7165eb8c8",
+  "prior_approval": "/private/tmp/console-native-company-tests-review-operator-v4/review.json",
+  "prior_approval_sha256": "b1490b87234c0e64e71a9b06137a7c193be73e658ff1fec9d429e17ebba4d8fc",
+  "blocking_findings": [],
+  "checks": [
+    "All 12 new packet artifact hashes checked; all 10 original v4 artifacts are byte-identical, including Rust tests, browser producer/controls, registration patch and transport.",
+    "All 14 declared dependency hashes match exact committed base; original target preimage matches committed and worktree bytes; two new target paths absent.",
+    "Private application of exact one-include registration patch reproduces reviewed successor byte-for-byte. No shared source edited.",
+    "Outer account_browser/deployment_operator_designation nesting and optional test-browser inclusion remain intact. No new module collision found.",
+    "Current ordinary fixture/enrolled path and Fixture Deref-to-Router/request/UI helpers remain unchanged and reachable. Added historical producer has a distinct name and is not used by Company tests.",
+    "Base diff adds historical helper include and changes historical enrollment tests only; no imported Company helper Rust signature changed. Real Business session source changed behavior, now independently evidenced by its own boundary.",
+    "Rust edition 2024, test-browser feature, raw_value and existing dependencies retained; runtime SQLx query APIs defer proposed Company schema checks to actual later runtime boundaries.",
+    "REBIND.md explicitly governs new base; retained GUIDE historical base text is not falsely relabeled or allowed to override new manifest.",
+    "NEXT-BOUNDARY identifies a read-only current Account/designation projection requirement; it expressly requires separate exact owner helper/ACL/profile/currentness/race tests before implementation and does not admit Company mutation or PA1 policy implementation."
+  ],
+  "source_counts": {
+    "sqlx_http": 8,
+    "pure_rust": 2,
+    "optional_sqlx_browser": 1,
+    "ordinary_family": 10,
+    "with_browser": 11
+  },
+  "reviewer_current_execution": {
+    "private_patch_application": 1,
+    "cargo": 0,
+    "compiler_discovery": 0,
+    "database": 0,
+    "browser": 0,
+    "node_controls": 0,
+    "shared_writes": 0
+  },
+  "inherited_exact_artifact_evidence": {
+    "prior_reviewer_node_controls": 347,
+    "prior_reviewer_rustfmt": "PASS",
+    "note": "Exact unchanged bytes; not rerun and not product acceptance."
+  },
+  "approved_next_action": "Root may apply only registration.patch and add the two exact Rust sources, compile/discover and run first named mounted-entry probe. A genuine NATIVE_COMPANY_ENTRY failure after real Account200/designation prerequisites may admit only its bounded entry work; schema/session/profile failures are prerequisites.",
+  "first_probe": "account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity",
+  "holds": [
+    "Meaningful mounted-entry RED and actual compiler discovery remain unobserved for this packet.",
+    "Separate exact read-only designation projection contract/tests/ACL/profile and stale/current-generation/race semantics remain required before that helper implementation.",
+    "Whole Company mutation remains not implementation-ready: exact successor codecs/DDL, retained request/receipt semantics, PA1.2 references/lineage, native authorized workspace reader, confirmed recipient/grant/use/revoke and recovery tests remain downstream.",
+    "No Account-only gate or entry-only green permits publishing a CTA with unimplemented destination/submission.",
+    "Full six-company tenant workflows, Console UI/domain completion, production/HA/legal exposure are not accepted by this review."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "backend/app/tests/auth_rest/native_document_cases.rs": {
+    "preimage_sha256": "f1082edf27121cea88ce8056eeb8dd45dd8360a46dcd61e00087e7f158096722",
+    "candidate_sha256": "4e8a270385142431b9d393c36201c5e20c344c439d2c7cac1873c051191800bf"
+  },
+  "backend/app/tests/health_readiness.rs": {
+    "preimage_sha256": "f989347c2afce618d56023115f18f696cde9a0839100ae7cb65f9de467e5ee9b",
+    "candidate_sha256": "a46f27e6f31411877066f83f6474d83b141fa63c2acbe2d8dca858033ebeb757"
+  }
+}

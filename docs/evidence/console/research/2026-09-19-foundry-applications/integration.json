@@ -1,0 +1,24 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "5d66d69813d43555af33e75eefaac707f6c5b09c",
+  "before_registry_sha256": "7a67302dc2e9183844899d5caf616e877c94534fc13ceb1c7ada7026c6c84b98",
+  "after_registry_sha256": "5c37d69ee3b9252ff1ea05698ad5e79273f68849d5d9a40d08ba0fd0cb74bc41",
+  "leaves_before": 273,
+  "leaves_after": 299,
+  "new_sources": 38,
+  "new_leaves": 26,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "Bounded application/SDK reference addition, no exhaustive freeze or runtime acceptance.",
+    "Existing SDK rows retain all prior values; unsupported type and runtime limits remain explicit."
+  ],
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "a3096f39898a40c4dd2b8fc9b2c85c542e13d3aa4575168183f0b384ea3f1678"
+  }
+}

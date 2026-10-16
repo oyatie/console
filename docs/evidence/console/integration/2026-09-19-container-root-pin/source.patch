@@ -1,0 +1,36 @@
+diff --git a/.dockerignore b/.dockerignore
+index 1e27fe25e..c3d286873 100644
+--- a/.dockerignore
++++ b/.dockerignore
+@@ -7,6 +7,7 @@
+ # Strategy: ignore everything, then re-include only the build inputs.
+ *
+ 
++!rust-toolchain.toml
+ !backend
+ !docs
+ !third-party
+diff --git a/backend/Dockerfile b/backend/Dockerfile
+index 0ad06cf44..315f3f214 100644
+--- a/backend/Dockerfile
++++ b/backend/Dockerfile
+@@ -11,8 +11,8 @@ WORKDIR /workspace/backend
+ ARG SOURCE_DATE_EPOCH
+ ENV SQLX_OFFLINE=true
+ 
+-# rust-toolchain.toml pins rustc 1.96.0; resolve it before the build.
+-COPY backend/rust-toolchain.toml ./rust-toolchain.toml
++# Use the canonical project pin from the parent of the backend workspace.
++COPY rust-toolchain.toml /workspace/rust-toolchain.toml
+ 
+ # Sources. The build context is the repo ROOT (see ops/compose.yml) so the
+ # golden Excel templates and Cedar/PBAC maps embedded by backend crates via
+@@ -32,7 +32,7 @@ COPY third-party/rust/vendor /workspace/third-party/rust/vendor
+ COPY docs/reference /workspace/docs/reference
+ COPY docs/specs /workspace/docs/specs
+ 
+-RUN cargo build --locked --release -p console-app
++RUN rustc -Vv && cargo build --locked --release -p console-app
+ 
+ FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171 AS runtime
+ 

@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_TWO_CURRENT_SDK_ORACLE_CORRECTIONS",
+  "reason": "Both stale_policy_denies and cedar_error_denies audit keys come from actual engine::compile_bundle via bundle_key. The prior4.11.2 literal became stale after accepted actual SDK identity repair to4.12.0. Second assertion is masked by first current failure.",
+  "observed_failure": "Retained every_readiness_case_binds_to_a_fail_closed_boundary_decision fails at383: actual4.12.0 expected4.11.2; other leaf passes. Original ongoing whole-verification log remains untouched.",
+  "change": "Replace only the two real-compiled-key SDK string assertions with cedar_policy::get_sdk_version().to_string(), independently identifying the linked SDK rather than trusting the production constant.",
+  "preservation": [
+    "Policy-version7vs6 distinction, unequal exact keys, nonempty schema/digest, language4.5, expected audit reason/mode/detail, request/subject/scope evidence and all9fixture scenarios remain byte-identical outside these2assertions.",
+    "All manually constructed historical4.11.2 keys in mode_contract, legacy observation, policy tests, SDK historical serialization and stored/spec fixtures remain unchanged; source hashes recorded.",
+    "No production source, schema, policy fixture, historical key serialization, assertion removal, test deletion or skip."
+  ],
+  "verification": {
+    "runtime_tests_executed_by_reviewer": 0,
+    "private_candidate_only": true
+  },
+  "required": [
+    "Root independent review of exact patch, then retained2-leaf readiness target and related accepted SDK/observation contracts.",
+    "Retain original actual failure log and bind resulting green to exact candidate; no production/release conclusion."
+  ]
+}

@@ -141,8 +141,8 @@ action audit_stream_access_log_read appliesTo {
 #[derive(Debug, Clone)]
 pub struct CompiledBundle {
     pub key: CompiledBundleCacheKey,
-    schema: Schema,
-    policies: PolicySet,
+    pub(crate) schema: Schema,
+    pub(crate) policies: PolicySet,
 }
 
 /// Generate the Cedar policy text for `feature` directly from the legacy
@@ -308,18 +308,7 @@ pub fn compile_bundle_from_sources(
     let policies = PolicySet::from_str(policy_src)
         .map_err(|err| KernelError::validation(format!("cedar policy parse failed: {err}")))?;
 
-    let result = Validator::new(schema.clone()).validate(&policies, ValidationMode::Strict);
-    if !result.validation_passed_without_warnings() {
-        let detail = result
-            .validation_errors()
-            .map(ToString::to_string)
-            .chain(result.validation_warnings().map(ToString::to_string))
-            .collect::<Vec<_>>()
-            .join("; ");
-        return Err(KernelError::validation(format!(
-            "cedar bundle failed strict validation: {detail}"
-        )));
-    }
+    validate_strict_sources(&schema, &policies)?;
 
     let key = CompiledBundleCacheKey::new(
         org_id,
@@ -335,6 +324,29 @@ pub fn compile_bundle_from_sources(
         schema,
         policies,
     })
+}
+
+/// Reject every strict validation error and warning after the caller has parsed
+/// its source format. Company sources retain their existing Cedar schema parser;
+/// Group sources use Cedar's JSON schema parser and a separate typed key.
+pub(crate) fn validate_strict_sources(
+    schema: &Schema,
+    policies: &PolicySet,
+) -> Result<(), KernelError> {
+    let result = Validator::new(schema.clone()).validate(policies, ValidationMode::Strict);
+    if !result.validation_passed_without_warnings() {
+        let detail = result
+            .validation_errors()
+            .map(ToString::to_string)
+            .chain(result.validation_warnings().map(ToString::to_string))
+            .collect::<Vec<_>>()
+            .join("; ");
+        return Err(KernelError::validation(format!(
+            "cedar bundle failed strict validation: {detail}"
+        )));
+    }
+
+    Ok(())
 }
 
 /// Evaluate `request` against a compiled `bundle` into a real Cedar decision.
@@ -458,26 +470,25 @@ fn evaluate_inner(
     .map_err(|err| format!("cedar request failed: {err}"))?;
 
     let response = Authorizer::new().is_authorized(&cedar_request, &bundle.policies, &entities);
+    let errors = response
+        .diagnostics()
+        .errors()
+        .map(ToString::to_string)
+        .collect::<Vec<_>>();
+    if !errors.is_empty() {
+        return Ok(CedarEvaluation::Deny {
+            bundle_key: bundle.key.clone(),
+            reason: format!("cedar denied with evaluation errors: {}", errors.join("; ")),
+        });
+    }
     match response.decision() {
         Decision::Allow => Ok(CedarEvaluation::Allow {
             bundle_key: bundle.key.clone(),
         }),
-        Decision::Deny => {
-            let errors = response
-                .diagnostics()
-                .errors()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>();
-            let reason = if errors.is_empty() {
-                "cedar denied: no matching permit".to_owned()
-            } else {
-                format!("cedar denied with evaluation errors: {}", errors.join("; "))
-            };
-            Ok(CedarEvaluation::Deny {
-                bundle_key: bundle.key.clone(),
-                reason,
-            })
-        }
+        Decision::Deny => Ok(CedarEvaluation::Deny {
+            bundle_key: bundle.key.clone(),
+            reason: "cedar denied: no matching permit".to_owned(),
+        }),
     }
 }
 
@@ -714,3 +725,7 @@ mod tests {
         assert_ne!(first.key, bumped.key);
     }
 }
+
+#[cfg(test)]
+#[path = "native_company_contract_probe.rs"]
+mod native_company_contract_probe;

@@ -1,0 +1,30 @@
+--- a/tools/buck/test_gen_first_party.py
++++ b/tools/buck/test_gen_first_party.py
+@@ -1589,6 +1589,27 @@
+             with self.subTest(fault=fault), self.assertRaisesRegex(ValueError, "inert.*test-browser|test-browser.*inert"):
+                 self._render_app(invalid_feature=fault)
+ 
++    def test_mapped_pay_run_port_wrapper_requires_credential_safe_native_execution(self):
++        root = Path(GENERATOR.REPO)
++        name = "payroll-adapter-postgres-pay-run-port-as-runtime-role-pg"
++        wrapper = "//tools/buck:" + name
++        target = "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-pay_run_port_as_runtime_role"
++        entries = json.loads((root / "tools/ci/postgres-cargo-map.json").read_text())["entries"]
++        matches = [entry for entry in entries if entry.get("buck_wrapper") == wrapper]
++        self.assertEqual(1, len(matches), "existing PayRun mapping must stay unique")
++        self.assertEqual(name, matches[0]["name"])
++        self.assertEqual(target, matches[0]["buck_inner"])
++        wrappers = self._target_nodes((root / "tools/buck/BUCK").read_text())
++        self.assertIn(name, wrappers, "PAY_RUN_NATIVE_WRAPPER_REQUIRED: " + name)
++        kind, fields, _ = wrappers[name]
++        self.assertEqual("sh_test", kind)
++        self.assertEqual({"name", "test", "args", "deps", "labels"}, set(fields))
++        self.assertEqual("run_test_with_postgres_env.sh", ast.literal_eval(fields["test"]))
++        self.assertEqual(["$(location " + target + ")"], ast.literal_eval(fields["args"]))
++        self.assertEqual([target], ast.literal_eval(fields["deps"]))
++        self.assertEqual(["test.integration", "resource.postgres", "needs-postgres"],
++                         ast.literal_eval(fields["labels"]))
++
+     def test_browser_wrappers_and_real_ci_producer_preserve_native_leaf_execution(self):
+         root = Path(GENERATOR.REPO)
+         wrappers = self._target_nodes((root / "tools/buck/BUCK").read_text())

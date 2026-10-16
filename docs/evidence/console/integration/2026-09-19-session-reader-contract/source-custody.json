@@ -1,0 +1,12 @@
+{
+  "base_head": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "files": {
+    "backend/app/tests/auth_rest/account_fence_transport.rs": "28b4439e6fc13574e989c39c8e5d701fac4a757bd289eeb9b487e3ecd09c7d63",
+    "backend/crates/platform/request-context/src/lib.rs": "30d42d13d406367b1915a5ef4b376a2eb33ca0c36ab57392db7ca6e0f057415d",
+    "backend/crates/platform/auth-rest/src/lib.rs": "a78efc30ecebafd61c9b3fb78617e0370b80fdae4ef4226e67d02730d2d96910",
+    "backend/crates/platform/realtime/src/lib.rs": "1dc53f638b34051cde03293bda1103b7664758cbe5828120c84c4322f3e1f734",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a"
+  },
+  "candidate_test_sha256": "93c5aaa322d1226676c380554eb2b45bc24365d2d6fe44954a4b2ea2d72935b7",
+  "patch_sha256": "3340a1a2a28fa5281a2a581c9441afdfe3fa6ba6fca9f2643668de8b3aba2cba"
+}

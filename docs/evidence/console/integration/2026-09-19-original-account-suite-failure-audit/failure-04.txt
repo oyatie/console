@@ -1,0 +1,2 @@
+thread 'account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back' (62727719) panicked at backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14:
+PREREQUISITE: actual distinct startup LOGIN: NotPresent

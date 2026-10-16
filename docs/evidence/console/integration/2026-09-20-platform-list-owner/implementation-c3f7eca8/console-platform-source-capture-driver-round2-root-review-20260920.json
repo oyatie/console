@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root",
+  "verdict": "APPROVE_MACHINERY_FOR_DISPOSABLE_CAPTURE",
+  "manifest_sha256": "603ec032ae2a2aa467b9afb2639ef3c395c54e4f2b17ced7a05588f04c43b290",
+  "pure_controls": {
+    "executed": 3,
+    "passed": 3,
+    "failed": 0
+  },
+  "source_verification": "passed; retained binary/base/log+SQL pins match",
+  "scope": "exact declared two-object delta, rows preserved, transactional rollback with independent reread; future hashes not yet approved"
+}

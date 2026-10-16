@@ -1,0 +1,83 @@
+{
+  "base_sha": "df95adccba46d0cb9728597e3b63f701a32edda9",
+  "scope": "Security scan retention/reconciliation and append-only release blockers; no product implementation or release stage promotion.",
+  "tests": [
+    {
+      "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+      "discovered": 207,
+      "executed": 207,
+      "passed": 207,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/console-security-reconciliation-ledger-tests-20260921.log",
+      "log_sha256": "9c1b9112af9eb3d564f69e12b736518a092e6d4d8b8895aeb5349ba94a11d680"
+    },
+    {
+      "command": "node --test scripts/check-adrs.test.mjs scripts/check-doc-links.test.mjs scripts/check-foundation-gates.test.mjs scripts/verify.test.mjs",
+      "discovered": 113,
+      "executed": 113,
+      "passed": 113,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/console-security-reconciliation-doc-tests-20260921.log",
+      "log_sha256": "34402137024f4c7dd9c141b5d6281b0112cdb10fe279fe2f0f5224179ed5e5d6"
+    },
+    {
+      "command": "node --test scripts/check-ci-preflight.test.mjs",
+      "discovered": 72,
+      "executed": 72,
+      "passed": 72,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/console-security-reconciliation-preflight-tests-escalated-20260921.log",
+      "log_sha256": "6604aad407396acffa41f91172f0087510ad2a3f275b94f197d001266476af08"
+    }
+  ],
+  "static_gates": [
+    {
+      "command": "node scripts/check-adrs.mjs",
+      "result": "passed",
+      "adrs": 44,
+      "design_notes": 8
+    },
+    {
+      "command": "node scripts/check-doc-links.mjs",
+      "result": "passed with required Git index-tree access",
+      "markdown_files": 474
+    },
+    {
+      "command": "node scripts/check-foundation-gates.mjs",
+      "result": "passed",
+      "checks": 147
+    },
+    {
+      "command": "node scripts/check-ci-preflight.mjs",
+      "result": "passed with required Git index-tree access",
+      "receipt": "preflight-diagnosis.json"
+    },
+    {
+      "command": "node scripts/console/verify-doc-citations.mjs docs/ideas/ecosystem-plan-DRAFT.md",
+      "result": "passed",
+      "citations": 680,
+      "broken": 0,
+      "missing_nonfatal": 19
+    },
+    {
+      "command": "node scripts/console/verify-doc-citations.mjs docs/program/false-green-gate-holes.md",
+      "result": "passed",
+      "citations": 38,
+      "broken": 0,
+      "missing_nonfatal": 0
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "limits": [
+    "Initial sandboxed doc/CI custody checks failed because Git index.lock was denied; identical gates passed with required access. Original failure retained in private logs and diagnosis receipt.",
+    "No new product runtime tests or exploits; prior payroll runtime evidence is explicitly reused, not rerun.",
+    "Full npm run verify is not claimed: its current fast mirror includes Cargo product compilation, prohibited by current user direction, and native build lease belongs to Company implementation. Native verifier convergence and full release qualification remain outstanding.",
+    "Private log paths/digests identify executions; this record does not assert independent off-device log custody."
+  ]
+}

@@ -1,0 +1,3 @@
+type: string
+description: Known values usb,nfc,ble,internal,hybrid,test; every other JSON string deserializes to
+  Unknown through serde(other). Do not close this request field to an enum.

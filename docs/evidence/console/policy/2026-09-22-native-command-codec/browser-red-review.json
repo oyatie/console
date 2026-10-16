@@ -1,0 +1,37 @@
+{
+  "review": "READ_ONLY_INDEPENDENT_SEMANTIC_RED_REVIEW",
+  "reviewer": "/root/policy_browser_tests",
+  "candidate": "4f50a432836dfc99998af93a822ff08591dcc72c",
+  "decision": "ACCEPT_OWNER_BOUND_SEMANTIC_RED_NOT_WORKFLOW_ACCEPTANCE",
+  "test": "account_browser::deployment_operator_designation::company_setup::native_company_real_browser_policy_grant_payroll_reopen_revoke",
+  "executed": 1,
+  "passed": 0,
+  "failed": 1,
+  "filtered": 529,
+  "findings": [
+    "Build succeeded; named Buck2 test executed, not skipped or missing-schema failure.",
+    "Actual UI enrollment, Company commit and Company reopening reached independent DB-acknowledged checkpoints.",
+    "Account current-context navigation succeeded; selected Company page did not contain the required payroll policy entry link.",
+    "Browser failure stage policy_entry/code POLICY_ENTRY corresponds directly to missing link in native_account.rs Company composition.",
+    "Rust exact_keys wrapper panic occurs while waiting for POLICY_ENTRY_READY, before policy preflight; final failure packet has different keys. No test relaxation or semantic alteration is necessary.",
+    "Three staged JavaScript source hashes exactly match stage receipt. Owner receipt reports source_unchanged=true and cleanup confirmed.",
+    "Later install/grant/read/revoke stages did not execute and have no acceptance evidence."
+  ],
+  "limits": [
+    "This review reads existing artifacts/source. Reviewer ran zero builds, database tests or browser sessions.",
+    "stage-receipt.json intentionally remains STAGED_NOT_EXECUTED; run.log/result/owner receipt provide actual execution outcome.",
+    "Claim is semantic RED for whole frozen workflow; every later branch still needs its accepted probe to pass."
+  ],
+  "sha256": {
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/company/result.json": "6ed87e0cb885eeb24cc45d93a1e626768554d4db8229bec2445f333a8887a439",
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/company/owner-receipt.json": "dd454bddada1c22716c72caf6064ab50d1cdd6419a510c6d10bef93e05d53bf5",
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/stage-receipt.json": "198f33e33118c9c55eaa82a8d5c5b6fbe9f7706c9af7aaef5c2f51b7e64f0643",
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/run.log": "000dce4d92c687bb063bcd0d78986bedb2c20acb61b3ffa652e8d670776b7b80",
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/company.cjs": "446c1290823e68eb1b7d1b1ecf3de87ee22118d85738e635a1132c8b00e2988d",
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/policy_journey.cjs": "b1735ef0ab51c3a14a0db0c511dabc468516ac2f60bd2e3e31c416a6c1c4ef5a",
+    "/private/tmp/console-native-policy-browser-20260921.2gRAl9/recovery_controls.cjs": "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
+    "/private/tmp/console-mvp-dev-integrate-20260921/backend/app/tests/auth_rest/native_company_browser.rs": "09b689a66ca9d5a4e8c6176fa21aa0db261d5e939e17ee0b8d2a24c33c45c385",
+    "/private/tmp/console-mvp-dev-integrate-20260921/backend/app/tests/auth_rest.rs": "a5f311db345793f852f57756e73b27154d7dab0c6175a9a2ea049de8a4e6ca7c",
+    "/private/tmp/console-mvp-dev-integrate-20260921/backend/crates/payroll/ui/src/native_account.rs": "bbf1fecd31f494d849640ad72ee1e550f3a41e25fd3c1f1e4f8db88968f9d6fa"
+  }
+}

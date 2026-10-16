@@ -1,0 +1,7 @@
+{
+  "tools/ci/postgres-cargo-map.json": "5dd97d9e3e3b99723b541b8eafa05602fdfe0eca6e6bbe78977109b09dd1aacd",
+  "tools/ci/check-product-buck-residual.mjs": "03e25844bd6cae3004b130750c1c1c058ed5aaac4e3c0903dc900c756a4b3233",
+  "tools/ci/check-product-buck-residual.test.mjs": "aade66943fe71633a4bc9a744e0029dc4d1f687c65f11746a44298e4dcd55d39",
+  "tools/ci/check-postgres-cargo-map.mjs": "48ba80adc3d8120782baff7cfa083e58119e9e605718bf4d6955ce773231c7bd",
+  "tools/ci/check-postgres-cargo-map.test.mjs": "2e075cea09af957f92a126a1af8ffb8bf5bdf4fe71ccac53ca9854d79b7cf9b0"
+}

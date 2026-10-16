@@ -1,0 +1,85 @@
+{
+  "source_head": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "files": [
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/manifest.json",
+      "sha256": "5a8cbcc363333e8bf279eaf69280e48ccae5fe96bd3df1316c3adf2c07a30db6"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/native_company_policy_unit_tests.rs",
+      "sha256": "daa421baa0f5410df6a47a242cf55e793417f81e0b6f66dce4fefb55fa3ef431"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/PORTS.rs",
+      "sha256": "6d93b1bd1bf0c416ae1e880191458a0e1382db9c279b8b0e54177155c0646d29"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/MATERIAL.md",
+      "sha256": "dcd80b9b64acdecfbd00f24ffe6f479cf4dd01667d86c90bcca0c222111175c3"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/TEST-INTERFACES.md",
+      "sha256": "6472fa3ee4047a481d56ce673607f35b9d00d43e0aee8c15ea8b44a81a850a87"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-round3-integration-tests-review-20260920.json",
+      "sha256": "3950e4327da5b8f3b5a5068bd846ba854c5c9d5dfbdc9e7edd6a7008a4671045"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/Cargo.toml",
+      "sha256": "3518d695805bea4a6414f6c3885615d101a3cad80362eb1545ac23a68f8dc6b6"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/BUCK",
+      "sha256": "37755c819abf16a63ef86145b2eab52ec1e5c93b570cdf989290e754487ae79e"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/src/lib.rs",
+      "sha256": "6d94a12dcaa1d5df4731577360665c2aa3765fe4ce8b5f2cf6a5745a3fb6d119"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/identity/application/Cargo.toml",
+      "sha256": "90d01de0474b627200b6a5daba74f17a2ffad497a8c9d8c8829ca4a6fa5c8474"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/identity/domain/Cargo.toml",
+      "sha256": "acc853285b4108fce97bce85be54ca3e2617e2031094f1454d7a02cd082cecb5"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/Cargo.toml",
+      "sha256": "4d566b31cb64b02dd8107d92e4926291e9afdf9d20bcf2cd53abee80f12dc064"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/Cargo.lock",
+      "sha256": "2395fe296c6bb1529223a95c89ca660e546be8ff1ff6f04cf0c9b391a5e44f72"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py",
+      "sha256": "4eeb806a10282f7b4fe6d9d75e9c25295a4e4b8a72f7b3a66217f3f2e571d652"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/tools/buck/generated-face-first-party.sh",
+      "sha256": "c094271e3fa26feb81c1200d4c0aa0ef8d88da7073e80f69fa42b30f0f017bf0"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/tools/buck/generated-face-reindeer.sh",
+      "sha256": "b9f168b76a8416f99ed006d208cd01129c85fe9781e92ec7b7f5010c9c7ee901"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/tools/buck/preflight.sh",
+      "sha256": "e900d43ce11457d30b90c6485dd3bfe98dc7ffa52b07b21e06a78d18fee5070c"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/third-party/rust/buckify.sh",
+      "sha256": "cf248d2c8370c582ef30cd06af78ce95aee0339d22d66befd1cfd09423bd78ee"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/rust-toolchain.toml",
+      "sha256": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/ci/gates/layer-boundary/src/lib.rs",
+      "sha256": "6c937d1698af34ad09a813b32066f5a4e0d9b950621204dd80b255c5ca0ccef3"
+    }
+  ]
+}

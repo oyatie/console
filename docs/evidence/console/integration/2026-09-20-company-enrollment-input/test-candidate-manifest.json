@@ -1,0 +1,41 @@
+{
+  "status": "SEALED_TEST_API_CANDIDATE_NOT_IMPLEMENTED_OR_EXECUTED",
+  "base_head": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+  "enclosing_red_test": "company_setup_commits_once_reopens_and_preserves_account_credentials",
+  "enclosing_red_runtime_evidence": "root-owned, not attested here",
+  "declared_leaves": [
+    "accepted_vectors_match_exact_independent_bytes_and_decode",
+    "json_shape_rejects_missing_duplicate_unknown_or_wrong_members",
+    "uuid_wire_is_canonical_non_nil_and_null_group_remains_distinct",
+    "names_are_utf8_byte_bounded_nonblank_control_free_and_unmodified",
+    "slugs_use_exact_ascii_grammar_and_byte_limit",
+    "input_parse_enforces_exact_4096_byte_budget_and_json_exhaustion",
+    "codec_refuses_every_truncation_and_any_trailing_bytes",
+    "codec_refuses_invalid_header_discriminator_ids_lengths_utf8_and_fields"
+  ],
+  "executed": 0,
+  "golden_vector_count": 5,
+  "source_preimages": {
+    "backend/crates/identity/application/src/lib.rs": "dbf85df1ccaf7860b033d7fba2e60bf29ec88d7865d304c9271e9c3de3e8f04b",
+    "backend/crates/identity/application/Cargo.toml": "90d01de0474b627200b6a5daba74f17a2ffad497a8c9d8c8829ca4a6fa5c8474",
+    "backend/crates/identity/application/BUCK": "f5fa26528296b212ea851d6573582252781d2d1c9e816ea8dc63a4b1a4a9da1a",
+    "backend/crates/identity/domain/src/lib.rs": "4752d2fe2dd28a9536481a418686529cb57ec3f3e0842590c216c43b19a173d3"
+  },
+  "members": {
+    "API.md": {
+      "sha256": "d3903ba36f8e8be6111d500a7e6f52412f25981ec2219d0865702bb9b7554dcd",
+      "bytes": 7430
+    },
+    "company_enrollment_tests.rs": {
+      "sha256": "01f4b97dc45eda4dd706b1997a21e9b875c40880d5f3281b913c4211de66e19c",
+      "bytes": 9919
+    },
+    "golden-vectors.json": {
+      "sha256": "c5262e41bcab37c00063cbedf5dfb42936776af798e08eb3bda10a0b4bae22a0",
+      "bytes": 3369
+    }
+  },
+  "review_status": "PENDING",
+  "repository_edits": 0,
+  "supersedes_manifest_sha256": "7ee4f78be77c08c93e7323980956d7c47808e39a0c4a2047ca0d5bf43c3715c7"
+}

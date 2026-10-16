@@ -1,0 +1,395 @@
+# Exact production SQL inputs used by Account custody tests.
+# Uninstalled Manager source and read-only metadata prerequisite capture.
+export_file(
+    name = "postgres-company-information-manager-current-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-company-information-manager-current-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-company-policy-v2-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-company-policy-v2-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-reconcile-topology.sh",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-account-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-account-credentials.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-verify-account-native.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-install-durability-observer.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Pure Company decoder candidate, deliberately uninstalled by serving finalizer.
+export_file(
+    name = "postgres-company-enrollment-input.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-company-enrollment-schema.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-company-enrollment-intake.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-company-enrollment-guards.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Atomic upgrade following Account bootstrap, used by the native Company fixture.
+export_file(
+    name = "postgres-finalize-company-enrollment.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-native-company-policy.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-company-policy-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-company-policy-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-native-company-policy-v2.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-company-policy-v2-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Exact reviewed People source and read-only capture inputs for isolated tests.
+export_file(
+    name = "postgres-native-people-directory-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-people-directory-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-people-directory-staged-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "account-custody-migrations.sha384",
+    visibility = ["PUBLIC"],
+)
+
+# Guarded native Directory activation and its complete serving classifier.
+export_file(
+    name = "postgres-finalize-native-people-directory.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-people-directory-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-native-people-directory-row-lock.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-people-directory-row-lock-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-people-directory/input-row-lock-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Declared UNINSTALLED provenance input for isolated owner-contract tests.
+export_file(
+    name = "postgres-company-provenance-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Exact UNINSTALLED metadata input for isolated provenance capture diagnostics.
+export_file(
+    name = "postgres-capture-company-provenance-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Declared UNINSTALLED inputs for rolled-back OrgUnit metadata qualification.
+
+export_file(
+    name = "postgres-native-org-unit-closed-perimeter-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Reviewed native Organization finalizer inputs for isolated transaction tests.
+
+export_file(
+    name = "postgres-finalize-native-org-unit-closed-perimeter-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-org-unit-closed-perimeter-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-group-process-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-group-process-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/codec-contract-v1.json",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/schema-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/codec-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/result-codec-v2.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/source-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/locks-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/closure-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/context-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/material-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/transition-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/guards-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/commands-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/audit-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/discovery-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-group-process/acl-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Reviewed Group serving inputs; isolated transaction tests only.
+
+export_file(
+    name = "postgres-native-group-process-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-native-group-process-v1.sql",
+    visibility = ["PUBLIC"],
+)
+export_file(
+    name = "postgres-finalize-native-group-process-navigation-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Uninstalled inputs for reviewed disposable OrgUnit actor-phase diagnostics.
+
+export_file(
+    name = "postgres-native-org-unit-account-actor-expansion-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-org-unit-account-actor-validation-v1-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-closed76-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-group83-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Reviewed opt-in bounded Organization reader inputs; historical exports retained.
+
+export_file(
+    name = "postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Actual complete native Account-actor capture query inputs.
+export_file(
+    name = "native-org-unit/account-actor-custody-capture-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)
+# Unregistered V2 precursor and oracle: test prerequisites only.
+export_file(
+    name = "native-org-unit/account-actor-custody-capture-v2.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-org-unit-account-actor-v2-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "fixtures/native-org-unit-account-actor-capture-export-contract-v2.json",
+    visibility = ["PUBLIC"],
+)
+
+# Exact uninstalled Manager SQL inputs consumed by native custody verification.
+export_file(
+    name = "postgres-finalize-company-information-manager-current-policy-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-company-information-manager-current-policy-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-company-information/group-lock-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-company-information/selected-lock-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-company-information/root-material-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-company-information/manager-current-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-company-information/acl-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+# Exact additive Account removal transition inputs; no profile activation.
+
+export_file(
+    name = "postgres-finalize-account-legacy-removal-v1.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-account-legacy-removal-v1-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-account-legacy-removal-v1-custody.sql",
+    visibility = ["PUBLIC"],
+)

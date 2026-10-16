@@ -17,6 +17,7 @@ console-identity-domain = { workspace = true }
 console-kernel-core = { workspace = true }
 metrics = { workspace = true }
 console-platform-auth = { path = "../../platform/auth" }
+console-platform-auth-rest = { workspace = true }
 console-platform-authz = { path = "../../platform/authz" }
 console-platform-db = { workspace = true }
 console-platform-request-context = { workspace = true }

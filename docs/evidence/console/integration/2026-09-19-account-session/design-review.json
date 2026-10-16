@@ -1,0 +1,45 @@
+{
+  "kind": "account-session-integration-design-review",
+  "approved_design_sha": "796947bdeeb9e9c89dbeb1dd0ad7c5f69ddccdc3",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "/root/integration_security",
+      "candidate_sha": "7e185ef038707a104ea650c1dec79d4147542dea",
+      "verdict": "correct native Account cookie vs Bearer Business API distinction"
+    },
+    {
+      "round": 2,
+      "reviewer": "/root/integration_tests",
+      "candidate_sha": "796947bdeeb9e9c89dbeb1dd0ad7c5f69ddccdc3",
+      "verdict": "approve; no findings"
+    },
+    {
+      "round": 3,
+      "reviewer": "/root/integration_security",
+      "candidate_sha": "796947bdeeb9e9c89dbeb1dd0ad7c5f69ddccdc3",
+      "verdict": "approve correction and full scoped design; no findings"
+    },
+    {
+      "round": 4,
+      "reviewer": "/root/reference_inventory",
+      "candidate_sha": "796947bdeeb9e9c89dbeb1dd0ad7c5f69ddccdc3",
+      "verdict": "approve design for test preparation; no findings"
+    }
+  ],
+  "limit": "No implementation admitted; independently approved test bytes and real owner-bound RED required. Mounted entry cannot establish broader integration/release acceptance.",
+  "baseline": {
+    "source_sha": "9badbaf2c68a13be43f0a9f757e00fe8c5ae8e29",
+    "command": "export PATH=\"${TMPDIR:-/tmp}/console-dotslash/bin:$PATH\"\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=otp_first_signin_then_passkey_enrollment_then_usernameless_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
+    "exit_code": 0,
+    "discovered": 17,
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "filtered": 16,
+    "database": "Dedicated disposable PostgreSQL18.4 through existing wrapper; Docker29.5.2; original containers/data untouched",
+    "artifact": "baseline-database.log.gz",
+    "sha256": "479c1d0c966224356a04d6f9b86f4b74f2eeea94dc79fdf1bcc3f95a52f7656a",
+    "uncompressed_sha256": "204a11c8598fc0b350187b89db8602c0c44206c7b61ba6856f0d5a78b2378340"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "owner": "/root",
+  "test_candidate": "194d68dcfca48027381ccbb33deb75b9b274724a",
+  "implementation_candidate": "f53af9070693f7f41d3e23205de28e14f5ed0f71",
+  "credential_test_candidate": "99203cf2ea01404a48a97173c3bbd3f49551771c",
+  "retained_and_generated_candidate": "ceb8201aa585dbd19c2d53e32a0c9e34c35623e4",
+  "initial_verification": {
+    "owner_red": {
+      "executed": 1,
+      "failed": 1,
+      "seconds": 8.66,
+      "filtered": 471,
+      "reason": "PLATFORM_GROUP_LIST_CURRENT_ROLE_REQUIRED: current MEMBER disclosed cross-Company Group topology"
+    },
+    "pure_oracles": {
+      "passed": 2,
+      "failed": 0,
+      "seconds": 0.01,
+      "filtered": 470
+    },
+    "same_owner_green": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": 8.69,
+      "filtered": 471
+    },
+    "initial_all": {
+      "passed": 3,
+      "failed": 0,
+      "seconds": 8.55,
+      "filtered": 469
+    },
+    "unique_initial_tests": 3,
+    "owner_clippy": {
+      "exit_code": 0,
+      "seconds": 26.55
+    },
+    "retained_clippy": {
+      "exit_code": 0,
+      "seconds": 56.76
+    }
+  },
+  "clippy_commands": [
+    "CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo +1.98.1 clippy --locked --manifest-path backend/Cargo.toml -p console-app -p console-platform-provisioning -p console-platform-rest -p console-platform-auth-rest --all-targets -- -D warnings",
+    "CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo +1.98.1 clippy --locked --manifest-path backend/Cargo.toml -p console-app -p console-platform-rest --all-targets -- -D warnings"
+  ],
+  "limits": [
+    "Initialownerproof only; fullGroupacceptance incomplete",
+    "Credential3 andretained runtime pending in separate run",
+    "Realnesteddecode/lock/expiry/revocation/commitloss and fullretained55 tests pending",
+    "Originalplatformsourcesnapshot intermittentfailure remains unresolved",
+    "No releaseinventory state promotion ormilestonecompletion"
+  ],
+  "postgres_commands": [
+    "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-group-initial-map-20260920.json --only platform-group-oracles,platform-group-owner --fail-fast",
+    "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-group-initial-map-20260920.json --only platform-group-oracles --fail-fast",
+    "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-group-initial-map-20260920.json --only platform-group-owner,platform-group-initial3 --fail-fast"
+  ],
+  "admission_command": "python3 tools/lanes/fanout.py admit --spec /private/tmp/console-platform-group-owner-lane-20260920.json",
+  "execution_order_note": "Runner selects map order, not --only order; initial combined request stopped after expected owner failure before pure controls, then pure controls ran separately."
+}

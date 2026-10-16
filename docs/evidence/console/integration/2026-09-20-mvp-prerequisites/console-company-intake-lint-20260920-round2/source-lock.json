@@ -1,0 +1,14 @@
+{
+  "backend/app/tests/auth_rest/native_company_intake_owner.rs": {
+    "before": "73097a7b70b6e1602de7313caa97b750fe91838ec189401a164b37eb4b0335ab",
+    "candidate": "2f4e13baf77683d452fc81dd6d411884e13f08c62bea2b46b1648c6ae43e3d79"
+  },
+  "backend/app/tests/auth_rest/native_company_intake_guards.rs": {
+    "before": "d088e3e201249a686476383b5bdaed9b66a603b9715014e15ebd1ea15f6a85db",
+    "candidate": "0ef8c18891527813f3eb20866e35298327e3b4995bf599907c16c5c012943879"
+  },
+  "backend/app/tests/auth_rest/native_company_signed_credentials.rs": {
+    "before": "7351d79474e30649775312792b0ff6920d699581e0da77cd866742d5982d6a26",
+    "candidate": "db2b0bfef636095ac15be526298b4838b04d77790d4a07944f4bff634166fee4"
+  }
+}

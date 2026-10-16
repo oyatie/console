@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 3,
+  "decision": "approved-design-only",
+  "design_path": "/private/tmp/console-ledger-git-buffer-design.txt",
+  "design_sha256": "79f101ebeab1c54955d25c8bfb708f38315d330d8eccd1e9f09a395f3cdfe989",
+  "reviewed_source": "scripts/console/validate-console-truth-ledger.mjs private git(), assertAuthorityOnlyDiff(), assertNoUnresolvedMerge(), createConsoleCandidateSourceResolver()",
+  "findings": [],
+  "reason": "A fixed16MiB execFileSync maxBuffer raises only an observed finite transport limit. Existing child failure propagation, signed candidate authority, direct-parent relation, path/mode allowlist, complete late-marker scan and readText fail-closed semantics remain unchanged. No truncation or new configuration authority is introduced.",
+  "exact_test_review_requirements": [
+    "Large positive must compare complete expected candidate bytes or length+cryptographic digest, not only a successful prefix.",
+    "Late marker must be a recognized marker at line start after1MiB and fail specifically for unresolved merge marker, not unrelated signature/path/ENOBUFS.",
+    "Overflow fixture must exercise the actual signed resolver against a real blob beyond16MiB and assert the known capacity rejection boundary; positive signed controls establish functioning prerequisites.",
+    "All existing tests and checks stay unchanged; semantic test candidates require separate exact-byte independent review."
+  ],
+  "risks": [
+    "Each synchronous Git read may now allocate up to16MiB raw output plus decoded/split representations; this is a finite per-read allowance, not a process-memory guarantee.",
+    "Above16MiB must remain a failure and trigger separately reviewed streaming/blob-reader design rather than increasing to unbounded memory."
+  ],
+  "approval_scope": "One existing helper option only; no runtime, test-implementation or release approval."
+}

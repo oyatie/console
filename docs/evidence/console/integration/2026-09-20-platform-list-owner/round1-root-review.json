@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root",
+  "round": 1,
+  "status": "APPROVE_OWNER_API_AND_BOUNDED_SCOPE_ONLY",
+  "manifest_sha256": "dd407b6654d083a4a06312b708899d07c503f061e75f1a86ee77314381629b75",
+  "basis": [
+    "Actual list_tenants replaces actor-only bypass with raw verified credential and root-composed dependencies; sole REST caller converts, no unchecked overload.",
+    "One Business transaction retains credential-owned source locks through exact existing projection/audit and final expiry. No detached Auth snapshot or generic resolver action substitution.",
+    "Cedar makes actual TenantList/Companies/read decision; source bridge returns facts only and grants no Business credential-table access.",
+    "Four machine rawSQL callers and view-as remain explicit later SQL capability release HOLD; bounded application-owner acceptance does not pretend to close shared database role capabilities."
+  ],
+  "next_required": [
+    "Exact SQL shape/grants/custody compatibility",
+    "Actual root dependency composition",
+    "Narrow errors/freshness/privacy/exact audit rules",
+    "Real reviewed RED and concurrency oracles; source implementation not admitted"
+  ],
+  "runtime_executed": 0
+}

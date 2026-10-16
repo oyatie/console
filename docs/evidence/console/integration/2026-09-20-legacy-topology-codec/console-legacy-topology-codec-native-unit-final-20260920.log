@@ -1,0 +1,27 @@
+[2026-09-20T21:29:20.267-04:00] Build ID: 82d5f46b-e70c-4cca-a5eb-94561bb536ef
+[2026-09-20T21:29:20.280-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4423862000
+[2026-09-20T21:29:20.280-04:00] Directory changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4423862000
+[2026-09-20T21:29:20.280-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc
+[2026-09-20T21:29:20.280-04:00] 3218 additional file change events (since mergebase)
+[2026-09-20T21:29:20.280-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T21:29:27.368-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 689 other actions
+[2026-09-20T21:29:34.569-04:00] Waiting on root//third-party/rust:thiserror-2 (prelude//platforms:default#11a256c53bf8083e) -- action (write LPPL/thiserror-link-diag.args), and 117 other actions
+[2026-09-20T21:29:38.597-04:00] ✓ Pass: root//backend/crates/platform/provisioning:console-platform-provisioning-unit (0.2s)
+[2026-09-20T21:29:38.597-04:00] ---- STDOUT ----
+[2026-09-20T21:29:38.597-04:00]
+[2026-09-20T21:29:38.597-04:00] running 5 tests
+[2026-09-20T21:29:38.597-04:00] test legacy_topology::tests::topology_normalizes_only_new_text_and_never_repairs_stored_bytes ... ok
+[2026-09-20T21:29:38.597-04:00] test legacy_topology::tests::topology_heads_are_bounded_sorted_distinct_and_bound_to_requested_group ... ok
+[2026-09-20T21:29:38.597-04:00] test legacy_topology::tests::topology_nine_frozen_vectors_preserve_intent_identity_and_exact_bytes ... ok
+[2026-09-20T21:29:38.597-04:00] test legacy_topology::tests::topology_closed_status_role_tags_optional_tags_and_utf8_bounds ... ok
+[2026-09-20T21:29:38.597-04:00] test legacy_topology::tests::topology_rejects_truncated_trailing_oversized_unknown_and_nil_frames ... ok
+[2026-09-20T21:29:38.597-04:00]
+[2026-09-20T21:29:38.597-04:00] test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+[2026-09-20T21:29:38.597-04:00]
+[2026-09-20T21:29:38.597-04:00]
+[2026-09-20T21:29:38.597-04:00] ---- STDERR ----
+[2026-09-20T21:29:38.597-04:00]
+[2026-09-20T21:29:38.641-04:00] Cache hits: 0%
+[2026-09-20T21:29:38.641-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-20T21:29:38.641-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

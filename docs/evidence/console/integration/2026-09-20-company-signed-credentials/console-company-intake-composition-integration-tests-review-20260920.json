@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_COMPOSED_TEST_SOURCE_AND_BOUNDED_AUTH_PATH_EXPANSION_RUNTIME_PENDING",
+  "head": "7f59ddc776b3ff99c15993e3ab8d784a960fd528",
+  "installed_files": {
+    "native_company_intake_owner.rs": "56dd170464e5e135c84b87b07fc160a31ac7cd0afe4b6dcce5d14d109bb2d47e",
+    "native_company_signed_credentials.rs": "7351d79474e30649775312792b0ff6920d699581e0da77cd866742d5982d6a26"
+  },
+  "leaf_counts": {
+    "prior": 6,
+    "added": 10,
+    "total": 16,
+    "total_sqlx": 14,
+    "total_pure": 2,
+    "added_sqlx": 9,
+    "added_pure": 1
+  },
+  "evidence": [
+    "All original six leaves and preceding helpers byte-identical prefix.",
+    "ACL round2, direct-role/family round1, root command-fence source and signed seam round2 exactly composed with a single include.",
+    "Lexical review:33 trailing commas inserted,2 optional match-arm commas removed,5 equivalent match-arm blocks; no strings, SQL, identifiers, assertions or branch semantics changed.",
+    "Command fence uses exact existing advisory key with separate blocker/waiter process witness,55P03 refusal, history equality and successful unchanged status/replay after releasing blocker.",
+    "Auth lane additions are exactly account.rs/session.rs/session/company_enrollment.rs/auth BUCK/signed test; app BUCK and generator remain existing root-owned paths; mechanical guide preserves current validators/private profile and immutable HTTP target."
+  ],
+  "lane_record": "/private/tmp/console-native-company-enrollment-lane-signed-20260920.json",
+  "lane_record_sha256": "c9a515d4733e905c1c06650d58376949eb9177460b61bfc7e65e741d94a3d09c",
+  "implementation_condition": "Root must bind implementation_successor_base and composed test-candidate receipt to eventual reviewed test commit, not pre-test7f59ddc; this confirms scope, not independent lane runtime admission.",
+  "runtime_executed": 0,
+  "holds": [
+    "Enclosing HTTP enrollment RED remains open.",
+    "Missing Auth symbols are compile prerequisites, not executed semantic RED/GREEN.",
+    "No full lifecycle metadata/cleanup/effect/transport/profile/release acceptance."
+  ]
+}

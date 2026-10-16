@@ -1,6 +1,21 @@
 export_file(
+    name = "Cargo.toml",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "sqlx-offline",
     src = ".sqlx",
     mode = "reference",
     visibility = ["PUBLIC"],
 )
+
+# Source-only integrity inputs; no compiler or toolchain selection.
+[
+    export_file(
+        name = "hydration-" + source,
+        src = source,
+        visibility = ["PUBLIC"],
+    )
+    for source in ["Cargo.toml", "Cargo.lock", "BUCK"]
+]

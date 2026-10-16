@@ -1,0 +1,47 @@
+entity Account = {
+    "account_id": String,
+    "session_id": String,
+    "security_generation": String,
+    "state": String,
+    "deployment_system_identifier": String,
+    "deployment_database_name": String,
+    "deployment_database_oid": String,
+    "designation_account_id": String,
+    "designation_revision": String,
+    "designation_receipt_id": String,
+    "designation_state": String
+};
+entity NativeCompany = {
+    "org_id": String,
+    "state": String,
+    "deployment_system_identifier": String,
+    "deployment_database_name": String,
+    "deployment_database_oid": String,
+    "current_group_id": String,
+    "group_state": String,
+    "group_revision": String,
+    "group_incarnation": String,
+    "membership_id": String,
+    "membership_state": String,
+    "membership_revision": String,
+    "membership_incarnation": String,
+    "company_epoch": String,
+    "origin_account_id": String,
+    "origin_command_id": String,
+    "origin_receipt_id": String,
+    "administrative_account_id": String,
+    "company_actor_admission_receipt_id": String,
+    "birth_assignment_id": String,
+    "birth_role_id": String,
+    "manifest_digest": String
+};
+action "InstallPayrollReadCatalogV1", "GrantPayrollReadV1", "RevokePayrollReadV1" appliesTo {
+    principal: [Account],
+    resource: [NativeCompany],
+    context: {
+        "requested_org_id": String,
+        "requested_group_id": String,
+        "recipient_account_id": String,
+        "manifest_digest": String
+    }
+};

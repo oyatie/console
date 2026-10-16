@@ -1,0 +1,1630 @@
+#!/usr/bin/env python3
+"""Behavior locks for the first-party Rust BUCK graph generator."""
+
+import ast
+from unittest.mock import patch
+import importlib.util
+import inspect
+import json
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+GENERATOR_PATH = Path(__file__).with_name("gen_first_party.py")
+SPEC = importlib.util.spec_from_file_location("gen_first_party", GENERATOR_PATH)
+assert SPEC is not None and SPEC.loader is not None
+GENERATOR = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(GENERATOR)
+
+
+class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_private_company_intake_guards_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-guards.sql"),
+            "ops/postgres-company-enrollment-guards.sql",
+        )
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_guards.rs").is_file())
+
+    def test_private_company_intake_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-intake.sql"),
+            "ops/postgres-company-enrollment-intake.sql",
+        )
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_owner.rs").is_file())
+
+    def test_private_company_schema_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-schema.sql"),
+            "ops/postgres-company-enrollment-schema.sql",
+        )
+        for path in [
+            "tests/auth_rest/fixtures/company-enrollment-schema-acl.sql",
+            "tests/auth_rest/fixtures/company-enrollment-schema-references.sql",
+        ]:
+            self.assertIn(path, config["srcs"])
+            self.assertTrue((Path(GENERATOR.REPO) / "backend/app" / path).is_file())
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_schema.rs").is_file())
+
+    def test_health_readiness_maps_its_existing_source_tripwire_inputs(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/health_readiness.rs")
+        self.assertIn("src/lib.rs", config["srcs"])
+        for package in ("auth-rest", "request-context"):
+            directory = "backend/crates/platform/" + package
+            self.assertEqual(directory + "/src", config["external"].get("//" + directory + ":crate-source-tree"))
+            self.assertTrue((Path(GENERATOR.REPO) / directory / "src/lib.rs").is_file())
+
+    def test_private_company_parser_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-input.sql"),
+            "ops/postgres-company-enrollment-input.sql",
+        )
+        for path in [
+            "tests/auth_rest/fixtures/company-enrollment-input-golden.sql",
+            "tests/auth_rest/fixtures/company-enrollment-input-malformed.sql",
+            "tests/auth_rest/fixtures/company-enrollment-input-boundary.sql",
+        ]:
+            self.assertIn(path, config["srcs"])
+            self.assertTrue((Path(GENERATOR.REPO) / "backend/app" / path).is_file())
+
+    def test_auth_rest_maps_literal_fixture_inputs(self) -> None:
+        app = Path(GENERATOR.REPO) / "backend/app"
+        fixture_root = (app / "tests/auth_rest/fixtures").resolve()
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        declared = {
+            resource.resolve()
+            for pattern in config["srcs"]
+            for resource in app.glob(pattern)
+        }
+        required = set()
+        for source in (app / "tests/auth_rest").rglob("*.rs"):
+            for literal in re.findall(r'include_(?:str|bytes)!\(\s*"([^"]+)"', source.read_text()):
+                resource = (source.parent / literal).resolve()
+                if resource.is_relative_to(fixture_root):
+                    self.assertTrue(resource.is_file(), f"missing fixture: {resource}")
+                    required.add(resource)
+        self.assertTrue(required, "must examine actual compile-time fixture inputs")
+        self.assertEqual(
+            [], sorted(str(path.relative_to(app)) for path in required - declared),
+            "auth_rest has undeclared compile-time fixture inputs",
+        )
+
+    def test_layer_ratchet_receives_current_workspace_manifests_and_sources(self) -> None:
+        """The real-workspace ratchet must not run against an empty Buck input tree."""
+        external = GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/gate_detects_violation.rs", ""
+        )
+        expected = {"//backend:Cargo.toml": "backend/Cargo.toml"}
+        backend = Path(GENERATOR.REPO, "backend")
+        # Cargo also admits implicit path-dependency members outside its globs.
+        # Ask Cargo, independently of the generator's directory scan.
+        metadata = json.loads(subprocess.check_output(
+            ["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline"],
+            cwd=backend, text=True,
+        ))
+        directories = {Path(package["manifest_path"]).parent
+                       for package in metadata["packages"]
+                       if package["id"] in metadata["workspace_members"]}
+        self.assertTrue(directories)
+        for directory in directories:
+            package = Path(directory).relative_to(GENERATOR.REPO).as_posix()
+            expected[f"//{package}:Cargo.toml"] = f"{package}/Cargo.toml"
+            expected[f"//{package}:crate-source-tree"] = f"{package}/src"
+            buck = Path(directory, "BUCK").read_text(encoding="utf-8")
+            self.assertIn('name = "Cargo.toml",', buck, package)
+        self.assertEqual(expected, external)
+        self.assertEqual({}, GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/unrelated.rs", ""
+        ))
+
+    def test_no_workspace_member_is_skipped(self) -> None:
+        """`-ui` members were skipped while Leptos was unvendored.
+
+        #1079 put Leptos in the third-party graph, so the exclusion has no
+        remaining premise. `skip_workspace_member` / `skipped_ui_package_names`
+        and `map_deps`'s `skipped` branch were REMOVED rather than left
+        returning empty (review finding F6 on #1080); what is asserted now is
+        the outcome those functions used to prevent -- every member generated,
+        and a member dependency mapped to its first-party target instead of
+        being dropped or rewritten as `//third-party/rust:<name>`.
+        """
+        self.assertFalse(hasattr(GENERATOR, "skip_workspace_member"))
+        self.assertFalse(hasattr(GENERATOR, "skipped_ui_package_names"))
+        for member in ("payroll/ui", "payroll/rest"):
+            self.assertIn(
+                str(Path(GENERATOR.REPO, "backend", "crates", member)),
+                GENERATOR.find_members(),
+                member,
+            )
+        deps, named = GENERATOR.map_deps(
+            {"console-payroll-ui": {"path": "crates/payroll/ui"}},
+            {"console-payroll-ui": "//backend/crates/payroll/ui:console-payroll-ui"},
+        )
+        self.assertEqual(["//backend/crates/payroll/ui:console-payroll-ui"], deps)
+        self.assertEqual({}, named)
+        self.assertNotIn("//third-party/rust:console-payroll-ui", deps)
+
+    def test_app_carries_its_ui_edge_now_that_leptos_is_vendored(self) -> None:
+        """The inverse of what this asserted before.
+
+        While `-ui` members were skipped, the point was that `console-app`
+        must not invent an edge to a package Buck could not build. Leptos is
+        now in the third-party graph (#1079), the member is generated, and the
+        edge is real: `console-app` depends on `console-payroll-ui` in Cargo,
+        unconditionally, so a Buck graph without that edge is the wrong one --
+        it is what made `Backend — buck-app` fail on `E0433: cannot find module
+        or crate console_payroll_ui`.
+        """
+        app_dir = Path(GENERATOR.REPO) / "backend" / "app"
+        manifest = GENERATOR.load(app_dir)
+        first_party = {}
+        for directory in GENERATOR.find_members():
+            name = GENERATOR.load(directory)["package"]["name"]
+            rel = str(Path(directory).relative_to(GENERATOR.REPO))
+            first_party[name] = "//{}:{}".format(rel, name)
+        deps, named = GENERATOR.map_deps(manifest.get("dependencies"), first_party)
+        self.assertIn(
+            "//backend/crates/payroll/ui:console-payroll-ui",
+            deps,
+            "app depends on the UI crate in Cargo; the Buck graph must match",
+        )
+
+    def test_repo_source_layout_uses_mapped_sources_and_explicit_crate_root(self) -> None:
+        block = "\n".join(
+            GENERATOR._block(
+                "rust_library",
+                "example",
+                'glob(["src/**/*.rs"])',
+                "example",
+                [],
+                {},
+                {"CARGO_MANIFEST_DIR": "backend/crates/example"},
+                package="backend/crates/example",
+                crate_root="backend/crates/example/src/lib.rs",
+                external={
+                    "//docs/specs:cedar-pbac-map": (
+                        "docs/specs/cedar-pbac-coexistence-map.json"
+                    ),
+                },
+            )
+        )
+
+        self.assertIn(
+            'mapped_srcs = repo_mapped_srcs("backend/crates/example", '
+            'glob(["src/**/*.rs"]), external = {',
+            block,
+        )
+        self.assertIn(
+            '"//docs/specs:cedar-pbac-map": '
+            '"docs/specs/cedar-pbac-coexistence-map.json"',
+            block,
+        )
+        self.assertIn(
+            'crate_root = "backend/crates/example/src/lib.rs"',
+            block,
+        )
+        self.assertNotIn("\n    srcs =", block)
+
+    def test_generation_is_clean_for_all_first_party_buck_faces(self) -> None:
+        subprocess.run(
+            [sys.executable, str(GENERATOR_PATH)],
+            cwd=GENERATOR.REPO,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        buck_files = [
+            str(Path(directory).relative_to(GENERATOR.REPO) / "BUCK")
+            for directory in GENERATOR.find_members()
+        ]
+        result = subprocess.run(
+            ["git", "diff", "--quiet", "--", *buck_files],
+            cwd=GENERATOR.REPO,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, "generated BUCK faces are stale")
+
+    def test_compile_time_resource_contracts_are_declared(self) -> None:
+        resources = GENERATOR.RESOURCE_CONFIG
+
+        self.assertEqual(
+            resources["console-platform-authz"]["external"][
+                "//docs/specs:cedar-pbac-map"
+            ],
+            "docs/specs/cedar-pbac-coexistence-map.json",
+        )
+        self.assertEqual(
+            resources["console-reporting-adapter-postgres"]["external"][
+                "//docs/reference:daily-progress"
+            ],
+            "docs/reference/일일업무진행현황_0605.xlsx",
+        )
+        self.assertEqual(
+            resources["console-app"]["external"]["//backend/openapi:openapi.yaml"],
+            "backend/openapi/openapi.yaml",
+        )
+
+    def test_sqlx_tests_map_the_authoritative_migration_tree(self) -> None:
+        external = GENERATOR.integration_external_resources(
+            "console-leave-adapter-postgres",
+            "tests/leave_migration_expand_contract.rs",
+            '#[sqlx::test(migrations = "../../platform/db/migrations")]',
+        )
+
+        self.assertEqual(
+            external["//backend/crates/platform/db/migrations:tree"],
+            "backend/crates/platform/db/migrations",
+        )
+
+    def test_openapi_drift_maps_real_rest_source_trees(self) -> None:
+        config = GENERATOR.integration_resource_config(
+            "console-app",
+            "tests/openapi_drift.rs",
+        )
+
+        self.assertIn("src/**/*.rs", config["srcs"])
+        self.assertEqual(
+            config["external"][
+                "//backend/crates/dispatch/rest:crate-source-tree"
+            ],
+            "backend/crates/dispatch/rest/src",
+        )
+        self.assertEqual(
+            config["external"]["//backend/openapi:openapi.yaml"],
+            "backend/openapi/openapi.yaml",
+        )
+        self.assertEqual(
+            config["external"]["//backend/crates/equipment/rest:crate-source-tree"],
+            "backend/crates/equipment/rest/src",
+        )
+
+    def test_openapi_drift_maps_every_compile_time_resource(self) -> None:
+        test_path = Path(GENERATOR.REPO) / "backend/app/tests/openapi_drift.rs"
+        source = test_path.read_text(encoding="utf-8")
+        include_paths = re.findall(r'include_str!\(\s*"([^"]+)"', source)
+        config = GENERATOR.integration_resource_config(
+            "console-app",
+            "tests/openapi_drift.rs",
+        )
+        mapped_roots = [
+            Path(GENERATOR.REPO) / destination
+            for destination in config["external"].values()
+        ]
+        app_source_root = Path(GENERATOR.REPO) / "backend/app/src"
+        app_package_root = Path(GENERATOR.REPO) / "backend/app"
+
+        def itest_src_maps(resource: Path, src_pattern: str) -> bool:
+            # Package-relative itest srcs resolve against backend/app/.
+            if "*" not in src_pattern:
+                return resource == (app_package_root / src_pattern).resolve()
+            prefix = src_pattern.split("*", 1)[0].rstrip("/")
+            root = (app_package_root / prefix).resolve()
+            return resource == root or (root.is_dir() and resource.is_relative_to(root))
+
+        unmapped = []
+        for include_path in include_paths:
+            resource = (test_path.parent / include_path).resolve()
+            self.assertTrue(resource.exists(), f"missing include_str resource: {resource}")
+            if resource.is_relative_to(app_source_root):
+                continue
+            if any(
+                resource == mapped_root
+                or (mapped_root.is_dir() and resource.is_relative_to(mapped_root))
+                for mapped_root in mapped_roots
+            ):
+                continue
+            if any(itest_src_maps(resource, src) for src in config.get("srcs", [])):
+                continue
+            unmapped.append(str(resource.relative_to(GENERATOR.REPO)))
+
+        self.assertEqual([], unmapped, "openapi_drift has unmapped include_str resources")
+
+    def test_openapi_fragment_globs_detect_tree_and_include_str(self) -> None:
+        governance = Path(GENERATOR.REPO) / "backend/crates/governance/rest"
+        src = governance / "src"
+        pats = GENERATOR.openapi_fragment_globs(str(governance), str(src))
+        self.assertEqual(
+            ["openapi/**/*.yaml", "openapi/**/*.json"],
+            pats,
+            "governance rest must map YAML + manifest.json under openapi/",
+        )
+
+        # include_str marker alone (no openapi/ dir) still emits YAML so examined-zero
+        # cannot silently pass — buck/rustc fail closed when fragments are absent.
+        bare = Path(GENERATOR.REPO) / "backend/crates/contracts"
+        bare_src = bare / "src"
+        # contracts has no openapi/ sibling and no ../openapi include_str in src
+        self.assertEqual([], GENERATOR.openapi_fragment_globs(str(bare), str(bare_src)))
+
+    def test_rest_faces_with_openapi_tree_map_fragment_globs_in_buck(self) -> None:
+        """Lock: every first-party package with openapi/ must map fragments in BUCK.
+
+        Examined-zero fails: if no openapi trees exist this assertion is wrong;
+        if trees exist but BUCK omits the glob, the list is non-empty (RED).
+        """
+        missing = []
+        examined = 0
+        for directory in GENERATOR.find_members():
+            openapi = Path(directory) / "openapi"
+            if not openapi.is_dir():
+                continue
+            examined += 1
+            buck = Path(directory) / "BUCK"
+            text = buck.read_text(encoding="utf-8")
+            if "openapi/**/*.yaml" not in text:
+                missing.append(str(Path(directory).relative_to(GENERATOR.REPO)))
+        self.assertGreater(
+            examined,
+            0,
+            "expected at least one first-party crate with an openapi/ tree",
+        )
+        self.assertEqual(
+            [],
+            missing,
+            "BUCK faces missing openapi/**/*.yaml mapped_srcs (regenerate gen_first_party)",
+        )
+
+    def test_openapi_dotfile_srcs_and_lib_srcs_expr_include_hidden(self) -> None:
+        """Lock: Buck2 glob omits leading-dot basenames; generator must union them.
+
+        Would have failed on tip 3c803bdc4 where identity BUCK used only
+        glob(["...","openapi/**/*.yaml","openapi/**/*.json"]) with no explicit
+        .well-known__* listsrcs union (CI Backend include_str missing those files).
+        """
+        identity = Path(GENERATOR.REPO) / "backend/crates/identity/rest"
+        expected = [
+            "openapi/paths/.well-known__apple-app-site-association.get.yaml",
+            "openapi/paths/.well-known__assetlinks.json.get.yaml",
+        ]
+        found = GENERATOR.openapi_dotfile_srcs(str(identity))
+        self.assertEqual(expected, found)
+
+        # Temp tree: any leading-dot component must appear in emitted srcs expr.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            hidden = root / "openapi" / "paths" / ".hidden.yaml"
+            hidden.parent.mkdir(parents=True)
+            hidden.write_text("x: 1\n", encoding="utf-8")
+            (root / "openapi" / "paths" / "visible.yaml").write_text("y: 2\n", encoding="utf-8")
+            dots = GENERATOR.openapi_dotfile_srcs(str(root))
+            self.assertEqual(["openapi/paths/.hidden.yaml"], dots)
+            expr = GENERATOR.lib_srcs_expr(
+                ["src/**/*.rs", "openapi/**/*.yaml"],
+                explicit=dots,
+            )
+            self.assertIn('glob(["src/**/*.rs", "openapi/**/*.yaml"])', expr)
+            self.assertIn('"openapi/paths/.hidden.yaml"', expr)
+            self.assertIn(" + ", expr)
+
+    def test_identity_rest_buck_maps_well_known_openapi_dotfiles(self) -> None:
+        """Examined-zero lock: identity BUCK mapped_srcs must name both .well-known files.
+
+        Plain openapi/**/*.yaml glob is insufficient on Buck2 (dot basenames excluded).
+        """
+        buck = Path(GENERATOR.REPO) / "backend/crates/identity/rest" / "BUCK"
+        text = buck.read_text(encoding="utf-8")
+        for path in (
+            "openapi/paths/.well-known__apple-app-site-association.get.yaml",
+            "openapi/paths/.well-known__assetlinks.json.get.yaml",
+        ):
+            self.assertIn(
+                path,
+                text,
+                "identity rest BUCK must list {} after gen_first_party regen".format(path),
+            )
+        self.assertIn(
+            " + ",
+            text,
+            "identity rest BUCK must union listsrcs for openapi dotfiles",
+        )
+
+    def test_workbench_integration_test_maps_its_path_module(self) -> None:
+        config = GENERATOR.integration_resource_config(
+            "console-app",
+            "tests/workbench_api.rs",
+        )
+
+        self.assertIn("src/workbench.rs", config["srcs"])
+
+    def test_cross_package_path_modules_are_explicit_mapped_inputs(self) -> None:
+        expected = {
+            ("console-dispatch-worker", "tests/timer_delivery.rs"): {
+                "//backend/test_support:dispatch-worker-fixtures":
+                    "backend/test_support/dispatch_worker_fixtures.rs",
+            },
+            ("console-workorder-rest", "tests/mobile_device_registration.rs"): {
+                "//backend/test_support:mobile-evidence-fixtures":
+                    "backend/test_support/mobile_evidence_fixtures.rs",
+            },
+            ("console-workorder-rest", "tests/mobile_evidence.rs"): {
+                "//backend/test_support:mobile-evidence-fixtures":
+                    "backend/test_support/mobile_evidence_fixtures.rs",
+            },
+            ("console-workorder-rest", "tests/mobile_sync.rs"): {
+                "//backend/test_support:mobile-evidence-fixtures":
+                    "backend/test_support/mobile_evidence_fixtures.rs",
+            },
+        }
+
+        for (crate, test_file), external in expected.items():
+            config = GENERATOR.integration_resource_config(crate, test_file)
+            self.assertEqual(external, config["external"], f"{crate}:{test_file}")
+
+    def test_cargo_pkg_version_env_tracks_source_references(self) -> None:
+        """Cargo defines CARGO_PKG_VERSION for every crate; Buck2 does not.
+
+        A crate that reaches for it through `env!` cannot compile under Buck
+        unless the generator supplies it, which is how #1015 turned the Buck
+        leg red -- `console-contracts` stamps the composed OpenAPI version from
+        it, so every Buck target depending on contracts stopped building.
+
+        The version deliberately is not `0.1.0`: every versioned member of this
+        workspace is `0.1.0`, so a helper that ignored its `version` argument
+        entirely would satisfy a test written against that value.
+        """
+        self.assertEqual(
+            GENERATOR.cargo_pkg_version_env("pub const UNRELATED: u8 = 1;", "9.9.9-test"),
+            {},
+            "a unit that never names CARGO_PKG_VERSION must not carry it",
+        )
+        self.assertEqual(
+            GENERATOR.cargo_pkg_version_env(
+                'pub const V: &str = env!("CARGO_PKG_VERSION");', "9.9.9-test"
+            ),
+            {"CARGO_PKG_VERSION": "9.9.9-test"},
+            "the emitted value must be this package's version, not a constant",
+        )
+        # `CARGO_PKG_VERSION_MAJOR` is a different variable. A substring match
+        # would define VERSION, leave rustc failing on _MAJOR, and report success.
+        self.assertEqual(
+            GENERATOR.cargo_pkg_version_env(
+                'env!("CARGO_PKG_VERSION_MAJOR")', "9.9.9-test"
+            ),
+            {},
+            "a longer CARGO_PKG_VERSION_* name must not be read as VERSION",
+        )
+
+    def test_cargo_pkg_version_resolves_the_version_cargo_would_use(self) -> None:
+        """23 members omit `version` from `[package]`. Cargo's documented
+        default is 0.0.0, and `[workspace.package]` declares none to inherit, so
+        refusing them would abort generation for the whole repository the first
+        time one of them mentioned the variable -- in a comment, even."""
+        self.assertEqual(GENERATOR.resolved_package_version("0.1.0"), "0.1.0")
+        self.assertEqual(GENERATOR.resolved_package_version(None), "0.0.0")
+        self.assertEqual(GENERATOR.resolved_package_version(""), "0.0.0")
+        # `version.workspace = true` parses as a dict. Rendering it would put a
+        # Python repr in BUCK as the crate version, so it fails closed instead.
+        with self.assertRaises(ValueError):
+            GENERATOR.resolved_package_version({"workspace": True})
+
+    def test_cargo_pkg_version_is_scoped_to_the_referencing_target(self) -> None:
+        """The library, the binary built from `main.rs`, and each integration
+        test are separate compilation units. A single crate-level scan attaches
+        the variable to whichever targets happen to come from `src/` -- too
+        broad for a library that never names it, and too narrow for the binary
+        and the integration tests, which are exactly where `--version` lives.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "src"
+            src.mkdir()
+            (src / "lib.rs").write_text("pub fn helper() {}\n", encoding="utf-8")
+            (src / "main.rs").write_text(
+                'fn main() { println!("{}", env!("CARGO_PKG_VERSION")); }\n',
+                encoding="utf-8",
+            )
+
+            library = GENERATOR.cargo_pkg_version_env(
+                GENERATOR.read_rs_sources(str(src), exclude=("main.rs",)), "9.9.9-test"
+            )
+            binary = GENERATOR.cargo_pkg_version_env(
+                GENERATOR.file_text(str(src / "main.rs")), "9.9.9-test"
+            )
+            self.assertEqual(
+                library, {}, "the library never names it; main.rs is not its unit"
+            )
+            self.assertEqual(
+                binary,
+                {"CARGO_PKG_VERSION": "9.9.9-test"},
+                "the binary compiles main.rs and must carry it",
+            )
+
+            integration = GENERATOR.cargo_pkg_version_env(
+                '#[test]\nfn v() { assert!(!env!("CARGO_PKG_VERSION").is_empty()); }\n',
+                "9.9.9-test",
+            )
+            self.assertEqual(
+                integration,
+                {"CARGO_PKG_VERSION": "9.9.9-test"},
+                "an integration test is its own compilation unit",
+            )
+
+    def test_emit_scopes_cargo_pkg_version_to_the_referencing_target(self) -> None:
+        """Drives `emit` itself, not the helper.
+
+        Asserting the helper on hand-built strings proves it is right when fed
+        the right text; it cannot see whether `emit` feeds the right text to
+        the right target, which is the entire defect class here -- the variable
+        landing on a library that never names it while the binary that does
+        goes without, and integration tests being skipped altogether.
+
+        Reverting any of those wirings leaves the helper tests green, so this
+        is the pin that holds them.
+        """
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_crate"
+        # Tolerate a fixture left by a hard interrupt rather than failing once
+        # on the next run.
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-crate"] = {
+            "unit": "none",
+            "integration": {"tests/probe.rs": "none"},
+        }
+        # A feature variant so the second `rust_binary` block is exercised too;
+        # it takes its own env and regressed independently of the plain one.
+        GENERATOR.FEATURE_LIBRARY_VARIANTS["probe-crate"] = {"probe-feature": {"deps": {}}}
+        try:
+            (probe / "src").mkdir(parents=True)
+            # `#[cfg(test)]` so a `-unit` face is generated: it shares the
+            # library's compilation unit, so it must track the library's answer.
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn helper() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "src" / "main.rs").write_text(
+                'fn main() { println!("{}", env!("CARGO_PKG_VERSION")); }\n',
+                encoding="utf-8",
+            )
+            (probe / "tests").mkdir()
+            (probe / "tests" / "probe.rs").write_text(
+                '#[test]\nfn v() { assert!(!env!("CARGO_PKG_VERSION").is_empty()); }\n',
+                encoding="utf-8",
+            )
+            GENERATOR.emit(
+                str(probe), "probe-crate", [], {}, [], {}, version="9.9.9-test"
+            )
+            faces = self._buck_targets((probe / "BUCK").read_text(encoding="utf-8"))
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-crate", None)
+            GENERATOR.FEATURE_LIBRARY_VARIANTS.pop("probe-crate", None)
+
+        self.assertEqual(
+            faces.get("probe-crate"),
+            True,
+            "the binary compiles main.rs, which names it",
+        )
+        self.assertEqual(
+            faces.get("probe-crate-lib"),
+            False,
+            "the library never names it; main.rs is not its compilation unit",
+        )
+        self.assertEqual(
+            faces.get("probe-crate-itest-probe"),
+            True,
+            "an integration test is its own compilation unit",
+        )
+        self.assertEqual(
+            faces.get("probe-crate-probe-feature"),
+            True,
+            "the feature-variant binary compiles the same main.rs",
+        )
+        self.assertEqual(
+            faces.get("probe-crate-lib-probe-feature"),
+            False,
+            "its library variant still never names it",
+        )
+        self.assertEqual(
+            faces.get("probe-crate-unit"),
+            False,
+            "the unit face shares the library's unit, which never names it",
+        )
+    def test_emit_uses_cargos_default_version_for_versionless_crates(self) -> None:
+        """23 members omit `version`; rendering `None` into BUCK would be worse
+        than the abort it replaced."""
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_versionless"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-versionless"] = {"unit": "none"}
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                'pub const V: &str = env!("CARGO_PKG_VERSION");\n'
+                "#[cfg(test)]\nmod t {}\n",
+                encoding="utf-8",
+            )
+            GENERATOR.emit(str(probe), "probe-versionless", [], {}, [], {}, version=None)
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+            faces = self._buck_targets(buck)
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-versionless", None)
+        self.assertIn('"CARGO_PKG_VERSION": "0.0.0"', buck)
+        self.assertNotIn("None", buck)
+        # The unit face is built from the same sources as the library, so it
+        # must carry the same answer. Asserting this on a library that DOES
+        # name the variable is what pins the unit block's env wiring -- with a
+        # library that never names it, both the correct and the broken form
+        # render the same absent value.
+        self.assertEqual(
+            faces.get("probe-versionless"),
+            True,
+            "the library names it",
+        )
+        self.assertEqual(
+            faces.get("probe-versionless-unit"),
+            True,
+            "the unit face shares the library's compilation unit",
+        )
+
+    @staticmethod
+    def _buck_targets(buck: str) -> "dict[str, bool]":
+        """{target name: does its env define CARGO_PKG_VERSION}."""
+        found = {}
+        for match in re.finditer(
+            r"rust_\w+\(\s*\n\s*name = \"([^\"]+)\"(.*?)\n\)", buck, re.S
+        ):
+            found[match.group(1)] = "CARGO_PKG_VERSION" in match.group(2)
+        return found
+
+    def test_needs_env_and_default_features_come_from_the_manifest(self) -> None:
+        """Both were literals in an earlier revision, and both were silent.
+
+        A crate whose macros read CARGO_PKG_* during expansion names the
+        variables; the values must be derived, or a version bump leaves Buck
+        and Cargo disagreeing with no diagnostic -- wasm-bindgen hashes
+        (name, version) into the exported symbol. The feature set is taken
+        from the manifest's own `default` for EVERY member, with nothing to
+        opt into: a hardcoded list cannot follow the manifest, and an opt-in
+        flag is one more thing to forget.
+        """
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_env"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-env"] = {"unit": "none"}
+        GENERATOR.RESOURCE_CONFIG["probe-env"] = {
+            "needs_env": ["CARGO_PKG_NAME", "CARGO_PKG_VERSION"],
+        }
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn f() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "probe-env"\nversion = "9.9.9-probe"\n'
+                '[features]\ndefault = ["beta", "alpha"]\nalpha = []\nbeta = []\n',
+                encoding="utf-8",
+            )
+            GENERATOR.emit(
+                str(probe), "probe-env", [], {}, [], {}, version="9.9.9-probe"
+            )
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-env", None)
+            GENERATOR.RESOURCE_CONFIG.pop("probe-env", None)
+
+        self.assertIn('"CARGO_PKG_NAME": "probe-env"', buck)
+        self.assertIn('"CARGO_PKG_VERSION": "9.9.9-probe"', buck)
+        # sorted, so the emitted graph does not churn on manifest ordering
+        self.assertIn('features = ["alpha", "beta"]', buck)
+        self.assertNotIn("0.1.0", buck)
+
+    def test_default_features_reach_the_binary_and_stop_at_integration_tests(self) -> None:
+        """Two halves of review finding F7 on #1080, both previously untested.
+
+        (1) A main+lib crate builds TWO compilation units. `#[cfg(feature)]`
+        inside main.rs is decided by the binary's own feature set, so a crate
+        whose features came only from the library face would have Buck and
+        Cargo disagreeing about which half of main.rs exists.
+
+        (2) `needs_env` does NOT reach integration tests. They are a separate
+        compilation of tests/*.rs, which does not expand the crate's macros, so
+        propagating there would hand every itest whatever the library needed --
+        the over-broad copy that gave console-contracts a CARGO_PKG_VERSION its
+        test never names. An itest that really does expand wasm_bindgen fails
+        loudly at rustc, not silently.
+        """
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_mainlib"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-mainlib"] = {
+            "unit": "none",
+            "integration": {"tests/it.rs": "none"},
+        }
+        GENERATOR.RESOURCE_CONFIG["probe-mainlib"] = {
+            "needs_env": ["CARGO_PKG_NAME"],
+        }
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "tests").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn f() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "src" / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+            (probe / "tests" / "it.rs").write_text("#[test]\nfn t() {}\n", encoding="utf-8")
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "probe-mainlib"\nversion = "1.2.3"\n'
+                '[features]\ndefault = ["only"]\nonly = []\n',
+                encoding="utf-8",
+            )
+            GENERATOR.emit(str(probe), "probe-mainlib", [], {}, [], {}, version="1.2.3")
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-mainlib", None)
+            GENERATOR.RESOURCE_CONFIG.pop("probe-mainlib", None)
+
+        blocks = {}
+        for block in buck.split("\n\n"):
+            match = re.search(r'name = "([^"]+)"', block)
+            if match:
+                blocks[match.group(1)] = block
+        for target in ("probe-mainlib-lib", "probe-mainlib", "probe-mainlib-unit"):
+            self.assertIn(target, blocks, sorted(blocks))
+            self.assertIn('features = ["only"]', blocks[target], target)
+
+        itest = blocks["probe-mainlib-itest-it"]
+        self.assertNotIn("CARGO_PKG_NAME", itest, itest)
+        self.assertIn("CARGO_MANIFEST_DIR", itest)
+
+        # (3) The bin-only shape is a THIRD emission branch -- one rust_binary
+        # built from the whole src tree, no library face at all -- and it is
+        # reached by neither assertion above. Left untested it is the same
+        # partial-mechanism shape F7 was raised about, one level down.
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_binonly"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-binonly"] = {"unit": "none"}
+        GENERATOR.RESOURCE_CONFIG["probe-binonly"] = {}
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "src" / "main.rs").write_text(
+                "fn main() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "probe-binonly"\nversion = "1.2.3"\n'
+                '[features]\ndefault = ["only"]\nonly = []\n',
+                encoding="utf-8",
+            )
+            GENERATOR.emit(str(probe), "probe-binonly", [], {}, [], {}, version="1.2.3")
+            binonly = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-binonly", None)
+            GENERATOR.RESOURCE_CONFIG.pop("probe-binonly", None)
+
+        self.assertIn("rust_binary(", binonly)
+        self.assertNotIn("rust_library(", binonly)
+        self.assertEqual(2, binonly.count('features = ["only"]'), binonly)
+
+    def test_openapi_tree_is_exported_only_where_it_is_consumed(self) -> None:
+        """Review finding F9 on #1080: keying the export on the existence of an
+        `openapi/` directory published 34 PUBLIC targets for 1 consumer. The
+        export is now declared by the producer, so the two sides are one pair.
+        """
+        declared = {
+            name
+            for name, config in GENERATOR.RESOURCE_CONFIG.items()
+            if config.get("exports_openapi_tree")
+        }
+        consumed = {
+            target.split(":")[0].removeprefix("//")
+            for config in GENERATOR.RESOURCE_CONFIG.values()
+            for target in config.get("external", {})
+            if target.endswith(":crate-openapi-tree")
+        }
+        # Deliberately NOT pinned to `{"console-payroll-rest"}`: a second
+        # producer/consumer pair is legitimate and must not fail this. What
+        # must hold is that the three sets agree.
+        self.assertTrue(declared, "at least one producer must declare the export")
+
+        emitted = {
+            str(Path(directory).relative_to(GENERATOR.REPO))
+            for directory in GENERATOR.find_members()
+            if 'name = "crate-openapi-tree"'
+            in (Path(directory) / "BUCK").read_text(encoding="utf-8")
+        }
+        self.assertEqual(consumed, emitted)
+
+    def test_needs_env_refuses_a_variable_it_cannot_derive(self) -> None:
+        """Fail closed: a name with no derivation must raise at generation
+        rather than emit a target missing the variable it asked for."""
+        with self.assertRaises(ValueError):
+            GENERATOR.RESOURCE_CONFIG["probe-bad"] = {"needs_env": ["CARGO_PKG_LICENSE"]}
+            probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_bad"
+            shutil.rmtree(probe, ignore_errors=True)
+            try:
+                (probe / "src").mkdir(parents=True)
+                (probe / "src" / "lib.rs").write_text("pub fn f() {}\n", encoding="utf-8")
+                GENERATOR.emit(str(probe), "probe-bad", [], {}, [], {}, version="1.0.0")
+            finally:
+                shutil.rmtree(probe, ignore_errors=True)
+                GENERATOR.RESOURCE_CONFIG.pop("probe-bad", None)
+
+    def test_contracts_buck_carries_cargo_pkg_version(self) -> None:
+        """The concrete crate that broke the Buck leg."""
+        buck = (
+            Path(GENERATOR.REPO) / "backend" / "crates" / "contracts" / "BUCK"
+        ).read_text(encoding="utf-8")
+        # The value, not just the key: asserting the key alone leaves the
+        # `main()` -> `emit` seam unpinned, so a caller that stopped passing
+        # `version` would still emit the variable, at Cargo's 0.0.0 default.
+        self.assertIn(
+            '"CARGO_PKG_VERSION": "0.1.0"',
+            buck,
+            "console-contracts stamps env!(CARGO_PKG_VERSION); Buck must define "
+            "it, and with the crate's own version",
+        )
+
+    def test_manifest_env_is_hermetic_and_repo_relative(self) -> None:
+        env = GENERATOR.base_env("backend/crates/example", uses_sqlx=True)
+
+        self.assertEqual(env["CARGO_MANIFEST_DIR"], "backend/crates/example")
+        self.assertEqual(env["SQLX_OFFLINE"], "true")
+        self.assertEqual(
+            env["SQLX_OFFLINE_DIR"],
+            "$(location //backend:sqlx-offline)",
+        )
+
+    def test_production_parser_unit_target_stays_hermetic(self) -> None:
+        self.assertFalse(
+            GENERATOR.requires_postgres("console-production-rest", "test.unit")
+        )
+
+    def test_console_app_inline_postgres_variant_is_feature_gated(self) -> None:
+        variant = GENERATOR.INLINE_TEST_VARIANTS["console-app"][0]
+        app_dir = Path(GENERATOR.REPO) / "backend" / "app"
+        manifest = GENERATOR.load(app_dir)
+        app_source = (app_dir / "src").glob("**/*.rs")
+        source_text = "\n".join(path.read_text(encoding="utf-8") for path in app_source)
+
+        self.assertEqual("itest-inline-postgres", variant["name"])
+        self.assertEqual("test-postgres", variant["feature"])
+        self.assertEqual("postgres", variant["resource"])
+        self.assertEqual([], manifest["features"]["test-postgres"])
+        self.assertNotIn("default", manifest["features"])
+        ordinary_tests = re.findall(r"^\s*#\[(?:test|tokio::test)\]", source_text, re.MULTILINE)
+        ordinary_gates = re.findall(
+            r'^\s*#\[cfg\(not\(feature = "test-postgres"\)\)\]\n\s*#\[(?:test|tokio::test)\]',
+            source_text,
+            re.MULTILINE,
+        )
+        sqlx_tests = re.findall(r"^\s*#\[sqlx::test", source_text, re.MULTILINE)
+        sqlx_gates = re.findall(
+            r'^\s*#\[cfg\(feature = "test-postgres"\)\]\n\s*#\[sqlx::test',
+            source_text,
+            re.MULTILINE,
+        )
+        self.assertEqual(166, len(ordinary_tests))
+        self.assertEqual(len(ordinary_tests), len(ordinary_gates))
+        self.assertEqual(23, len(sqlx_tests))
+        self.assertEqual(len(sqlx_tests), len(sqlx_gates))
+        self.assertEqual(
+            ("dev-auth",),
+            GENERATOR.integration_test_features(
+                "console-app", "tests/dev_auth_persona_guard_feature.rs"
+            ),
+        )
+
+    def test_dev_auth_feature_variants_propagate_through_app_and_auth_rest(self) -> None:
+        auth_rest_variant = GENERATOR.INLINE_TEST_VARIANTS["console-platform-auth-rest"][0]
+        self.assertEqual("itest-dev-auth-postgres", auth_rest_variant["name"])
+        self.assertEqual("dev-auth", auth_rest_variant["feature"])
+        self.assertEqual("postgres", auth_rest_variant["resource"])
+        self.assertEqual(
+            ":console-app-lib-dev-auth",
+            GENERATOR.integration_test_library_target(
+                "console-app", "tests/dev_auth_persona_guard_feature.rs", ":console-app-lib"
+            ),
+        )
+        self.assertEqual(
+            ":console-platform-auth-rest-dev-auth",
+            GENERATOR.integration_test_library_target(
+                "console-platform-auth-rest", "tests/dev_auth_session.rs", ":console-platform-auth-rest"
+            ),
+        )
+        self.assertEqual(
+            ("dev-auth",),
+            GENERATOR.integration_test_features(
+                "console-platform-auth-rest", "tests/group_admin_tenant_context.rs"
+            ),
+        )
+        self.assertEqual(
+            ":console-platform-auth-rest-dev-auth",
+            GENERATOR.integration_test_library_target(
+                "console-platform-auth-rest",
+                "tests/group_admin_tenant_context.rs",
+                ":console-platform-auth-rest",
+            ),
+        )
+
+    def test_inline_test_variants_reject_missing_manifest_features(self) -> None:
+        with self.assertRaisesRegex(ValueError, "feature is absent"):
+            GENERATOR.validate_inline_test_variants(
+                {"console-app": {"features": {}}}
+            )
+
+
+    def test_native_cargo_roots_include_module_only_and_directory_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            (crate / "Cargo.toml").write_text('[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n')
+            (crate / "tests/cases").mkdir(parents=True)
+            (crate / "tests/native").mkdir()
+            (crate / "tests/suite.rs").write_text('#[path="cases/scenarios.rs"] mod scenarios;\n')
+            (crate / "tests/cases/scenarios.rs").write_text('#[test] fn nested_case() {}\n')
+            (crate / "tests/native/main.rs").write_text('#[test] fn directory_case() {}\n')
+            roots = GENERATOR.discovered_test_resource_keys(str(crate), "fixture")
+            self.assertEqual(roots, {
+                ("fixture", "test.integration", "tests/suite.rs"),
+                ("fixture", "test.integration", "tests/native/main.rs"),
+            })
+            _, helpers = GENERATOR.integration_test_sources(str(crate))
+            self.assertEqual(helpers, ["tests/cases/scenarios.rs"])
+            self.assertEqual(GENERATOR.integration_test_name("tests/native/main.rs"), "native")
+
+
+    def test_custom_cargo_test_discovery_and_name_collisions_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            base = '[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n'
+            for override in ('autotests=false\n', 'autotests=true\n', '\n[[test]]\nname="custom"\npath="custom.rs"\n'):
+                (crate / "Cargo.toml").write_text(base + override)
+                with self.subTest(override=override), self.assertRaisesRegex(ValueError, "custom Cargo test discovery"):
+                    GENERATOR.integration_test_sources(str(crate))
+            (crate / "Cargo.toml").write_text(base)
+            (crate / "tests/same").mkdir(parents=True)
+            (crate / "tests/same.rs").write_text('#[test] fn file_case() {}\n')
+            (crate / "tests/same/main.rs").write_text('#[test] fn directory_case() {}\n')
+            with self.assertRaisesRegex(ValueError, "colliding Cargo integration test names"):
+                GENERATOR.integration_test_sources(str(crate))
+
+
+
+class TestTaxonomy(unittest.TestCase):
+    def test_every_test_has_exactly_one_type_and_resource_label(self) -> None:
+        for package in (
+            "backend/app",
+            "backend/ci/contract-tests",
+            "backend/crates/logistics/domain",
+            "backend/crates/platform/authz-rest",
+        ):
+            for test_type in GENERATOR.TEST_TYPE_LABELS:
+                for uses_postgres in (False, True):
+                    labels = GENERATOR.test_labels(package, test_type, uses_postgres)
+                    self.assertEqual(
+                        1,
+                        len(set(labels) & GENERATOR.TEST_TYPE_LABELS),
+                    )
+                    self.assertEqual(
+                        1,
+                        len(set(labels) & GENERATOR.RESOURCE_LABELS),
+                    )
+                    self.assertEqual("needs-postgres" in labels, uses_postgres)
+
+    def test_ownership_labels_are_path_derived_and_deterministic(self) -> None:
+        package = "backend/crates/logistics/adapter-postgres"
+        expected = [
+            "owner.backend.crates.logistics.adapter-postgres",
+            "domain.logistics",
+        ]
+        self.assertEqual(expected, GENERATOR.ownership_labels(package))
+        self.assertEqual(expected, GENERATOR.ownership_labels(package))
+        self.assertEqual(
+            ["owner.backend.app", "domain.app"],
+            GENERATOR.ownership_labels("backend/app"),
+        )
+
+    def test_unknown_test_type_is_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            GENERATOR.test_labels("backend/app", "test.e2e", False)
+
+class TestResourceClassification(unittest.TestCase):
+    def test_benefit_and_facilities_units_are_hermetic_even_when_sources_mention_postgres(self) -> None:
+        for package in ("console-benefit-rest", "console-facilities-rest"):
+            self.assertFalse(GENERATOR.requires_postgres(package, "test.unit"))
+            labels = GENERATOR.test_labels(
+                "backend/crates/{}/rest".format(package.removeprefix("console-").removesuffix("-rest")),
+                "test.unit",
+                GENERATOR.requires_postgres(package, "test.unit"),
+            )
+            self.assertIn("resource.none", labels)
+            self.assertNotIn("resource.postgres", labels)
+
+    def test_comments_and_unrelated_library_code_cannot_require_postgres(self) -> None:
+        self.assertNotIn("PgPool", inspect.getsource(GENERATOR.requires_postgres))
+        self.assertFalse(GENERATOR.requires_postgres("console-facilities-rest", "test.unit"))
+        with self.assertRaisesRegex(ValueError, "missing reviewed resource metadata"):
+            GENERATOR.requires_postgres(
+                "console-facilities-rest", "test.integration", "tests/comment_only.rs"
+            )
+
+    def test_reviewed_database_integration_target_is_postgres_bound(self) -> None:
+        self.assertTrue(
+            GENERATOR.requires_postgres(
+                "console-benefit-adapter-postgres",
+                "test.integration",
+                "tests/catalog_rls_surfaces_as_runtime_role.rs",
+            )
+        )
+        labels = GENERATOR.test_labels(
+            "backend/crates/benefit/adapter-postgres", "test.integration", True
+        )
+        self.assertIn("resource.postgres", labels)
+        self.assertIn("needs-postgres", labels)
+
+    def test_attendance_self_service_integration_is_postgres_bound(self) -> None:
+        self.assertTrue(
+            GENERATOR.requires_postgres(
+                "console-attendance-adapter-postgres",
+                "test.integration",
+                "tests/self_service.rs",
+            )
+        )
+
+    def test_equipment_discoveries_have_reviewed_resources(self) -> None:
+        self.assertTrue(
+            GENERATOR.requires_postgres(
+                "console-app", "test.integration", "tests/equipment_3r_api.rs"
+            )
+        )
+        self.assertFalse(GENERATOR.requires_postgres("console-equipment-domain", "test.unit"))
+
+    def test_integration_resource_lookup_requires_a_target_path(self) -> None:
+        with self.assertRaises(ValueError):
+            GENERATOR.requires_postgres("console-benefit-adapter-postgres", "test.integration")
+
+    def test_unreviewed_discovered_test_fails_generation_preflight(self) -> None:
+        discovered = {
+            ("console-benefit-rest", "test.unit", None),
+            ("console-benefit-rest", "test.integration", "tests/unreviewed.rs"),
+        }
+        requirements = {"console-benefit-rest": {"unit": "none"}}
+        with self.assertRaisesRegex(ValueError, "missing"):
+            GENERATOR.validate_resource_metadata(discovered, requirements)
+
+    def test_metadata_is_exhaustive_for_current_generator_targets(self) -> None:
+        discovered = set()
+        for directory in GENERATOR.find_members():
+            package = GENERATOR.load(directory)["package"]["name"]
+            discovered.update(GENERATOR.discovered_test_resource_keys(directory, package))
+        GENERATOR.validate_resource_metadata(discovered)
+
+    def test_every_discovered_target_has_exactly_one_test_and_resource_label(self) -> None:
+        for directory in GENERATOR.find_members():
+            package_name = GENERATOR.load(directory)["package"]["name"]
+            package_path = str(Path(directory).relative_to(GENERATOR.REPO))
+            for _, test_type, test_file in GENERATOR.discovered_test_resource_keys(
+                directory, package_name
+            ):
+                labels = GENERATOR.test_labels(
+                    package_path,
+                    test_type,
+                    GENERATOR.requires_postgres(package_name, test_type, test_file),
+                )
+                self.assertEqual(1, len(set(labels) & GENERATOR.TEST_TYPE_LABELS))
+                self.assertEqual(1, len(set(labels) & GENERATOR.RESOURCE_LABELS))
+
+
+class FeatureAndEnvPropagationTests(unittest.TestCase):
+    """#1084: two emission branches that took a partial copy of the crate.
+
+    Both were latent -- zero instances in the workspace today -- so neither is
+    a bug report. They are the shape the generator exists to prevent: a
+    compilation unit that sees a different crate than Cargo compiles.
+    """
+
+    @staticmethod
+    def _blocks(buck: str) -> dict:
+        out = {}
+        for block in buck.split("\n\n"):
+            match = re.search(r'name = "([^"]+)"', block)
+            if match:
+                out[match.group(1)] = block
+        return out
+
+    def test_integration_test_features_union_the_manifest_defaults(self) -> None:
+        """N2. Cargo's `--features x` ADDS to `[features] default`; only
+        `--no-default-features` replaces it. The generator emitted the requested
+        set verbatim, so an itest on a crate with defaults compiled a different
+        `#[cfg(feature)]` world than Cargo does.
+
+        The trigger is the first crate to have BOTH a `[features] default` and
+        an INTEGRATION_TEST_FEATURES entry. None exists today, which is why this
+        needs a probe rather than a workspace assertion.
+        """
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_feat"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-feat"] = {
+            "unit": "none",
+            "integration": {"tests/it.rs": "none"},
+        }
+        GENERATOR.INTEGRATION_TEST_FEATURES["probe-feat"] = {"tests/it.rs": ("extra",)}
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "tests").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn f() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "tests" / "it.rs").write_text("#[test]\nfn t() {}\n", encoding="utf-8")
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "probe-feat"\nversion = "1.2.3"\n'
+                '[features]\ndefault = ["base"]\nbase = []\nextra = []\n',
+                encoding="utf-8",
+            )
+            GENERATOR.emit(str(probe), "probe-feat", [], {}, [], {}, version="1.2.3")
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-feat", None)
+            GENERATOR.INTEGRATION_TEST_FEATURES.pop("probe-feat", None)
+
+        blocks = self._blocks(buck)
+        itest = blocks["probe-feat-itest-it"]
+        # The union, sorted -- not the requested set alone, and not the
+        # defaults alone.
+        self.assertIn('features = ["base", "extra"]', itest, itest)
+        # And the library still carries just its defaults, so the union did not
+        # leak the itest's request back onto the crate. A lib-only crate names
+        # its library target after the package, with no -lib suffix.
+        self.assertIn('features = ["base"]', blocks["probe-feat"])
+        self.assertNotIn("extra", blocks["probe-feat"])
+
+    def test_inline_variant_features_union_the_manifest_defaults(self) -> None:
+        """N2, second emission branch. `features=[variant["feature"]]` had the
+        same override defect as the integration-test path, and the two are
+        separate call sites -- fixing one leaves the other, which is exactly
+        how a partial mechanism survives. Covered separately so reverting
+        either fix fails a named test.
+        """
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_variant"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-variant"] = {"unit": "none"}
+        GENERATOR.INLINE_TEST_VARIANTS["probe-variant"] = ({
+            "name": "itest-inline-postgres",
+            "feature": "extra",
+            "resource": "postgres",
+        },)
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn f() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "probe-variant"\nversion = "1.2.3"\n'
+                '[features]\ndefault = ["base"]\nbase = []\nextra = []\n',
+                encoding="utf-8",
+            )
+            GENERATOR.emit(str(probe), "probe-variant", [], {}, [], {}, version="1.2.3")
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-variant", None)
+            GENERATOR.INLINE_TEST_VARIANTS.pop("probe-variant", None)
+
+        variant = self._blocks(buck)["probe-variant-itest-inline-postgres"]
+        self.assertIn('features = ["base", "extra"]', variant, variant)
+
+    def _variant_probe(self, dirname: str, package: str, main: bool) -> dict:
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / dirname
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS[package] = {"unit": "none"}
+        GENERATOR.FEATURE_LIBRARY_VARIANTS[package] = {"dev-auth": {"deps": {}}}
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn f() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            if main:
+                (probe / "src" / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "{}"\nversion = "1.2.3"\n'
+                '[features]\ndefault = ["base"]\nbase = []\ndev-auth = []\n'.format(package),
+                encoding="utf-8",
+            )
+            GENERATOR.emit(str(probe), package, [], {}, [], {}, version="1.2.3")
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop(package, None)
+            GENERATOR.FEATURE_LIBRARY_VARIANTS.pop(package, None)
+        return self._blocks(buck)
+
+    def test_feature_library_variants_union_the_manifest_defaults(self) -> None:
+        """N2, the three remaining emission branches.
+
+        `FEATURE_LIBRARY_VARIANTS` emits a library variant for a lib-only crate
+        and BOTH a library and a binary variant for a main+lib crate. All three
+        overrode the defaults, and none was covered when the first two call
+        sites were fixed -- review found them by grepping the class rather than
+        the issue's enumeration.
+
+        Concretely: a variant compiled with `["dev-auth"]` alone, linked from an
+        itest compiled with `["base", "dev-auth"]`, cannot resolve a
+        `#[cfg(feature = "base")]` item. Buck fails where Cargo passes, which is
+        the divergence family this generator exists to prevent.
+        """
+        libonly = self._variant_probe("_probe_var_lib", "probe-var-lib", main=False)
+        self.assertIn('features = ["base"]', libonly["probe-var-lib"])
+        self.assertIn('features = ["base", "dev-auth"]', libonly["probe-var-lib-dev-auth"])
+
+        mainlib = self._variant_probe("_probe_var_main", "probe-var-main", main=True)
+        # The library variant and the BINARY variant are separate emissions.
+        self.assertIn('features = ["base", "dev-auth"]', mainlib["probe-var-main-lib-dev-auth"])
+        self.assertIn('features = ["base", "dev-auth"]', mainlib["probe-var-main-dev-auth"])
+        # And the non-variant faces still carry defaults only.
+        self.assertIn('features = ["base"]', mainlib["probe-var-main-lib"])
+        self.assertIn('features = ["base"]', mainlib["probe-var-main"])
+
+    def test_declared_needs_env_reaches_the_binary_but_not_integration_tests(self) -> None:
+        """N3. `needs_env` mutated `env`, then `main_env` was built fresh from
+        `base_env`, so a main+lib crate declaring it emitted a rust_binary
+        without the variables. main.rs is the same crate and expands the same
+        macros, so the binary needs them.
+
+        The second half is a fence, not an oversight: integration tests are a
+        separate compilation of tests/*.rs that does NOT expand the crate's
+        macros, and propagating there hands every itest whatever the library
+        needed -- the over-broad copy that gave console-contracts a
+        CARGO_PKG_VERSION its test never names. That stays excluded, and this
+        asserts both halves so neither can drift.
+        """
+        probe = Path(GENERATOR.REPO) / "tools" / "buck" / "_probe_envmain"
+        shutil.rmtree(probe, ignore_errors=True)
+        GENERATOR.TEST_RESOURCE_REQUIREMENTS["probe-envmain"] = {
+            "unit": "none",
+            "integration": {"tests/it.rs": "none"},
+        }
+        GENERATOR.RESOURCE_CONFIG["probe-envmain"] = {
+            "needs_env": ["CARGO_PKG_NAME", "CARGO_PKG_VERSION"],
+        }
+        try:
+            (probe / "src").mkdir(parents=True)
+            (probe / "tests").mkdir(parents=True)
+            (probe / "src" / "lib.rs").write_text(
+                "pub fn f() {}\n#[cfg(test)]\nmod t {}\n", encoding="utf-8"
+            )
+            (probe / "src" / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+            (probe / "tests" / "it.rs").write_text("#[test]\nfn t() {}\n", encoding="utf-8")
+            (probe / "Cargo.toml").write_text(
+                '[package]\nname = "probe-envmain"\nversion = "4.5.6"\n', encoding="utf-8"
+            )
+            GENERATOR.emit(str(probe), "probe-envmain", [], {}, [], {}, version="4.5.6")
+            buck = (probe / "BUCK").read_text(encoding="utf-8")
+        finally:
+            shutil.rmtree(probe, ignore_errors=True)
+            GENERATOR.TEST_RESOURCE_REQUIREMENTS.pop("probe-envmain", None)
+            GENERATOR.RESOURCE_CONFIG.pop("probe-envmain", None)
+
+        blocks = self._blocks(buck)
+        binary = blocks["probe-envmain"]
+        self.assertIn('"CARGO_PKG_NAME": "probe-envmain"', binary, binary)
+        self.assertIn('"CARGO_PKG_VERSION": "4.5.6"', binary, binary)
+        # The library keeps them, as before.
+        self.assertIn('"CARGO_PKG_NAME": "probe-envmain"', blocks["probe-envmain-lib"])
+        # The fence: integration tests must NOT inherit the declaration.
+        itest = blocks["probe-envmain-itest-it"]
+        self.assertNotIn("CARGO_PKG_NAME", itest, itest)
+
+
+class ExplicitBinaryTargetTests(unittest.TestCase):
+    def render(self, manifest, files, package_path="backend/app", deps=None, named=None):
+        temporary = tempfile.TemporaryDirectory(prefix="explicit-bin-generator-")
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        package = root / package_path
+        package.mkdir(parents=True)
+        (package / "Cargo.toml").write_text(manifest)
+        for relative, contents in files.items():
+            destination = package / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(contents)
+        self.last_fixture_package = package
+        package_name = GENERATOR.load(package)["package"]["name"]
+        with patch.object(GENERATOR, "REPO", str(root)):
+            # Use the established interface: RED must be an omitted target,
+            # never a missing new helper or a changed call signature.
+            GENERATOR.emit(str(package), package_name, deps or [], named or {}, [], {})
+        generated = (package / "BUCK").read_text()
+        parsed = ast.parse(generated)
+        rules = []
+        for statement in parsed.body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if isinstance(call.func, ast.Name):
+                values = {keyword.arg: keyword.value for keyword in call.keywords}
+                if "name" in values:
+                    rules.append((call.func.id, values))
+        all_names = [ast.literal_eval(values["name"]) for _, values in rules]
+        self.assertEqual(len(all_names), len(set(all_names)), "duplicate generated target names")
+        return package, rules
+
+    def binary_rules(self, rules):
+        return {ast.literal_eval(values["name"]): values
+                for kind, values in rules if kind == "rust_binary"}
+
+    def assert_binary(self, values, package, relative_root, crate, library_target):
+        self.assertEqual(ast.literal_eval(values["crate"]), crate)
+        relative_package = "backend/" + str(package).split("/backend/", 1)[1]
+        self.assertEqual(ast.literal_eval(values["crate_root"]),
+                         relative_package + "/" + relative_root)
+        self.assertIn(library_target, ast.literal_eval(values["deps"]))
+        mapping = values["mapped_srcs"]
+        self.assertIsInstance(mapping, ast.Call)
+        self.assertEqual(mapping.func.id, "repo_mapped_srcs")
+        self.assertEqual(ast.literal_eval(mapping.args[0]), relative_package)
+        source_glob = mapping.args[1]
+        self.assertIsInstance(source_glob, ast.Call)
+        self.assertEqual(source_glob.func.id, "glob")
+        mapped = {str(path.relative_to(package))
+                  for pattern in ast.literal_eval(source_glob.args[0])
+                  for path in package.glob(pattern) if path.is_file()}
+        self.assertIn(relative_root, mapped, "binary entrypoint is not mapped into the action")
+
+    def test_real_application_declared_tools_preserve_roots_library_and_renamed_dependencies(self):
+        manifest = (Path(GENERATOR.REPO) / "backend/app/Cargo.toml").read_text()
+        files = {
+            "src/lib.rs": "pub fn reusable() {}\n",
+            "src/main.rs": "fn main() {}\n",
+            "src/bin/console_cedar_parity_report.rs": "fn main() {}\n",
+            "src/bin/console_deployment_operator.rs": "fn main() {}\n",
+        }
+        renamed = {"pg_transport": "//third-party/rust:tokio-postgres"}
+        package, rules = self.render(manifest, files,
+                                     deps=["//third-party/rust:tokio"], named=renamed)
+        binaries = self.binary_rules(rules)
+        self.assertEqual(set(binaries), {
+            "console-app", "console-app-dev-auth", "console-cedar-parity-report", "console-deployment-operator",
+        })
+        for binary, source in (
+            ("console-cedar-parity-report", "src/bin/console_cedar_parity_report.rs"),
+            ("console-deployment-operator", "src/bin/console_deployment_operator.rs"),
+        ):
+            self.assert_binary(binaries[binary], package, source,
+                               binary.replace("-", "_"), ":console-app-lib")
+            self.assertEqual(ast.literal_eval(binaries[binary]["named_deps"]), renamed)
+            self.assertEqual(ast.literal_eval(binaries[binary]["deps"]),
+                             ["//third-party/rust:tokio", ":console-app-lib"])
+
+    def test_real_contracts_declared_tool_links_library_without_default_main(self):
+        manifest = (Path(GENERATOR.REPO) / "backend/crates/contracts/Cargo.toml").read_text()
+        package, rules = self.render(manifest, {
+            "src/lib.rs": "pub fn compose() {}\n",
+            "src/bin/console_openapi_gen.rs": "fn main() {}\n",
+        }, package_path="backend/crates/contracts")
+        binaries = self.binary_rules(rules)
+        self.assertEqual(set(binaries), {"console-openapi-gen"})
+        self.assert_binary(binaries["console-openapi-gen"], package,
+                           "src/bin/console_openapi_gen.rs", "console_openapi_gen",
+                           ":console-contracts")
+
+    def test_explicit_default_main_is_not_duplicated(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture"\npath="src/main.rs"\n')
+        _, rules = self.render(manifest, {
+            "src/lib.rs": "pub fn value() {}\n", "src/main.rs": "fn main() {}\n",
+        })
+        self.assertEqual(set(self.binary_rules(rules)), {"fixture"})
+
+    def test_required_features_cannot_be_silently_enabled_or_omitted(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[features]\noperator-tools=[]\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/operator.rs"\n'
+                    'required-features=["operator-tools"]\n')
+        with self.assertRaisesRegex(ValueError, "operator.*feature-gate modeling"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+
+    def test_duplicate_declared_names_are_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/first.rs"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/second.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate declared binary operator"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/first.rs": "",
+                                   "src/bin/second.rs": ""})
+
+    def test_missing_declared_entrypoint_is_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/missing.rs"\n')
+        with self.assertRaisesRegex(ValueError, "operator entrypoint is missing"):
+            self.render(manifest, {"src/lib.rs": ""})
+
+    def test_unmapped_outside_source_entrypoint_is_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="tools/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "explicit source mapping outside src"):
+            self.render(manifest, {"src/lib.rs": "", "tools/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_library_target(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture"\npath="src/bin/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate generated target"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_generated_feature_targets(self):
+        for target in ("fixture-mode", "fixture-lib-mode"):
+            with self.subTest(target=target):
+                manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                            '[[bin]]\nname="' + target + '"\npath="src/bin/operator.rs"\n')
+                with patch.dict(GENERATOR.FEATURE_LIBRARY_VARIANTS,
+                                {"fixture": {"mode": {"deps": {}}}}):
+                    with self.assertRaisesRegex(ValueError, "duplicate generated target"):
+                        self.render(manifest, {"src/lib.rs": "", "src/main.rs": "fn main() {}",
+                                               "src/bin/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_export_target_and_no_file_is_written(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="crate-source-tree"\npath="src/bin/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate generated target crate-source-tree"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+        self.assertFalse((self.last_fixture_package / "BUCK").exists())
+
+    def test_declared_tool_cannot_shadow_unit_target_and_no_file_is_written(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture-unit"\npath="src/bin/operator.rs"\n')
+        with patch.dict(GENERATOR.TEST_RESOURCE_REQUIREMENTS, {"fixture": {"unit": "none"}}):
+            with self.assertRaisesRegex(ValueError, "duplicate generated target fixture-unit"):
+                self.render(manifest, {"src/lib.rs": "#[cfg(test)] mod tests {}",
+                                       "src/bin/operator.rs": "fn main() {}"})
+        self.assertFalse((self.last_fixture_package / "BUCK").exists())
+
+
+
+
+class BrowserIntegrationVariantsTests(unittest.TestCase):
+    """Exercise real App generation without writing its shared BUCK file."""
+
+    @staticmethod
+    def _target_nodes(rendered):
+        targets = {}
+        for statement in ast.parse(rendered).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            fields = {field.arg: field.value for field in call.keywords}
+            if "name" not in fields:
+                continue
+            name = ast.literal_eval(fields["name"])
+            if name in targets:
+                raise AssertionError("duplicate generated target: " + name)
+            targets[name] = (call.func.id, fields, ast.get_source_segment(rendered, statement))
+        return targets
+
+    def _render_app(self, invalid_feature=None):
+        # Importantly, no replacement emit() implementation or future API assumption.
+        # Only the final BUCK write is captured; real manifest/source/dependency reads run.
+        app = Path(GENERATOR.REPO) / "backend/app"
+        manifest = GENERATOR.load(app)
+        first_party = {
+            GENERATOR.load(directory)["package"]["name"]:
+                "//{}:{}".format(Path(directory).relative_to(GENERATOR.REPO).as_posix(),
+                                 GENERATOR.load(directory)["package"]["name"])
+            for directory in GENERATOR.find_members()
+        }
+        deps, named = GENERATOR.map_deps(manifest.get("dependencies"), first_party)
+        dev_deps, dev_named = GENERATOR.map_deps(manifest.get("dev-dependencies"), first_party)
+        written = []
+        class Capture:
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                return False
+            def write(self, value):
+                written.append(value)
+                return len(value)
+        builtin_open = open
+        def guarded_open(filename, mode="r", *args, **kwargs):
+            if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
+                self.assertEqual(app / "BUCK", Path(filename))
+                self.assertEqual("w", mode)
+                return Capture()
+            return builtin_open(filename, mode, *args, **kwargs)
+        original_load = GENERATOR.load
+        def load(directory):
+            data = original_load(directory)
+            if Path(directory) == app and invalid_feature is not None:
+                data["features"] = dict(data.get("features", {}))
+                if invalid_feature == "missing":
+                    data["features"].pop("test-browser", None)
+                else:
+                    data["features"]["test-browser"] = ["dev-auth"]
+            return data
+        before = (app / "BUCK").read_bytes()
+        with patch.object(GENERATOR, "open", guarded_open, create=True), \
+             patch.object(GENERATOR, "load", load):
+            GENERATOR.emit(str(app), "console-app", sorted(deps), named,
+                           sorted(dev_deps), dev_named, version=manifest["package"].get("version"))
+        self.assertEqual(before, (app / "BUCK").read_bytes(), "generator test wrote shared BUCK")
+        self.assertEqual(1, len(written))
+        return written[0]
+
+    def test_real_app_browser_variants_clone_only_selected_native_test_targets(self):
+        manifest = GENERATOR.load(Path(GENERATOR.REPO) / "backend/app")
+        self.assertEqual([], manifest["features"]["test-browser"])
+        targets = self._target_nodes(self._render_app())
+        selected = ["auth_rest", "health_readiness"]
+        expected = {"console-app-itest-" + stem + "-browser" for stem in selected}
+        actual = {name for name, (_, fields, _) in targets.items()
+                  if "features" in fields
+                  and "test-browser" in ast.literal_eval(fields["features"])}
+        self.assertEqual(expected, actual,
+                         "NATIVE_BROWSER_VARIANTS_REQUIRED: actual generator must emit exactly two browser Rust tests")
+        for stem in selected:
+            ordinary = "console-app-itest-" + stem
+            browser = ordinary + "-browser"
+            ordinary_kind, ordinary_fields, _ = targets[ordinary]
+            kind, fields, _ = targets[browser]
+            self.assertEqual("rust_test", ordinary_kind)
+            self.assertEqual("rust_test", kind)
+            self.assertNotIn("test-browser", ast.literal_eval(ordinary_fields["features"])
+                             if "features" in ordinary_fields else [])
+            self.assertEqual(["test-browser"], ast.literal_eval(fields["features"]))
+            # The library graph and every declared compile-time resource stay identical.
+            ordinary_attrs = {key: ast.dump(value) for key, value in ordinary_fields.items()
+                              if key not in {"name", "features"}}
+            browser_attrs = {key: ast.dump(value) for key, value in fields.items()
+                             if key not in {"name", "features"}}
+            self.assertEqual(ordinary_attrs, browser_attrs)
+            deps = ast.literal_eval(fields["deps"])
+            self.assertIn(":console-app-lib", deps)
+            self.assertFalse(any("browser" in dependency for dependency in deps))
+            labels = ast.literal_eval(fields["labels"])
+            self.assertIn("test.integration", labels)
+            self.assertIn("resource.postgres", labels)
+            self.assertIn("needs-postgres", labels)
+            if stem == "auth_rest":
+                self.assertIn("generated", labels)
+        # Production and ordinary test targets are byte-preserved against the exact
+        # current generated face. Root separately compares every preimage block at integration.
+        current = self._target_nodes((Path(GENERATOR.REPO) / "backend/app/BUCK").read_text())
+        for name, (_, _, block) in current.items():
+            if name not in expected:
+                self.assertEqual(block, targets[name][2], "ordinary target drift: " + name)
+        self.assertEqual(set(current) | expected, set(targets))
+
+    def test_browser_variant_requires_an_explicit_inert_manifest_feature(self):
+        for fault in ("missing", "dependent"):
+            with self.subTest(fault=fault), self.assertRaisesRegex(ValueError, "inert.*test-browser|test-browser.*inert"):
+                self._render_app(invalid_feature=fault)
+
+    def test_browser_wrappers_and_real_ci_producer_preserve_native_leaf_execution(self):
+        root = Path(GENERATOR.REPO)
+        wrappers = self._target_nodes((root / "tools/buck/BUCK").read_text())
+        for stem, slug in (("auth_rest", "auth-rest"), ("health_readiness", "health-readiness")):
+            name = "app-" + slug + "-browser-pg"
+            self.assertIn(name, wrappers, "NATIVE_BROWSER_WRAPPER_REQUIRED: " + name)
+            kind, fields, _ = wrappers[name]
+            self.assertEqual("sh_test", kind)
+            target = "//backend/app:console-app-itest-" + stem + "-browser"
+            self.assertEqual("run_test_with_postgres_env.sh", ast.literal_eval(fields["test"]))
+            self.assertEqual(["$(location " + target + ")"], ast.literal_eval(fields["args"]))
+            self.assertEqual([target], ast.literal_eval(fields["deps"]))
+            self.assertEqual(["test.integration", "resource.postgres", "needs-postgres"],
+                             ast.literal_eval(fields["labels"]))
+        # Parse the actual scheduled workflow: text/comment presence is insufficient.
+        node = "const fs=require('node:fs'),yaml=require('js-yaml');process.stdout.write(JSON.stringify(yaml.load(fs.readFileSync('.github/workflows/ci.yml','utf8'))));"
+        parsed = subprocess.run(["node", "-e", node], cwd=root, check=True,
+                                capture_output=True, text=True)
+        workflow = json.loads(parsed.stdout)
+        self.assertEqual(17, len(workflow["jobs"]))
+        backend = workflow["jobs"]["backend"]
+        self.assertEqual(["cargo", "buck-app", "buck-dev-auth"], backend["strategy"]["matrix"]["leg"])
+        expected = [{'name': 'Install pinned native browser prerequisites', 'id': 'browser-prerequisites', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'tools/browser/prepare_native_browser.sh'}, {'name': 'Native Account browser', 'id': 'account-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'for leaf in \\\n  account_browser::browser_business_oracle_requires_complete_lossless_unchanged_rows \\\n  account_browser::browser_login_history_oracle_requires_exact_key_and_retained_effects \\\n  account_browser::browser_global_oracle_requires_complete_owned_effects_and_immutable_tables; do\n  expected="${leaf}: test"$\'\\n\\n1 test, 0 benchmarks\'\n  if ! listing="$(tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact "${leaf}" 2>/dev/null)" || [[ "${listing}" != "${expected}" ]]; then\n    echo "native browser: exact oracle discovery failed" >&2\n    exit 1\n  fi\n  tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact "${leaf}"\ndone\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-sign-in.png 05-account-returned.png; do\n  evidence_path="${CONSOLE_BROWSER_JOURNEY_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Native Company creation browser', 'id': 'company-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png 05-company-workspace.png; do\n  evidence_path="${CONSOLE_COMPANY_BROWSER_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Native Company preview browser', 'id': 'company-preview-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'node --test tools/browser/company-preview.test.cjs\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-preview-input-preserved.png; do\n  evidence_path="${CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Native payroll hydration browser', 'id': 'hydration-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json authorized-before.png authorized-filter-1.png authorized-filter-2.png authorized-filter-3.png; do\n  evidence_path="${CONSOLE_HYDRATION_BROWSER_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Retain sanitized native browser evidence', 'id': 'native-browser-evidence', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'uses': 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a', 'with': {'name': 'native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}', 'path': '${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/result.json\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/01-public.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/02-terms.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/03-account-enrolled.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/04-sign-in.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/05-account-returned.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/result.json\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/01-public.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/02-terms.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/03-account-enrolled.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/04-company-created.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/05-company-workspace.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/result.json\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/01-public.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/02-terms.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/03-account-enrolled.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/04-company-preview-input-preserved.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/result.json\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-before.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-1.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-2.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-3.png\n', 'if-no-files-found': 'error', 'retention-days': 7, 'include-hidden-files': False}}]
+        steps = backend["steps"]
+        producer_indices = []
+        for wanted in expected:
+            matches = [(index, step) for index, step in enumerate(steps) if step.get("name") == wanted["name"]]
+            self.assertEqual(1, len(matches), "REAL_NATIVE_BROWSER_PRODUCER_REQUIRED: " + wanted["name"])
+            index, actual = matches[0]
+            self.assertEqual(wanted, actual, "browser producer execution contract differs")
+            producer_indices.append(index)
+        self.assertEqual(list(range(producer_indices[0], producer_indices[0] + 6)), producer_indices)
+        self.assertEqual("Collect failures", steps[producer_indices[-1] + 1]["name"])
+        prerequisite = root / "tools/browser/prepare_native_browser.sh"
+        self.assertTrue(prerequisite.is_file(), "PINNED_BROWSER_PREREQUISITE_PRODUCER_REQUIRED")
+
+
+if __name__ == "__main__":
+    unittest.main()

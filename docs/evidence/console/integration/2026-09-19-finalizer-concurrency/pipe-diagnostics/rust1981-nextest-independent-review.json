@@ -1,0 +1,51 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT_BOUNDED_TOOLING_LIMITATION_NO_PRODUCT_PATCH_JUSTIFIED",
+  "artifacts": {
+    "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/receipt.json": "1e746c728db96712210c1d7352a798e73d6d2433bc503fc9c62e3217f3c1307f",
+    "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/cold.log": "b3a60abd5770c79ab294b32391d481e7d53337ca0b30d5174d2733d1fe366494",
+    "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/warm.log": "6db1d45052e356ccf89567ae1204815f1275dbb9bcaaec76eaad8b803b2d7dcb",
+    "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/cold-processes.jsonl": "ad55cae8d2339f00600b8f95ac075e2927ea0c8b462297c95903880106318054",
+    "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/warm-processes.jsonl": "a80d26d8230c9ff69e82ec4a04c3e1aaa5404e35f7354078c7661ffed5905095",
+    "/private/tmp/console-nextest-rust1981/.crates2.json": "f28cd530658d4df48d41958ef5a57ec230b3286689637e07c954a22c951d62d5",
+    "/private/tmp/console-nextest-rust1981/bin/cargo-nextest": "bcb608b519f0cf16b2b200e99e0499fcc39fd3c3c48138780e9caadb83e5f1dc",
+    "/private/tmp/console-finalizer-nextest-rust1981-cohort.log": "59d775c33fd91a01519c286175130b04709c7da81f31b1953b0462cb6126c52b"
+  },
+  "runner_build_record": {
+    "version_req": "=0.9.138",
+    "bins": [
+      "cargo-nextest"
+    ],
+    "features": [],
+    "all_features": false,
+    "no_default_features": false,
+    "profile": "release",
+    "target": "aarch64-apple-darwin",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: aarch64-apple-darwin\nrelease: 1.98.1\nLLVM version: 22.1.8\n"
+  },
+  "observed_runner_process_paths": {
+    "cold": [
+      "(cargo-nextest)",
+      "/private/tmp/console-nextest-rust1981/bin/cargo-nextest"
+    ],
+    "warm": [
+      "/private/tmp/console-nextest-rust1981/bin/cargo-nextest"
+    ]
+  },
+  "observations": [
+    "Samecargo-nextest0.9.138 locally rebuilt forappledarwin using recordedRust1.98.1 stillproduces oneLEAK inEACH cold andwarm15/15phase; observerrejectsboth.",
+    "Priorv7sharedsiblingpipeendpoint remains concreteexplanation; thisrepeat shows changingrunnercompileralone didnotclearit.",
+    "CurrentactualConsoleownerCargoprobes use supportednativeharness; runnerLEAK isnot evidence ofCompany/payrollapplication spawnedchild."
+  ],
+  "approved_disposition": [
+    "Retain exactfailed-cleanliness evidence and investigate/toolqualifyon deployment-equivalentLinux, wherepipecreationmayuseatomicCLOEXEC.",
+    "Do notforkthirdparty nextest merelytohide macOSlocaltooldefect; no timeout/concurrencyreduction orLEAKsuppression.",
+    "Retain finalizer boundedfunctional/source acceptance separately from parallelcohortcleanliness anddeploymentqualification."
+  ],
+  "remaining_holds": [
+    "Deployment-equivalentLinux ordinaryparallelcohort+mixedworkload+recovery qualification stillmustexecute; atomicpipeavailabilityalone isnotpassingproof.",
+    "RebuildingnextrunnerRust1.98.1doesnotqualifyConsoleapplicationRust1.98.1; inheritedapplicationnightlypin remainsseparategap.",
+    "Exactstdlib/processlaunchsyscallcause notprovenbythisreview; no productorcustomrunnerrepairapproved."
+  ],
+  "execution_disclosure": "Parentexecutedrepeat;reviewer independentlycheckedretainedlogs,runnerprocesspaths,privateinstallbuildrecord anddigests. No newruntimetestexecutionhere."
+}

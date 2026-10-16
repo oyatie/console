@@ -1,0 +1,5 @@
+[2026-09-21T21:19:06.824-04:00] Build ID: a6b0913c-f796-4bbf-965d-f219d38b05ed
+[2026-09-21T21:19:06.826-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T21:19:13.925-04:00] Waiting on root//third-party/rust:zeroize-1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 542 other actions
+[2026-09-21T21:19:16.147-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED

@@ -1,0 +1,31 @@
+{
+  "status": "APPROVE_BOUNDED_TEST_SOURCE_NOT_RUNTIME_ACCEPTANCE",
+  "reviewer": "/root/policy_browser_tests",
+  "candidate_manifest": "/private/tmp/console-native-auth-helper-tests-20260922/manifest.json",
+  "candidate_manifest_sha256": "eb4c370879ed2c888baae31665d2c0de8c51d22c5d0ade1189d9639fd323da2f",
+  "source_sha256": "dcae929f4c8f9acd8269694248df377f673ebce221da5b158e36d26b0a769f07",
+  "findings": [],
+  "verified": [
+    "Manifest/before/source/patch SHA256 independently matched.",
+    "SequenceMatcher verifies exactly one184-line insertion at original line730; no existing source removal/modification.",
+    "Exactly3 additional sqlx tests; rustfmt --check edition2024 parsed whole candidate successfully.",
+    "signed_fixture finalizes actual native custody and configures router using the fixture-owned ES256 key.",
+    "proof() obtains actual native /api/v2/auth/csrf response; fresh_login() executes actual primary login completion; other enrolled Account uses same actual registration owner.",
+    "Missing proof and mismatched genuine other-family/other-Account proof cases demand CsrfInvalid; original valid proof after cases is live positive control.",
+    "native_form_issuer uses exact configured fixture key/issuer and existing JwtIssuer, not an unrelated or unsigned token constructor.",
+    "Expired vector issues actual ES256 csrf token with enrolled Account/family/current security generation and issued_at DBnow-10minutes. Real issuer max300seconds gives exp DBnow-5minutes. Independent signed_claims verifies signature using the fixture public key while intentionally disabling expiry only for oracle inspection.",
+    "Success case checks Account/session/generation/family ceiling/max300second bounds and reuses one captured immutable mutation credentials value in2 actual committed transactions.",
+    "Existing complete native/business inventory before/after must remain equal; no token/Account/business seed writes added."
+  ],
+  "limits": [
+    "Reviewer executed0 Rust builds/database/browser tests. Only source/hash/preservation/rustfmt verification.",
+    "No Company policy A/B transaction, final effect, Group-first source plan, rate limit, revocation-wait or elapsed expiry boundary acceptance is implied.",
+    "Wrong-Account genuine proof also differs in family; this case demonstrates rejection of that real mismatch but does not independently isolate sub comparison from sid comparison. Existing broader signed-binding tests and direct implementation review remain relevant.",
+    "Expired crypto fixture predates newly created family as a deliberate signed negative vector; it is not a claim a live issuance owner generated stale proof. No persisted credential rows are rewritten."
+  ],
+  "source_checked": {
+    "backend/app/tests/auth_rest.rs": "a5f311db345793f852f57756e73b27154d7dab0c6175a9a2ea049de8a4e6ca7c",
+    "backend/app/tests/auth_rest/native_business_session.rs": "2494e06918e06265083bb59beada01564304b1b5e6a4690be744b0bacce7d81c",
+    "backend/crates/platform/auth/src/jwt/account.rs": "55e871a3cd6bab34bdc957f522b5e1d2f58edb09bffb1af0e906f7dcb67aa841"
+  }
+}

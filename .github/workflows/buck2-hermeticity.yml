@@ -24,6 +24,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  native-hr-policy-parser:
+    name: Native HR policy codec through the current supervisor
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up pinned Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "24.16.0"
+      - name: Set up pinned native toolchains
+        uses: ./.github/actions/buck2-setup
+      - name: Measure current native inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d "$RUNNER_TEMP/hr-policy-ci.XXXXXXXX")"
+          mkdir "$work/dotslash-cache"
+          node scripts/hr-policy-parser/binding.mjs --export-ci --output "$work/binding.json" \
+            --python "$(python3 -B -I -c 'import os,sys; print(os.path.realpath(sys.executable))')" \
+            --git "$(realpath "$(command -v git)")" \
+            --dotslash "$(realpath "$(command -v dotslash)")" \
+            --dotslash-cache "$work/dotslash-cache" --timeout-ms 2700000
+          cat "$work/binding.json"
+      - name: Run the existing native HR supervisor
+        run: scripts/run-native-hr-policy-parser-contract.sh
+
   buck2-graph:
     name: Buck2 graph builds with declared inputs
     runs-on: ubuntu-latest
@@ -89,3 +120,124 @@ jobs:
       - name: Report cache effectiveness
         if: always()
         run: du -sh ~/nativelink-cas || true
+
+  hydration-producer:
+    name: Native hydration candidate from canonical inputs
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up pinned native toolchains
+        uses: ./.github/actions/buck2-setup
+      - name: Prepare canonical hydration dependency metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -I tools/buck/test_reindeer_bootstrap.py -v
+          source third-party/rust/reindeer/upstream.lock
+          rustup toolchain install "$REINDEER_TOOLCHAIN" --profile minimal
+          cargo fetch --locked --manifest-path backend/Cargo.toml
+          python3 tools/buck/gen_hydrate.py --reindeer third-party/rust/reindeer/bootstrap.sh
+          git diff --exit-code -- backend/Cargo.lock
+          git add -- third-party/rust/hydrate
+      - name: Build the cold native hydration candidate
+        id: native
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate="$(tools/buck2 --isolation-dir hydration-producer build -j 2 --no-remote-cache \
+            //backend/crates/payroll/ui:console-payroll-ui-wasm-bundle --show-full-simple-output)"
+          printf 'HYDRATION_CANDIDATE=%s\n' "$candidate" >> "$GITHUB_ENV"
+      - name: Verify and stage the candidate without publishing it
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -I - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os, shutil, stat, subprocess, sys
+          root = Path.cwd().resolve()
+          candidate = Path(os.environ["HYDRATION_CANDIDATE"]).resolve(strict=True)
+          assert candidate.is_relative_to(root / "buck-out")
+          names = ("console_payroll_ui.js", "console_payroll_ui_bg.wasm", "bundle.lock.json")
+          assert {p.name for p in candidate.iterdir()} == set(names)
+          for name in names:
+              assert stat.S_ISREG((candidate / name).lstat().st_mode)
+          git = lambda *args: subprocess.check_output(["git", *args], cwd=root)
+          assert git("rev-parse", "HEAD").decode().strip() == os.environ["GITHUB_SHA"]
+          changed = git("diff", "HEAD", "--name-only", "-z").decode().split("\0")
+          untracked = git("ls-files", "--others", "--exclude-standard", "-z").decode().split("\0")
+          assert all(not p or p.startswith("third-party/rust/hydrate/") for p in changed)
+          assert not any(untracked)
+          subprocess.run(["git", "diff", "--exit-code", "--", "third-party/rust/hydrate"], cwd=root, check=True)
+          old_outputs = ("backend/crates/payroll/ui/bundle.lock.json",
+                         "backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+                         "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm")
+          assert all((root / p).read_bytes() == git("show", "HEAD:" + p) for p in old_outputs)
+          sys.path.insert(0, str(root / "tools/ui"))
+          import wasm_bundle as bundle
+          record = bundle.load_manifest(candidate / "bundle.lock.json")
+          outputs = {p: candidate / Path(p).name for p in bundle.OUTPUTS}
+          inputs = bundle.checkout_inputs(root, strict=True)
+          bundle.require_valid(record, inputs, outputs)
+          import test_native_hydration as native
+          native.PAIR = tuple(candidate / Path(p).name for p in bundle.OUTPUTS)
+          logs = set((root / "buck-out").rglob("*_events.pb.zst"))
+          assert len(logs) == 1
+          evidence = Path(os.environ["RUNNER_TEMP"]) / "hydration-actions"
+          evidence.mkdir(mode=0o700)
+          native.inspect_native_actions(root, evidence, logs)
+          compiled = json.loads((evidence / "native-compiler-actions.json").read_text())
+          bindings = json.loads((evidence / "native-bindgen-actions.json").read_text())
+          pair = {Path(p).name: bundle.file_hash(candidate / Path(p).name) for p in bundle.OUTPUTS}
+          bindings = [b for b in bindings if b["outputs"] == pair
+                      and b["linked_input_sha256"] == record["producer"]["compiled_wasm_sha256"]
+                      and b["executable_sha256"] == record["producer"]["bindgen_executable_sha256"]]
+          assert bindings
+          compiled = [c for c in compiled if c["output_sha256"] == record["producer"]["compiled_wasm_sha256"]]
+          assert compiled
+          assert all(native.digest(Path(c["response"])) == c["response_sha256"] for c in compiled)
+          witness = {"event_log_sha256": native.digest(next(iter(logs))),
+                     "compiler": [{k: c[k] for k in ("response_sha256", "output_sha256", "linker_sha256")}
+                                  | {"flags": [line for line in Path(c["response"]).read_text().splitlines()
+                                               if line.startswith(("--crate-", "--target=", "--cfg=", "-Copt-level="))]}
+                                  for c in compiled],
+                     "bindgen": [{k: b[k] for k in ("executable_sha256", "linked_input_sha256", "outputs")}
+                                 for b in bindings]}
+          stage = Path(os.environ["RUNNER_TEMP"]) / "hydration-candidate"
+          stage.mkdir(mode=0o700)
+          for name in names:
+              shutil.copyfile(candidate / name, stage / name)
+          assert bundle.load_manifest(stage / "bundle.lock.json") == record
+          bundle.require_valid(record, bundle.checkout_inputs(root, strict=True),
+                               {p: stage / Path(p).name for p in bundle.OUTPUTS})
+          (stage / "generation.patch").write_bytes(git("diff", "--cached", "--binary", "HEAD", "--", "third-party/rust/hydrate"))
+          (stage / "native-actions.json").write_text(json.dumps(witness, indent=2) + "\n")
+          provenance = {"status": "unreviewed-native-candidate", "source_sha": os.environ["GITHUB_SHA"],
+                        "source_tree": git("rev-parse", "HEAD^{tree}").decode().strip(),
+                        "generated_tree": git("write-tree").decode().strip(),
+                        "files": {name: hashlib.sha256((stage / name).read_bytes()).hexdigest()
+                                  for name in (*names, "generation.patch", "native-actions.json")}}
+          (stage / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+          PY
+      - name: Upload the scoped native hydration candidate
+        if: ${{ !cancelled() && steps.stage.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: console-hydration-candidate-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/hydration-candidate/console_payroll_ui.js
+            ${{ runner.temp }}/hydration-candidate/console_payroll_ui_bg.wasm
+            ${{ runner.temp }}/hydration-candidate/bundle.lock.json
+            ${{ runner.temp }}/hydration-candidate/generation.patch
+            ${{ runner.temp }}/hydration-candidate/native-actions.json
+            ${{ runner.temp }}/hydration-candidate/provenance.json
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false

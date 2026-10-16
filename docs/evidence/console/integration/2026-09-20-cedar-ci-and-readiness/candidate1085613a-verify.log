@@ -1,0 +1,8 @@
+HISTORICAL LOG LOCATOR - NOT ORIGINAL TEST OUTPUT
+recovery_commit: 6f15a1671e823293b2025d3b1f72d04034ab7693
+original_path: docs/evidence/console/integration/2026-09-20-cedar-ci-and-readiness/candidate1085613a-verify.log
+git_blob_sha: 0ede4aaa445c30c3cebc8a92dc3805a151f8e325
+sha256: ab0f941ccc58e62a2be73a7d1afe35b16470395790da8cc0afc93102eea9ebe7
+bytes: 682950
+custody: docs/evidence/console/integration/2026-10-13-historical-download-log-locators/custody.json
+Resolve the exact Git original before assessing historical output.

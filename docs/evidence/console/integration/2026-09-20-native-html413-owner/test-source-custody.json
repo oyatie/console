@@ -1,0 +1,21 @@
+{
+  "base_sha": "755271767e3553b12fe822dac740fac0e376ae76",
+  "source_sha256": {
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "d86781610aaae305cd7ba662f3b9fcd0484e0f5c3a453c11ca897f5c3801ad29",
+    "backend/app/tests/auth_rest/native_company_setup.rs": "1e13ac530520a4ee2b445d7e8b99a72b85fc77109a3b862128316fe719a8f7d5",
+    "backend/crates/platform/request-context/src/lib.rs": "30d42d13d406367b1915a5ef4b376a2eb33ca0c36ab57392db7ca6e0f057415d",
+    "backend/app/src/lib.rs": "b5a5a79f7c90b33f3ab19d68c5caed673ad56c21589af6f73a71aeee8f3dcf72",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "a89b7ae66af5f25cd73e9a30bb99d9b8718fb9e9ed2f207e9c04fd440fecdcc2",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "84e1a639c7ef72c8b5a62d9c44c1ed6d514efec8e0ddd67022f41577cbcde114",
+    "backend/crates/payroll/ui/src/native_account.rs": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e",
+    "backend/app/tests/auth_rest/native_company_browser.rs": "372206ba75bc1cf0fba23800bf150bac0156af2c06eead8acc94a081d7d849c7",
+    "docs/evidence/console/integration/2026-09-20-company-entry-read-owner/browser/company-preview.cjs": "e14a328f59f263f5a64e86287545779cec8b03ad2b9872f120640e4caa3f10f0"
+  },
+  "candidate_sha256": {
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "795deebe4f69878445354eef976ea0b4f6e7b0b070461315b1e3ff4786ca36e1",
+    "backend/app/tests/auth_rest/native_company_setup.rs": "ba525233f772b0c8565db173a7b4ea01bd82be7204180763c3d56c21daf7010b",
+    "backend/crates/platform/request-context/src/lib.rs": "4720be274f0f5bef3780ce130d207d09c7367a7c421b56257fc2beea88ffdd81",
+    "backend/crates/platform/request-context/tests/native_error_envelope.rs": "1613e578665fcb8df0577ecf41dba48a0f33f34f44e735bcbd0b43ef3fcdade8"
+  },
+  "accepted_browser_driver_sha256": "e14a328f59f263f5a64e86287545779cec8b03ad2b9872f120640e4caa3f10f0"
+}

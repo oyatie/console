@@ -1,0 +1,32 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-20T12:57:03.689-04:00] Build ID: ba2a38ee-b1c4-440d-b455-13e7ebc0021c
+[2026-09-20T12:57:03.691-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:57:10.786-04:00] Waiting on root//third-party/rust:rustls-0.23-build-script-build (prelude//platforms:default#5732820ad45f622d) -- action (write linker_wrapper.sh), and 746 other actions
+[2026-09-20T12:57:18.087-04:00] Waiting on root//third-party/rust:server_fn_macro_default-0.9.0-beta.crate (prelude//platforms:default#11a256c53bf8083e) -- action (write server_fn_macro_default-0.9.0-beta.crate_unpack.sh), and 618 other actions
+[2026-09-20T12:57:25.187-04:00] Waiting on root//third-party/rust:hkdf-0.12 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/hkdf-metadata-full-diag.args), and 29 other actions
+[2026-09-20T12:57:26.017-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-20T12:57:26.119-04:00] Build ID: 9cb0fdef-89c7-490a-8464-55479fb5169a
+[2026-09-20T12:57:26.121-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:57:33.220-04:00] Waiting on root//third-party/rust:opentelemetry-otlp-0.32.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write opentelemetry-otlp-0.32.0.crate_unpack.sh), and 617 other actions
+[2026-09-20T12:57:40.419-04:00] Waiting on root//third-party/rust:thiserror-2-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __cxx_shim.sh), and 809 other actions
+[2026-09-20T12:57:47.519-04:00] Waiting on root//third-party/rust:utf8_iter-1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 530 other actions
+[2026-09-20T12:57:54.619-04:00] Waiting on root//third-party/rust:cedar-policy-4 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPL/cedar_policy-link-diag.args), and 25 other actions
+[2026-09-20T12:58:01.719-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T12:58:08.819-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T12:58:15.918-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T12:58:22.919-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T12:58:27.721-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (32.3s)
+[2026-09-20T12:58:27.721-04:00] ---- STDOUT ----
+[2026-09-20T12:58:27.721-04:00]
+[2026-09-20T12:58:27.721-04:00] running 1 test
+[2026-09-20T12:58:27.721-04:00] test legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_and_mounted_group_present_family_faults_do_not_fall_back_to_historical ... ok
+[2026-09-20T12:58:27.721-04:00]
+[2026-09-20T12:58:27.721-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 475 filtered out; finished in 32.20s
+[2026-09-20T12:58:27.721-04:00]
+[2026-09-20T12:58:27.721-04:00]
+[2026-09-20T12:58:27.721-04:00] ---- STDERR ----
+[2026-09-20T12:58:27.721-04:00]
+[2026-09-20T12:58:27.756-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

@@ -1,0 +1,8 @@
+HISTORICAL LOG LOCATOR - NOT ORIGINAL TEST OUTPUT
+recovery_commit: 6f15a1671e823293b2025d3b1f72d04034ab7693
+original_path: docs/evidence/console/policy/2026-09-22-native-cedar/native-business-app-build-round2.log
+git_blob_sha: a80e4a29ef3c7cf7ebc4a771255f627b60ae1f01
+sha256: b2ecab35e567cc9147d1bad24f5e780f90f48e146a26bf984e5cdfb7537195c7
+bytes: 11391
+custody: docs/evidence/console/integration/2026-10-13-historical-download-log-locators/custody.json
+Resolve the exact Git original before assessing historical output.

@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root/company_scope_review",
+  "verdict": "APPROVE_EXACT_FIXTURE_COMPILATION_CORRECTION",
+  "target": "backend/app/tests/auth_rest/native_business_session.rs",
+  "before_sha256": "49b09eedbf92607635aed6054095dd81b8ad555c64d0bac76310f6fcc9853eef",
+  "after_sha256": "1793b32e75ebd1117c09a7daaf210a4feeaef1cc0a52996f6bfeb955140af00f",
+  "change": "Replace nonexistent jwt.private_key_pem.as_bytes() with actual key.to_pkcs8_pem(LineEnding::LF).unwrap().as_bytes()",
+  "proof": "Applying that one literal replacement to exact independently reviewed four-test successor equals current product test file byte-for-byte; every assertion unchanged. Existing fixture SigningKey matches actual router signer.",
+  "cause": "Reviewer-authored proposal assumed verifier configuration carried private key; actual type does not.",
+  "failed_build": "Root retains typed-audit-pg.log compilation failure; no executed tests claimed for that run.",
+  "reviewer_runtime_tests": 0
+}

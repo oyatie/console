@@ -1,0 +1,7 @@
+[2026-09-21T16:00:59.729-04:00] Build ID: 401e0d01-3768-41f9-af0d-36cef6d7582b
+[2026-09-21T16:00:59.741-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+writer-ownership: scanned 0 production source files
+writer-ownership STALE SHARED PERMISSION: console-ontology-canonical-adapter-postgres is permitted to write `ont_action_command_receipts` but holds no write — remove the permission or the receipt owner that grants it
+writer-ownership STALE SHARED PERMISSION: console-ontology-rest is permitted to write `ont_action_command_receipts` but holds no write — remove the permission or the receipt owner that grants it
+writer-ownership STALE SHARED PERMISSION: console-payroll-adapter-postgres is permitted to write `ont_action_command_receipts` but holds no write — remove the permission or the receipt owner that grants it

@@ -1,0 +1,192 @@
+{
+  "observed_head": "e1007b0c4235f86079cfff40f2f8280c9fa40c3a",
+  "scope": "all backend/**/*.rs read-only constructor/literal/authorize search; full platform-rest source caller map",
+  "constructor_definition": {
+    "path": "backend/crates/platform/authz/src/lib.rs",
+    "line": 1204,
+    "status": "unchanged; removal/restriction requires later coordinated actual-owner conversion"
+  },
+  "constructor_callers": [
+    {
+      "path": "backend/crates/platform/request-context/src/lib.rs",
+      "line": 871,
+      "function": "resolve_platform_principal",
+      "initial_change": "none; generic resolver cannot invent TenantList/Companies/read for unknown caller; genuine owner conversion pending"
+    }
+  ],
+  "other_struct_literals": 0,
+  "authorize_calls": [
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 574,
+      "handler": "create_org",
+      "feature": "TenantCreate",
+      "target": "Companies",
+      "use": "Effect",
+      "later_owner": "onboard_tenant and postcommit governed-config seeder",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 632,
+      "handler": "list_orgs",
+      "feature": "TenantList",
+      "target": "Companies",
+      "use": "ReadProjection",
+      "later_owner": "list_tenants materialization plus audited read",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 657,
+      "handler": "list_groups",
+      "feature": "GroupManage",
+      "target": "Groups",
+      "use": "ReadProjection",
+      "later_owner": "list_groups materialization plus audited read",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 681,
+      "handler": "create_group",
+      "feature": "GroupManage",
+      "target": "Groups",
+      "use": "Effect",
+      "later_owner": "create_group",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 707,
+      "handler": "update_group",
+      "feature": "GroupManage",
+      "target": "Group(id: Uuid)",
+      "use": "Effect",
+      "later_owner": "update_group; both SQL overloads remain census obligation",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 734,
+      "handler": "list_group_accounts",
+      "feature": "GroupManage",
+      "target": "Group(id: Uuid)",
+      "use": "ReadProjection",
+      "later_owner": "list_group_accounts materialization plus audited read",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 763,
+      "handler": "create_group_account",
+      "feature": "GroupManage",
+      "target": "Group(id: Uuid)",
+      "use": "Effect",
+      "later_owner": "create_group_account; Company child and identity/grant locks",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 800,
+      "handler": "revoke_group_role",
+      "feature": "GroupManage",
+      "target": "Group(id: Uuid)",
+      "use": "Effect",
+      "later_owner": "revoke_group_role; exact subject/role child command",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 826,
+      "handler": "assign_org_to_group",
+      "feature": "GroupManage",
+      "target": "Company(org_id: OrgId)",
+      "use": "Effect",
+      "later_owner": "assign_org_to_group; sorted Group heads and Company child",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 851,
+      "handler": "remove_org_from_group",
+      "feature": "GroupManage",
+      "target": "Company(org_id: OrgId)",
+      "use": "Effect",
+      "later_owner": "remove_org_from_group; sorted Group heads and Company child",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 880,
+      "handler": "ops_dashboard",
+      "feature": "TenantHealthRead",
+      "target": "Operations",
+      "use": "ReadProjection",
+      "later_owner": "list_tenant_health materialization plus audited read",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 905,
+      "handler": "update_org",
+      "feature": "TenantSuspend",
+      "target": "Company(id: OrgId)",
+      "use": "Effect",
+      "later_owner": "set_tenant_status",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 952,
+      "handler": "delete_org",
+      "feature": "TenantRemove",
+      "target": "Company(id: OrgId)",
+      "use": "Effect",
+      "later_owner": "remove_tenant or isolated force_remove_tenant",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/view_as.rs",
+      "line": 195,
+      "handler": "start_view_as",
+      "feature": "TenantHealthRead",
+      "target": "Company(request org: OrgId)",
+      "use": "ContextMint",
+      "later_owner": "current source and target then exact approved view-as mint/audit",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/view_as.rs",
+      "line": 324,
+      "handler": "exit_view_as",
+      "feature": "TenantHealthRead",
+      "target": "Operations",
+      "use": "Effect",
+      "later_owner": "source-owned exit audit; historical audit bytes retained",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/view_as.rs",
+      "line": 358,
+      "handler": "start_tenant_context",
+      "feature": "TenantManage",
+      "target": "Company(request org: OrgId)",
+      "use": "ContextMint",
+      "later_owner": "current source and target then exact writable mint/audit",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/view_as.rs",
+      "line": 452,
+      "handler": "exit_tenant_context",
+      "feature": "TenantManage",
+      "target": "Operations",
+      "use": "Effect",
+      "later_owner": "source-owned exit audit; historical audit bytes retained",
+      "status": "unconverted; required actual-owner target/use/retained guard dependency"
+    }
+  ],
+  "unmounted_feature": "PlatformAuditRead has enum variant but no mounted caller; do not invent endpoint",
+  "later_change_rule": "Any shared constructor/authorize change requires exact conversion of this full census and non-HTTP owner callers, with independent source/test review; no fabricated principal, caller roles, cached eligibility, substituted feature/target/use or SQL authorized=true."
+}

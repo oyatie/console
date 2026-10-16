@@ -1,0 +1,15 @@
+[2026-09-20T12:45:44.242-04:00] Build ID: d2e6a771-10be-49e4-8b75-25dca2732522
+[2026-09-20T12:45:44.250-04:00] File changed: root//tools/buck/test_gen_first_party.py
+[2026-09-20T12:45:44.250-04:00] File changed: root//tools/buck/gen_first_party.py
+[2026-09-20T12:45:44.250-04:00] File changed: root//backend/app/BUCK
+[2026-09-20T12:45:44.250-04:00] 348 additional file change events
+[2026-09-20T12:45:51.344-04:00] Waiting on root//third-party/rust:concurrent-queue-2 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 879 other actions
+[2026-09-20T12:45:58.544-04:00] Waiting on root//third-party/rust:rand_core-0.10 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 555 other actions
+[2026-09-20T12:46:05.643-04:00] Waiting on root//third-party/rust:tokio-stream-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 312 other actions
+[2026-09-20T12:46:12.944-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T12:46:19.947-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T12:46:27.045-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T12:46:29.932-04:00] Cache hits: 0%
+[2026-09-20T12:46:29.932-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-20T12:46:29.932-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED

@@ -38,6 +38,9 @@
 //! the grant is really held, and only then asserts the `P0001` the trigger
 //! raises.
 
+#[path = "support/hostile_receipt_fixture.rs"]
+mod hostile_receipt_fixture;
+
 use console_kernel_core::{OrgId, UserId};
 use console_ontology_canonical_adapter_postgres::person::{
     PersonCommand, PersonError, PersonHead, PersonQuery, PgPersonPort,
@@ -1038,28 +1041,18 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
     .await
     .unwrap();
 
-    // Put back a row carrying the SAME digest — so the replay gets past the
-    // digest comparison — but a receipt naming no dispatch target, which is the
-    // shape an `ontology.action` row has. 0177's trigger refuses UPDATE and
-    // DELETE per row and TRUNCATE is statement-level, so this is the only way a
-    // test can stand a hostile row where a good one was.
-    sqlx::query("TRUNCATE ont_action_command_receipts")
-        .execute(&owner_pool)
-        .await
-        .unwrap();
-    sqlx::query(
-        "INSERT INTO ont_action_command_receipts \
-         (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
-         VALUES ($1, $2, $3, $4, $5, now())",
+    // Corrupt only this real accepted row, including its original legacy metadata branch.
+    // The private helper restores/proves the ordinary guard before any owner replay.
+    hostile_receipt_fixture::corrupt_legacy(
+        &owner_pool,
+        ORG,
+        *command_id.as_uuid(),
+        *actor.as_uuid(),
+        accepted.payload_digest().as_slice(),
+        json!({ "person_id": "9e500000-0000-0000-0000-0000000000ff", "version": 1 }),
     )
-    .bind(ORG)
-    .bind(*command_id.as_uuid())
-    .bind(*actor.as_uuid())
-    .bind(accepted.payload_digest().as_slice())
-    .bind(json!({ "person_id": "9e500000-0000-0000-0000-0000000000ff", "version": 1 }))
-    .execute(&owner_pool)
     .await
-    .unwrap();
+    .expect("hostile receipt fixture must restore its guard and preserve all other rows");
 
     let refused = execute(
         &port,
@@ -1077,5 +1070,46 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
     assert!(
         matches!(refused, PersonError::UnreadableReceipt(id, _) if id == *command_id.as_uuid()),
         "a receipt the roster cannot read must be refused, never replayed; got {refused:?}"
+    );
+}
+
+// Append inside the EXISTING corresponding integration-test file; not a new fixture framework.
+// Isolated actual runtime owner tests; fixture SQL does not provision browser business data.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn receipt_reader_binds_present_action_and_object_without_resealing(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let accepted = command(org, actor, create(None, "김호환"));
+    let original = execute(&port, accepted.clone()).await.unwrap();
+    let receipt_before: serde_json::Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2",
+    )
+    .bind(*org.as_uuid())
+    .bind(*accepted.command_id.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    for change in 0..2 {
+        let mut retry = accepted.clone();
+        if change == 0 {
+            retry.action_key = "different_accepted_wrapper".to_owned();
+        } else {
+            retry.object_type_id = Uuid::from_u128(0xeeee);
+        }
+        let refused = execute(&port, retry).await.unwrap_err();
+        assert!(
+            matches!(refused, PersonError::DigestConflict(id) if id == *accepted.command_id.as_uuid()),
+            "change {change}: {refused:?}"
+        );
+        let receipt_after: serde_json::Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2")
+            .bind(*org.as_uuid()).bind(*accepted.command_id.as_uuid()).fetch_one(&owner_pool).await.unwrap();
+        assert_eq!(
+            receipt_after, receipt_before,
+            "refusal rewrote stored receipt"
+        );
+    }
+    assert_eq!(
+        execute(&port, accepted).await.unwrap(),
+        original,
+        "unchanged command still replays"
     );
 }

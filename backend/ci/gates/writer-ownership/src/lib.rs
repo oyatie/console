@@ -550,7 +550,7 @@ pub fn scan(root: &Path) -> Result<Report, std::io::Error> {
     let mut report = Report::default();
     let mut sources = Vec::new();
     let mut manifests = Vec::new();
-    collect_sources(root, &mut sources, &mut manifests)?;
+    collect_sources(root, &mut sources, &mut manifests, &mut BTreeSet::new())?;
     sources.sort();
     let tree = CrateTree::read(root, &manifests)?;
 
@@ -634,18 +634,26 @@ fn collect_sources(
     dir: &Path,
     out: &mut Vec<PathBuf>,
     manifests: &mut Vec<PathBuf>,
+    active_directories: &mut BTreeSet<PathBuf>,
 ) -> Result<(), std::io::Error> {
+    let canonical = dir.canonicalize()?;
+    if !active_directories.insert(canonical.clone()) {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("source directory cycle at {}", dir.display()),
+        ));
+    }
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         let path = entry.path();
-        let file_type = entry.file_type()?;
+        let file_type = std::fs::metadata(&path)?.file_type();
         let name = entry.file_name();
         let name = name.to_string_lossy();
         if file_type.is_dir() {
             if EXCLUDED_DIRS.contains(&name.as_ref()) {
                 continue;
             }
-            collect_sources(&path, out, manifests)?;
+            collect_sources(&path, out, manifests, active_directories)?;
         } else if file_type.is_file() {
             if name.ends_with(".rs") {
                 out.push(path);
@@ -654,6 +662,7 @@ fn collect_sources(
             }
         }
     }
+    active_directories.remove(&canonical);
     Ok(())
 }
 

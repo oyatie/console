@@ -195,7 +195,7 @@ impl CanonicalPort for ReplayingPort {
                 None => {
                     let mut next = self.next.lock().unwrap();
                     *next += 1;
-                    let result = json!({"n": *next});
+                    let result = json!({"n": *next, "target": target.as_str()});
                     receipts.insert(key, result.clone());
                     result
                 }
@@ -374,7 +374,7 @@ async fn canonical_replay_returns_stored_receipt_without_respending_four_eyes(ow
     .bind(command_id)
     .bind(*actor.as_uuid())
     .bind([0_u8; 32].as_slice())
-    .bind(json!({"n": 1}))
+    .bind(json!({"n": 1, "target": "company.revise"}))
     .bind("revise")
     .bind(OffsetDateTime::now_utc())
     .execute(&owner_pool)
@@ -460,7 +460,7 @@ async fn canonical_replay_repairs_a_missing_execute_audit(owner_pool: PgPool) {
     .bind(command_id)
     .bind(*actor.as_uuid())
     .bind([0_u8; 32].as_slice())
-    .bind(json!({"n": 1}))
+    .bind(json!({"n": 1, "target": "company.revise"}))
     .bind("revise")
     .bind(OffsetDateTime::now_utc())
     .execute(&owner_pool)
@@ -529,7 +529,7 @@ async fn canonical_replay_rechecks_current_authority(owner_pool: PgPool) {
     .bind(command_id)
     .bind(*actor.as_uuid())
     .bind([0_u8; 32].as_slice())
-    .bind(json!({"n": 1}))
+    .bind(json!({"n": 1, "target": "company.revise"}))
     .bind("revise")
     .bind(OffsetDateTime::now_utc())
     .execute(&owner_pool)
@@ -607,7 +607,7 @@ async fn canonical_replay_rejects_a_different_action(owner_pool: PgPool) {
     .bind(command_id)
     .bind(*actor.as_uuid())
     .bind([0_u8; 32].as_slice())
-    .bind(json!({"n": 1}))
+    .bind(json!({"n": 1, "target": "company.revise"}))
     .bind("accepted-revise")
     .bind(OffsetDateTime::now_utc())
     .execute(&owner_pool)
@@ -681,7 +681,7 @@ async fn canonical_replay_rejects_a_different_object_type(owner_pool: PgPool) {
     .bind(command_id)
     .bind(*actor.as_uuid())
     .bind([0_u8; 32].as_slice())
-    .bind(json!({"n": 1}))
+    .bind(json!({"n": 1, "target": "company.revise"}))
     .bind("revise")
     .bind(Uuid::new_v4())
     .bind(OffsetDateTime::now_utc())
@@ -711,4 +711,66 @@ async fn canonical_replay_rejects_a_different_object_type(owner_pool: PgPool) {
         }
         other => panic!("expected a 409 conflict, got {other:?}"),
     }
+}
+
+// Append to ontology/rest/tests/canonical_replay.rs. Uses its explicit test port
+// only to witness that actual REST replay peek refuses before dispatch.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn canonical_receipt_peek_refuses_explicit_foreign_owner_before_dispatch(owner_pool: PgPool) {
+    let rt = runtime_pool(&owner_pool).await;
+    let cmd = command_pool(&owner_pool).await;
+    let org = OrgId::knl();
+    seed_org(&owner_pool, *org.as_uuid()).await;
+    let actor = seed_user(&owner_pool, *org.as_uuid()).await;
+    let approver = seed_user(&owner_pool, *org.as_uuid()).await;
+    let type_id = seed_action(&owner_pool, org, actor).await;
+    let request_ref =
+        approve_four_eyes(&rt, org, actor, approver, "revise", *type_id.as_uuid()).await;
+    let seen = Arc::new(Mutex::new(Vec::new()));
+    let state = state(
+        &rt,
+        &cmd,
+        ReplayingPort {
+            next: Arc::new(Mutex::new(0)),
+            receipts: Arc::new(Mutex::new(HashMap::new())),
+            seen: Arc::clone(&seen),
+        },
+    );
+    let command_id = Uuid::new_v4();
+    // Valid SQL owner/target pair for another canonical owner. The result's
+    // target deliberately matches the requested Company: JSON alone is not proof.
+    sqlx::query("INSERT INTO ont_action_command_receipts(org_id,command_id,actor_id,payload_digest,receipt,action_key,object_type_id,created_at,owner,target) VALUES($1,$2,$3,$4,$5,'revise',$6,now(),'person','people.create_person')")
+        .bind(*org.as_uuid()).bind(command_id).bind(*actor.as_uuid()).bind([0_u8;32].as_slice())
+        .bind(json!({"target":"company.revise","n":1})).bind(*type_id.as_uuid()).execute(&owner_pool).await.unwrap();
+    let error = scope_org(
+        org,
+        state.execute_action(
+            &super_admin(actor, org),
+            "revise",
+            command(type_id, request_ref, command_id),
+        ),
+    )
+    .await
+    .unwrap_err();
+    match error {
+        ActionError::Store(PgOntologyError::Domain(kernel)) => {
+            assert_eq!(kernel.kind, ErrorKind::Conflict)
+        }
+        other => panic!("expected nondisclosing conflict, got {other:?}"),
+    }
+    assert!(
+        seen.lock().unwrap().is_empty(),
+        "foreign receipt reached canonical dispatch"
+    );
+    assert_eq!(
+        count_execute_audits(&owner_pool, *org.as_uuid(), command_id).await,
+        0
+    );
+    let spent: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM gov_approval_consumptions WHERE org_id=$1")
+            .bind(*org.as_uuid())
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(spent, 0, "refusal spent approval");
 }

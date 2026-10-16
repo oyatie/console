@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root",
+  "verdict": "APPROVE_MACHINERY_FOR_DISPOSABLE_CAPTURE",
+  "manifest_sha256": "5ddacd584438203dbfd17ce601d4f8fe9ad30aca0f5034f6d239d8d179e1322e",
+  "pure_controls": {
+    "executed": 3,
+    "passed": 3,
+    "failed": 0
+  },
+  "source_verification": "passed",
+  "scope": "full-map fixed-one selection repairs prerequisite; all SQL/source/delta/rollback predicates retained"
+}

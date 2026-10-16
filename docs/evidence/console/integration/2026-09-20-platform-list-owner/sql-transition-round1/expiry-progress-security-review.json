@@ -1,0 +1,23 @@
+{
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "scope": "Two actual App family-expiry and independent-source concurrency tests",
+  "reviewer": "integration_security",
+  "manifest_sha256": "7a558d228f23925cbdb6a4476d244e06add8e5967904fbf7f2cc1da1292deaeb",
+  "counts": {
+    "sqlx": 2,
+    "executed": 0
+  },
+  "review_conclusions": [
+    "Server config explicitly10s absoluteTTL and30s request timeout verified before real family issuance",
+    "Positive narrow bound request precedes observed canonical sourceguard wait crossing actual DBfamilydeadline; signedexpiry independently outlives deadline",
+    "Expired owner401, exact fullstate unchanged, narrow historical and original-policy samebound recovery separate cause from brokenprojection",
+    "Second genuine OTP/passkey operator completes while first owner remains observed blocked; exact independent actor/audit effects in during and after snapshots",
+    "All previous parent bytes unchanged; dedicated observer and corrected transaction-cleanup oracle reused"
+  ],
+  "remaining_holds": [
+    "Actual2leaf runtime",
+    "Final candidate integration and fullrelease"
+  ],
+  "repository_writes": 0,
+  "database_executions": 0
+}

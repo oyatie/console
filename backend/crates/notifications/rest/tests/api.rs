@@ -26,8 +26,14 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn notifications_rest_is_recipient_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -63,7 +69,10 @@ async fn notifications_rest_is_recipient_scoped(pool: PgPool) {
         .unwrap();
         let service = router(NotificationRestState::new(
             PgNotificationStore::new(runtime_role_pool(&pool).await),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ));
         let token_a = issue_token(private_pem.as_bytes(), public_key_pem.as_bytes(), user_a);
         let token_b = issue_token(private_pem.as_bytes(), public_key_pem.as_bytes(), user_b);
@@ -307,8 +316,14 @@ async fn seed_user(pool: &PgPool, user_id: UserId, name: &str) {
 /// toggle, and mute-policy CRUD are all recipient-scoped from the JWT; muted
 /// rows leave the badge but never the list; invalid policy shapes are 422 in
 /// the canonical envelope; cross-user ids are 404.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn notification_routing_rest_is_recipient_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -373,7 +388,10 @@ async fn notification_routing_rest_is_recipient_scoped(pool: PgPool) {
         .unwrap();
         let service = router(NotificationRestState::new(
             PgNotificationStore::new(runtime_role_pool(&pool).await),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ));
         let token_a = issue_token(private_pem.as_bytes(), public_key_pem.as_bytes(), user_a);
         let token_b = issue_token(private_pem.as_bytes(), public_key_pem.as_bytes(), user_b);

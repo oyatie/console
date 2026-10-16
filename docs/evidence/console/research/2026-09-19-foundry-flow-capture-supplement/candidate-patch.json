@@ -1,0 +1,372 @@
+[
+  {
+    "op": "test",
+    "path": "/release_inventory/version",
+    "value": 1
+  },
+  {
+    "op": "test",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.workflow-recorder-controls/0/source_id",
+    "value": "flow-capture-record-a-workflow"
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F09.capture-video-review",
+      "milestone": 8,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F09.workflow-capture-resources",
+        "F09.capture-asset-editing",
+        "F04.video-transform-library",
+        "F16.upload-execution-isolation",
+        "F16.capture-source-policy"
+      ],
+      "journey": "Upload an authorized prerecorded workflow video and review extracted screenshots with stable timestamps thumbnail selection deletion and explicit confirmation before document publication through isolated bounded media processing",
+      "acceptance": {
+        "outcome": "Upload an authorized prerecorded workflow video and review extracted screenshots with stable timestamps thumbnail selection deletion and explicit confirmation before document publication through isolated bounded media processing",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Post-cutoff announcement capture retains historical-validity HOLD; required upload formats, extraction fidelity, timestamp editing, policy, bounded resources and recovery need independent qualification."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.capture-video-review",
+    "value": [
+      {
+        "source_id": "announcements-release-notes",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+        "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+        "quote": "After uploading a prerecorded demo, you can review the extracted screenshots in a thumbnail grid, adjust timestamps, delete unwanted images, and confirm your selections before finalizing the documentation.",
+        "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/134/releaseNotes/0/description whitespace normalized",
+        "announcement_id": "a21993316797017cbc9a5fef35917a7b2d3c90ff4efe3c367b6ac9ddf0dc07d6",
+        "vendor_announced_date": "February 9, 2026",
+        "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+        "scope": "Public reference only; Console implementation and acceptance not established."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.capture-asset-editing/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now allows you to resize images and have those changes persist in documentation. Resized images also carry over to Notepad and PDF exports.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/1/description whitespace normalized",
+      "announcement_id": "3dda01de40b1da0b2e4d9e2f75a96dfcfe12f3c2fbb17fdd2dc24db8a13e8325",
+      "vendor_announced_date": "February 18, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.capture-asset-editing/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now displays a confirmation dialog when you attempt to navigate away from the edit page with unsaved changes.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/130/releaseNotes/0/description whitespace normalized",
+      "announcement_id": "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30",
+      "vendor_announced_date": "February 14, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.capture-document-export/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now allows you to resize images and have those changes persist in documentation. Resized images also carry over to Notepad and PDF exports.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/1/description whitespace normalized",
+      "announcement_id": "3dda01de40b1da0b2e4d9e2f75a96dfcfe12f3c2fbb17fdd2dc24db8a13e8325",
+      "vendor_announced_date": "February 18, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.workflow-recorder-controls/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "When clicking a link that would normally open in a new tab (via target=\"_blank\" or cmd/ctrl+click), users are presented with a dialog offering two options: open in a new tab (exiting the recording context) or open in the current tab (continuing the recording).",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/2/description whitespace normalized",
+      "announcement_id": "fdb44475cd28e8d43e82dd85c1fc327539565997fd83e3b0587c90b38f3c3692",
+      "vendor_announced_date": "February 18, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.workflow-recorder-controls/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now displays a confirmation dialog when you attempt to navigate away from the edit page with unsaved changes.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/130/releaseNotes/0/description whitespace normalized",
+      "announcement_id": "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30",
+      "vendor_announced_date": "February 14, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F09.documents/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now displays a confirmation dialog when you attempt to navigate away from the edit page with unsaved changes.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/130/releaseNotes/0/description whitespace normalized",
+      "announcement_id": "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30",
+      "vendor_announced_date": "February 14, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "After uploading a prerecorded demo, you can review the extracted screenshots in a thumbnail grid, adjust timestamps, delete unwanted images, and confirm your selections before finalizing the documentation.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/134/releaseNotes/0/description whitespace normalized",
+      "announcement_id": "a21993316797017cbc9a5fef35917a7b2d3c90ff4efe3c367b6ac9ddf0dc07d6",
+      "vendor_announced_date": "February 9, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now displays a confirmation dialog when you attempt to navigate away from the edit page with unsaved changes.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/130/releaseNotes/0/description whitespace normalized",
+      "announcement_id": "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30",
+      "vendor_announced_date": "February 14, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Flow Capture now allows you to resize images and have those changes persist in documentation. Resized images also carry over to Notepad and PDF exports.",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/1/description whitespace normalized",
+      "announcement_id": "3dda01de40b1da0b2e4d9e2f75a96dfcfe12f3c2fbb17fdd2dc24db8a13e8325",
+      "vendor_announced_date": "February 18, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "When clicking a link that would normally open in a new tab (via target=\"_blank\" or cmd/ctrl+click), users are presented with a dialog offering two options: open in a new tab (exiting the recording context) or open in the current tab (continuing the recording).",
+      "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/2/description whitespace normalized",
+      "announcement_id": "fdb44475cd28e8d43e82dd85c1fc327539565997fd83e3b0587c90b38f3c3692",
+      "vendor_announced_date": "February 18, 2026",
+      "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+      "scope": "Public reference only; Console implementation and acceptance not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/support_matrices/runtimes/entries/-",
+    "value": {
+      "runtime": "Workflow capture prerecorded video review",
+      "reference_status": "Vendor dated February9,2026 assertion captured after cutoff; exact historical support unqualified",
+      "source": "announcements-release-notes",
+      "source_bindings": [
+        {
+          "source_id": "announcements-release-notes",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+          "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+          "quote": "After uploading a prerecorded demo, you can review the extracted screenshots in a thumbnail grid, adjust timestamps, delete unwanted images, and confirm your selections before finalizing the documentation.",
+          "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/134/releaseNotes/0/description whitespace normalized",
+          "announcement_id": "a21993316797017cbc9a5fef35917a7b2d3c90ff4efe3c367b6ac9ddf0dc07d6",
+          "vendor_announced_date": "February 9, 2026",
+          "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+          "scope": "Public reference only; Console implementation and acceptance not established."
+        }
+      ],
+      "required_leaf": "F09.capture-video-review",
+      "console_acceptance": "not established",
+      "command": null,
+      "review_steps": [
+        "upload authorized prerecorded demo",
+        "review extracted screenshots in thumbnail grid",
+        "adjust timestamps",
+        "delete unwanted extracted images",
+        "confirm selection before finalization"
+      ],
+      "supported_formats": "not specified by announcement; no codec/container/browser/size support inferred"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/support_matrices/runtimes/entries/-",
+    "value": {
+      "runtime": "Workflow capture image resize persistence",
+      "reference_status": "Vendor dated February18,2026 assertion captured after cutoff; exact historical support unqualified",
+      "source": "announcements-release-notes",
+      "source_bindings": [
+        {
+          "source_id": "announcements-release-notes",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+          "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+          "quote": "Flow Capture now allows you to resize images and have those changes persist in documentation. Resized images also carry over to Notepad and PDF exports.",
+          "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/1/description whitespace normalized",
+          "announcement_id": "3dda01de40b1da0b2e4d9e2f75a96dfcfe12f3c2fbb17fdd2dc24db8a13e8325",
+          "vendor_announced_date": "February 18, 2026",
+          "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+          "scope": "Public reference only; Console implementation and acceptance not established."
+        }
+      ],
+      "required_leaf": "F09.capture-asset-editing",
+      "console_acceptance": "not established",
+      "command": null,
+      "document_persistence": true,
+      "specified_export_successors": [
+        "native document (Notepad equivalent)",
+        "PDF"
+      ],
+      "other_export_resize_support": "ZIP and walkthrough behavior not specified by this announcement"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/support_matrices/runtimes/entries/-",
+    "value": {
+      "runtime": "Workflow capture navigation preservation",
+      "reference_status": "Vendor February14/18,2026 assertions captured after cutoff; exact historical support unqualified",
+      "source": "announcements-release-notes",
+      "source_bindings": [
+        {
+          "source_id": "announcements-release-notes",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+          "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+          "quote": "Flow Capture now displays a confirmation dialog when you attempt to navigate away from the edit page with unsaved changes.",
+          "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/130/releaseNotes/0/description whitespace normalized",
+          "announcement_id": "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30",
+          "vendor_announced_date": "February 14, 2026",
+          "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+          "scope": "Public reference only; Console implementation and acceptance not established."
+        },
+        {
+          "source_id": "announcements-release-notes",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+          "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+          "quote": "When clicking a link that would normally open in a new tab (via target=\"_blank\" or cmd/ctrl+click), users are presented with a dialog offering two options: open in a new tab (exiting the recording context) or open in the current tab (continuing the recording).",
+          "matching": "HTML __NEXT_DATA__ JSON /props/pageProps/releases/127/releaseNotes/2/description whitespace normalized",
+          "announcement_id": "fdb44475cd28e8d43e82dd85c1fc327539565997fd83e3b0587c90b38f3c3692",
+          "vendor_announced_date": "February 18, 2026",
+          "reference_temporal_status": "Post-cutoff capture of pre-cutoff vendor-dated assertion; immutable historical page equivalence unqualified",
+          "scope": "Public reference only; Console implementation and acceptance not established."
+        }
+      ],
+      "required_leaf": "F09.workflow-recorder-controls",
+      "console_acceptance": "not established",
+      "command": null,
+      "unsaved_edit_navigation": "warn; offer staying to save",
+      "recording_new_tab_triggers": [
+        "target=_blank",
+        "cmd+click",
+        "ctrl+click"
+      ],
+      "recording_new_tab_choices": [
+        "new tab with explicit recording-context exit",
+        "current tab continuing recording"
+      ]
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "This supplement binds four dated Flow Capture release-note behaviors omitted from the three-page current documentation packet. It depends on prior reviewed Flow Capture and Vulcan packets; it appends one planned video-review leaf and does not replace or re-state the single canonical inventory."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "The exact reused announcements-release-notes source was captured September20 America/New_York after the September19 freeze. February9/14/18,2026 dates are public vendor assertions, not immutable historical page custody. The earlier overview establishes broad classical recording/edit/export scope but does not independently establish these four exact behaviors; historical-validity HOLD remains."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Prerecorded-video upload and screenshot extraction are classical media operations. No LLM generation prompts or model-context features are added to this release; independently required transcription retains its existing classical execution contract."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Video upload containers/codecs duration size browser support thumbnail frame selection precision variable-frame-rate timestamp meaning and asset limits are not specified in the dated announcement. All require explicit contracts, isolated untrusted processing, scoped credentials, cancellation and exact source-version provenance."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Uploaded video and derived screenshots/timestamp selections inherit source and uploader policy. Neither deletion from review nor crop resize blur or removed audio establishes disclosure release; previews exports regeneration retained originals and revocation must obey current authority and legal holds."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Unsaved-change and new-tab dialogs are reference recovery behavior, not durability proof. Console must preserve acknowledged draft progress through interrupted saves refresh tab closure lost responses and resume; UI confirmation cannot substitute for the durable owner or silently discard progress."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Reference behavior allows deliberately leaving recording context in a new tab. Console must clearly preserve or end the recording state, recheck same-origin/current authority on continued navigation, and not treat captured links or modified click events as command execution authority."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Image resize persistence is specifically asserted for documentation Notepad and PDF. ZIP and walkthrough resize behavior is unspecified and must not be inferred. Render dimensions are presentation metadata unless a separately versioned image transform is committed; test export parity without corrupting source pixels or redaction history."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "All new and existing leaf acceptance states remain unchanged except the added planned-only video-review requirement. Real browser policy owner persistence recovery accessibility and measured workload acceptance remain release blockers; this supplement does not close full Flow Capture or Foundry completeness."
+  }
+]

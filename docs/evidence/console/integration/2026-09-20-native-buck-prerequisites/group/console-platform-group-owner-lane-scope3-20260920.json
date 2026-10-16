@@ -1,0 +1,73 @@
+[
+  {
+    "lane": "guarded-platform-group-list-owner",
+    "owner": "/root",
+    "base_sha": "194d68dcfca48027381ccbb33deb75b9b274724a",
+    "immutable_target": "GET/HEAD /api/platform/groups authenticates original credential/current policy in owning transaction through projection, audit and commit",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-group-initial-map-20260920.json --only platform-group-owner --fail-fast",
+    "allowed_paths": [
+      "backend/crates/platform/provisioning/src/lib.rs",
+      "backend/crates/platform/platform-rest/src/lib.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs",
+      "backend/app/tests/auth_rest/legacy_platform_group_reads.rs",
+      "backend/app/tests/auth_rest/legacy_platform_group_credentials.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_histories.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs",
+      "backend/crates/platform/platform-rest/tests/platform_groups.rs",
+      "backend/app/BUCK",
+      "backend/app/tests/auth_rest/legacy_platform_group_decoder.rs"
+    ],
+    "design_manifest": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+    "test_manifest": "23360a1fc1d91ba528a1bf2acb1f5ffb74bbdc5651f586e013297626522847ad",
+    "mechanical_guide": "Replace list_groups detachedactor/time signature with rawtoken/verifier/serverTTL/currentpolicy; oneREADCOMMITTED retainedsource transaction; privateGroupTopology tuple; freshchecks beforeSQL/aftersql/aftermap/afteraudit; unchangedSQL/map/audit shape; finite401/403/503; exactGETHEADprivacy extension; mechanicalauthrestexhaustiveconsumer",
+    "forbidden": [
+      "originalcheckout",
+      "SQL/migrations/profile/codec/custodyhistory",
+      "otherownerbusinesschanges",
+      "AppSQL",
+      "dependencies/lockfiles",
+      "productionexposure/payment"
+    ],
+    "leases": [
+      "rootsole repository/runtime/generated/authoritywriter"
+    ],
+    "pre_mortem": "Stale or demoted identity retains topology disclosure; lostcommit discloses unauditedprojection; sharedtuple ortransport changesCompany/ops",
+    "blast_radius": "One existing crossCompanyGroupread and closed existing sharedhelper cases",
+    "detection": "ActualnamedownerRED/GREEN, strictprojection/audit/oracles, supplementalcurrentauthority/lock/failure/runtime and retainedregression",
+    "rollback": "Preserve failed evidence; source revert restores knownauthgap so fence unqualifiedserving",
+    "stop_conditions": [
+      "Prerequisites fail",
+      "Probe missing/nonexecutable/green",
+      "Sourcepolicy/historybytes differ",
+      "Unreviewedsemantic testchanges",
+      "Competingwriter"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests",
+      "/root"
+    ],
+    "remaining_holds": [
+      "SupplementalGroupread acceptance and retainedtest semanticreview",
+      "RawSQLEXECUTE grant",
+      "OtherGroup/Companymutations andcontextmint",
+      "IntermittentPlatformsourcesnapshot failure",
+      "Milestones0-10 andexposure"
+    ],
+    "predecessor_spec_sha256": "66032ffff102aed2fc3d90b96b3ea5c5e1df8fb16600aad4706904d147e323a3",
+    "accepted_test_extensions": {
+      "credential_manifest": "f334fdf64e2972821cfe13458984b0114bf310a242a6018ab06341f482588f01",
+      "credential_independent_review": "0e1125be712c3293aac657542893a1315f1fa21592ad5546da4fd33768eb4702",
+      "retained_manifest": "99db6770b4f57d243851b5b7bf538f9413e350ab53fe47220798df26b0293b5b",
+      "retained_semantic_review": "2f879e4c6b1e6ec6e801cd841a83294dc6bcba52e0a6b57412236baad7a5a357",
+      "generated_review": "1f9ae3a05763ea66d7f61a24b9ff441b22165e96a6059c2c0f3755e929058193"
+    },
+    "supplemental_reviews": [
+      "/private/tmp/console-platform-group-list-decoder-tests-round1-security-review-20260920.json",
+      "/private/tmp/console-platform-group-decoder-format-successor-security-review-20260920.json",
+      "/private/tmp/console-platform-group-retained-head-control-round1-reference-review-20260920.json",
+      "/private/tmp/console-platform-group-head-decoder-root-review-20260920.json"
+    ]
+  }
+]

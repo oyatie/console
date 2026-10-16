@@ -1,0 +1,13 @@
+# Separate raw-SQL concurrency fixture execution-mode proposal
+
+This is distinct from conditional savepoint coordination and needs independent exact fixture review. The isolated unchanged case executed1test and failed1 with55P03 on public.organizations after10.55seconds (328filtered). The recorded25-case lifecycle sweep likewise has exactly this one remaining rawSQL failure. A helper change cannot reach its two rawSQL actors.
+
+Only eight lines are added to concurrent_finalizers_have_complete_request_outcomes_and_one_final_state:
+- First actor already owns an explicit outer SQLx transaction. SET LOCAL jit=off applies through its unchanged historical DO and ends at existing commit/rollback. It cannot persist on a pooled connection after transaction completion.
+- Second actor is a dedicated unpooled PgConnection. It runs the historical DO in autocommit. SET SESSION jit=off is required here; SET LOCAL in a preceding autocommit statement would not affect that DO. This connection moves into second_task and is never returned to a pool. Normal completion/error drops it; existing timeout/panic paths abort/join the task and verify backend termination through stop_finalizer. No serving connection or global PostgreSQL setting changes.
+
+Historical SQL is still read from the same source and executed with the same actor ownership. Existing blocking observation, complete request accounting, owner/root/security assertions, idempotence check, transaction boundaries and deadlines are unchanged. No new test, removed assertion, retry, quarantine, timeout widening, or accepted second-actor failure.
+
+standalone.rs is based on current lifecycle SHA1cf40b10f3d0679f940ebeec792ae9dd395683a27b77340597dac4c04e6d70e0. with-savepoint-tests.rs adds the same eight-line fixture change to independently proposed savepoint test SHA8b9e5414c6ab046a5f5b673a9bfe715d0753e4974f8c48b35594fb2097919f26. Separate diffs preserve review scope; neither source input was overwritten. Reverse-replacement assertions prove every other byte is preserved.
+
+After approval, repeat the isolated exact test against the selected composed source and record real count/outcome/duration. Then retain its result in the full lifecycle verification. If this comparison still fails, reopen the cause; source plausibility is not a pass. No runtime execution was performed for this proposal.

@@ -1,0 +1,22 @@
+{
+  "source_candidate": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "browser": {
+    "checks": 193,
+    "passed": 193,
+    "failed": 0,
+    "retry_histories": 13
+  },
+  "real_owner_recovery": {
+    "executed": 2,
+    "passed": 2,
+    "failed": 0,
+    "raw_log_sha256": "f072d90fc578cfd14250d9a30143cbf66fe18f463b352d83ff0fcb9d476685e0"
+  },
+  "state": "boundednativeRetry recoveryaccepted",
+  "limits": [
+    "No fullAccount/Company/workflow/clientrelease acceptance.",
+    "HTML413documentprivacy remains unresolved separateownerlane.",
+    "ActualIME/screenreader/userstudy/productionqualification remainrequired."
+  ],
+  "history": "Prior189pass2failconsolematcher resultandzeroexecuted maprefusal preserved; no testswaived."
+}

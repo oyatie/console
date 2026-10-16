@@ -1,0 +1,1481 @@
+#0 building with "colima-console-release-20260919" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.63kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.1s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+#3 resolve docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32 done
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#4 DONE 0.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 798B done
+#5 DONE 0.0s
+
+#6 [builder  1/13] FROM docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#6 resolve docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa done
+#6 ...
+
+#7 [internal] load build context
+#7 transferring context: 384.16kB 0.1s done
+#7 DONE 0.1s
+
+#6 [builder  1/13] FROM docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 9.44MB / 203.19MB 0.3s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 20.97MB / 182.04MB 0.2s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 3.15MB / 64.50MB 0.2s
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 12.58MB / 23.63MB 0.2s
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 15.73MB / 23.63MB 0.3s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 8.39MB / 64.50MB 0.5s
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 23.63MB / 23.63MB 0.6s done
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 34.60MB / 182.04MB 0.6s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 3.15MB / 48.38MB 0.2s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 19.92MB / 203.19MB 0.8s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 13.63MB / 64.50MB 0.8s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 7.34MB / 48.38MB 0.3s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 11.53MB / 48.38MB 0.5s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 47.19MB / 182.04MB 1.1s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 19.92MB / 64.50MB 1.1s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 14.68MB / 48.38MB 0.6s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 32.51MB / 203.19MB 1.2s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 24.12MB / 64.50MB 1.2s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 18.87MB / 48.38MB 0.8s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 22.02MB / 48.38MB 0.9s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 58.72MB / 182.04MB 1.5s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 30.41MB / 64.50MB 1.5s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 45.09MB / 203.19MB 1.7s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 35.65MB / 64.50MB 1.7s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 27.26MB / 48.38MB 1.2s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 30.41MB / 48.38MB 1.4s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 68.16MB / 182.04MB 2.0s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 42.99MB / 64.50MB 2.0s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 56.62MB / 203.19MB 2.1s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 34.60MB / 48.38MB 1.7s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 48.23MB / 64.50MB 2.3s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 37.75MB / 48.38MB 1.8s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 68.16MB / 203.19MB 2.6s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 82.84MB / 182.04MB 2.6s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 54.53MB / 64.50MB 2.6s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 41.94MB / 48.38MB 2.1s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 58.72MB / 64.50MB 2.7s
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 45.09MB / 48.38MB 2.3s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 93.32MB / 182.04MB 2.9s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 64.50MB / 64.50MB 2.9s done
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 48.38MB / 48.38MB 2.4s done
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 84.93MB / 203.19MB 3.2s
+#6 extracting sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 111.92MB / 182.04MB 3.2s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 121.63MB / 182.04MB 3.3s
+#6 extracting sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 0.6s done
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 104.86MB / 203.19MB 3.8s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 137.36MB / 182.04MB 3.6s
+#6 extracting sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7
+#6 extracting sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 0.2s done
+#6 extracting sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 116.62MB / 203.19MB 4.1s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 154.14MB / 182.04MB 3.9s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 163.58MB / 182.04MB 4.1s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 132.12MB / 203.19MB 4.4s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 182.04MB / 182.04MB 4.5s done
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 143.65MB / 203.19MB 4.5s
+#6 extracting sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 0.8s done
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 160.43MB / 203.19MB 4.7s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 176.16MB / 203.19MB 4.8s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 191.89MB / 203.19MB 5.0s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 203.19MB / 203.19MB 5.1s done
+#6 extracting sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d
+#6 extracting sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 1.5s done
+#6 DONE 6.6s
+
+#6 [builder  1/13] FROM docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#6 extracting sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75
+#6 extracting sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 1.2s done
+#6 DONE 7.8s
+
+#8 [builder  2/13] WORKDIR /workspace/backend
+#8 DONE 0.3s
+
+#9 [builder  3/13] COPY rust-toolchain.toml /workspace/rust-toolchain.toml
+#9 DONE 0.0s
+
+#10 [builder  4/13] COPY backend/Cargo.toml backend/Cargo.lock ./
+#10 DONE 0.0s
+
+#11 [builder  5/13] COPY backend/.sqlx ./.sqlx
+#11 DONE 0.0s
+
+#12 [builder  6/13] COPY backend/app ./app
+#12 DONE 0.0s
+
+#13 [builder  7/13] COPY backend/ci ./ci
+#13 DONE 0.0s
+
+#14 [builder  8/13] COPY backend/crates ./crates
+#14 DONE 0.1s
+
+#15 [builder  9/13] COPY backend/openapi ./openapi
+#15 DONE 0.0s
+
+#16 [builder 10/13] COPY third-party/rust/vendor /workspace/third-party/rust/vendor
+#16 DONE 0.0s
+
+#17 [builder 11/13] COPY docs/reference /workspace/docs/reference
+#17 DONE 0.0s
+
+#18 [builder 12/13] COPY docs/specs /workspace/docs/specs
+#18 DONE 0.0s
+
+#19 [builder 13/13] RUN rustc -Vv && cargo build --locked --release -p console-app
+#19 0.093 info: syncing channel updates for 1.98.1-aarch64-unknown-linux-gnu
+#19 0.196 info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+#19 0.201 info: downloading 3 components
+#19 1.637 rustc 1.98.1 (48a229cea 2026-09-01)
+#19 1.637 binary: rustc
+#19 1.637 commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+#19 1.637 commit-date: 2026-09-01
+#19 1.637 host: aarch64-unknown-linux-gnu
+#19 1.637 release: 1.98.1
+#19 1.637 LLVM version: 22.1.8
+#19 1.687     Updating crates.io index
+#19 3.819  Downloading crates ...
+#19 3.846   Downloaded async-channel v1.9.0
+#19 3.847   Downloaded apalis-sql v1.0.0-rc.9
+#19 3.847   Downloaded asn1-rs-impl v0.2.0
+#19 3.849   Downloaded ascii-canvas v4.0.0
+#19 3.851   Downloaded adler2 v2.0.1
+#19 3.851   Downloaded asn1-rs-derive v0.5.1
+#19 3.851   Downloaded aead v0.5.2
+#19 3.851   Downloaded arrayvec v0.5.2
+#19 3.851   Downloaded atoi_simd v0.17.0
+#19 3.852   Downloaded const-str v1.1.0
+#19 3.853   Downloaded allocator-api2 v0.2.21
+#19 3.855   Downloaded apalis-core v1.0.0-rc.9
+#19 3.857   Downloaded ar_archive_writer v0.5.2
+#19 3.858   Downloaded asn1-rs v0.6.2
+#19 3.861   Downloaded crypto-common v0.1.7
+#19 3.861   Downloaded aho-corasick v1.1.4
+#19 3.863   Downloaded home v0.5.12
+#19 3.864   Downloaded html-escape v0.2.15
+#19 3.864   Downloaded aes v0.8.4
+#19 3.866   Downloaded hmac v0.13.0
+#19 3.866   Downloaded http-body v1.0.1
+#19 3.867   Downloaded httpdate v1.0.3
+#19 3.867   Downloaded ryu v1.0.23
+#19 3.868   Downloaded async-lock v3.4.2
+#19 3.869   Downloaded base16 v0.2.1
+#19 3.870   Downloaded nonempty v0.12.0
+#19 3.870   Downloaded attribute-derive-macro v0.10.5
+#19 3.871   Downloaded block-buffer v0.12.1
+#19 3.871   Downloaded async-trait v0.1.89
+#19 3.873   Downloaded autocfg v1.5.1
+#19 3.873   Downloaded axum v0.8.9
+#19 3.876   Downloaded ident_case v1.0.1
+#19 3.877   Downloaded inventory v0.3.24
+#19 3.877   Downloaded sha1 v0.11.0
+#19 3.878   Downloaded attribute-derive v0.10.5
+#19 3.879   Downloaded bumpalo v3.20.3
+#19 3.881   Downloaded bytemuck v1.25.0
+#19 3.882   Downloaded async-once-cell v0.5.4
+#19 3.882   Downloaded atoi v2.0.0
+#19 3.883   Downloaded inout v0.1.4
+#19 3.883   Downloaded bit-set v0.8.0
+#19 3.884   Downloaded codepage v0.1.2
+#19 3.884   Downloaded crossbeam-queue v0.3.12
+#19 3.885   Downloaded konst_macro_rules v0.2.19
+#19 3.885   Downloaded any_spawner v0.3.0
+#19 3.886   Downloaded base16ct v0.2.0
+#19 3.886   Downloaded base64urlsafedata v0.5.5
+#19 3.887   Downloaded block-padding v0.3.3
+#19 3.887   Downloaded cfg_aliases v0.2.1
+#19 3.888   Downloaded compression-core v0.4.32
+#19 3.888   Downloaded cpufeatures v0.3.0
+#19 3.889   Downloaded itoa v1.0.18
+#19 3.889   Downloaded keccak v0.1.6
+#19 3.890   Downloaded hydration_context v0.4.0-beta
+#19 3.890   Downloaded block-buffer v0.10.4
+#19 3.891   Downloaded ipnet v2.12.2
+#19 3.892   Downloaded cfg-if v1.0.4
+#19 3.892   Downloaded imagesize v0.14.0
+#19 3.894   Downloaded convert_case_extras v0.2.0
+#19 3.894   Downloaded http-body-util v0.1.3
+#19 3.896   Downloaded hyper-timeout v0.5.2
+#19 3.896   Downloaded interpolator v0.5.0
+#19 3.898   Downloaded apalis-codec v0.1.0-rc.9
+#19 3.899   Downloaded atomic-waker v1.1.2
+#19 3.899   Downloaded const_str_slice_concat v0.1.0
+#19 3.899   Downloaded collection_literals v1.0.3
+#19 3.900   Downloaded idna_adapter v1.2.2
+#19 3.900   Downloaded sha1 v0.10.6
+#19 3.901   Downloaded signature v2.2.0
+#19 3.901   Downloaded leptos_dom v0.9.0-beta
+#19 3.902   Downloaded sketches-ddsketch v0.3.1
+#19 3.902   Downloaded async-channel v2.5.0
+#19 3.903   Downloaded cbc v0.1.2
+#19 3.904   Downloaded cipher v0.4.4
+#19 3.904   Downloaded byteorder v1.5.0
+#19 3.905   Downloaded tinyvec_macros v0.1.1
+#19 3.905   Downloaded tower-layer v0.3.3
+#19 3.906   Downloaded manyhow-macros v0.11.4
+#19 3.906   Downloaded tower-service v0.3.3
+#19 3.906   Downloaded untrusted v0.9.0
+#19 3.907   Downloaded wasm-bindgen-futures v0.4.73
+#19 3.907   Downloaded cpufeatures v0.2.17
+#19 3.908   Downloaded bit-vec v0.8.0
+#19 3.909   Downloaded concurrent-queue v2.5.0
+#19 3.910   Downloaded md-5 v0.10.6
+#19 3.910   Downloaded num-iter v0.1.45
+#19 3.911   Downloaded matchers v0.2.0
+#19 3.912   Downloaded crc-catalog v2.5.0
+#19 3.912   Downloaded logos-derive v0.16.1
+#19 3.912   Downloaded new_debug_unreachable v1.0.6
+#19 3.913   Downloaded convert_case v0.6.0
+#19 3.913   Downloaded codee v0.3.5
+#19 3.915   Downloaded compression-codecs v0.4.38
+#19 3.916   Downloaded rustversion v1.0.22
+#19 3.917   Downloaded crc v3.4.0
+#19 3.918   Downloaded smol_str v0.3.6
+#19 3.919   Downloaded cmake v0.1.58
+#19 3.919   Downloaded cmov v0.5.4
+#19 3.920   Downloaded const_format_proc_macros v0.2.34
+#19 3.921   Downloaded critical-section v1.2.0
+#19 3.922   Downloaded jobserver v0.1.35
+#19 3.923   Downloaded lalrpop-util v0.22.2
+#19 3.923   Downloaded webauthn-attestation-ca v0.5.5
+#19 3.923   Downloaded zerofrom-derive v0.1.7
+#19 3.924   Downloaded camino v1.2.5
+#19 3.924   Downloaded base64ct v1.8.3
+#19 3.926   Downloaded thread_local v1.1.9
+#19 3.926   Downloaded chacha20 v0.9.1
+#19 3.927   Downloaded lazy_static v1.5.0
+#19 3.928   Downloaded axum-core v0.5.6
+#19 3.929   Downloaded num-conv v0.2.2
+#19 3.929   Downloaded zerofrom v0.1.8
+#19 3.930   Downloaded zeroize_derive v1.5.0
+#19 3.930   Downloaded stop-token v0.7.0
+#19 3.930   Downloaded strum v0.27.2
+#19 3.931   Downloaded foreign-types v0.3.2
+#19 3.931   Downloaded futures-sink v0.3.34
+#19 3.931   Downloaded web-time v1.1.0
+#19 3.932   Downloaded async-imap v0.11.3
+#19 3.933   Downloaded cedar-policy-formatter v4.12.0
+#19 3.936   Downloaded apalis v1.0.0-rc.9
+#19 3.937   Downloaded crc32fast v1.5.0
+#19 3.938   Downloaded convert_case v0.11.0
+#19 3.939   Downloaded chacha20 v0.10.2
+#19 3.940   Downloaded linked-hash-map v0.5.6
+#19 3.940   Downloaded semver v1.0.28
+#19 3.941   Downloaded spki v0.7.3
+#19 3.942   Downloaded webauthn-rs v0.5.5
+#19 3.942   Downloaded serde_cbor_2 v0.13.0
+#19 3.944   Downloaded serde_with_macros v3.21.0
+#19 3.944   Downloaded throw_error v0.4.0-beta
+#19 3.945   Downloaded infer v0.22.0
+#19 3.946   Downloaded zeroize v1.9.0
+#19 3.946   Downloaded ed25519 v2.2.3
+#19 3.947   Downloaded toml_parser v1.1.3+spec-1.1.0
+#19 3.948   Downloaded httparse v1.10.1
+#19 3.949   Downloaded imap-proto v0.16.7
+#19 3.950   Downloaded futures-executor v0.3.34
+#19 3.950   Downloaded phf_shared v0.13.1
+#19 3.950   Downloaded pico-args v0.5.0
+#19 3.951   Downloaded hybrid-array v0.4.12
+#19 3.952   Downloaded html_parser v0.7.0
+#19 3.954   Downloaded rand_chacha v0.3.1
+#19 3.955   Downloaded ena v0.14.4
+#19 3.956   Downloaded http v1.5.0
+#19 3.957   Downloaded wasm-bindgen-macro v0.2.123
+#19 3.958   Downloaded drain_filter_polyfill v0.1.3
+#19 3.958   Downloaded anyhow v1.0.103
+#19 3.960   Downloaded crossbeam-utils v0.8.21
+#19 3.961   Downloaded bitflags v2.13.0
+#19 3.962   Downloaded bs58 v0.5.1
+#19 3.964   Downloaded config v0.15.25
+#19 3.966   Downloaded equivalent v1.0.2
+#19 3.966   Downloaded linked_hash_set v0.1.6
+#19 3.967   Downloaded const-oid v0.10.2
+#19 3.968   Downloaded const-oid v0.9.6
+#19 3.969   Downloaded crossbeam-epoch v0.9.20
+#19 3.970   Downloaded logos v0.16.1
+#19 3.971   Downloaded serde_core v1.0.229
+#19 3.973   Downloaded chacha20poly1305 v0.10.1
+#19 3.973   Downloaded gloo-net v0.7.0
+#19 3.974   Downloaded tinyvec v1.11.0
+#19 3.976   Downloaded opaque-debug v0.3.1
+#19 3.976   Downloaded hashlink v0.10.0
+#19 3.977   Downloaded leptos_hot_reload v0.9.0-beta
+#19 3.977   Downloaded leptos_config v0.9.0-beta
+#19 3.978   Downloaded multer v3.1.0
+#19 3.979   Downloaded next_tuple v0.1.0
+#19 3.979   Downloaded serde_urlencoded v0.7.1
+#19 3.980   Downloaded subtle v2.6.1
+#19 3.981   Downloaded manyhow v0.11.4
+#19 3.981   Downloaded lock_api v0.4.14
+#19 3.982   Downloaded md-5 v0.11.0
+#19 3.982   Downloaded mime v0.3.17
+#19 3.983   Downloaded opentelemetry-http v0.32.0
+#19 3.984   Downloaded pem v3.0.6
+#19 3.984   Downloaded foldhash v0.2.0
+#19 3.985   Downloaded phf_macros v0.11.3
+#19 3.985   Downloaded primeorder v0.13.6
+#19 3.986   Downloaded quote v1.0.45
+#19 3.988   Downloaded iana-time-zone v0.1.65
+#19 3.989   Downloaded typed-arena v2.0.2
+#19 3.989   Downloaded event-listener v5.4.1
+#19 3.990   Downloaded base64 v0.22.1
+#19 3.992   Downloaded const_format v0.2.36
+#19 3.994   Downloaded apalis-postgres v1.0.0-rc.8
+#19 3.998   Downloaded cfb v0.10.0
+#19 4.000   Downloaded croner v4.0.0
+#19 4.002   Downloaded bytes v1.12.1
+#19 4.004   Downloaded rfc6979 v0.4.0
+#19 4.004   Downloaded nu-ansi-term v0.50.3
+#19 4.005   Downloaded rgb v0.8.53
+#19 4.006   Downloaded resolv-conf v0.7.6
+#19 4.007   Downloaded simd-adler32 v0.3.9
+#19 4.008   Downloaded scopeguard v1.2.0
+#19 4.008   Downloaded doc-comment v0.3.4
+#19 4.009   Downloaded thiserror v2.0.20
+#19 4.011   Downloaded tokio-tungstenite v0.29.0
+#19 4.012   Downloaded tls_codec_derive v0.4.2
+#19 4.013   Downloaded pest_derive v2.8.6
+#19 4.014   Downloaded pest_generator v2.8.6
+#19 4.015   Downloaded unicode-ident v1.0.24
+#19 4.017   Downloaded icu_locale_core v2.2.0
+#19 4.020   Downloaded either v1.16.0
+#19 4.021   Downloaded syn_derive v0.2.0
+#19 4.021   Downloaded sync_wrapper v1.0.2
+#19 4.021   Downloaded flagset v0.4.7
+#19 4.022   Downloaded generic-array v0.14.7
+#19 4.023   Downloaded guardian v1.3.0
+#19 4.024   Downloaded leptos_server v0.9.0-beta2
+#19 4.024   Downloaded matchit v0.8.4
+#19 4.025   Downloaded ulid v1.2.1
+#19 4.026   Downloaded wasm-bindgen v0.2.123
+#19 4.028   Downloaded crossbeam-channel v0.5.15
+#19 4.030   Downloaded fastrand v2.4.1
+#19 4.030   Downloaded crypto-bigint v0.5.5
+#19 4.033   Downloaded cfb v0.14.0
+#19 4.036   Downloaded borsh v1.7.0
+#19 4.039   Downloaded yoke-derive v0.8.2
+#19 4.039   Downloaded sqlx-sqlite v0.8.6
+#19 4.042   Downloaded errno v0.3.14
+#19 4.043   Downloaded fnv v1.0.7
+#19 4.043   Downloaded oco_ref v0.2.1
+#19 4.043   Downloaded proc-macro-error-attr2 v2.0.0
+#19 4.044   Downloaded rustc-literal-escaper v0.0.8
+#19 4.045   Downloaded phf_shared v0.12.1
+#19 4.045   Downloaded quote-use v0.8.4
+#19 4.046   Downloaded ref-cast v1.0.25
+#19 4.048   Downloaded serde_spanned v1.1.1
+#19 4.048   Downloaded litemap v0.8.2
+#19 4.049   Downloaded smallvec v1.15.2
+#19 4.050   Downloaded whoami v1.6.1
+#19 4.051   Downloaded num-integer v0.1.46
+#19 4.053   Downloaded siphasher v1.0.3
+#19 4.054   Downloaded pkcs8 v0.10.2
+#19 4.055   Downloaded pkg-config v0.3.33
+#19 4.056   Downloaded displaydoc v0.2.6
+#19 4.057   Downloaded dotenvy v0.15.7
+#19 4.058   Downloaded proc-macro2-diagnostics v0.10.1
+#19 4.059   Downloaded stable_deref_trait v1.2.1
+#19 4.060   Downloaded url v2.5.8
+#19 4.061   Downloaded indexmap v1.9.3
+#19 4.063   Downloaded tokio-postgres-rustls v0.14.0
+#19 4.064   Downloaded typed-builder v0.23.2
+#19 4.065   Downloaded reactive_stores v0.5.0-beta
+#19 4.066   Downloaded fallible-iterator v0.2.0
+#19 4.067   Downloaded futures-timer v3.0.4
+#19 4.067   Downloaded group v0.13.0
+#19 4.068   Downloaded icu_normalizer v2.2.0
+#19 4.070   Downloaded icu_properties v2.2.0
+#19 4.071   Downloaded base64 v0.21.7
+#19 4.073   Downloaded tracing-attributes v0.1.31
+#19 4.074   Downloaded yoke v0.8.3
+#19 4.075   Downloaded string_cache v0.8.9
+#19 4.075   Downloaded async-compression v0.4.42
+#19 4.079   Downloaded cc v1.2.63
+#19 4.080   Downloaded base64 v0.23.1
+#19 4.082   Downloaded utf8_iter v1.0.4
+#19 4.083   Downloaded logos-codegen v0.16.1
+#19 4.085   Downloaded metrics-exporter-prometheus v0.18.3
+#19 4.087   Downloaded metrics v0.24.6
+#19 4.088   Downloaded miette-derive v7.6.0
+#19 4.089   Downloaded num-traits v0.2.19
+#19 4.090   Downloaded phf v0.12.1
+#19 4.091   Downloaded fast-float2 v0.2.3
+#19 4.092   Downloaded parking_lot_core v0.9.12
+#19 4.093   Downloaded whoami v2.1.2
+#19 4.094   Downloaded want v0.3.1
+#19 4.094   Downloaded wasm-bindgen-shared v0.2.123
+#19 4.095   Downloaded darling_macro v0.23.0
+#19 4.095   Downloaded der_derive v0.7.3
+#19 4.096   Downloaded deranged v0.5.8
+#19 4.097   Downloaded slotmap v1.1.1
+#19 4.098   Downloaded shlex v2.0.1
+#19 4.099   Downloaded ctutils v0.4.2
+#19 4.100   Downloaded psm v0.1.31
+#19 4.101   Downloaded strum_macros v0.27.2
+#19 4.103   Downloaded slab v0.4.12
+#19 4.103   Downloaded dyn-clone v1.0.20
+#19 4.104   Downloaded either_of v0.1.9
+#19 4.105   Downloaded enum-ordinalize v4.4.1
+#19 4.105   Downloaded event-listener-strategy v0.5.4
+#19 4.105   Downloaded futures-core v0.3.34
+#19 4.106   Downloaded gloo-utils v0.3.0
+#19 4.106   Downloaded jsonwebtoken v11.0.0
+#19 4.109   Downloaded left-right v0.11.7
+#19 4.110   Downloaded icu_provider v2.2.0
+#19 4.111   Downloaded metrics-util v0.20.4
+#19 4.112   Downloaded log v0.4.32
+#19 4.113   Downloaded tracing-opentelemetry v0.33.0
+#19 4.115   Downloaded prost v0.14.4
+#19 4.115   Downloaded hex v0.4.3
+#19 4.116   Downloaded pin-utils v0.1.0
+#19 4.116   Downloaded icu_collections v2.2.0
+#19 4.119   Downloaded konst v0.2.20
+#19 4.121   Downloaded reactive_stores_macro v0.5.0-beta
+#19 4.121   Downloaded tracing-core v0.1.36
+#19 4.123   Downloaded zerovec-derive v0.11.3
+#19 4.123   Downloaded rustc-hash v2.1.3
+#19 4.124   Downloaded tokio-rustls v0.26.5
+#19 4.124   Downloaded phf_shared v0.11.3
+#19 4.125   Downloaded powerfmt v0.2.0
+#19 4.125   Downloaded secrecy v0.10.3
+#19 4.126   Downloaded tagptr v0.2.0
+#19 4.126   Downloaded tokio-macros v2.7.0
+#19 4.127   Downloaded poly1305 v0.8.0
+#19 4.128   Downloaded leptos_macro v0.9.0-beta
+#19 4.130   Downloaded server_fn v0.9.0-beta
+#19 4.132   Downloaded thiserror v1.0.69
+#19 4.134   Downloaded fs_extra v1.3.0
+#19 4.135   Downloaded rustls-pki-types v1.14.1
+#19 4.136   Downloaded sqlx-macros v0.8.6
+#19 4.136   Downloaded crypto-common v0.2.2
+#19 4.137   Downloaded event-listener v2.5.3
+#19 4.137   Downloaded futures-macro v0.3.34
+#19 4.138   Downloaded sqlx-mysql v0.9.0
+#19 4.140   Downloaded icu_normalizer_data v2.2.0
+#19 4.141   Downloaded opentelemetry-otlp v0.32.0
+#19 4.142   Downloaded zerocopy-derive v0.8.52
+#19 4.146   Downloaded zerotrie v0.2.4
+#19 4.148   Downloaded tonic v0.14.6
+#19 4.150   Downloaded miniz_oxide v0.8.9
+#19 4.151   Downloaded tls_codec v0.4.2
+#19 4.152   Downloaded toml v1.1.4+spec-1.1.0
+#19 4.154   Downloaded paste v1.0.15
+#19 4.155   Downloaded pastey v0.1.1
+#19 4.156   Downloaded futures-io v0.3.34
+#19 4.156   Downloaded openssl-macros v0.1.1
+#19 4.157   Downloaded quoted_printable v0.5.2
+#19 4.157   Downloaded ucd-trie v0.1.7
+#19 4.158   Downloaded ref-cast-impl v1.0.25
+#19 4.158   Downloaded tokio-stream v0.1.18
+#19 4.160   Downloaded socket2 v0.6.4
+#19 4.161   Downloaded proc-macro-utils v0.10.0
+#19 4.161   Downloaded same-file v1.0.6
+#19 4.162   Downloaded rusticata-macros v4.1.0
+#19 4.163   Downloaded time-core v0.1.9
+#19 4.163   Downloaded uuid v1.26.1
+#19 4.165   Downloaded pin-project v1.1.13
+#19 4.169   Downloaded sha2 v0.10.9
+#19 4.170   Downloaded sqlx-macros-core v0.8.6
+#19 4.172   Downloaded universal-hash v0.5.1
+#19 4.172   Downloaded try-lock v0.2.5
+#19 4.172   Downloaded spin v0.9.9
+#19 4.173   Downloaded strsim v0.11.1
+#19 4.174   Downloaded thousands v0.2.0
+#19 4.174   Downloaded pathdiff v0.2.3
+#19 4.175   Downloaded parking v2.2.1
+#19 4.175   Downloaded minimal-lexical v0.2.1
+#19 4.177   Downloaded tinystr v0.8.3
+#19 4.178   Downloaded walkdir v2.5.0
+#19 4.179   Downloaded webpki-roots v0.26.11
+#19 4.180   Downloaded quanta v0.12.6
+#19 4.181   Downloaded futures v0.3.34
+#19 4.183   Downloaded writeable v0.6.3
+#19 4.184   Downloaded darling_core v0.20.11
+#19 4.186   Downloaded darling_core v0.23.0
+#19 4.189   Downloaded evmap v11.0.0
+#19 4.189   Downloaded oid-registry v0.7.1
+#19 4.190   Downloaded rustc_version v0.4.1
+#19 4.190   Downloaded js-sys v0.3.100
+#19 4.192   Downloaded zmij v1.0.23
+#19 4.192   Downloaded parking_lot v0.12.5
+#19 4.194   Downloaded rstml v0.12.1
+#19 4.194   Downloaded phf v0.11.3
+#19 4.195   Downloaded rand_core v0.6.4
+#19 4.196   Downloaded half v2.7.1
+#19 4.197   Downloaded phf v0.13.1
+#19 4.198   Downloaded proc-macro-error2 v2.0.1
+#19 4.199   Downloaded openssl-sys v0.9.117
+#19 4.202   Downloaded hyper-util v0.1.20
+#19 4.204   Downloaded rand_core v0.9.5
+#19 4.205   Downloaded sec1 v0.7.3
+#19 4.206   Downloaded wasm_split_helpers v0.2.3
+#19 4.206   Downloaded ppv-lite86 v0.2.21
+#19 4.206   Downloaded debug_unsafe v0.1.4
+#19 4.207   Downloaded futures-task v0.3.34
+#19 4.207   Downloaded prettyplease v0.2.37
+#19 4.209   Downloaded xxhash-rust v0.8.18
+#19 4.210   Downloaded digest v0.11.3
+#19 4.211   Downloaded darling_macro v0.20.11
+#19 4.211   Downloaded sqlx-macros v0.9.0
+#19 4.212   Downloaded thiserror-impl v2.0.20
+#19 4.212   Downloaded term v1.2.1
+#19 4.214   Downloaded foldhash v0.1.5
+#19 4.214   Downloaded derive-where v1.6.1
+#19 4.216   Downloaded enum-ordinalize-derive v4.4.1
+#19 4.216   Downloaded time-macros v0.2.32
+#19 4.217   Downloaded erased v0.1.2
+#19 4.218   Downloaded form_urlencoded v1.2.2
+#19 4.218   Downloaded leptos v0.9.0-beta
+#19 4.220   Downloaded find-msvc-tools v0.1.9
+#19 4.221   Downloaded memchr v2.8.2
+#19 4.223   Downloaded miette v7.6.0
+#19 4.225   Downloaded zerovec v0.11.6
+#19 4.227   Downloaded rand v0.10.1
+#19 4.229   Downloaded email_address v0.2.9
+#19 4.230   Downloaded ff v0.13.1
+#19 4.230   Downloaded postgres-protocol v0.6.12
+#19 4.231   Downloaded send_wrapper v0.6.0
+#19 4.232   Downloaded server_fn_macro_default v0.9.0-beta
+#19 4.232   Downloaded futures-channel v0.3.34
+#19 4.233   Downloaded rand_chacha v0.9.0
+#19 4.233   Downloaded server_fn_macro v0.9.0-beta
+#19 4.234   Downloaded tracing-log v0.2.0
+#19 4.234   Downloaded indexmap v2.14.0
+#19 4.236   Downloaded dunce v1.0.5
+#19 4.237   Downloaded thiserror-impl v1.0.69
+#19 4.237   Downloaded reactive_graph v0.3.0-beta2
+#19 4.240   Downloaded wasm-bindgen-macro-support v0.2.123
+#19 4.241   Downloaded schemars v1.2.1
+#19 4.247   Downloaded data-encoding v2.11.0
+#19 4.247   Downloaded sharded-slab v0.1.7
+#19 4.249   Downloaded tonic-prost v0.14.6
+#19 4.249   Downloaded quote-use-macros v0.8.4
+#19 4.249   Downloaded phf_generator v0.11.3
+#19 4.250   Downloaded unicode-properties v0.1.4
+#19 4.251   Downloaded wasm-streams v0.5.0
+#19 4.252   Downloaded or_poisoned v0.1.0
+#19 4.252   Downloaded fixedbitset v0.5.7
+#19 4.253   Downloaded rand_xoshiro v0.7.0
+#19 4.254   Downloaded unicode-security v0.1.2
+#19 4.255   Downloaded unicode-xid v0.2.6
+#19 4.256   Downloaded precomputed-hash v0.1.1
+#19 4.256   Downloaded der-parser v9.0.0
+#19 4.258   Downloaded getrandom v0.2.17
+#19 4.259   Downloaded synstructure v0.13.2
+#19 4.259   Downloaded typed-builder-macro v0.23.2
+#19 4.260   Downloaded pin-project-internal v1.1.13
+#19 4.260   Downloaded hmac v0.12.1
+#19 4.261   Downloaded tower v0.5.3
+#19 4.265   Downloaded fancy-regex v0.14.0
+#19 4.267   Downloaded zopfli v0.8.3
+#19 4.268   Downloaded pest_meta v2.8.6
+#19 4.269   Downloaded serde_path_to_error v0.1.20
+#19 4.270   Downloaded serde v1.0.229
+#19 4.272   Downloaded wasm_split_macros v0.2.2
+#19 4.272   Downloaded potential_utf v0.1.5
+#19 4.272   Downloaded prost-derive v0.14.4
+#19 4.273   Downloaded foreign-types-shared v0.1.1
+#19 4.273   Downloaded version_check v0.9.5
+#19 4.274   Downloaded num-bigint v0.4.8
+#19 4.276   Downloaded hashlink v0.11.1
+#19 4.277   Downloaded pretty v0.12.5
+#19 4.277   Downloaded tracing-serde v0.2.0
+#19 4.278   Downloaded prefix-trie v0.8.4
+#19 4.280   Downloaded sqlx-macros-core v0.9.0
+#19 4.281   Downloaded self_cell v1.2.2
+#19 4.282   Downloaded digest v0.10.7
+#19 4.282   Downloaded nom v7.1.3
+#19 4.285   Downloaded unicode-segmentation v1.13.3
+#19 4.286   Downloaded hashbag v0.1.13
+#19 4.287   Downloaded mio v1.2.1
+#19 4.290   Downloaded percent-encoding v2.3.2
+#19 4.290   Downloaded heck v0.5.0
+#19 4.291   Downloaded simple_asn1 v0.6.4
+#19 4.291   Downloaded flate2 v1.1.9
+#19 4.293   Downloaded email-encoding v0.4.1
+#19 4.294   Downloaded toml_datetime v1.1.1+spec-1.1.0
+#19 4.294   Downloaded derive_builder_macro v0.20.2
+#19 4.295   Downloaded unicode-script v0.5.8
+#19 4.296   Downloaded stringprep v0.1.5
+#19 4.297   Downloaded hickory-net v0.26.3
+#19 4.299   Downloaded signal-hook-registry v1.4.8
+#19 4.300   Downloaded derive_builder v0.20.2
+#19 4.302   Downloaded once_cell v1.21.4
+#19 4.303   Downloaded webauthn-rs-proto v0.5.5
+#19 4.304   Downloaded pem-rfc7468 v0.7.0
+#19 4.304   Downloaded pin-project-lite v0.2.17
+#19 4.306   Downloaded serde_derive v1.0.229
+#19 4.308   Downloaded rand_core v0.10.1
+#19 4.308   Downloaded sha2 v0.11.0
+#19 4.310   Downloaded ecdsa v0.16.9
+#19 4.311   Downloaded rustls-webpki v0.103.15
+#19 4.312   Downloaded proc-macro2 v1.0.106
+#19 4.313   Downloaded sqlx v0.8.6
+#19 4.319   Downloaded stacker v0.1.24
+#19 4.320   Downloaded tonic-types v0.14.6
+#19 4.321   Downloaded x509-parser v0.16.0
+#19 4.323   Downloaded derive_builder_core v0.20.2
+#19 4.324   Downloaded futures-intrusive v0.5.0
+#19 4.326   Downloaded schemars v0.9.0
+#19 4.331   Downloaded hickory-resolver v0.26.3
+#19 4.333   Downloaded opentelemetry v0.32.0
+#19 4.335   Downloaded hashify v0.2.9
+#19 4.336   Downloaded pkcs1 v0.7.5
+#19 4.337   Downloaded tower-http v0.7.1
+#19 4.341   Downloaded h2 v0.4.16
+#19 4.344   Downloaded num-bigint-dig v0.8.6
+#19 4.346   Downloaded p256 v0.13.2
+#19 4.347   Downloaded yansi v1.0.1
+#19 4.348   Downloaded serde_qs v1.1.3
+#19 4.352   Downloaded getrandom v0.3.4
+#19 4.354   Downloaded idna v1.1.0
+#19 4.356   Downloaded itertools v0.14.0
+#19 4.359   Downloaded postgres-types v0.2.14
+#19 4.360   Downloaded nom v8.0.0
+#19 4.362   Downloaded darling v0.20.11
+#19 4.364   Downloaded hyper v1.10.1
+#19 4.367   Downloaded rand v0.9.4
+#19 4.369   Downloaded unicode-bidi v0.3.18
+#19 4.370   Downloaded elliptic-curve v0.13.8
+#19 4.372   Downloaded prost-types v0.14.4
+#19 4.373   Downloaded tungstenite v0.29.0
+#19 4.374   Downloaded rapidhash v4.4.1
+#19 4.375   Downloaded ed25519-dalek v2.2.0
+#19 4.377   Downloaded reqwest v0.13.5
+#19 4.379   Downloaded pest v2.8.6
+#19 4.381   Downloaded typed-path v0.12.3
+#19 4.384   Downloaded hashbrown v0.12.3
+#19 4.386   Downloaded rand v0.8.6
+#19 4.387   Downloaded darling v0.23.0
+#19 4.389   Downloaded getrandom v0.4.2
+#19 4.391   Downloaded tokio-util v0.7.18
+#19 4.394   Downloaded lettre v0.11.23
+#19 4.397   Downloaded flume v0.12.0
+#19 4.399   Downloaded icu_properties_data v2.2.0
+#19 4.404   Downloaded itertools v0.15.0
+#19 4.407   Downloaded x509-cert v0.2.5
+#19 4.409   Downloaded aws-lc-rs v1.18.1
+#19 4.414   Downloaded chrono v0.4.45
+#19 4.417   Downloaded libm v0.2.16
+#19 4.421   Downloaded hashbrown v0.15.5
+#19 4.423   Downloaded educe v0.7.6
+#19 4.426   Downloaded sqlx-mysql v0.8.6
+#19 4.429   Downloaded tokio-postgres v0.7.18
+#19 4.431   Downloaded flume v0.11.1
+#19 4.432   Downloaded der v0.7.10
+#19 4.434   Downloaded tachys v0.3.0-beta2
+#19 4.437   Downloaded rsa v0.9.10
+#19 4.439   Downloaded zip v7.2.0
+#19 4.441   Downloaded cedar-policy v4.12.0
+#19 4.447   Downloaded futures-util v0.3.34
+#19 4.452   Downloaded portable-atomic v1.13.1
+#19 4.455   Downloaded serde_json v1.0.151
+#19 4.458   Downloaded serde_with v3.21.0
+#19 4.463   Downloaded hkdf v0.13.0
+#19 4.465   Downloaded p384 v0.13.1
+#19 4.467   Downloaded sqlx-postgres v0.8.6
+#19 4.470   Downloaded zip v8.6.0
+#19 4.472   Downloaded hashbrown v0.17.1
+#19 4.475   Downloaded hkdf v0.12.4
+#19 4.476   Downloaded sqlx-sqlite v0.9.0
+#19 4.478   Downloaded webpki-roots v1.0.9
+#19 4.479   Downloaded unicode-normalization v0.1.25
+#19 4.481   Downloaded sqlx-core v0.8.6
+#19 4.484   Downloaded tracing-subscriber v0.3.23
+#19 4.487   Downloaded typenum v1.20.1
+#19 4.489   Downloaded webauthn-rs-core v0.5.5
+#19 4.490   Downloaded lalrpop v0.22.2
+#19 4.495   Downloaded zlib-rs v0.6.3
+#19 4.497   Downloaded tower-http v0.6.11
+#19 4.501   Downloaded winnow v1.0.4
+#19 4.505   Downloaded hashbrown v0.16.1
+#19 4.508   Downloaded opentelemetry-proto v0.32.0
+#19 4.511   Downloaded sqlx-core v0.9.0
+#19 4.515   Downloaded hickory-proto v0.26.3
+#19 4.520   Downloaded sqlx-postgres v0.9.0
+#19 4.523   Downloaded regex v1.12.4
+#19 4.526   Downloaded syn v3.0.5
+#19 4.530   Downloaded moka v0.12.15
+#19 4.533   Downloaded sqlx v0.9.0
+#19 4.539   Downloaded time v0.3.55
+#19 4.545   Downloaded syn v2.0.119
+#19 4.549   Downloaded unicode-width v0.1.14
+#19 4.551   Downloaded opentelemetry_sdk v0.32.1
+#19 4.555   Downloaded rustls v0.23.45
+#19 4.560   Downloaded curve25519-dalek v4.1.3
+#19 4.564   Downloaded unicode-width v0.2.2
+#19 4.566   Downloaded vcpkg v0.2.15
+#19 4.584   Downloaded object v0.37.3
+#19 4.589   Downloaded zerocopy v0.8.52
+#19 4.597   Downloaded openssl v0.10.81
+#19 4.601   Downloaded regex-syntax v0.8.11
+#19 4.604   Downloaded tracing v0.1.44
+#19 4.611   Downloaded rustix v1.1.4
+#19 4.621   Downloaded cedar-policy-core v4.12.0
+#19 4.629   Downloaded mail-parser v0.11.9
+#19 4.641   Downloaded web-sys v0.3.100
+#19 4.679   Downloaded chrono-tz v0.10.4
+#19 4.685   Downloaded sha3 v0.10.9
+#19 4.687   Downloaded regex-automata v0.4.18
+#19 4.693   Downloaded jiff v0.2.28
+#19 4.701   Downloaded petgraph v0.7.1
+#19 4.709   Downloaded libc v0.2.186
+#19 4.724   Downloaded tokio v1.53.1
+#19 4.741   Downloaded ring v0.17.14
+#19 4.759   Downloaded encoding_rs v0.8.35
+#19 4.768   Downloaded linux-raw-sys v0.12.1
+#19 4.797   Downloaded libsqlite3-sys v0.30.1
+#19 4.830   Downloaded openssl-src v300.6.1+3.6.3
+#19 4.922   Downloaded aws-lc-sys v0.45.0
+#19 5.162    Compiling proc-macro2 v1.0.106
+#19 5.162    Compiling quote v1.0.45
+#19 5.162    Compiling unicode-ident v1.0.24
+#19 5.163    Compiling libc v0.2.186
+#19 5.189    Compiling serde v1.0.229
+#19 5.270    Compiling cfg-if v1.0.4
+#19 5.277    Compiling serde_core v1.0.229
+#19 5.308    Compiling memchr v2.8.2
+#19 5.620    Compiling syn v2.0.119
+#19 5.662    Compiling syn v3.0.5
+#19 5.690    Compiling thiserror v2.0.20
+#19 5.831    Compiling equivalent v1.0.2
+#19 5.850    Compiling hashbrown v0.17.1
+#19 6.075    Compiling indexmap v2.14.0
+#19 6.322    Compiling itoa v1.0.18
+#19 6.345    Compiling zmij v1.0.23
+#19 6.411    Compiling getrandom v0.4.2
+#19 6.433    Compiling version_check v0.9.5
+#19 6.516    Compiling serde_json v1.0.151
+#19 6.871    Compiling serde_derive v1.0.229
+#19 6.910    Compiling thiserror-impl v2.0.20
+#19 7.459    Compiling rand_core v0.10.1
+#19 7.541    Compiling num-conv v0.2.2
+#19 7.577    Compiling time-core v0.1.9
+#19 7.608    Compiling uuid v1.26.1
+#19 7.622    Compiling time-macros v0.2.32
+#19 7.829    Compiling pin-project-lite v0.2.17
+#19 7.891    Compiling deranged v0.5.8
+#19 8.141    Compiling powerfmt v0.2.0
+#19 8.261    Compiling portable-atomic v1.13.1
+#19 8.272    Compiling critical-section v1.2.0
+#19 8.294    Compiling time v0.3.55
+#19 8.302    Compiling futures-core v0.3.34
+#19 8.305    Compiling zeroize_derive v1.5.0
+#19 8.344    Compiling synstructure v0.13.2
+#19 8.578    Compiling once_cell v1.21.4
+#19 8.580    Compiling zerofrom-derive v0.1.7
+#19 8.613    Compiling zeroize v1.9.0
+#19 8.675    Compiling futures-sink v0.3.34
+#19 8.685    Compiling yoke-derive v0.8.2
+#19 8.713    Compiling slab v0.4.12
+#19 8.793    Compiling typenum v1.20.1
+#19 9.039    Compiling displaydoc v0.2.6
+#19 9.116    Compiling jobserver v0.1.35
+#19 9.187    Compiling console-kernel-core v0.1.0 (/workspace/backend/crates/kernel/core)
+#19 9.242    Compiling shlex v2.0.1
+#19 9.301    Compiling log v0.4.32
+#19 9.368    Compiling find-msvc-tools v0.1.9
+#19 9.416    Compiling futures-channel v0.3.34
+#19 9.448    Compiling cc v1.2.63
+#19 9.535    Compiling zerovec-derive v0.11.3
+#19 9.641    Compiling futures-macro v0.3.34
+#19 10.03    Compiling futures-task v0.3.34
+#19 10.04    Compiling futures-io v0.3.34
+#19 10.05    Compiling bytes v1.12.1
+#19 10.09    Compiling futures-util v0.3.34
+#19 10.11    Compiling tracing-attributes v0.1.31
+#19 10.13    Compiling autocfg v1.5.1
+#19 10.33    Compiling smallvec v1.15.2
+#19 10.44    Compiling generic-array v0.14.7
+#19 10.50    Compiling getrandom v0.2.17
+#19 10.64    Compiling rand_core v0.6.4
+#19 10.76    Compiling pkg-config v0.3.33
+#19 10.90    Compiling icu_properties_data v2.2.0
+#19 10.99    Compiling subtle v2.6.1
+#19 11.00    Compiling icu_normalizer_data v2.2.0
+#19 11.03    Compiling tracing-core v0.1.36
+#19 11.10    Compiling percent-encoding v2.3.2
+#19 11.19    Compiling tracing v0.1.44
+#19 11.20    Compiling crypto-common v0.1.7
+#19 11.26    Compiling errno v0.3.14
+#19 11.29    Compiling libm v0.2.16
+#19 11.32    Compiling signal-hook-registry v1.4.8
+#19 11.36    Compiling num-traits v0.2.19
+#19 11.39    Compiling zerofrom v0.1.8
+#19 11.43    Compiling tokio-macros v2.7.0
+#19 11.44    Compiling socket2 v0.6.4
+#19 11.47    Compiling mio v1.2.1
+#19 11.49    Compiling stable_deref_trait v1.2.1
+#19 11.52    Compiling yoke v0.8.3
+#19 11.73    Compiling tokio v1.53.1
+#19 11.75    Compiling const-oid v0.9.6
+#19 12.36    Compiling base64 v0.22.1
+#19 12.38    Compiling zerovec v0.11.6
+#19 12.40    Compiling cmake v0.1.58
+#19 12.50    Compiling fs_extra v1.3.0
+#19 12.53    Compiling dunce v1.0.5
+#19 12.54    Compiling crossbeam-utils v0.8.21
+#19 12.57    Compiling aws-lc-sys v0.45.0
+#19 12.65    Compiling parking_lot_core v0.9.12
+#19 12.80    Compiling tinystr v0.8.3
+#19 12.88    Compiling litemap v0.8.2
+#19 12.94    Compiling writeable v0.6.3
+#19 12.99    Compiling icu_locale_core v2.2.0
+#19 13.03    Compiling potential_utf v0.1.5
+#19 13.05    Compiling zerotrie v0.2.4
+#19 13.08    Compiling utf8_iter v1.0.4
+#19 13.11    Compiling icu_collections v2.2.0
+#19 13.27    Compiling block-buffer v0.10.4
+#19 13.30    Compiling digest v0.10.7
+#19 13.36    Compiling icu_provider v2.2.0
+#19 13.54    Compiling icu_normalizer v2.2.0
+#19 13.60    Compiling icu_properties v2.2.0
+#19 14.18    Compiling form_urlencoded v1.2.2
+#19 14.22    Compiling idna_adapter v1.2.2
+#19 14.26    Compiling idna v1.1.0
+#19 14.28    Compiling either v1.16.0
+#19 14.40    Compiling url v2.5.8
+#19 15.07    Compiling rustversion v1.0.22
+#19 15.30    Compiling cpufeatures v0.2.17
+#19 15.38    Compiling zerocopy v0.8.52
+#19 15.48    Compiling concurrent-queue v2.5.0
+#19 15.53    Compiling zerocopy-derive v0.8.52
+#19 15.55    Compiling semver v1.0.28
+#19 15.66    Compiling rustc_version v0.4.1
+#19 15.76    Compiling scopeguard v1.2.0
+#19 15.78    Compiling tinyvec_macros v0.1.1
+#19 15.79    Compiling lock_api v0.4.14
+#19 15.80    Compiling tinyvec v1.11.0
+#19 15.97    Compiling parking v2.2.1
+#19 16.03    Compiling event-listener v5.4.1
+#19 16.13    Compiling parking_lot v0.12.5
+#19 16.24    Compiling aws-lc-rs v1.18.1
+#19 17.16    Compiling http v1.5.0
+#19 17.21    Compiling ppv-lite86 v0.2.21
+#19 17.27    Compiling rustls-pki-types v1.14.1
+#19 17.53    Compiling bitflags v2.13.0
+#19 18.04    Compiling sha2 v0.10.9
+#19 18.09    Compiling allocator-api2 v0.2.21
+#19 18.13    Compiling untrusted v0.9.0
+#19 18.15    Compiling rustls v0.23.45
+#19 18.58    Compiling unicode-normalization v0.1.25
+#19 18.79    Compiling hybrid-array v0.4.12
+#19 19.14    Compiling cmov v0.5.4
+#19 19.21    Compiling byteorder v1.5.0
+#19 19.23    Compiling tower-service v0.3.3
+#19 19.44    Compiling ctutils v0.4.2
+#19 20.00    Compiling block-buffer v0.12.1
+#19 20.04    Compiling crypto-common v0.2.2
+#19 20.46    Compiling webpki-roots v1.0.9
+#19 20.51    Compiling tokio-stream v0.1.18
+#19 20.66    Compiling chacha20 v0.10.2
+#19 20.75    Compiling const-oid v0.10.2
+#19 20.83    Compiling crc-catalog v2.5.0
+#19 20.87    Compiling getrandom v0.3.4
+#19 21.00    Compiling crc v3.4.0
+#19 21.12    Compiling digest v0.11.3
+#19 21.47    Compiling rand v0.10.1
+#19 21.72    Compiling crossbeam-queue v0.3.12
+#19 21.75    Compiling futures-intrusive v0.5.0
+#19 21.86    Compiling tokio-util v0.7.18
+#19 22.03    Compiling tower-layer v0.3.3
+#19 22.28    Compiling unicode-properties v0.1.4
+#19 22.32    Compiling unicode-bidi v0.3.18
+#19 22.51    Compiling heck v0.5.0
+#19 22.60    Compiling fnv v1.0.7
+#19 22.62    Compiling base64ct v1.8.3
+#19 22.70    Compiling pem-rfc7468 v0.7.0
+#19 22.78    Compiling stringprep v0.1.5
+#19 23.02    Compiling rand_core v0.9.5
+#19 23.35    Compiling atoi v2.0.0
+#19 23.43    Compiling ipnet v2.12.2
+#19 23.54    Compiling der_derive v0.7.3
+#19 23.89    Compiling httparse v1.10.1
+#19 23.91    Compiling iana-time-zone v0.1.65
+#19 23.97    Compiling hex v0.4.3
+#19 24.03    Compiling dotenvy v0.15.7
+#19 24.05    Compiling flagset v0.4.7
+#19 24.11    Compiling der v0.7.10
+#19 24.13    Compiling chrono v0.4.45
+#19 25.21    Compiling hmac v0.13.0
+#19 25.24    Compiling http-body v1.0.1
+#19 25.28    Compiling itertools v0.14.0
+#19 25.44    Compiling cpufeatures v0.3.0
+#19 25.48    Compiling unicode-xid v0.2.6
+#19 25.55    Compiling sha2 v0.11.0
+#19 25.68    Compiling spki v0.7.3
+#19 25.91    Compiling rand_chacha v0.9.0
+#19 26.24    Compiling hmac v0.12.1
+#19 26.31    Compiling ident_case v1.0.1
+#19 26.34    Compiling strsim v0.11.1
+#19 26.41    Compiling httpdate v1.0.3
+#19 26.42    Compiling foldhash v0.2.0
+#19 26.52    Compiling hashbrown v0.16.1
+#19 26.68    Compiling rand v0.9.4
+#19 26.74    Compiling md-5 v0.11.0
+#19 26.81    Compiling sync_wrapper v1.0.2
+#19 26.88    Compiling spin v0.9.9
+#19 26.97    Compiling hashlink v0.11.1
+#19 27.17    Compiling thiserror v1.0.69
+#19 27.24    Compiling siphasher v1.0.3
+#19 27.27    Compiling atomic-waker v1.1.2
+#19 27.30    Compiling try-lock v0.2.5
+#19 27.61    Compiling want v0.3.1
+#19 27.64    Compiling h2 v0.4.16
+#19 27.66    Compiling phf_shared v0.11.3
+#19 28.07    Compiling hkdf v0.13.0
+#19 28.09    Compiling tower v0.5.3
+#19 28.44    Compiling pkcs8 v0.10.2
+#19 28.72    Compiling aho-corasick v1.1.4
+#19 29.14    Compiling thiserror-impl v1.0.69
+#19 29.53    Compiling whoami v2.1.2
+#19 30.69    Compiling data-encoding v2.11.0
+#19 31.57    Compiling regex-syntax v0.8.11
+#19 32.46    Compiling regex-automata v0.4.18
+#19 34.45    Compiling hyper v1.10.1
+#19 36.57    Compiling hkdf v0.12.4
+#19 36.61    Compiling rand_chacha v0.3.1
+#19 37.11    Compiling num-integer v0.1.46
+#19 37.25    Compiling minimal-lexical v0.2.1
+#19 37.36    Compiling same-file v1.0.6
+#19 37.39    Compiling walkdir v2.5.0
+#19 37.49    Compiling nom v7.1.3
+#19 38.22    Compiling rand v0.8.6
+#19 38.62    Compiling hyper-util v0.1.20
+#19 39.99    Compiling lazy_static v1.5.0
+#19 40.01    Compiling http-body-util v0.1.3
+#19 40.12    Compiling openssl-src v300.6.1+3.6.3
+#19 40.21    Compiling ryu v1.0.23
+#19 40.31    Compiling object v0.37.3
+#19 40.40    Compiling vcpkg v0.2.15
+#19 40.61    Compiling openssl-sys v0.9.117
+#19 41.40    Compiling signature v2.2.0
+#19 41.44    Compiling ff v0.13.1
+#19 41.47    Compiling base16ct v0.2.0
+#19 41.54    Compiling sec1 v0.7.3
+#19 41.88    Compiling group v0.13.0
+#19 41.93    Compiling ar_archive_writer v0.5.2
+#19 42.19    Compiling num-bigint v0.4.8
+#19 43.87    Compiling darling_core v0.23.0
+#19 44.66    Compiling keccak v0.1.6
+#19 44.72    Compiling crypto-bigint v0.5.5
+#19 45.28    Compiling new_debug_unreachable v1.0.6
+#19 45.29    Compiling term v1.2.1
+#19 45.44    Compiling fixedbitset v0.5.7
+#19 45.53    Compiling bit-vec v0.8.0
+#19 45.58    Compiling precomputed-hash v0.1.1
+#19 45.60    Compiling string_cache v0.8.9
+#19 45.64    Compiling bit-set v0.8.0
+#19 45.69    Compiling petgraph v0.7.1
+#19 46.07    Compiling ascii-canvas v4.0.0
+#19 46.12    Compiling elliptic-curve v0.13.8
+#19 46.25    Compiling sha3 v0.10.9
+#19 46.32    Compiling darling_macro v0.23.0
+#19 46.49    Compiling psm v0.1.31
+#19 46.64    Compiling rusticata-macros v4.1.0
+#19 46.70    Compiling lalrpop-util v0.22.2
+#19 46.78    Compiling regex v1.12.4
+#19 46.89    Compiling ena v0.14.4
+#19 46.95    Compiling asn1-rs-derive v0.5.1
+#19 47.18    Compiling asn1-rs-impl v0.2.0
+#19 47.30    Compiling encoding_rs v0.8.35
+#19 49.13    Compiling pico-args v0.5.0
+#19 49.17    Compiling console-platform-db v0.1.0 (/workspace/backend/crates/platform/db)
+#19 49.22    Compiling lalrpop v0.22.2
+#19 51.90    Compiling asn1-rs v0.6.2
+#19 52.94    Compiling darling v0.23.0
+#19 52.95    Compiling serde_urlencoded v0.7.1
+#19 53.02    Compiling rfc6979 v0.4.0
+#19 53.06    Compiling curve25519-dalek v4.1.3
+#19 53.12    Compiling stacker v0.1.24
+#19 53.21    Compiling enum-ordinalize-derive v4.4.1
+#19 53.41    Compiling pastey v0.1.1
+#19 53.54    Compiling openssl v0.10.81
+#19 53.61    Compiling num-bigint-dig v0.8.6
+#19 53.66    Compiling foreign-types-shared v0.1.1
+#19 53.67    Compiling ref-cast v1.0.25
+#19 53.74    Compiling base64 v0.21.7
+#19 53.90    Compiling oid-registry v0.7.1
+#19 53.99    Compiling mime v0.3.17
+#19 54.14    Compiling base64urlsafedata v0.5.5
+#19 54.19    Compiling foreign-types v0.3.2
+#19 54.21    Compiling enum-ordinalize v4.4.1
+#19 54.23    Compiling ecdsa v0.16.9
+#19 54.42    Compiling serde_with_macros v3.21.0
+#19 54.79    Compiling cedar-policy-core v4.12.0
+#19 55.16    Compiling primeorder v0.13.6
+#19 55.24    Compiling num-iter v0.1.45
+#19 55.27    Compiling logos-codegen v0.16.1
+#19 55.70    Compiling linked-hash-map v0.5.6
+#19 55.75    Compiling ref-cast-impl v1.0.25
+#19 55.93    Compiling openssl-macros v0.1.1
+#19 56.08    Compiling miette-derive v7.6.0
+#19 56.46    Compiling webauthn-attestation-ca v0.5.5
+#19 56.50    Compiling unicode-width v0.1.14
+#19 56.58    Compiling unicode-script v0.5.8
+#19 56.75    Compiling rustls-webpki v0.103.15
+#19 56.85    Compiling unicode-security v0.1.2
+#19 57.10    Compiling miette v7.6.0
+#19 57.97    Compiling linked_hash_set v0.1.6
+#19 58.01    Compiling logos-derive v0.16.1
+#19 58.36    Compiling sqlx-core v0.9.0
+#19 59.60    Compiling sqlx-postgres v0.9.0
+#19 61.01    Compiling sqlx-macros-core v0.9.0
+#19 61.82    Compiling sqlx-macros v0.9.0
+#19 62.79    Compiling serde_with v3.21.0
+#19 63.39    Compiling educe v0.7.6
+#19 64.22    Compiling der-parser v9.0.0
+#19 64.23    Compiling ed25519 v2.2.3
+#19 64.81    Compiling pkcs1 v0.7.5
+#19 65.03    Compiling half v2.7.1
+#19 65.14    Compiling itertools v0.15.0
+#19 65.43    Compiling nonempty v0.12.0
+#19 65.48    Compiling smol_str v0.3.6
+#19 65.58    Compiling arrayvec v0.5.2
+#19 65.65    Compiling unicode-width v0.2.2
+#19 65.68    Compiling rustc-literal-escaper v0.0.8
+#19 65.72    Compiling webauthn-rs-core v0.5.5
+#19 65.73    Compiling typed-arena v2.0.2
+#19 65.77    Compiling pretty v0.12.5
+#19 65.89    Compiling serde_cbor_2 v0.13.0
+#19 66.21    Compiling rsa v0.9.10
+#19 67.18    Compiling x509-parser v0.16.0
+#19 70.71    Compiling ed25519-dalek v2.2.0
+#19 70.92    Compiling logos v0.16.1
+#19 70.96    Compiling p256 v0.13.2
+#19 71.31    Compiling p384 v0.13.1
+#19 72.17    Compiling webauthn-rs-proto v0.5.5
+#19 81.02    Compiling sqlx v0.9.0
+#19 88.07    Compiling simple_asn1 v0.6.4
+#19 89.41    Compiling sha1 v0.10.6
+#19 89.52    Compiling pem v3.0.6
+#19 89.98    Compiling multer v3.1.0
+#19 90.04    Compiling cedar-policy v4.12.0
+#19 90.13    Compiling jsonwebtoken v11.0.0
+#19 90.71    Compiling tungstenite v0.29.0
+#19 92.50    Compiling cedar-policy-formatter v4.12.0
+#19 95.14    Compiling console-platform-authz v0.1.0 (/workspace/backend/crates/platform/authz)
+#19 96.42    Compiling tokio-tungstenite v0.29.0
+#19 97.25    Compiling axum-core v0.5.6
+#19 98.25    Compiling serde_path_to_error v0.1.20
+#19 98.40    Compiling matchit v0.8.4
+#19 98.68    Compiling axum v0.8.9
+#19 110.9    Compiling console-platform-group v0.1.0 (/workspace/backend/crates/platform/group)
+#19 114.8    Compiling console-contracts v0.1.0 (/workspace/backend/crates/contracts)
+#19 116.6    Compiling futures-executor v0.3.34
+#19 117.4    Compiling base64 v0.23.1
+#19 117.6    Compiling wasm-bindgen-shared v0.2.123
+#19 117.7    Compiling pin-project-internal v1.1.13
+#19 117.9    Compiling async-trait v0.1.89
+#19 118.1    Compiling pin-project v1.1.13
+#19 118.3    Compiling futures v0.3.34
+#19 118.5    Compiling bumpalo v3.20.3
+#19 118.6    Compiling wasm-bindgen-macro-support v0.2.123
+#19 119.8    Compiling wasm-bindgen v0.2.123
+#19 120.1    Compiling wasm-bindgen-macro v0.2.123
+#19 120.5    Compiling console-workorder-domain v0.1.0 (/workspace/backend/crates/workorder/domain)
+#19 120.9    Compiling anyhow v1.0.103
+#19 121.0    Compiling js-sys v0.3.100
+#19 121.0    Compiling tower-http v0.6.11
+#19 121.4    Compiling proc-macro-error-attr2 v2.0.0
+#19 121.5    Compiling paste v1.0.15
+#19 121.7    Compiling proc-macro-error2 v2.0.1
+#19 121.8    Compiling reqwest v0.13.5
+#19 123.8    Compiling unicode-segmentation v1.13.3
+#19 124.0    Compiling convert_case v0.11.0
+#19 124.4    Compiling event-listener-strategy v0.5.4
+#19 124.5    Compiling block-padding v0.3.3
+#19 124.5    Compiling crc32fast v1.5.0
+#19 124.7    Compiling foldhash v0.1.5
+#19 124.8    Compiling hashbrown v0.15.5
+#19 125.0    Compiling inout v0.1.4
+#19 125.2    Compiling wasm-bindgen-futures v0.4.73
+#19 125.2    Compiling md-5 v0.10.6
+#19 125.3    Compiling proc-macro2-diagnostics v0.10.1
+#19 126.0    Compiling cipher v0.4.4
+#19 126.3    Compiling hashlink v0.10.0
+#19 126.4    Compiling webpki-roots v0.26.11
+#19 126.5    Compiling console-notifications-domain v0.1.0 (/workspace/backend/crates/notifications/domain)
+#19 127.1    Compiling or_poisoned v0.1.0
+#19 127.2    Compiling zlib-rs v0.6.3
+#19 129.0    Compiling simd-adler32 v0.3.9
+#19 129.4    Compiling zopfli v0.8.3
+#19 130.2    Compiling flate2 v1.1.9
+#19 130.9    Compiling console-notifications-application v0.1.0 (/workspace/backend/crates/notifications/application)
+#19 131.0    Compiling sqlx-core v0.8.6
+#19 131.1    Compiling web-sys v0.3.100
+#19 132.6    Compiling const_format_proc_macros v0.2.34
+#19 132.7    Compiling proc-macro-utils v0.10.0
+#19 132.9    Compiling throw_error v0.4.0-beta
+#19 133.0    Compiling slotmap v1.1.1
+#19 133.0    Compiling ucd-trie v0.1.7
+#19 133.1    Compiling camino v1.2.5
+#19 133.1    Compiling typed-path v0.12.3
+#19 133.2    Compiling whoami v1.6.1
+#19 133.4    Compiling konst_macro_rules v0.2.19
+#19 133.4    Compiling futures-timer v3.0.4
+#19 133.7    Compiling home v0.5.12
+#19 133.8    Compiling crossbeam-epoch v0.9.20
+#19 133.9    Compiling sqlx-postgres v0.8.6
+#19 135.2    Compiling apalis-core v1.0.0-rc.9
+#19 137.1    Compiling konst v0.2.20
+#19 137.2    Compiling pest v2.8.6
+#19 137.5    Compiling reactive_graph v0.3.0-beta2
+#19 137.5    Compiling server_fn_macro v0.9.0-beta
+#19 137.6    Compiling console-governance-domain v0.0.0 (/workspace/backend/crates/governance/domain)
+#19 137.8    Compiling send_wrapper v0.6.0
+#19 137.9    Compiling derive-where v1.6.1
+#19 138.0    Compiling web-time v1.1.0
+#19 138.0    Compiling cfb v0.14.0
+#19 138.6    Compiling pest_meta v2.8.6
+#19 140.2    Compiling const_format v0.2.36
+#19 140.4    Compiling sqlx-macros-core v0.8.6
+#19 140.8    Compiling hydration_context v0.4.0-beta
+#19 141.2    Compiling any_spawner v0.3.0
+#19 141.3    Compiling async-lock v3.4.2
+#19 141.7    Compiling syn_derive v0.2.0
+#19 141.8    Compiling console-workorder-application v0.1.0 (/workspace/backend/crates/workorder/application)
+#19 142.4    Compiling tokio-rustls v0.26.5
+#19 142.6    Compiling quick-xml v0.41.0 (/workspace/third-party/rust/vendor/quick-xml-0.41.0-compat)
+#19 143.0    Compiling console-comms-domain v0.1.0 (/workspace/backend/crates/comms/domain)
+#19 143.2    Compiling webauthn-rs v0.5.5
+#19 143.7    Compiling console-platform-auth v0.1.0 (/workspace/backend/crates/platform/auth)
+#19 143.9    Compiling secrecy v0.10.3
+#19 144.0    Compiling doc-comment v0.3.4
+#19 144.1    Compiling rustc-hash v2.1.3
+#19 144.1    Compiling guardian v1.3.0
+#19 144.5    Compiling console-platform-request-context v0.1.0 (/workspace/backend/crates/platform/request-context)
+#19 144.5    Compiling xxhash-rust v0.8.18
+#19 149.5    Compiling console-comms-application v0.1.0 (/workspace/backend/crates/comms/application)
+#19 149.6    Compiling sqlx-macros v0.8.6
+#19 150.2    Compiling pest_generator v2.8.6
+#19 150.5    Compiling infer v0.22.0
+#19 150.6    Compiling quote-use-macros v0.8.4
+#19 150.8    Compiling manyhow-macros v0.11.4
+#19 150.9    Compiling prost-derive v0.14.4
+#19 151.0    Compiling reactive_stores_macro v0.5.0-beta
+#19 151.3    Compiling phf_generator v0.11.3
+#19 151.4    Compiling darling_core v0.20.11
+#19 151.4    Compiling prefix-trie v0.8.4
+#19 151.5    Compiling tachys v0.3.0-beta2
+#19 151.6    Compiling rapidhash v4.4.1
+#19 151.8    Compiling console-ontology-canonical-domain v0.1.0 (/workspace/backend/crates/ontology/canonical-domain)
+#19 151.9    Compiling console-inbox-domain v0.1.0 (/workspace/backend/crates/inbox/domain)
+#19 152.1    Compiling typed-builder-macro v0.23.2
+#19 152.3    Compiling prettyplease v0.2.37
+#19 152.4    Compiling yansi v1.0.1
+#19 152.5    Compiling apalis-postgres v1.0.0-rc.8
+#19 152.5    Compiling winnow v1.0.4
+#19 152.8    Compiling typed-builder v0.23.2
+#19 153.0    Compiling darling_macro v0.20.11
+#19 153.2    Compiling toml_parser v1.1.3+spec-1.1.0
+#19 153.3    Compiling reactive_stores v0.5.0-beta
+#19 153.6    Compiling console-inbox-application v0.1.0 (/workspace/backend/crates/inbox/application)
+#19 153.8    Compiling metrics v0.24.6
+#19 153.9    Compiling hickory-proto v0.26.3
+#19 153.9    Compiling prost v0.14.4
+#19 154.1    Compiling phf_macros v0.11.3
+#19 154.5    Compiling manyhow v0.11.4
+#19 154.6    Compiling quote-use v0.8.4
+#19 154.6    Compiling console-platform-storage v0.1.0 (/workspace/backend/crates/platform/storage)
+#19 154.6    Compiling sqlx v0.8.6
+#19 154.7    Compiling pest_derive v2.8.6
+#19 157.1    Compiling gloo-utils v0.3.0
+#19 157.1    Compiling apalis-sql v1.0.0-rc.9
+#19 157.3    Compiling apalis-codec v0.1.0-rc.9
+#19 157.4    Compiling either_of v0.1.9
+#19 158.2    Compiling hyper-timeout v0.5.2
+#19 158.3    Compiling ulid v1.2.1
+#19 158.4    Compiling server_fn v0.9.0-beta
+#19 158.5    Compiling crossbeam-channel v0.5.15
+#19 158.6    Compiling email-encoding v0.4.1
+#19 158.8    Compiling opentelemetry v0.32.0
+#19 158.8    Compiling console-workflow-domain v0.1.0 (/workspace/backend/crates/workflow/domain)
+#19 159.0    Compiling oco_ref v0.2.1
+#19 159.1    Compiling serde_spanned v1.1.1
+#19 159.1    Compiling toml_datetime v1.1.1+spec-1.1.0
+#19 159.3    Compiling nom v8.0.0
+#19 159.6    Compiling email_address v0.2.9
+#19 159.9    Compiling bytemuck v1.25.0
+#19 159.9    Compiling html-escape v0.2.15
+#19 160.1    Compiling const_str_slice_concat v0.1.0
+#19 160.2    Compiling quoted_printable v0.5.2
+#19 160.3    Compiling erased v0.1.2
+#19 160.3    Compiling event-listener v2.5.3
+#19 160.3    Compiling tagptr v0.2.0
+#19 160.4    Compiling next_tuple v0.1.0
+#19 160.5    Compiling collection_literals v1.0.3
+#19 160.6    Compiling fastrand v2.4.1
+#19 160.7    Compiling drain_filter_polyfill v0.1.3
+#19 160.7    Compiling interpolator v0.5.0
+#19 160.7    Compiling lettre v0.11.23
+#19 160.8    Compiling attribute-derive-macro v0.10.5
+#19 161.4    Compiling convert_case v0.6.0
+#19 162.6    Compiling async-channel v1.9.0
+#19 162.7    Compiling moka v0.12.15
+#19 163.4    Compiling rgb v0.8.53
+#19 163.5    Compiling toml v1.1.4+spec-1.1.0
+#19 165.3    Compiling tonic v0.14.6
+#19 167.1    Compiling phf v0.11.3
+#19 167.3    Compiling gloo-net v0.7.0
+#19 167.6    Compiling html_parser v0.7.0
+#19 168.2    Compiling hickory-net v0.26.3
+#19 169.5    Compiling darling v0.20.11
+#19 169.5    Compiling rstml v0.12.1
+#19 170.0    Compiling fancy-regex v0.14.0
+#19 170.0    Compiling server_fn_macro_default v0.9.0-beta
+#19 170.2    Compiling wasm-streams v0.5.0
+#19 170.3    Compiling console-governance-application v0.0.0 (/workspace/backend/crates/governance/application)
+#19 170.5    Compiling apalis v1.0.0-rc.9
+#19 170.7    Compiling zip v8.6.0
+#19 170.8    Compiling aes v0.8.4
+#19 171.1    Compiling cbc v0.1.2
+#19 171.2    Compiling serde_qs v1.1.3
+#19 171.4    Compiling cfb v0.10.0
+#19 171.6    Compiling leptos_macro v0.9.0-beta
+#19 171.7    Compiling universal-hash v0.5.1
+#19 171.7    Compiling console-dispatch-domain v0.1.0 (/workspace/backend/crates/dispatch/domain)
+#19 171.7    Compiling console-messenger-domain v0.1.0 (/workspace/backend/crates/messenger/domain)
+#19 171.7    Compiling thousands v0.2.0
+#19 171.8    Compiling pathdiff v0.2.3
+#19 171.9    Compiling fallible-iterator v0.2.0
+#19 171.9    Compiling base16 v0.2.1
+#19 171.9    Compiling jiff v0.2.28
+#19 172.0    Compiling resolv-conf v0.7.6
+#19 172.0    Compiling const-str v1.1.0
+#19 172.2    Compiling console-platform-provisioning v0.1.0 (/workspace/backend/crates/platform/provisioning)
+#19 172.3    Compiling debug_unsafe v0.1.4
+#19 172.3    Compiling inventory v0.3.24
+#19 172.3    Compiling imagesize v0.14.0
+#19 172.3    Compiling opaque-debug v0.3.1
+#19 172.3    Compiling poly1305 v0.8.0
+#19 172.6    Compiling atoi_simd v0.17.0
+#19 172.7    Compiling hickory-resolver v0.26.3
+#19 172.8    Compiling postgres-protocol v0.6.12
+#19 173.0    Compiling wasm_split_macros v0.2.2
+#19 173.2    Compiling umya-spreadsheet v3.0.0 (/workspace/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)
+#19 173.5    Compiling config v0.15.25
+#19 175.8    Compiling leptos_hot_reload v0.9.0-beta
+#19 176.1    Compiling console-dispatch-application v0.1.0 (/workspace/backend/crates/dispatch/application)
+#19 176.2    Compiling console-messenger-application v0.1.0 (/workspace/backend/crates/messenger/application)
+#19 176.9    Compiling console-platform-jobs v0.1.0 (/workspace/backend/crates/platform/jobs)
+#19 177.0    Compiling console-governance-adapter-postgres v0.0.0 (/workspace/backend/crates/governance/adapter-postgres)
+#19 177.5    Compiling derive_builder_core v0.20.2
+#19 177.9    Compiling stop-token v0.7.0
+#19 178.5    Compiling attribute-derive v0.10.5
+#19 179.0    Compiling zip v7.2.0
+#19 180.2    Compiling chacha20 v0.9.1
+#19 180.2    Compiling async-channel v2.5.0
+#19 180.3    Compiling convert_case_extras v0.2.0
+#19 180.4    Compiling phf_shared v0.13.1
+#19 180.5    Compiling console-platform-push v0.1.0 (/workspace/backend/crates/platform/push)
+#19 182.4    Compiling codepage v0.1.2
+#19 182.5    Compiling imap-proto v0.16.7
+#19 182.7    Compiling leptos v0.9.0-beta
+#19 182.8    Compiling hashify v0.2.9
+#19 183.4    Compiling aead v0.5.2
+#19 183.4    Compiling console-ontology-domain v0.0.0 (/workspace/backend/crates/ontology/domain)
+#19 183.6    Compiling console-sales-domain v0.1.0 (/workspace/backend/crates/sales/domain)
+#19 183.8    Compiling console-evaluation-domain v0.1.0 (/workspace/backend/crates/evaluation/domain)
+#19 183.9    Compiling console-inspection-domain v0.0.0 (/workspace/backend/crates/inspection/domain)
+#19 184.1    Compiling console-reporting-domain v0.1.0 (/workspace/backend/crates/reporting/domain)
+#19 185.2    Compiling console-compliance-domain v0.1.0 (/workspace/backend/crates/compliance/domain)
+#19 185.9    Compiling console-docs-domain v0.1.0 (/workspace/backend/crates/docs/domain)
+#19 186.3    Compiling console-financial-domain v0.0.0 (/workspace/backend/crates/financial/domain)
+#19 186.3    Compiling console-todos-domain v0.1.0 (/workspace/backend/crates/todos/domain)
+#19 186.3    Compiling console-benefit-domain v0.1.0 (/workspace/backend/crates/benefit/domain)
+#19 186.5    Compiling console-recruiting-domain v0.1.0 (/workspace/backend/crates/recruiting/domain)
+#19 186.5    Compiling console-inventory-domain v0.1.0 (/workspace/backend/crates/inventory/domain)
+#19 186.6    Compiling console-registry-domain v0.1.0 (/workspace/backend/crates/registry/domain)
+#19 186.7    Compiling console-notices-domain v0.1.0 (/workspace/backend/crates/notices/domain)
+#19 186.9    Compiling console-finance-gl-domain v0.0.0 (/workspace/backend/crates/finance-gl/domain)
+#19 186.9    Compiling console-support-domain v0.1.0 (/workspace/backend/crates/support/domain)
+#19 187.0    Compiling console-leave-domain v0.1.0 (/workspace/backend/crates/leave/domain)
+#19 187.2    Compiling console-identity-domain v0.1.0 (/workspace/backend/crates/identity/domain)
+#19 187.3    Compiling console-attendance-domain v0.1.0 (/workspace/backend/crates/attendance/domain)
+#19 187.4    Compiling codee v0.3.5
+#19 187.6    Compiling async-once-cell v0.5.4
+#19 187.7    Compiling console-platform-authz-rest v0.0.0 (/workspace/backend/crates/platform/authz-rest)
+#19 187.8    Compiling pin-utils v0.1.0
+#19 187.9    Compiling fast-float2 v0.2.3
+#19 188.0    Compiling self_cell v1.2.2
+#19 188.0    Compiling async-imap v0.11.3
+#19 189.2    Compiling calamine v0.35.0 (/workspace/third-party/rust/vendor/calamine-0.35.0-quickxml41)
+#19 189.6    Compiling wasm_split_helpers v0.2.3
+#19 189.7    Compiling leptos_server v0.9.0-beta2
+#19 190.0    Compiling console-attendance-application v0.1.0 (/workspace/backend/crates/attendance/application)
+#19 190.4    Compiling console-identity-application v0.1.0 (/workspace/backend/crates/identity/application)
+#19 191.1    Compiling console-leave-application v0.1.0 (/workspace/backend/crates/leave/application)
+#19 191.4    Compiling console-support-application v0.1.0 (/workspace/backend/crates/support/application)
+#19 191.7    Compiling console-finance-gl-application v0.0.0 (/workspace/backend/crates/finance-gl/application)
+#19 192.0    Compiling console-notices-application v0.1.0 (/workspace/backend/crates/notices/application)
+#19 192.0    Compiling console-registry-application v0.1.0 (/workspace/backend/crates/registry/application)
+#19 192.1    Compiling console-inventory-application v0.1.0 (/workspace/backend/crates/inventory/application)
+#19 192.4    Compiling console-recruiting-application v0.1.0 (/workspace/backend/crates/recruiting/application)
+#19 192.7    Compiling console-benefit-application v0.1.0 (/workspace/backend/crates/benefit/application)
+#19 192.7    Compiling console-financial-application v0.0.0 (/workspace/backend/crates/financial/application)
+#19 192.9    Compiling console-todos-application v0.1.0 (/workspace/backend/crates/todos/application)
+#19 193.0    Compiling console-docs-application v0.1.0 (/workspace/backend/crates/docs/application)
+#19 193.1    Compiling console-compliance-application v0.1.0 (/workspace/backend/crates/compliance/application)
+#19 193.2    Compiling console-reporting-application v0.1.0 (/workspace/backend/crates/reporting/application)
+#19 193.2    Compiling console-inspection-application v0.0.0 (/workspace/backend/crates/inspection/application)
+#19 193.3    Compiling console-evaluation-application v0.1.0 (/workspace/backend/crates/evaluation/application)
+#19 193.4    Compiling console-sales-application v0.1.0 (/workspace/backend/crates/sales/application)
+#19 193.6    Compiling chacha20poly1305 v0.10.1
+#19 193.6    Compiling mail-parser v0.11.9
+#19 193.6    Compiling phf v0.13.1
+#19 193.7    Compiling derive_builder_macro v0.20.2
+#19 193.7    Compiling console-dispatch-adapter-postgres v0.1.0 (/workspace/backend/crates/dispatch/adapter-postgres)
+#19 193.9    Compiling console-platform-excel v0.1.0 (/workspace/backend/crates/platform/excel)
+#19 196.4    Compiling leptos_config v0.9.0-beta
+#19 196.9    Compiling postgres-types v0.2.14
+#19 197.3    Compiling tonic-prost v0.14.6
+#19 197.4    Compiling leptos_dom v0.9.0-beta
+#19 197.4    Compiling opentelemetry_sdk v0.32.1
+#19 197.5    Compiling prost-types v0.14.4
+#19 198.4    Compiling console-inbox-adapter-postgres v0.1.0 (/workspace/backend/crates/inbox/adapter-postgres)
+#19 198.7    Compiling phf_shared v0.12.1
+#19 198.8    Compiling sharded-slab v0.1.7
+#19 199.2    Compiling matchers v0.2.0
+#19 199.2    Compiling rand_xoshiro v0.7.0
+#19 199.5    Compiling strum_macros v0.27.2
+#19 200.3    Compiling quanta v0.12.6
+#19 200.6    Compiling left-right v0.11.7
+#19 200.6    Compiling tracing-serde v0.2.0
+#19 200.7    Compiling tracing-log v0.2.0
+#19 200.8    Compiling console-logistics-domain v0.1.0 (/workspace/backend/crates/logistics/domain)
+#19 200.9    Compiling console-equipment-domain v0.1.0 (/workspace/backend/crates/equipment/domain)
+#19 200.9    Compiling console-equipment-application v0.1.0 (/workspace/backend/crates/equipment/application)
+#19 200.9    Compiling console-payroll-domain v0.1.0 (/workspace/backend/crates/payroll/domain)
+#19 201.0    Compiling console-orgchange-domain v0.1.0 (/workspace/backend/crates/orgchange/domain)
+#19 201.3    Compiling thread_local v1.1.9
+#19 201.3    Compiling console-platform-realtime v0.1.0 (/workspace/backend/crates/platform/realtime)
+#19 201.4    Compiling metrics-exporter-prometheus v0.18.3
+#19 201.4    Compiling nu-ansi-term v0.50.3
+#19 201.5    Compiling console-platform-auth-rest v0.1.0 (/workspace/backend/crates/platform/auth-rest)
+#19 201.6    Compiling hashbag v0.1.13
+#19 201.6    Compiling sketches-ddsketch v0.3.1
+#19 201.7    Compiling rustix v1.1.4
+#19 201.8    Compiling console-platform-audit-chain v0.1.0 (/workspace/backend/crates/platform/audit-chain)
+#19 201.8    Compiling chrono-tz v0.10.4
+#19 201.8    Compiling console-comms-rest v0.1.0 (/workspace/backend/crates/comms/rest)
+#19 201.9    Compiling console-support-rest v0.1.0 (/workspace/backend/crates/support/rest)
+#19 201.9    Compiling console-docs-rest v0.0.0 (/workspace/backend/crates/docs/rest)
+#19 202.0    Compiling metrics-util v0.20.4
+#19 202.0    Compiling evmap v11.0.0
+#19 202.1    Compiling tracing-subscriber v0.3.23
+#19 202.6    Compiling console-orgchange-adapter-postgres v0.1.0 (/workspace/backend/crates/orgchange/adapter-postgres)
+#19 205.4    Compiling console-payroll-adapter-postgres v0.1.0 (/workspace/backend/crates/payroll/adapter-postgres)
+#19 205.5    Compiling console-equipment-adapter-postgres v0.1.0 (/workspace/backend/crates/equipment/adapter-postgres)
+#19 206.2    Compiling console-logistics-adapter-postgres v0.1.0 (/workspace/backend/crates/logistics/adapter-postgres)
+#19 206.3    Compiling strum v0.27.2
+#19 206.4    Compiling phf v0.12.1
+#19 206.4    Compiling opentelemetry-proto v0.32.0
+#19 206.5    Compiling tonic-types v0.14.6
+#19 207.8    Compiling tokio-postgres v0.7.18
+#19 208.4    Compiling console-reporting-adapter-postgres v0.1.0 (/workspace/backend/crates/reporting/adapter-postgres)
+#19 208.5    Compiling console-comms-adapter-imap v0.1.0 (/workspace/backend/crates/comms/adapter-imap)
+#19 212.0    Compiling derive_builder v0.20.2
+#19 212.1    Compiling console-evaluation-adapter-postgres v0.1.0 (/workspace/backend/crates/evaluation/adapter-postgres)
+#19 212.7    Compiling console-comms-credential-cipher v0.1.0 (/workspace/backend/crates/comms/credential-cipher)
+#19 213.1    Compiling console-docs-adapter-postgres v0.1.0 (/workspace/backend/crates/docs/adapter-postgres)
+#19 214.5    Compiling console-sales-adapter-postgres v0.1.0 (/workspace/backend/crates/sales/adapter-postgres)
+#19 214.7    Compiling console-compliance-adapter-postgres v0.1.0 (/workspace/backend/crates/compliance/adapter-postgres)
+#19 215.4    Compiling console-inspection-adapter-postgres v0.0.0 (/workspace/backend/crates/inspection/adapter-postgres)
+#19 215.7    Compiling console-financial-adapter-postgres v0.0.0 (/workspace/backend/crates/financial/adapter-postgres)
+#19 215.8    Compiling console-todos-adapter-postgres v0.1.0 (/workspace/backend/crates/todos/adapter-postgres)
+#19 215.9    Compiling console-benefit-adapter-postgres v0.1.0 (/workspace/backend/crates/benefit/adapter-postgres)
+#19 216.3    Compiling console-registry-adapter-postgres v0.1.0 (/workspace/backend/crates/registry/adapter-postgres)
+#19 216.6    Compiling console-inventory-adapter-postgres v0.1.0 (/workspace/backend/crates/inventory/adapter-postgres)
+#19 216.8    Compiling console-recruiting-adapter-postgres v0.1.0 (/workspace/backend/crates/recruiting/adapter-postgres)
+#19 217.5    Compiling console-notices-adapter-postgres v0.1.0 (/workspace/backend/crates/notices/adapter-postgres)
+#19 217.8    Compiling console-support-adapter-postgres v0.1.0 (/workspace/backend/crates/support/adapter-postgres)
+#19 218.1    Compiling console-finance-gl-adapter-postgres v0.0.0 (/workspace/backend/crates/finance-gl/adapter-postgres)
+#19 218.5    Compiling console-leave-adapter-postgres v0.1.0 (/workspace/backend/crates/leave/adapter-postgres)
+#19 218.7    Compiling console-identity-adapter-postgres v0.1.0 (/workspace/backend/crates/identity/adapter-postgres)
+#19 219.2    Compiling console-attendance-adapter-postgres v0.1.0 (/workspace/backend/crates/attendance/adapter-postgres)
+#19 220.4    Compiling console-ontology-application v0.0.0 (/workspace/backend/crates/ontology/application)
+#19 220.9    Compiling console-ontology-adapter-postgres v0.0.0 (/workspace/backend/crates/ontology/adapter-postgres)
+#19 221.4    Compiling console-messenger-adapter-postgres v0.1.0 (/workspace/backend/crates/messenger/adapter-postgres)
+#19 223.4    Compiling console-comms-adapter-smtp v0.1.0 (/workspace/backend/crates/comms/adapter-smtp)
+#19 227.3    Compiling console-platform-email v0.1.0 (/workspace/backend/crates/platform/email)
+#19 227.7    Compiling opentelemetry-http v0.32.0
+#19 228.6    Compiling console-workflow-runtime v0.1.0 (/workspace/backend/crates/workflow/runtime)
+#19 229.0    Compiling console-workflow-runtime-adapter-postgres v0.1.0 (/workspace/backend/crates/workflow/adapter-postgres)
+#19 229.7    Compiling console-comms-adapter-postgres v0.1.0 (/workspace/backend/crates/comms/adapter-postgres)
+#19 231.3    Compiling console-comms-adapter-mox v0.1.0 (/workspace/backend/crates/comms/adapter-mox)
+#19 232.4    Compiling console-workorder-adapter-postgres v0.1.0 (/workspace/backend/crates/workorder/adapter-postgres)
+#19 236.6    Compiling console-notifications-adapter-postgres v0.1.0 (/workspace/backend/crates/notifications/adapter-postgres)
+#19 239.0    Compiling x509-cert v0.2.5
+#19 240.1    Compiling console-analytics-quant-service v0.1.0 (/workspace/backend/crates/analytics-quant/service)
+#19 240.1    Compiling console-payroll-application v0.1.0 (/workspace/backend/crates/payroll/application)
+#19 240.1    Compiling linux-raw-sys v0.12.1
+#19 240.4    Compiling console-analytics-quant-rest v0.1.0 (/workspace/backend/crates/analytics-quant/rest)
+#19 241.1    Compiling console-payroll-rest v0.1.0 (/workspace/backend/crates/payroll/rest)
+#19 242.0    Compiling tokio-postgres-rustls v0.14.0
+#19 242.2    Compiling console-notifications-rest v0.1.0 (/workspace/backend/crates/notifications/rest)
+#19 245.5    Compiling console-workorder-rest v0.1.0 (/workspace/backend/crates/workorder/rest)
+#19 257.4    Compiling opentelemetry-otlp v0.32.0
+#19 261.9    Compiling console-messenger-rest v0.1.0 (/workspace/backend/crates/messenger/rest)
+#19 266.3    Compiling console-ontology-rest v0.0.0 (/workspace/backend/crates/ontology/rest)
+#19 272.3    Compiling console-attendance-rest v0.1.0 (/workspace/backend/crates/attendance/rest)
+#19 279.0    Compiling console-identity-rest v0.1.0 (/workspace/backend/crates/identity/rest)
+#19 287.4    Compiling console-leave-rest v0.1.0 (/workspace/backend/crates/leave/rest)
+#19 290.2    Compiling console-finance-gl-rest v0.0.0 (/workspace/backend/crates/finance-gl/rest)
+#19 304.3    Compiling console-notices-rest v0.1.0 (/workspace/backend/crates/notices/rest)
+#19 304.8    Compiling console-recruiting-rest v0.1.0 (/workspace/backend/crates/recruiting/rest)
+#19 306.8    Compiling console-inventory-rest v0.1.0 (/workspace/backend/crates/inventory/rest)
+#19 310.1    Compiling console-registry-rest v0.1.0 (/workspace/backend/crates/registry/rest)
+#19 319.8    Compiling console-benefit-rest v0.1.0 (/workspace/backend/crates/benefit/rest)
+#19 321.1    Compiling console-financial-rest v0.0.0 (/workspace/backend/crates/financial/rest)
+#19 326.2    Compiling console-todos-rest v0.1.0 (/workspace/backend/crates/todos/rest)
+#19 335.3    Compiling console-inspection-rest v0.0.0 (/workspace/backend/crates/inspection/rest)
+#19 336.1    Compiling console-compliance-rest v0.1.0 (/workspace/backend/crates/compliance/rest)
+#19 339.6    Compiling console-sales-rest v0.1.0 (/workspace/backend/crates/sales/rest)
+#19 350.7    Compiling console-evaluation-rest v0.1.0 (/workspace/backend/crates/evaluation/rest)
+#19 355.5    Compiling croner v4.0.0
+#19 356.9    Compiling console-reporting-rest v0.1.0 (/workspace/backend/crates/reporting/rest)
+#19 357.4    Compiling console-payroll-ui v0.1.0 (/workspace/backend/crates/payroll/ui)
+#19 358.8    Compiling console-logistics-rest v0.1.0 (/workspace/backend/crates/logistics/rest)
+#19 370.3    Compiling console-equipment-rest v0.1.0 (/workspace/backend/crates/equipment/rest)
+#19 370.8    Compiling console-orgchange-rest v0.1.0 (/workspace/backend/crates/orgchange/rest)
+#19 373.6    Compiling tracing-opentelemetry v0.33.0
+#19 390.0    Compiling console-inbox-rest v0.1.0 (/workspace/backend/crates/inbox/rest)
+#19 390.2    Compiling console-platform-rest v0.1.0 (/workspace/backend/crates/platform/platform-rest)
+#19 391.9    Compiling console-dispatch-rest v0.1.0 (/workspace/backend/crates/dispatch/rest)
+#19 393.8    Compiling console-dispatch-worker v0.1.0 (/workspace/backend/crates/dispatch/worker)
+#19 403.4    Compiling console-governance-rest v0.0.0 (/workspace/backend/crates/governance/rest)
+#19 404.8    Compiling console-ontology-canonical-adapter-postgres v0.1.0 (/workspace/backend/crates/ontology/canonical-adapter-postgres)
+#19 405.4    Compiling console-consulting-rest v0.1.0 (/workspace/backend/crates/consulting/rest)
+#19 408.6    Compiling console-integrity v0.1.0 (/workspace/backend/crates/compliance/integrity)
+#19 416.3    Compiling console-facilities-rest v0.1.0 (/workspace/backend/crates/facilities/rest)
+#19 418.3    Compiling console-production-rest v0.0.0 (/workspace/backend/crates/production/rest)
+#19 420.6    Compiling tower-http v0.7.1
+#19 421.2    Compiling console-action-inbox-application v0.1.0 (/workspace/backend/crates/action-inbox/application)
+#19 421.7    Compiling console-erp-domain v0.1.0 (/workspace/backend/crates/erp/domain)
+#19 421.9    Compiling console-app v0.1.0 (/workspace/backend/app)
+#19 474.0     Finished `release` profile [optimized] target(s) in 7m 52s
+#19 474.0 warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+#19 474.0 note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+#19 DONE 474.2s
+
+#20 exporting to image
+#20 exporting layers
+#20 exporting layers 53.3s done
+#20 exporting manifest sha256:2eb049953144023aaee4fa08b30137b42045997d3988114caea2a8ba5912fb5c done
+#20 exporting config sha256:167163970cf7f207d442f33aaecc0d1af7d324afe742946439f6063ce3df8d66 done
+#20 exporting attestation manifest sha256:9bd6f4060d98128ea527bf51f3f7154277f97aa4fe5a19a59d7575ab7c86453b done
+#20 exporting manifest list sha256:d800012708dacf0ebd5b70498ba693028bac8371157bbbc1673671f672decdc1 done
+#20 naming to moby-dangling@sha256:d800012708dacf0ebd5b70498ba693028bac8371157bbbc1673671f672decdc1 done
+#20 unpacking to moby-dangling@sha256:d800012708dacf0ebd5b70498ba693028bac8371157bbbc1673671f672decdc1
+#20 unpacking to moby-dangling@sha256:d800012708dacf0ebd5b70498ba693028bac8371157bbbc1673671f672decdc1 9.6s done
+#20 DONE 63.0s

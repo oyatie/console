@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_CEDAR_SDK_IDENTITY_RUNTIME_ADDENDUM",
+  "source_review_sha256": "7d6a132dcfaac4ab36687f2ed30f5fdd34a25a594d10d44e790dd101cad4e668",
+  "actual_policy_log_sha256": "eecd1c5dd701cccfc8e2d1499a98c2eb771f6bad7c0016d307d1d27c67d7fe70",
+  "actual_policy_tests": {
+    "executed": 45,
+    "passed": 45,
+    "failed": 0,
+    "seconds": 9.01
+  },
+  "conclusions": [
+    "Actual platform-authz-policy-pg runner supplies real PostgreSQL prerequisites; all45policy tests pass, including9SQLx cases previously refused before execution.",
+    "Initial missingDATABASE_URL36pass/9fail result remains historical; this actualsuccessor closes that specific qualificationHOLD.",
+    "CurrentSDK identity2/2,library96/96,diagnostics5/5,modecontract5/5 alreadybound in sourcereceipt; overlap is not added as uniqueoverallcount."
+  ],
+  "holds": [
+    "Build-generated target declaration must be serialized through existinggenerator if required by root; not part of approved2lineproductionfix.",
+    "No deployment/nativeCompanypolicy/completeCedar or releasemilestone acceptance."
+  ]
+}

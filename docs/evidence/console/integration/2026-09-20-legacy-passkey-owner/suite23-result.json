@@ -1,0 +1,26 @@
+{
+  "candidate": "49340a6d18551d58457ffd4acf96157e979dbb35",
+  "clean_tree_at_execution": true,
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-legacy-passkey-suite-map-20260920.json --only legacy-passkey-suite",
+  "discovered": 23,
+  "executed": 23,
+  "passed": 23,
+  "failed": 0,
+  "ignored": 0,
+  "filtered": 375,
+  "seconds": 196.14,
+  "artifacts_sha256": {
+    "suite23-green.log": "741920f9dd1858ced1b90f0e67190d46082a7425423586c0d7cd503cfacfe92c",
+    "final-integration-security-review.json": "230f04d19c4295a28c5f8bfb69b1cbc139e8076c558ebbf23086d6f9ea06a978"
+  },
+  "root_verdict": "Accept bounded self-passkey owner implementation and integration evidence, with independent security concurrence.",
+  "retained_evidence": "57 Auth and 7 reader tests passed on identical production source predecessor; these are reused, not newly executed on this candidate. Private8 is included in57.",
+  "remaining_holds": [
+    "All other current-family/current-policy readers and effects; bound production mint remains disabled.",
+    "Platform list owner and raw SQL capability closure.",
+    "Complete Account/workspace/browser journeys and assembled milestones0\u201310 qualification.",
+    "ADR raw-log packaging awaits explicit user decision after automatic approval review rejection."
+  ],
+  "production_qualified": false,
+  "released": false
+}

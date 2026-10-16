@@ -1,0 +1,28 @@
+{
+  "owner": "/root",
+  "base_sha": "477e3eeb1359482e7580fbb9f4145741ff1d6939",
+  "immutable_target": "Unavailable Retry reloads same document route/query using native href empty, no new redirects or JS",
+  "allowed_paths": [
+    "backend/crates/payroll/ui/src/native_account.rs"
+  ],
+  "probe": "CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test health_readiness ui_shell_serves_empty_ssr_html -- --exact --test-threads=1",
+  "mechanical_guide": "Exact approved tests477e3eeb; change onlyUnavailable primaryRetry href /account to empty; preserve all otherpaths/status/headers",
+  "reviewers": [
+    "/root/integration_security"
+  ],
+  "pre_mortem": "Relative link changes context or skips request on fragments",
+  "blast_radius": "Unavailable native Account document Retry only",
+  "detection": "Literal ownerHTTP RED\u2192GREEN plus approved browser round3freshGET/currentroute/query/keyboard assertions",
+  "rollback": "Restore single href source; no database changes",
+  "stop_conditions": [
+    "Missing ownerRED",
+    "Different failure than literalhref",
+    "Browser request/history not observed",
+    "Source outside single UIattribute"
+  ],
+  "holds": [
+    "DB-backed outage/recovery proof and actual browser evidence required",
+    "Company migration timeout remains unaccepted",
+    "Full release incomplete"
+  ]
+}

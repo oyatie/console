@@ -1,0 +1,93 @@
+{
+  "purpose": "Additive owner history evidence; current working source follows mechanically reviewed lint successor; not complete lane/release acceptance",
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "test_manifest": "280e8b08c6d8cf3b9d754d7c124106a5d1b308a35c5db83be3342f86d31df488",
+  "runtime_source": "base plus exact approved lock packet before lint successor",
+  "runtime": {
+    "discovered": 23,
+    "executed": 23,
+    "passed": 23,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 398,
+    "seconds": 221.32
+  },
+  "authz_library": {
+    "passed": 110,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "lint": "Four test style findings; independent reviewed semantic-preserving successor; clippy now passed",
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-list-supplemental-map-20260920.json --only platform-list-supplemental-suite",
+  "artifacts": [
+    {
+      "original": "/private/tmp/console-platform-list-lock-tests-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/test-manifest.json",
+      "sha256": "280e8b08c6d8cf3b9d754d7c124106a5d1b308a35c5db83be3342f86d31df488"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-lock-tests-round1-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/root-review.json",
+      "sha256": "bea2de610edb52ce2acd95001625dde7a5eecba3bd90c99ac7d66b45c33b1dcd"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-lock-tests-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/security-review.json",
+      "sha256": "d57d8ea0f3e9973a8dde944ef4e5c9e0fe525308776a97e860c9c2cd55f5fdcd"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-test-lint-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/lint-manifest.json",
+      "sha256": "15f003ea5cd5d8ab4867009b4d63cd63083e99c4f8a64700c75506451f2b86aa"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-test-lint-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/lint-security-review.json",
+      "sha256": "119b76cd740b3a753da358360a8a1b3589f02af1b8e97f20f67c46b043fbe1da"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-lane-scope7-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/lane-scope.json",
+      "sha256": "01278ddec6624dde4d4fd254c84796a3bb087c1bf0bba5efcab8c854b9ab37c1"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-suite23-c3f7eca8-working-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/sandbox-prerequisite-failure.log",
+      "sha256": "e6295c2b5fa91abbec3aabe876164655c9f767d697e0dd0146612ca43412520f"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-suite23-c3f7eca8-working-run2-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/suite23.log",
+      "sha256": "739194423a235c0dfdff2da2a1eadf0e55235572ff52329375bab48cec540f06"
+    },
+    {
+      "original": "/private/tmp/console-platform-list23-clippy-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/clippy-failure.log",
+      "sha256": "745bfa9d02b7574089186dcbeb3441cd6c40209a90a239fb3bad22aae5627dde"
+    },
+    {
+      "original": "/private/tmp/console-platform-list23-clippy-round2-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/clippy-repaired.log",
+      "sha256": "854d46e12b8360eeff6bedb5a51aa67a8150157d33f1aef2c722bebf521bf5f0"
+    },
+    {
+      "original": "/private/tmp/console-platform-authz110-c3f7eca8-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/locks-round1/authz110.log",
+      "sha256": "5b0d8b672ab70f4f007d51fc209f222340ec19a72266cf4eab6bc2d725581f56"
+    }
+  ],
+  "remaining": [
+    "Committed candidate rerun after mechanical lint successor",
+    "Actual ambiguous commit history",
+    "Absolute family expiry and unrelated-source progress",
+    "SQL bridge privilege/custody transition runtime",
+    "Full release milestones0\u201310"
+  ]
+}

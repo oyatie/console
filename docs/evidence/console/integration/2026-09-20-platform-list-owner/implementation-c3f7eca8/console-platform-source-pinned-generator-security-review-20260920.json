@@ -1,0 +1,31 @@
+{
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "scope": "Exact Platform source pinned generator and six generated outputs, including unchanged migration custody list",
+  "reviewer": "integration_security",
+  "base_sha": "26d786487c294dd88ada16f5372b03fb5787f00f",
+  "files_sha256": {
+    "ops/generate-account-custody.py": "1c35801c84b87df57e7e3462021733e191624d0fa711eacbafb79e34989e7d89",
+    "backend/app/src/account_custody_state.sql": "5fb0a2608c5904fe0c1d58723290b9603afb9af08eef19c410d023a484230865",
+    "ops/postgres-finalize-account-custody.sql": "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8",
+    "ops/account-custody-migrations.sha384": "736d28bc7b3b5cf15ca4c341fd3622dc76521db9dbf974b75cef7e73eb68fbf5",
+    "ops/postgres-verify-account-native.sql": "c4e30ee9560b4d443acad1813a63667cbab9a32aadfbd893542f4b054bf6b308",
+    "backend/app/src/account_credential_custody_state.sql": "0bc6fe6579414ebed546d076c0ec1b7f1cc5ba30f4fe5e135159f4e75c0416a2",
+    "ops/postgres-finalize-account-credentials.sql": "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9"
+  },
+  "capture_receipt_sha256": "0bb017ceb30a8fffedcf9140f1fbc6f41ec7c3d095d3a5d50dcbee60158dd69d",
+  "checks": [
+    "Current generator equals previously reviewed prospective proposal plus exactly four reviewed pins",
+    "Install/historical/prospective serializers byte-equal reviewed capture inputs",
+    "All51existing top-level function/assignment definitions checked; only four outer entrypoints change",
+    "All six generated files exactly match generator outputs without writes",
+    "Finalizer retains operator identity, lock order/complete relation locks, exact predecessor guard, atomic install/postcondition and finalized replay",
+    "Unknown helper/profile rejects; historical old pins/serializers untouched; populated exact predecessor skips old installers"
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Fresh and populated finalizer upgrade/replay proof",
+    "Helper definition, ACL, membership, missing/overload corruption refusals with exact rollback",
+    "Mounted/direct owner current-policy and failure histories",
+    "Final implementation candidate and release qualification"
+  ]
+}

@@ -1,0 +1,19 @@
+BEGIN
+SET
+GRANT
+                 state                  
+----------------------------------------
+ native_company_policy.profile_mismatch
+(1 row)
+
+DO
+NOTICE:  CONTROL_PASS: altered private-helper ACL rejected
+ROLLBACK
+BEGIN
+SET
+              state              
+---------------------------------
+ native_company_policy.finalized
+(1 row)
+
+ROLLBACK

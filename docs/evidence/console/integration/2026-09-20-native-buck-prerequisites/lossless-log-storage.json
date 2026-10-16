@@ -1,0 +1,14 @@
+[
+  {
+    "original": "fixtures/console-group-native-buck-build-authorized-20260920.log",
+    "stored": "fixtures/console-group-native-buck-build-authorized-20260920.log.gz",
+    "uncompressed_sha256": "2a82a88c552e49dfc0a61a3f07054e992244ec3acd3347e1b916505afd7b4fc6",
+    "reason": "Preserve raw compiler/test output including trailing whitespace in lossless deterministic gzip."
+  },
+  {
+    "original": "group/console-group-native-group-retained-crud-20260920.log",
+    "stored": "group/console-group-native-group-retained-crud-20260920.log.gz",
+    "uncompressed_sha256": "062166d45eb3d81725c7b4e07c06a89f9492a1fec7e2e5503b3519e1366f3956",
+    "reason": "Preserve raw compiler/test output including trailing whitespace in lossless deterministic gzip."
+  }
+]

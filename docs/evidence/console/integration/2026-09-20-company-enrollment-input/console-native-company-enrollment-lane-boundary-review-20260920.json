@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "Approved retained authenticated enrollment test is suitable candidate for actual lane RED; execution/admission not yet observed",
+  "test": "account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials",
+  "source": "backend/app/tests/auth_rest/native_company_setup.rs",
+  "sha256": "9f1466cc04aaedfbe731438cfb813f4c7dd8230c5021b58f31c500037ce7372e",
+  "source_lines": {
+    "test_start": 463,
+    "submit_then_created_assertion": 469,
+    "future_schema_durable_check_after_response": 475
+  },
+  "facts": [
+    "Test uses designated() real Account enrollment/current startup designation, actual CSRF proof and mounted POST/api/v2/companies/enroll. No hypothetical new Rust API import is needed for lane RED.",
+    "Initial all_rows REQUIRED_TABLES includes existing Account/0227catalog/Group/policy tables, not company_enrollment_requests or company_enrollment_receipts. Expected HTTP CREATED is checked before future receipt schema queries.",
+    "Current missing endpoint should therefore fail at actual mounted response after working credentials, not at absent future schema; root must execute and confirm actual observed boundary. An earlier prerequisite failure is not admitted RED.",
+    "Whole owning use case can be one lane with codecs/participant/schema work as implementation substeps; each substep need not become an artificial separate lane. Lane remains open until exact original full probe passes plus required broader acceptance.",
+    "New codec tests may be reviewed and committed as test preparation with unresolved imports, but compile failure/zero executed tests is not the admission RED or GREEN. No fake stub, synthetic source scanner or test-only production seam should be added to manufacture one."
+  ],
+  "required_before_dependent_changes": [
+    "Exact new DDL/ACL/custody/codec semantics independently reviewed and generated changes serialized. Reuse already accepted design decisions and proposed exact-owner packet.",
+    "Record actual clean native named probe RED, source candidate and invocation/counts; admit bounded use-case owner through existing fanout tool.",
+    "Final same probe includes commit,reopen,replay,history,initial finite policy,credentials preservation; merely making CREATED response pass cannot close lane."
+  ],
+  "runtime_executed": 0,
+  "repository_mutations": 0
+}

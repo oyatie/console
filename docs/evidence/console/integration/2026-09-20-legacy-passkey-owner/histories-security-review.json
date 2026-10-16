@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_LOCK_HISTORY_TEST_SOURCE_FOR_INTEGRATION_AND_EXECUTION",
+  "manifest_sha256": "a89e38cd2854d4a2bf6431bdcbd8c04c6a7eeb29f1f1863f44cc829cc182164d",
+  "files_sha256": {
+    "CONTRACT.md": "58e47e2e6bc9639bbc2d6a10f511bcf501a1f9f7721be5aad79f7b7238149d1a",
+    "legacy_bound_passkey_histories.rs": "101c1389a21cca89fbd4b627b1c84b77db850bded953d904dcc9897b5b602bcf"
+  },
+  "reviewed": [
+    "Seven real PostgreSQL histories use actual Auth LOGIN, same database, current pg_blocking_pids edges, Lock wait state and owning query identity. Sleeping only paces polling.",
+    "Reader-first projection blocker proves real retained subject guard plus exact-family SHARE through separate conflicting family probe. Real logout supplies terminal effects; revoker-first uses real owner in retained transaction.",
+    "Signed bound/historical and family deadlines are checked against fresh observed-before DB time and actual deadline passage after the observed wait, then 401 with complete no-change state. No scheduler equality claim.",
+    "Independent Company progress uses only row/subject guard, separately enrolled Company and actual bounded B HTTP completion while A blocking persists. Global table lock is not used as progress proof.",
+    "Full public-table census plus exact logout terminal/audit oracle catches unapproved effects; successful histories explicitly check no remaining owned waits or idle transactions.",
+    "Round2 closes the observation timing gap and joins all reader/probe/revoker tasks before asserting results; timed-out tasks abort and await. Infrastructure setup/observation errors are not falsely claimed as guaranteed cleanup."
+  ],
+  "prospective_sqlx_leaves": 7,
+  "executed_by_reviewer": 0,
+  "remaining": [
+    "Root integrated compilation, prerequisite and actual seven history execution. Failed timing/lock observations are failed evidence, not inferred passes.",
+    "Retained and supplemental HTTP/private test runtime verification and complete owner acceptance.",
+    "Full release remains open."
+  ],
+  "reviewer_actions": "Read-only packet/source review and private receipt only; manifest verified, no DB/build executions."
+}

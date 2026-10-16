@@ -1,0 +1,13 @@
+{
+  "source_head": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+  "sql_path": "/private/tmp/console-company-effect-dependency-20260920-round4/runtime_census.sql",
+  "sql_sha256": "c3ae6a4eb47afaf6be80c1079014eeb88cd4d53401bcb11f4198d001eabc4b1c",
+  "captured": true,
+  "database": "_sqlx_test_v4dLN1xvvEFDbF77E4Rt8zyIzYnRelpw1KbpTXhLQkBk7wKz1KuP",
+  "output": "/private/tmp/console-company-effect-runtime-census-20260920.log",
+  "fixture_log": "/private/tmp/console-company-effect-census-fixture-20260920.log",
+  "fixture_exit": 0,
+  "failure": null,
+  "purpose": "Read-only catalog evidence from genuine finalized disposable fixture; observer run is not performance or production qualification",
+  "output_sha256": "2488c816189d9c97ff581d9847e779ce716be32359159f2afff2081d5bc566dd"
+}

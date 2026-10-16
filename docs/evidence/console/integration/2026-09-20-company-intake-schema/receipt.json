@@ -1,0 +1,182 @@
+{
+  "status": "PRIVATE_EMPTY_SCHEMA_VERIFIED_NOT_SERVING",
+  "implementation_commit": "c8a7363e4",
+  "test_commits": [
+    "1046feea3",
+    "689af318e"
+  ],
+  "owner": "/root",
+  "reviewers": [
+    "/root/integration_security",
+    "/root/integration_tests"
+  ],
+  "members": [
+    {
+      "path": "console-company-schema-lane-20260920.json",
+      "sha256": "5727e7f627d4d82ed52e4b0716ac3d6bb2732025b4efc27ce8b1f3ae63265aa3",
+      "original_path": "/private/tmp/console-company-schema-lane-20260920.json",
+      "original_sha256": "5727e7f627d4d82ed52e4b0716ac3d6bb2732025b4efc27ce8b1f3ae63265aa3",
+      "original_bytes": 1875
+    },
+    {
+      "path": "console-native-company-schema-sqlx-round1-security-review-20260920.json",
+      "sha256": "029c62d3844a0e9188b2c9f46e01a25db973ec94e04aea566db78c30c791c9f7",
+      "original_path": "/private/tmp/console-native-company-schema-sqlx-round1-security-review-20260920.json",
+      "original_sha256": "029c62d3844a0e9188b2c9f46e01a25db973ec94e04aea566db78c30c791c9f7",
+      "original_bytes": 3559
+    },
+    {
+      "path": "console-native-company-schema-sqlx-round1-integration-tests-review-20260920.json",
+      "sha256": "c4aa743aff918f3e4909543ef96c920f3e639535ae603f2c8fddcf8c4bce46f5",
+      "original_path": "/private/tmp/console-native-company-schema-sqlx-round1-integration-tests-review-20260920.json",
+      "original_sha256": "c4aa743aff918f3e4909543ef96c920f3e639535ae603f2c8fddcf8c4bce46f5",
+      "original_bytes": 5120
+    },
+    {
+      "path": "console-native-company-schema-generator-tests-security-review-20260920.json",
+      "sha256": "80534dfa4e04bb6d2d4fb5cd33520e1700987ae66d61fdd954fb53403962148d",
+      "original_path": "/private/tmp/console-native-company-schema-generator-tests-security-review-20260920.json",
+      "original_sha256": "80534dfa4e04bb6d2d4fb5cd33520e1700987ae66d61fdd954fb53403962148d",
+      "original_bytes": 2964
+    },
+    {
+      "path": "console-native-company-schema-generator-tests-round1-integration-tests-review-20260920.json",
+      "sha256": "f76674805506c36044eb5d24132a3a0bb82fe1ec5a609f74fcb289d6217799e8",
+      "original_path": "/private/tmp/console-native-company-schema-generator-tests-round1-integration-tests-review-20260920.json",
+      "original_sha256": "f76674805506c36044eb5d24132a3a0bb82fe1ec5a609f74fcb289d6217799e8",
+      "original_bytes": 2942
+    },
+    {
+      "path": "console-company-schema-source-security-review-20260920.json",
+      "sha256": "57c43e2fc7d18ca7bdd8b19464d9915d5a98dbc3ec8dcf3a59b4c2c344c86981",
+      "original_path": "/private/tmp/console-company-schema-source-security-review-20260920.json",
+      "original_sha256": "57c43e2fc7d18ca7bdd8b19464d9915d5a98dbc3ec8dcf3a59b4c2c344c86981",
+      "original_bytes": 4034
+    },
+    {
+      "path": "console-company-schema-static-sql-security-review-20260920.json",
+      "sha256": "b86fa97e1e4a43a0c9481168f75a6bd0385364babbdc324f3438fb05c4f50e45",
+      "original_path": "/private/tmp/console-company-schema-static-sql-security-review-20260920.json",
+      "original_sha256": "b86fa97e1e4a43a0c9481168f75a6bd0385364babbdc324f3438fb05c4f50e45",
+      "original_bytes": 1206
+    },
+    {
+      "path": "console-company-schema-static-sql-type-review-20260920.json",
+      "sha256": "3fd26adc15a9091ecf9b3d69be2eda737fc1466362e44e41089b91e9ce930158",
+      "original_path": "/private/tmp/console-company-schema-static-sql-type-review-20260920.json",
+      "original_sha256": "3fd26adc15a9091ecf9b3d69be2eda737fc1466362e44e41089b91e9ce930158",
+      "original_bytes": 1111
+    },
+    {
+      "path": "console-native-browser-producer-commit-security-review-20260920.json",
+      "sha256": "fd5b11827527ff43ede4d82cfabb55502b30dc77f1ff3de896304270a1e753e5",
+      "original_path": "/private/tmp/console-native-browser-producer-commit-security-review-20260920.json",
+      "original_sha256": "fd5b11827527ff43ede4d82cfabb55502b30dc77f1ff3de896304270a1e753e5",
+      "original_bytes": 2403
+    },
+    {
+      "path": "console-company-schema-admission-20260920.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "original_path": "/private/tmp/console-company-schema-admission-20260920.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48
+    },
+    {
+      "path": "console-company-schema-generator-red-20260920.log.gz",
+      "sha256": "69228eca6da1b1b5af7444533c4f0108591c79d2a6b369cb8a0cb9b0ba2ccad1",
+      "original_path": "/private/tmp/console-company-schema-generator-red-20260920.log",
+      "original_sha256": "f30ca647884cc6c4d63c2ad7732a220d05fcb84ad077dc7fe811cad683d4e353",
+      "original_bytes": 856
+    },
+    {
+      "path": "console-company-schema-generator-green-20260920.log.gz",
+      "sha256": "8b0f7edaca7bf1ffebc11afdcb9d2437cef27d6985b4ab3d5460997565bfd441",
+      "original_path": "/private/tmp/console-company-schema-generator-green-20260920.log",
+      "original_sha256": "089d0839d954b9a44fdc2dd1b8565fcc1fa1a84d3c547561f4019d04b6674324",
+      "original_bytes": 98
+    },
+    {
+      "path": "console-company-schema-buck-tests-20260920.log.gz",
+      "sha256": "6c3359a0e2f90874d7edd4b22ad55b5b39c2112a63f505eddb096b544480bb40",
+      "original_path": "/private/tmp/console-company-schema-buck-tests-20260920.log",
+      "original_sha256": "e9e5844e311531b76e7c6c0ac19c989421ad3deb8214a9236f81567bb94490cc",
+      "original_bytes": 887
+    },
+    {
+      "path": "console-company-schema-buck-successor-tests-20260920.log.gz",
+      "sha256": "cf82b916f403ed3a88fbc85221927514dfcc3b3d08a930c596799ce3da3cfb2e",
+      "original_path": "/private/tmp/console-company-schema-buck-successor-tests-20260920.log",
+      "original_sha256": "a361ac0464f332dd6edce4844081f3039370f3387d5dbe04f2cdfa1fe2f2654a",
+      "original_bytes": 165
+    },
+    {
+      "path": "console-company-schema-native-runtime-20260920.log.gz",
+      "sha256": "2e4962266242abe770cc516ad49c8a126c0e21af46075a203129ad3363ceed3a",
+      "original_path": "/private/tmp/console-company-schema-native-runtime-20260920.log",
+      "original_sha256": "9900c866cb193eaa81d206016e357bf866b85cbeabe509709abdee5b056efc77",
+      "original_bytes": 5536
+    },
+    {
+      "path": "console-company-schema-native-successor-runtime-20260920.log.gz",
+      "sha256": "3d720c805fdb9ef84fd855511660b2a2e866969909dca516af342a57f50fbd75",
+      "original_path": "/private/tmp/console-company-schema-native-successor-runtime-20260920.log",
+      "original_sha256": "d7f5e49bfdc10dbdb23e91fc40a0cc055ed7e4b783f077265e15057dbcf4ee7f",
+      "original_bytes": 5651
+    },
+    {
+      "path": "console-company-schema-reachability-20260920.log.gz",
+      "sha256": "94931cfe5e9ca87545307175b91c5d7953f71e1bbba6eff4c72663f8a03f33a4",
+      "original_path": "/private/tmp/console-company-schema-reachability-20260920.log",
+      "original_sha256": "ffc9f44f95477d69d755398461715d7f5ba6f74c1f0b1f1d01a0b9aab1d100ca",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-native-company-schema-sqlx-tests-20260920-round1.tar.gz",
+      "sha256": "c784220a4210eadda7fcf975fd63553eb5b2ddbb69e578ebff41a8dfce79a022",
+      "original_directory": "/private/tmp/console-native-company-schema-sqlx-tests-20260920-round1"
+    },
+    {
+      "path": "console-native-company-schema-generator-tests-20260920-round1.tar.gz",
+      "sha256": "576647418c16cff70b7e2e2c25058616a071464b476bede65cb79ac420c2f16f",
+      "original_directory": "/private/tmp/console-native-company-schema-generator-tests-20260920-round1"
+    },
+    {
+      "path": "console-company-schema-final-security-review-20260920.json",
+      "sha256": "b7fb5a0112eb816ee844fbc6cf5c32c90e1ba5f5b1f9848822e89a1ed99f94c3",
+      "original_path": "/private/tmp/console-company-schema-final-security-review-20260920.json",
+      "original_sha256": "b7fb5a0112eb816ee844fbc6cf5c32c90e1ba5f5b1f9848822e89a1ed99f94c3",
+      "original_bytes": 6421
+    }
+  ],
+  "verification": {
+    "native_leaf": "account_browser::deployment_operator_designation::company_setup::intake_schema::company_intake_empty_schema_is_private_and_retains_real_fk_dependencies",
+    "native_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=\"<pinned-dotslash>:$PATH\" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=<native_leaf> bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg",
+    "native_passed": 1,
+    "native_filtered": 477,
+    "native_ignored": 0,
+    "new_empty_tables": 3,
+    "actual_login_denials": 90,
+    "actual_fk_tuples": 12,
+    "owner_keyshare_checks": 1,
+    "owner_immutable_denials": 1,
+    "corruption_controls": 2,
+    "historical_rows": "full census unchanged",
+    "generated_predecessor_files": "seven fixed hashes unchanged",
+    "generator_tests": 66,
+    "reachable_binaries": 388,
+    "existing_dark_test": "backend/crates/platform/storage/tests/seaweedfs_worm.rs unchanged"
+  },
+  "retained_failures": [
+    "first native build E0521, zero tests executed; reviewed static-SQL type correction",
+    "first66-method generator run failed unstaged-generated drift; staged generated projection then66/66"
+  ],
+  "remaining": [
+    "schema deliberately uninstalled, both current profiles reject partial private catalog",
+    "native policy-assignment revision FK",
+    "request and event guards",
+    "authenticated prepare/status/cancel and receipt recovery",
+    "complete Company effect and browser flow",
+    "all five complete MVP workflows",
+    "production exposure not authorized"
+  ]
+}

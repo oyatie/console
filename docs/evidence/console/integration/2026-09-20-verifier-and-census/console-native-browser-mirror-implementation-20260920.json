@@ -1,0 +1,9 @@
+{
+  "base": "48c8f13ef1c7ba30e9fe3c8504fcf389369d5a5c",
+  "files": {
+    "scripts/verify.mjs": "1124540d147f97f8c1c067b5599e42881d88c143ab44b6453417bcb6c6004a69",
+    "scripts/verify.test.mjs": "326c88971d54a272ec586984b9e95fef63d2af008a5151c29fce639b0a017387"
+  },
+  "red": "/private/tmp/console-native-browser-mirror-tests-red-20260920.log",
+  "green": "/private/tmp/console-native-browser-mirror-tests-green-20260920.log"
+}

@@ -1,0 +1,173 @@
+{
+  "SQL_Rust_executed": false,
+  "acyclic": "Preallocated receipt UUID enters policy/process digests; result digest never enters its own head. Policy1 digest is computed before content1, then head1, then result2. Inline evaluated source digests identify already pinned source bytes and actual manifest, not this result. Result before/after refs bind those prior computed digests.",
+  "codec_contract_identity": "Reviewed literal codec-contract source bytes, recorded in packet. No generic generator; Rust/SQL actual encoders must match declared order. JSON packet artifact hash is a source-proposal hash, not installed custody.",
+  "command": "SHA256(full exact new command bytes)",
+  "evaluated_policy_bundle": {
+    "bounds": "schema_id UTF8 1..128 bytes; SDK and language versions UTF8 1..128 bytes each; exact nonblank source spelling, no normalization; digests exactly32 bytes; manifest version exactly1.",
+    "does_not_claim": "This descriptor is evaluated source identity, never evidence that a Group policy-head row exists. Literal packet hashes are proposal identities, not installed SQL custody.",
+    "fields_in_order": [
+      "schema_id:text",
+      "schema_digest:digest",
+      "policy_digest:digest",
+      "codec_contract_digest:digest",
+      "registration_manifest_version:u64=1",
+      "registration_manifest_digest:digest",
+      "cedar_sdk_version:text",
+      "cedar_language_version:text"
+    ],
+    "name": "EvaluatedPolicyBundleV1",
+    "policy_version": 1,
+    "registration_manifest_version": 1,
+    "schema_id": "native-group-process-v1",
+    "schema_version": 1,
+    "source": "Exact genuinely evaluated installed source schema/PolicySet/codec/actual action manifest and actual pinned SDK/language versions. Source installation exists independently of any business policy-head row."
+  },
+  "kind": "EXACT_NEW_BYTE_LAYOUT_PROPOSAL_NOT_SQL_CAPTURE",
+  "layouts": {
+    "policy_head": {
+      "fields_in_order": [
+        "group:uuid",
+        "incarnation:uuid",
+        "revision:u64",
+        "schema_id:text",
+        "schema_digest:digest",
+        "policy_digest:digest",
+        "codec_contract_digest:digest",
+        "registration_manifest_digest:digest",
+        "first_actor:uuid",
+        "first_command:uuid",
+        "first_input_digest:digest",
+        "activation_receipt_id:uuid",
+        "activated_at_us:i64"
+      ],
+      "layout_version": 1,
+      "prefix": "CONSOLE.IDENTITY.GROUP.POLICY.HEAD\u0000"
+    },
+    "process_head": {
+      "fields_in_order": [
+        "group:uuid",
+        "incarnation:uuid",
+        "process_id:uuid",
+        "head_revision:u64",
+        "content_version:u64",
+        "content_digest:digest",
+        "state:u16",
+        "expiry_us:i64",
+        "last_actor:uuid",
+        "last_command:uuid",
+        "last_input_digest:digest",
+        "result_receipt_id:uuid",
+        "updated_at_us:i64"
+      ],
+      "layout_version": 1,
+      "prefix": "CONSOLE.IDENTITY.PROCESS.HEAD\u0000"
+    },
+    "process_version": {
+      "fields_in_order": [
+        "group:uuid",
+        "incarnation:uuid",
+        "process_id:uuid",
+        "version:u64",
+        "schema=GROUP_VERIFIER_PROCESS_V1:text",
+        "actor:uuid",
+        "designation_receipt:uuid",
+        "designation_revision:u64",
+        "policy_revision:u64",
+        "policy_head_digest:digest",
+        "adopt_command:uuid",
+        "input_digest:digest",
+        "admitted_at_us:i64",
+        "expiry_us:i64",
+        "responsibility:u16=1",
+        "title:text",
+        "method:u16=1",
+        "intended_claimant_matching_procedure:text",
+        "account_possession_procedure:text",
+        "physical_human_evidence_procedure:text",
+        "duplicate_contradictory_claim_procedure:text",
+        "qualification_criteria_instruction:text",
+        "escalation_adjudication_procedure:text",
+        "evidence_minimization_retention_description:text",
+        "recipient_responsibility:text"
+      ],
+      "layout_version": 1,
+      "prefix": "CONSOLE.IDENTITY.PROCESS.VERSION\u0000"
+    },
+    "registration": {
+      "fields_in_order": [
+        "group:uuid",
+        "incarnation:uuid",
+        "registration_revision:u64=1",
+        "schema_id:text",
+        "schema_digest:digest",
+        "policy_digest:digest",
+        "codec_contract_digest:digest",
+        "count:u16=4",
+        "entries in exact action order: key:text,actual_id:uuid,revision:u64=1,field_count:u16,fields in exact contract order:text"
+      ],
+      "layout_version": 1,
+      "prefix": "CONSOLE.IDENTITY.GROUP.PROCESS.REGISTRATION\u0000"
+    },
+    "result": {
+      "fields_in_order": [
+        "actor:uuid",
+        "command:uuid",
+        "group:uuid",
+        "incarnation:uuid",
+        "opcode:u16",
+        "input_digest:digest",
+        "intake_receipt:uuid",
+        "result_receipt:uuid",
+        "terminal_code:u16",
+        "accepted_at_us:i64",
+        "executed_at_us:i64",
+        "session:uuid",
+        "security_generation:u64",
+        "designation_receipt:uuid",
+        "designation_revision:u64",
+        "observed_group_revision:u64",
+        "policy_before:PolicyHeadReferenceV1",
+        "policy_after:PolicyHeadReferenceV1",
+        "evaluated_bundle:EvaluatedPolicyBundleV1",
+        "requested_process_id:uuid",
+        "before_head:optional(ProcessHeadReferenceV1)",
+        "after_head:optional(ProcessHeadReferenceV1)",
+        "effect_xid8:u64",
+        "effect_pid:u32"
+      ],
+      "layout_version": 2,
+      "prefix": "CONSOLE.IDENTITY.PROCESS.RESULT\u0000"
+    }
+  },
+  "packet_revision": 2,
+  "policy_head_reference": {
+    "absence": "Actual absence of the Group/incarnation policy row under retained locks; no revision0, zero/invented digest, optional digest or reseal.",
+    "fields": "tag:u8; tag0 has no payload; tag1 has revision:u64BE then head_digest:digest32",
+    "installed_revision_max": 9223372036854775807,
+    "installed_revision_min": 1,
+    "name": "PolicyHeadReferenceV1",
+    "strict": "Unknown tag, installed revision0/overflow, truncated payload or trailing/hidden bytes reject. An absent record consumes exactly one byte; no digest follows it.",
+    "tags": {
+      "ABSENT": 0,
+      "INSTALLED": 1
+    }
+  },
+  "process_head_reference": {
+    "fields_in_order": [
+      "process_id:uuid",
+      "head_revision:u64",
+      "content_version:u64",
+      "content_digest:digest",
+      "head_digest:digest",
+      "state:u16",
+      "expiry_us:i64"
+    ],
+    "name": "ProcessHeadReferenceV1",
+    "rule": "Optional tag:u8=0 absent/no payload or1 present/exact fields; unknown/trailing/truncated rejects. Actual process ID belongs to the observed snapshot, independent of requested_process_id."
+  },
+  "refusal": "Actual policy_before == policy_after and actual before_head == after_head, both absent for source-qualified first-adopt expiry/stale-same-incarnation-Group refusal; zero policy/process/head/history effects. A racing loser uses actual installed policy and winner process ID/head, never expected0 or invented absence. Evaluated bundle separately identifies actual source bytes.",
+  "rule": "SHA256(prefix including NUL + u16BE each declared layout_version + ordered fields). Result uses layout2 only; policy/version/head/registration remain layout1. uuid16 nonnil, u64BE within bigint unless xid8, i64BE UTCus, digest32, u32BE exactUTF8 bounded text; optional byte0/1 then exact record; state1/2; no JSON/map/trailing bytes. Inline policy refs/bundle have no additional prefix/version bytes: their names select the exact field definitions in this artifact.",
+  "schema_identity": "native-group-process-v1; hash exact literal schema/policy source bytes separately; bind installed actual action manifest IDs; never compare only spelling.",
+  "version": "Per-layout explicit versions; packet V2 does not reinterpret V1 draft result bytes or any historical Company codec."
+}

@@ -1,0 +1,334 @@
+{
+  "status": "CREDENTIAL_CAPTURE_VERIFIED_COMPANY_LANE_OPEN",
+  "head": "73972b9b5e6f26555a41e110ddd7d56e1739356d",
+  "members": [
+    {
+      "path": "console-company-credential-capture-20260920-round1/API_ADDITIONS.rs.log.gz",
+      "sha256": "9d668ac1681d14fb5c8faa0a5274c780d794b9efe8add68b6fa3f5e52a4bb83a",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/API_ADDITIONS.rs",
+      "original_sha256": "6ce84407d563b1e7b3dd430be37319cf2f7f510478b7bbb6f361622d9a6fda99",
+      "original_bytes": 1537
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/DOCUMENT_ADDITIONS.rs.log.gz",
+      "sha256": "401b9a954959e1e44740bc13242425a4ef9a570dcdd89dd4e230c3f97d1cf989",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/DOCUMENT_ADDITIONS.rs",
+      "original_sha256": "279036572ac70f3162e0a502b1bb16ac963888fa5327375de4ce1052bef75596",
+      "original_bytes": 692
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/README.md.log.gz",
+      "sha256": "25330f7d03c632a4c1a20dafacf523f702f269c0895b2166389ba3c66adf6326",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/README.md",
+      "original_sha256": "641c7741640eaefa12fe0ac2ab9fa04c678e125f818ff4d8a131b8eb3ca79f0c",
+      "original_bytes": 4796
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/SIGNED_TEST_ADDITION.rs.log.gz",
+      "sha256": "faab5b336b20df956279258dff9c88595258f17a473397c3252b8c99cc59ad1a",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/SIGNED_TEST_ADDITION.rs",
+      "original_sha256": "a3c5d4426ea5063fa006922bf6f0118bdf9e848acffb38e7e0a3ec3b514d1a86",
+      "original_bytes": 3660
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/account_browser.rs.log.gz",
+      "sha256": "56335afba20132004408f643ac0d4d91ee5aa0cf39ba4b7a12912b52c16c1509",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/account_browser.rs",
+      "original_sha256": "81c126f3fff3f072749f6c1ef4573f4b48223a3a45c2753dd16a0c30a8eb23e9",
+      "original_bytes": 51706
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/account_browser.rs.patch.log.gz",
+      "sha256": "379884df8d0d2571aa3a53e3da85e7573a14b41c1be5c205631b718a54903109",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/account_browser.rs.patch",
+      "original_sha256": "26644a009f89134bb224cf9377e4176b858a52d7d44caa09bf7883578f437fe0",
+      "original_bytes": 2899
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/account_entry.rs.log.gz",
+      "sha256": "879a42006fee0edd66ff427e80f4137b5819deb5ad75ed15ccb4e36da4af8371",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/account_entry.rs",
+      "original_sha256": "9c05763e6cdc3a42a60c377c5980636c093726788272dcb95d0afa9cfcfe2ddc",
+      "original_bytes": 11815
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/account_entry.rs.patch.log.gz",
+      "sha256": "a7291a2b92937198c1270cfb0df1d8e3b3aa0bd59f3158275e869ad40b4fabea",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/account_entry.rs.patch",
+      "original_sha256": "38c5b0cadf7482f51ddeee38c3af998933831b399b4d86864aad24f32cb86c51",
+      "original_bytes": 1056
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/company_credential_capture_tests.rs.log.gz",
+      "sha256": "80b1fecc1cabc0577cb3db0075f3b300d51d932cc6455cee7b2c45928ec6c746",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/company_credential_capture_tests.rs",
+      "original_sha256": "88d38a84a15f150af458f81db7073c56fda3aa5df263e16d1fc2b2524f68920c",
+      "original_bytes": 11007
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/manifest.json",
+      "sha256": "ae7b3c0c5a1f2e34a97e19b848304e9fb7b36109ee6c47c9db1aa3116122c45b",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/manifest.json",
+      "original_sha256": "ae7b3c0c5a1f2e34a97e19b848304e9fb7b36109ee6c47c9db1aa3116122c45b",
+      "original_bytes": 2098
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/native_company_signed_credentials.rs.log.gz",
+      "sha256": "87a8de761e160f322f0747ff50b60829d336034d44ae67332d6ab004290777ad",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/native_company_signed_credentials.rs",
+      "original_sha256": "de477d937de0cb538cadf6ea53628808c2edaa96e83223fb42945ed43c8e52b4",
+      "original_bytes": 38385
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round1/native_company_signed_credentials.rs.patch.log.gz",
+      "sha256": "144e2ef4ab77317d4d67194b24f19413eff69a73f920c19c9acf859abd0c5a68",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round1/native_company_signed_credentials.rs.patch",
+      "original_sha256": "40e06d3979146f5f345187b6d0e6103313333bf6456045bf02fbb32dd6293040",
+      "original_bytes": 4716
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round2/account_browser.rs.log.gz",
+      "sha256": "1601476c1a3e9f71270efc9985fc33b0a230e7c72cad165e2ba3a34c4c821854",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round2/account_browser.rs",
+      "original_sha256": "44792370bfc82fc0ea51434e9b23b945fc14a11efef1f473c830ffc6d34afd53",
+      "original_bytes": 51740
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round2/account_entry.rs.log.gz",
+      "sha256": "879a42006fee0edd66ff427e80f4137b5819deb5ad75ed15ccb4e36da4af8371",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round2/account_entry.rs",
+      "original_sha256": "9c05763e6cdc3a42a60c377c5980636c093726788272dcb95d0afa9cfcfe2ddc",
+      "original_bytes": 11815
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round2/company_credential_capture_tests.rs.log.gz",
+      "sha256": "1de0a9eb16cf193281d585ee3de36e14f785cd4ed6344db0af4cc27cda6688b5",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round2/company_credential_capture_tests.rs",
+      "original_sha256": "1d52dfadadce0c6d2b14abc747b9ca126136eb81ab23dbd056ef17028f56a1a7",
+      "original_bytes": 11012
+    },
+    {
+      "path": "console-company-credential-capture-20260920-round2/manifest.json",
+      "sha256": "38bd2872d106edf1e661dbed229badf93a32b181bbe96763b545b7732570f1a9",
+      "original_path": "/private/tmp/console-company-credential-capture-20260920-round2/manifest.json",
+      "original_sha256": "38bd2872d106edf1e661dbed229badf93a32b181bbe96763b545b7732570f1a9",
+      "original_bytes": 724
+    },
+    {
+      "path": "console-company-credential-capture-auth-rest-20260920.log.gz",
+      "sha256": "e352b1296b3f50909b0c287d22a4543ca4ff207f102b9b87f2f0cecd2349809f",
+      "original_path": "/private/tmp/console-company-credential-capture-auth-rest-20260920.log",
+      "original_sha256": "7a38de8eedd7be27fb35c673a29f9cb30c72a145cebd8923615b2889ed35f3da",
+      "original_bytes": 5083
+    },
+    {
+      "path": "console-company-credential-capture-clippy-20260920.log.gz",
+      "sha256": "2cc7d57ab9f1f78fd9aa19f21213db79148d3b43d0f6d7ad0bf1e09ead6ab193",
+      "original_path": "/private/tmp/console-company-credential-capture-clippy-20260920.log",
+      "original_sha256": "0f8b53369b97446778ac4b80738881b5909e29dcafddb97e84b14e3a907b7fb3",
+      "original_bytes": 4630
+    },
+    {
+      "path": "console-company-credential-capture-count-20260920.log.gz",
+      "sha256": "2d1b25c8358a32c132be0314fa53f511b131d4e1ed84777c70a8a6b38ab4cbe7",
+      "original_path": "/private/tmp/console-company-credential-capture-count-20260920.log",
+      "original_sha256": "a3d318ba7c080d8d60de1ac800d2d3e573127aef2860f127a2e371bfbd7baa38",
+      "original_bytes": 441
+    },
+    {
+      "path": "console-company-credential-capture-count-green-20260920.log.gz",
+      "sha256": "48a5640f0534d98887c770896883eb4906feaffe92f3e729c16660ea5e39c015",
+      "original_path": "/private/tmp/console-company-credential-capture-count-green-20260920.log",
+      "original_sha256": "07a8139c14d906bbe13c1187053de35c7a023771cccf508b00fce96a3d7fb976",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-company-credential-capture-count-update-20260920.log.gz",
+      "sha256": "9f3e93a9f56f3b5c7da5ad22b57e824d124622300e40156b076c2704a2aa0fdd",
+      "original_path": "/private/tmp/console-company-credential-capture-count-update-20260920.log",
+      "original_sha256": "e0f37defbf970e8ea1a20388d92e631b4b5bc1c9c4a1364543331287e44f489f",
+      "original_bytes": 525
+    },
+    {
+      "path": "console-company-credential-capture-final-app-auth-rest-discovery-20260920.log.gz",
+      "sha256": "1603e499c9b0ff199f6c8a3065b3dcdb71d77e78584ca477444ae01686f299b2",
+      "original_path": "/private/tmp/console-company-credential-capture-final-app-auth-rest-discovery-20260920.log",
+      "original_sha256": "7367aa69ab54263c58f867dce52380b91689c60dcce7b1ddd3c382b502ac9687",
+      "original_bytes": 58945
+    },
+    {
+      "path": "console-company-credential-capture-final-app-clippy-20260920.log.gz",
+      "sha256": "33a4125bc17b61166e9681e7815af602e013f5b6579fe246b0f3fde0a2cacda2",
+      "original_path": "/private/tmp/console-company-credential-capture-final-app-clippy-20260920.log",
+      "original_sha256": "0aca72898463fa274d6f87b0cc29eaf84d26ca3613be8663f619c3c55c39007b",
+      "original_bytes": 547
+    },
+    {
+      "path": "console-company-credential-capture-final-artifacts-20260920.json",
+      "sha256": "880e2006eb964d9d2d4fd0ae6a5bd942221f4a9cb263492f83d7aeb92d2cfcad",
+      "original_path": "/private/tmp/console-company-credential-capture-final-artifacts-20260920.json",
+      "original_sha256": "880e2006eb964d9d2d4fd0ae6a5bd942221f4a9cb263492f83d7aeb92d2cfcad",
+      "original_bytes": 972
+    },
+    {
+      "path": "console-company-credential-capture-final-auth-rest-20260920.log.gz",
+      "sha256": "b43150d3cfb900864367502edada8355a494c6893f4ee80c95d7968c80588bb0",
+      "original_path": "/private/tmp/console-company-credential-capture-final-auth-rest-20260920.log",
+      "original_sha256": "fc83dc242d0abc819e38769942a2f26296aa352b0500a8b812166fb198e31586",
+      "original_bytes": 5220
+    },
+    {
+      "path": "console-company-credential-capture-final-auth-rest-dev-discovery-20260920.log.gz",
+      "sha256": "0d9eb02907a14c93371edc3aac9b44e9caaf5972a2f7aee18bea35124fbe6722",
+      "original_path": "/private/tmp/console-company-credential-capture-final-auth-rest-dev-discovery-20260920.log",
+      "original_sha256": "726cf6811cc5e51546f2c370577aa90a98c802ab7d079742ccfe1cc6defe547a",
+      "original_bytes": 1007
+    },
+    {
+      "path": "console-company-credential-capture-final-clippy-20260920.log.gz",
+      "sha256": "c53e03b6f4b0ac30ac3323580b0c1c8249bdae469fc051947a94a909df38c900",
+      "original_path": "/private/tmp/console-company-credential-capture-final-clippy-20260920.log",
+      "original_sha256": "e3802ac8ea8ae01417f72fc4100840f30dd83aeb318e5942d8f52bb00489d8f5",
+      "original_bytes": 200
+    },
+    {
+      "path": "console-company-credential-capture-final-fmt-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-credential-capture-final-fmt-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-credential-capture-final-preflight-20260920.json",
+      "sha256": "380c327f5a64b4a36e9b8bd88e1fc40732561cb3ccbd17382500e4db52eab043",
+      "original_path": "/private/tmp/console-company-credential-capture-final-preflight-20260920.json",
+      "original_sha256": "380c327f5a64b4a36e9b8bd88e1fc40732561cb3ccbd17382500e4db52eab043",
+      "original_bytes": 290
+    },
+    {
+      "path": "console-company-credential-capture-final-preflight-20260920.log.gz",
+      "sha256": "251fa7918c1e13f23034bc2c0e1f6628c434da91f12ddee1353037dc1820ff79",
+      "original_path": "/private/tmp/console-company-credential-capture-final-preflight-20260920.log",
+      "original_sha256": "f2cc920923b3cb210c9b02a0cec5138c8bbbc1d0205479d544e247ed7d800dc2",
+      "original_bytes": 625
+    },
+    {
+      "path": "console-company-credential-capture-final-record-20260920.json",
+      "sha256": "f5ea162bb656d0b511a2106029e00b0df3e2a2877818bc4eb5974bafbbb74788",
+      "original_path": "/private/tmp/console-company-credential-capture-final-record-20260920.json",
+      "original_sha256": "f5ea162bb656d0b511a2106029e00b0df3e2a2877818bc4eb5974bafbbb74788",
+      "original_bytes": 1166
+    },
+    {
+      "path": "console-company-credential-capture-final-security-review-20260920.json",
+      "sha256": "5d86e3027c40e3ef2363c476d9b19cbd05411876e5e2c4f9d30a4e52870317be",
+      "original_path": "/private/tmp/console-company-credential-capture-final-security-review-20260920.json",
+      "original_sha256": "5d86e3027c40e3ef2363c476d9b19cbd05411876e5e2c4f9d30a4e52870317be",
+      "original_bytes": 3095
+    },
+    {
+      "path": "console-company-credential-capture-final-signed-20260920.log.gz",
+      "sha256": "a7d5dd45dd11f05f907bd9742b4a41dd64173d73d6b88f997056b044eb5a0d88",
+      "original_path": "/private/tmp/console-company-credential-capture-final-signed-20260920.log",
+      "original_sha256": "1825382b4d7fc0eb54982cad09e0febf06d7bed65f3e452cedbac990f9655ef6",
+      "original_bytes": 3971
+    },
+    {
+      "path": "console-company-credential-capture-final-source-20260920.json",
+      "sha256": "017451d706f61f1321747375ab9227d4260c762b2027a2000c4fa151dfb8e6e9",
+      "original_path": "/private/tmp/console-company-credential-capture-final-source-20260920.json",
+      "original_sha256": "017451d706f61f1321747375ab9227d4260c762b2027a2000c4fa151dfb8e6e9",
+      "original_bytes": 826
+    },
+    {
+      "path": "console-company-credential-capture-final-verification-20260920.json",
+      "sha256": "bc634643962a5c989caa3cdc1126eb1837ff7f64b72bd08bbbb56db2b14b45ea",
+      "original_path": "/private/tmp/console-company-credential-capture-final-verification-20260920.json",
+      "original_sha256": "bc634643962a5c989caa3cdc1126eb1837ff7f64b72bd08bbbb56db2b14b45ea",
+      "original_bytes": 2320
+    },
+    {
+      "path": "console-company-credential-capture-fmt-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-credential-capture-fmt-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-credential-capture-preflight-20260920.log.gz",
+      "sha256": "38378d75eeefd08f41da4064b7d48c5f29fe6cb64bfaab7185e78b9dbed51a0c",
+      "original_path": "/private/tmp/console-company-credential-capture-preflight-20260920.log",
+      "original_sha256": "89d740ca061dc3d2afcfd83a49022024fa21dfed808fda61a47a2c7105cc8925",
+      "original_bytes": 625
+    },
+    {
+      "path": "console-company-credential-capture-round1-security-review-20260920.json",
+      "sha256": "e39f8fb45c6812a5ce065cae37a08d7034c4dc49e26a66820f4962a6b23f0604",
+      "original_path": "/private/tmp/console-company-credential-capture-round1-security-review-20260920.json",
+      "original_sha256": "e39f8fb45c6812a5ce065cae37a08d7034c4dc49e26a66820f4962a6b23f0604",
+      "original_bytes": 3483
+    },
+    {
+      "path": "console-company-credential-capture-round2-security-review-20260920.json",
+      "sha256": "c8f9b55a43c4ed66de7e7176b370a040711a65db3ba3d8641f22a51865f99d70",
+      "original_path": "/private/tmp/console-company-credential-capture-round2-security-review-20260920.json",
+      "original_sha256": "c8f9b55a43c4ed66de7e7176b370a040711a65db3ba3d8641f22a51865f99d70",
+      "original_bytes": 1276
+    },
+    {
+      "path": "console-company-credential-capture-signed-20260920.log.gz",
+      "sha256": "f9e44020c01f210406ebeba24f77dbcdb7362c6a417dcccc5cd0c50d8f65ec2c",
+      "original_path": "/private/tmp/console-company-credential-capture-signed-20260920.log",
+      "original_sha256": "52690cf5f52c5e9dc4e848d9d2bf862ad7b6458118390fecffa3506e70bea8da",
+      "original_bytes": 9015
+    },
+    {
+      "path": "console-company-credential-capture-verification-20260920.json",
+      "sha256": "356542e37bb18d8d11db903e7a07a0708f3a3f84028f3cd5e8e2747014757a20",
+      "original_path": "/private/tmp/console-company-credential-capture-verification-20260920.json",
+      "original_sha256": "356542e37bb18d8d11db903e7a07a0708f3a3f84028f3cd5e8e2747014757a20",
+      "original_bytes": 1809
+    },
+    {
+      "path": "console-native-company-capture-enclosing-admit-20260920.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "original_path": "/private/tmp/console-native-company-capture-enclosing-admit-20260920.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48
+    },
+    {
+      "path": "console-native-company-capture-enclosing-lane-20260920.json",
+      "sha256": "bd89f5dfbce9efdd774201c6cb8869e1ce5aa1bf4fee76b9bfa6e29842cf98ca",
+      "original_path": "/private/tmp/console-native-company-capture-enclosing-lane-20260920.json",
+      "original_sha256": "bd89f5dfbce9efdd774201c6cb8869e1ce5aa1bf4fee76b9bfa6e29842cf98ca",
+      "original_bytes": 12206
+    },
+    {
+      "path": "console-native-company-capture-enclosing-lane-approved-20260920.json",
+      "sha256": "1af35c29b0f10cc3a18200a5e7cde4c01459916ba36834820a7023b1c3fdfc2a",
+      "original_path": "/private/tmp/console-native-company-capture-enclosing-lane-approved-20260920.json",
+      "original_sha256": "1af35c29b0f10cc3a18200a5e7cde4c01459916ba36834820a7023b1c3fdfc2a",
+      "original_bytes": 12415
+    },
+    {
+      "path": "console-native-company-capture-enclosing-red-20260920.log.gz",
+      "sha256": "c1b4f2a7f6d816a8dae809234818df0fdd4515a061279d924526b47161af8a8b",
+      "original_path": "/private/tmp/console-native-company-capture-enclosing-red-20260920.log",
+      "original_sha256": "d0e40f77f53306784a4639ba75584dbfffa9fe1546d9bca1b0bf76a1f386af35",
+      "original_bytes": 4485
+    }
+  ],
+  "executed_distinct": 12,
+  "discovery": {
+    "auth_rest": 11,
+    "app_auth_rest": 512
+  },
+  "executed": {
+    "auth_rest": 11,
+    "app_auth_rest": 1
+  },
+  "limits": [
+    "Company enrollment remains404vs201; no complete Company/MVP/release acceptance.",
+    "Initial Clippy failure and both approved source versions retained. Cargo Clippy/format are supporting checks; product tests executed native Buck2 artifacts."
+  ]
+}

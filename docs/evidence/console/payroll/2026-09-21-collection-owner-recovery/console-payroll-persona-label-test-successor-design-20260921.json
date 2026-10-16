@@ -1,0 +1,10 @@
+{
+  "kind": "semantic oracle successor requiring independent approval",
+  "candidate": "/private/tmp/console-payroll-persona-label-test-successor-20260921.rs",
+  "sha256": "6af6e89a5146d28fb9ee0f0df8cc01375f65ba0e2df404fc661dd33bd0fdaa14",
+  "change": "One assertion label \uc778\uc0ac\u2192\uc0ac\ub78c\uacfc \uace0\uc6a9, matching already-reviewed native shared navigation. All3hrefs/other labels/authorization/actual IDs/source links/audits preserved.",
+  "evidence": "Actual unfiltered health suite14passed1failed1inherited ignored; sole failure is obsolete Korean nav label, HTML exposes all3correct links and new label.",
+  "source": "backend/crates/payroll/ui/src/lib.rs:366",
+  "approval_basis": "Existing integrated reviewed UI bcb2fcc includes shared workspace navigation label \uc0ac\ub78c\uacfc \uace0\uc6a9. No product mutation/new fixture/auth change.",
+  "remaining": "Run exact ui_persona_e2e and unfiltered suite, preserve original failure. This is not browser acceptance or full MVP."
+}

@@ -1,0 +1,18 @@
+{
+  "base_sha": "a86dac710a1daab97caacf17ee2f429f4ac072c5",
+  "owner": "/root",
+  "scope": "Exact independently approved test candidate only; production unchanged",
+  "command": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest --test health_readiness -- --list",
+  "exit_code": 0,
+  "discovered": {
+    "auth_rest": 366,
+    "health_readiness": 15
+  },
+  "executed": 0,
+  "remaining": [
+    "Clean real owner RED and lane admission",
+    "Implementation and independent source review",
+    "Runtime and browser verification",
+    "All release milestones remain incomplete"
+  ]
+}

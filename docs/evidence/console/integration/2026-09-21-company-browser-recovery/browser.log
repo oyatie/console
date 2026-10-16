@@ -1,0 +1,70 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T22:49:46.482-04:00] Build ID: fc42e8e3-818b-43d8-b44b-5fd318f9a03f
+[2026-09-21T22:49:46.482-04:00] File changed (since mergebase): root//backend/crates/payroll/ui/src/native_account.css
+[2026-09-21T22:49:46.482-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T22:49:53.554-04:00] Waiting on buck2 daemon fc42e8e3-818b-43d8-b44b-5fd318f9a03f...
+[2026-09-21T22:49:53.554-04:00] Resource usage: CPU: 4%
+[2026-09-21T22:49:53.554-04:00] IO: Write: 1
+[2026-09-21T22:50:00.555-04:00] Waiting on buck2 daemon fc42e8e3-818b-43d8-b44b-5fd318f9a03f...
+[2026-09-21T22:50:00.555-04:00] Resource usage: CPU: 1%
+[2026-09-21T22:50:00.555-04:00] IO: Remove: 1
+[2026-09-21T22:50:07.555-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:50:14.655-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:50:21.755-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:50:28.855-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 695 other actions
+[2026-09-21T22:50:39.254-04:00] Waiting on root//third-party/rust:bumpalo-3 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 526 other actions
+[2026-09-21T22:50:47.155-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T22:50:54.255-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T22:51:01.355-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T22:51:08.355-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T22:51:15.356-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T22:51:22.455-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T22:51:29.455-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T22:51:36.456-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T22:51:43.556-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:51:50.656-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:51:57.756-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:52:04.856-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:52:11.857-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:52:18.956-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:52:26.057-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:52:32.773-04:00] Cache hits: 0%
+[2026-09-21T22:52:32.773-04:00] Commands: 5 (cached: 0, remote: 0, local: 5)
+BUILD SUCCEEDED
+[2026-09-21T22:52:32.814-04:00] Build ID: 6dc88ca3-bf83-4c7e-afaa-b0b3bfd2ac88
+[2026-09-21T22:52:33.160-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T22:52:40.215-04:00] Waiting on buck2 daemon 6dc88ca3-bf83-4c7e-afaa-b0b3bfd2ac88...
+[2026-09-21T22:52:40.215-04:00] Resource usage: CPU: 2%
+[2026-09-21T22:52:40.215-04:00] IO: Remove: 1
+[2026-09-21T22:52:47.316-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:52:54.415-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:01.615-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:09.615-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:16.717-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:24.616-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:32.417-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:39.517-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:46.717-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:53:54.617-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:54:03.117-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:54:10.217-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:54:17.317-04:00] Waiting on toolchains//rust:rustc-aarch64-apple-darwin (prelude//platforms:default#39893c7e49283da4) -- action (write rustc-aarch64-apple-darwin_unpack.sh), and 715 other actions
+[2026-09-21T22:54:24.416-04:00] Waiting on root//third-party/rust:x509-cert-0.2.5.crate (prelude//platforms:default#39893c7e49283da4) -- action (write x509-cert-0.2.5.crate_unpack.sh), and 1006 other actions
+[2026-09-21T22:54:33.117-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 282 other actions
+[2026-09-21T22:54:40.217-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T22:54:47.317-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T22:54:54.417-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T22:55:01.518-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T22:55:06.131-04:00] ✓ Pass: root//tools/buck:app-auth-rest-browser-pg (27.2s)
+[2026-09-21T22:55:06.131-04:00] ---- STDOUT ----
+[2026-09-21T22:55:06.131-04:00]
+[2026-09-21T22:55:06.131-04:00] running 1 test
+[2026-09-21T22:55:06.131-04:00] test account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace ... ok
+[2026-09-21T22:55:06.131-04:00]
+[2026-09-21T22:55:06.131-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 522 filtered out; finished in 23.95s
+[2026-09-21T22:55:06.131-04:00]
+[2026-09-21T22:55:06.131-04:00]
+[2026-09-21T22:55:06.131-04:00] ---- STDERR ----
+[2026-09-21T22:55:06.131-04:00]
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

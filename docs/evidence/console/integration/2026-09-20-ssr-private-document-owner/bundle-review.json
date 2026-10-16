@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_EXACT_BUNDLE_AND_UI_REGRESSIONS_PENDING_NATIVE_HTTP_BROWSER",
+  "source_review_sha256": "72d29be7a11b2ec82fabcd16540e3516df620bada3acbe9a82f0abeeb6efea32",
+  "bundle_sha256": "bb44b5f16cbb2fee48a34a85f91a90a7b2412c9ae7d057ca4feb9489c8dedd56",
+  "checks": [
+    "All7input and2output hashes independently rechecked against current files.",
+    "Bundle manifest changes only2reviewed SSR source input hashes; exact JS/WASM assets, build recipe, toolchain1.98.1 and wasm-bindgen0.2.123 identities unchanged.",
+    "Actual root build log reports successful optimized rebuild. All13UItests pass including retained8 and new5,0failed/ignored.",
+    "All18WASM drift controls pass,0failed/skipped; includes source/artifact/recipe/toolchain corruption detection."
+  ],
+  "logs_sha256": {
+    "console-ssr-private-document-ui-all-20260920.log": "22eba60ea922fde3bb15c89ae690c5b1e463ee541823cc700626e95cda215ae9",
+    "console-ssr-private-document-drift-tests-20260920.log": "f5247f39ab9b0cd522b988424d068c33eaaa1187b26e7896510c930ef96ff3cd",
+    "console-ssr-private-document-wasm-build-20260920.log": "7f7509642921498a08d5b6d0b097e8129c6c9eacd84169fdc9d6e3bcfe3954b7"
+  },
+  "remaining": [
+    "Actual served browser hydration/current effects and focused nativeHTTP regressions remain pending.",
+    "No comprehensiveCSP, payroll workflow or assembledrelease qualification."
+  ]
+}

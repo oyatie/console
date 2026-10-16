@@ -2,6 +2,11 @@
 load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")
 
 export_file(
+    name = "Cargo.toml",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "crate-source-tree",
     src = "src",
     mode = "reference",
@@ -32,6 +37,7 @@ rust_library(
         "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres",
         "//backend/crates/payroll/application:console-payroll-application",
         "//backend/crates/payroll/domain:console-payroll-domain",
+        "//backend/crates/platform/auth-rest:console-platform-auth-rest",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
@@ -66,6 +72,7 @@ rust_test(
         "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres",
         "//backend/crates/payroll/application:console-payroll-application",
         "//backend/crates/payroll/domain:console-payroll-domain",
+        "//backend/crates/platform/auth-rest:console-platform-auth-rest",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
@@ -107,6 +114,7 @@ rust_test(
         "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres",
         "//backend/crates/payroll/application:console-payroll-application",
         "//backend/crates/payroll/domain:console-payroll-domain",
+        "//backend/crates/platform/auth-rest:console-platform-auth-rest",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
@@ -149,6 +157,7 @@ rust_test(
         "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres",
         "//backend/crates/payroll/application:console-payroll-application",
         "//backend/crates/payroll/domain:console-payroll-domain",
+        "//backend/crates/platform/auth-rest:console-platform-auth-rest",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
@@ -191,6 +200,7 @@ rust_test(
         "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres",
         "//backend/crates/payroll/application:console-payroll-application",
         "//backend/crates/payroll/domain:console-payroll-domain",
+        "//backend/crates/platform/auth-rest:console-platform-auth-rest",
         "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",

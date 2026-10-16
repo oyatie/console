@@ -1,0 +1,11 @@
+{
+  "head": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "command": [
+    "node",
+    "tools/ci/gate-sweep.mjs"
+  ],
+  "exit": 0,
+  "seconds": 51.64,
+  "log": "/private/tmp/console-company-policy-preflight-20260920.log",
+  "sha256": "f48b43d35abf36305f45d599f7b6ae92d1628c18b4428fb22180d66b5f8e548e"
+}

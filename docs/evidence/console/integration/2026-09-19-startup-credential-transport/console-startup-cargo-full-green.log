@@ -1,0 +1,33 @@
+▶ cargo_needs_postgres argument contract
+  ✔ rejects an unknown runner before touching Docker (10.0995ms)
+  ✔ rejects an empty runner rather than defaulting silently (8.936667ms)
+  ✔ accepts both supported runners at the validation stage (17.299875ms)
+  ✔ supports both --runner X and --runner=X spellings (15.917292ms)
+  ✔ still rejects the retired domain shard id (8.182916ms)
+  ✔ usage documents the runner flag (8.227292ms)
+✔ cargo_needs_postgres argument contract (69.428334ms)
+✔ Cargo PostgreSQL harness transports distinct restricted credentials privately (1486.012667ms)
+✔ cargo isolates canonical clusters and preserves selection (success) (5309.782708ms)
+✔ cargo isolates canonical clusters and preserves selection (keep-going) (5268.423667ms)
+✔ cargo isolates canonical clusters and preserves selection (fail-fast) (1371.907333ms)
+✔ cargo isolates canonical clusters and preserves selection (build-failure) (4837.550083ms)
+✔ cargo isolates canonical clusters and preserves selection (preflight-failure) (4656.237833ms)
+✔ cargo isolates canonical clusters and preserves selection (one-alias-group) (1062.100125ms)
+✔ cargo isolates canonical clusters and preserves selection (terminal-failure) (1056.318875ms)
+✔ cargo isolates canonical clusters and preserves selection (shard) (2009.655625ms)
+✔ nextest isolates canonical clusters and preserves selection (success) (4349.041792ms)
+✔ nextest isolates canonical clusters and preserves selection (keep-going) (4382.255375ms)
+✔ nextest isolates canonical clusters and preserves selection (fail-fast) (1217.55925ms)
+✔ nextest isolates canonical clusters and preserves selection (build-failure) (4322.000458ms)
+✔ nextest isolates canonical clusters and preserves selection (preflight-failure) (4267.986625ms)
+✔ nextest isolates canonical clusters and preserves selection (one-alias-group) (867.736625ms)
+✔ nextest isolates canonical clusters and preserves selection (terminal-failure) (872.309083ms)
+✔ nextest isolates canonical clusters and preserves selection (shard) (2067.968584ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 49515.569833

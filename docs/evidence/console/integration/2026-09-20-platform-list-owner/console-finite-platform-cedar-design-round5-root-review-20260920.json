@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_DESIGN_ONLY",
+  "manifest_sha256": "7823ee9032c28c0d54300c4e23bf3100bf42742eef69e4f3fcd9df9e40a60c42",
+  "design_sha256": "9e3e567056a5b4784ff20470bd8f5886b59f8c1305c412532745b80e5c56206d",
+  "basis": [
+    "Actual list_orgs to list_tenants operation owns TenantList/Companies/read semantics and audit; generic authentication resolver cannot substitute that action for unrelated calls.",
+    "Single private Cedar eligibility decision retains real session mode; public composite classification prevents historical effects from inheriting a raw permit.",
+    "Preserves retained contradictory MEMBER fixture pending separate exact semantic review.",
+    "No implementation or pure-test result substitutes for real retained guard and owning transaction tests."
+  ],
+  "required_next": [
+    "Current source guard and owner API contract",
+    "Independently reviewed real owner RED and guarded disclosure history",
+    "Exact linked SDK compilation and finite oracle execution"
+  ],
+  "production_exposure_authorized": false
+}

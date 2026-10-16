@@ -1,0 +1,101 @@
+{
+  "status": "integrated local renderer implementation; workflow/browser/release acceptance pending",
+  "candidate_head": "bcb2fcc2380df802155df51d08e1949f7f5b405e",
+  "commands": [
+    {
+      "command": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin tools/buck2 test //backend/crates/payroll/ui:console-payroll-ui-unit",
+      "log": "console-ui-integrated-28-20260921.log",
+      "executed": 28,
+      "passed": 28,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "infra_failures": 0,
+      "build_failures": 0
+    },
+    {
+      "command": "node scripts/check-adrs.mjs",
+      "log": "console-ui-evidence-adrs-20260921.log",
+      "exit": 0,
+      "observed": "44 ADRs,8 design notes passed; no governance rule change"
+    }
+  ],
+  "retained_tests": 13,
+  "new_reviewed_tests": 15,
+  "browser_sessions_executed": 0,
+  "source_sha256": {
+    "backend/crates/payroll/ui/src/organization.rs": "25b4b0bd6ecd6f3e7323e171f8a2d1505649697d7b20f66d9aae19278de76f5b",
+    "backend/crates/payroll/ui/src/lib.rs": "ce5dc35da22e8b0314da4a7ff8db0463e8d08ddee8f752e713e501b6db5edbb4",
+    "backend/crates/payroll/ui/src/workspace_tests.rs": "d09d6bc7dd8c81629505474e2e3522afe28a447f7a6037bf8cc9f95442901a12",
+    "backend/crates/payroll/ui/src/workflow_presentation_tests.rs": "7d0e3351a39c4d12cca9f9039479cd0e8d0c18fb9c47719985332ce9b6785c32",
+    "backend/crates/payroll/ui/src/people_tests.rs": "8d3d171b6f9339b1a9a6891e4a4c567a45f3b118fd265bf20a0adef2969fd680",
+    "backend/crates/payroll/ui/src/payroll_workspace.rs": "d43635588577347cb7284cec1c9a5c1d0bd4fa1e152c9a1d2e1620a8fb3fbbc9",
+    "backend/crates/payroll/ui/src/people.rs": "cf0bf8e1d22c9dc63e06217e7cd7391f80552f52e4c3b7f2b10167b3988f59fd",
+    "backend/crates/payroll/ui/src/native_account.rs": "3c48270170b6245f86e67f49209975881e56d1c1e41457b34b519191d107c90a"
+  },
+  "evidence_sha256": {
+    "console-workspace-ui-baseline-20260921.log": "7de772096b46c5e67d33b68ef2e675ec45bec24e401a5c0fabb0c4792d4af67c",
+    "console-native-ui-initial-lanes-exact-20260921.json": "610622e3d5f39094840da9da40e3219ed6acf196a3c3631a808b2656696c079e",
+    "console-native-ui-initial-admission-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-native-ui-org-lane-20260921.json": "0d68c0aa21fcfb26cd090f1bc5f4238f8209b3252993b67d95a83163c0787ae9",
+    "console-native-ui-org-admission-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-ui-shared-green-20260921.log": "c8fc23264a7fe596c0682bc9e755a63eb35c6a7a9dfd4b7a9291d2ed183764ac",
+    "console-ui-integrated-conflict-build-failure-20260921.log": "ace7a6ac57b547b5d2d46cd42c6fff3cf834b4a9273d8c2aa67562a39c8afd1f",
+    "console-ui-integrated-28-20260921.log": "b1937a0fd5447bd34e2c9a70e083afe30caa7bc103c9cf86d330416da5b56d50",
+    "console-ui-test-adoption-format-proof-20260921.json": "facca973afd587a6b079621e591ecbc03dc3024e079c1793b712a949a882afa6",
+    "console-shared-workspace-ui-design-round2-20260921.json": "6bb835b5065831f52c1472fa48fb139f347781543a7df16915edb2473a45f35d",
+    "console-shared-workspace-security-review-round1-20260921.json": "96b8797c8924a43961457fbc618386b53037b3b5e823a143ee054b9caf47e90a",
+    "console-shared-workspace-security-review-round3-20260921.json": "57288351b8de4ffe891bd902d873ad334da6aa6740a30ff7c533a962c2b8d1ed",
+    "console-shared-workspace-security-test-approval-round4-20260921.json": "a12b5721b915c213ac1c6c68cf2ec11621ec3c2125c1c8adda9e849fbbbee46d",
+    "console-shared-ui-round2-round4-integration-review-20260921.json": "e16bc92e9ead7f0b875dc54d05eca14c7797cf8732c6056d6fedeb5d12bde264",
+    "console-shared-people-ui-integration-review-20260921.json": "aa792b1d69989cd5d0afea8ed2b798d2f862d07d85f3c370e476a55b4ccd8763",
+    "console-people-ui-round4-integration-review-20260921.json": "75b26a115d9eb753f47c21845ad3ede1fdc94d6db90256a185749dd5ce1f506b",
+    "console-org-payroll-ui-security-review-round2-20260921.json": "f6bd2adae102e0c56693d61492ce14bcdc2732cb09577b9b192ab66d8b4c3cba",
+    "console-org-payroll-ui-security-review-round4-20260921.json": "649cd8377b118ee6028431d70458feac4d43ce23d0278c309ca3b631bbb3e71b",
+    "console-shared-ui-implementation-security-review-round1-20260921.json": "aa9bd5f713cf5884f0e4fb5cd7b2814c68d54ba3ad7a5e8d3a4fc12b2730062c",
+    "console-ui-shared-people-implementation-integration-review-20260921.json": "1eb6b726c205c434fa8f48e1858ea38b20f19ba21daca665d8b6ca58f7d65e46",
+    "console-ui-org-payroll-implementation-security-review-20260921.json": "d091d9aec4bbbfb55546c581a114a068b1bc5dd48010bab140af3b6361e2a828",
+    "console-ui-merged-source-integration-review-20260921.json": "c0ec0610a14221308815f81839552c1999a3f6e59f2eae00cba3d8c6f6b8b7d0",
+    "console-ui-org-payroll-implementation-receipt-20260921.json": "02cd40d625a63b1efedfed7663b46a23e2a8b4e5ae2571af92b5826e809555c5",
+    "console-people-ui-implementation-audit-20260921.json": "4079cb67aadba638cd22087178b71fb715ab72be071d3e6ea8e5f6ba3245c49f",
+    "console-prototype-five-workflow-parity-20260921.json": "b81450e448d08e4d828c1ce3088e47491ee4fadc835a09deb24a69d33390cb66",
+    "console-people-ui-candidate-round3-20260921/manifest.json": "9f38628c52fe047ac1a85b575ac0c0c77a282914789bbe001377e08dedf104e2",
+    "console-people-ui-candidate-round3-20260921/people_tests.rs.log": "7dc511ed0af8d570cbeae34386f99fa1acd85a427b3c9b2b6c1dd3653f9ba417",
+    "console-people-ui-candidate-round3-20260921/DESIGN.md.log": "05c5adf0abec265a94e98cad694723c93f4dbe3b4b7b9f0b297b3670937c34d3",
+    "console-people-ui-candidate-round3-20260921/tests.patch.log": "73ca01fc4cc1594ea3052c7998d1fd2cf097d2fcee08c80aea5131b1c4bc2dfc",
+    "console-org-payroll-ui-candidate-round2-20260921/workflow_presentation_tests.rs.log": "079398d8ac9a77ab8dadab79596ab89ec682f3918752e335398e0a1c6761405f",
+    "console-org-payroll-ui-candidate-round2-20260921/DESIGN.md.log": "23114dde8b1b9aa98f2d6aaa29e286499f34c0511d0437d3fbdf3daf90ac7d01",
+    "console-org-payroll-ui-candidate-round2-20260921/receipt.json": "8201c0a9ba3fb01838a6b6f8cfd82fcd23d9b7f17d0d498aada6788c1b95c77d",
+    "console-org-payroll-ui-candidate-round2-20260921/tests.patch.log": "dd9647a4cac0ad586c7888635ad9eb8024b952f7db302f833ec2980524defc0d",
+    "console-people-ui-implementation-round1-20260921/changes.patch.log": "47e1bcfa58f42c9a60e55a951ecc356cde772e3197d639c7df22757a498723b4",
+    "console-people-ui-implementation-round1-20260921/lib.rs.log": "3b431162afde80ccad0bd51581c3e363db9f51343bbb9f512bc0c0d14ad0ac3b",
+    "console-people-ui-implementation-round1-20260921/manifest.json": "90b11cb455f6fa8a183fbf20b8146f4b57cdac6c5407ebae78e267d646ee8abe",
+    "console-people-ui-implementation-round1-20260921/people.rs.log": "cf0bf8e1d22c9dc63e06217e7cd7391f80552f52e4c3b7f2b10167b3988f59fd",
+    "console-ui-org-payroll-review-candidate-20260921/manifest.json": "befafcb3f2641f6e8016ee0af927c899a60e368a23a29ccbb003859c876eeccc",
+    "console-ui-org-payroll-review-candidate-20260921/backend/crates/payroll/ui/src/organization.rs.log": "25b4b0bd6ecd6f3e7323e171f8a2d1505649697d7b20f66d9aae19278de76f5b",
+    "console-ui-org-payroll-review-candidate-20260921/backend/crates/payroll/ui/src/lib.rs.log": "fcf4ec45044031166ebfff3a9d1fc8aab826fa180d9e93cfcb7b2ba0ca413098",
+    "console-ui-org-payroll-review-candidate-20260921/backend/crates/payroll/ui/src/payroll_workspace.rs.log": "d43635588577347cb7284cec1c9a5c1d0bd4fa1e152c9a1d2e1620a8fb3fbbc9",
+    "console-ui-evidence-adrs-20260921.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995"
+  },
+  "integration_incident": "A build was mistakenly invoked after the cherry-pick reported a conflict. It failed compilation; zero tests ran. The preserved failure log is not semantic regression evidence. Root resolved only approved module hooks and reran the unfiltered suite successfully.",
+  "ownership": "Root sole writer of integration root; isolated module roots independently admitted. Migrations, dependency locks, generated artifacts and authority records unchanged.",
+  "changes": [
+    "Shared responsive light workspace, authorized navigation, one page subject and keyboard skip/main focus",
+    "Independent People/Employment section recovery, native inspectors and identity-based links",
+    "Company inventory and bounded Organization hierarchy with unresolved/conflicting rows retained",
+    "Payroll workflow guidance around unchanged working AuthorizedRuns island"
+  ],
+  "remaining_holds": [
+    "Authentic native hydration build and source custody",
+    "Actual authenticated product browser flow with UI-created business records and current native Company authority",
+    "Independent visual/interaction critique,320px/200percent and Korean IME evidence",
+    "Payroll detail and actions, all five complete workflows",
+    "All release qualification and protected merge evidence"
+  ],
+  "release_state_changes": false,
+  "root_independent_checks": [
+    "Actual module hashes equal approved immutable packet",
+    "AuthorizedRuns exact byte comparison against admission base",
+    "Retained inline tests exact byte comparison against admission base"
+  ]
+}

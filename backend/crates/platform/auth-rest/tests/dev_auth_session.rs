@@ -17,6 +17,9 @@ use axum::http::{Request, StatusCode, header};
 use console_kernel_core::OrgId;
 use console_platform_auth::RefreshTokenStore;
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState, router};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
@@ -174,11 +177,13 @@ fn refresh_cookie(response: &http::Response<Body>) -> String {
         .to_owned()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mints_a_real_session_and_backs_it_with_a_real_user(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let (org_id, branch_id) = seed_org_and_branch(&pool).await;
     let rt_pool = runtime_role_pool(&pool).await;
-    let app = router(test_state(rt_pool));
+    let auth_pool = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+    let app = router(test_state(rt_pool).with_auth_database(auth_pool));
 
     let response = post(
         app.clone(),
@@ -252,11 +257,13 @@ async fn mints_a_real_session_and_backs_it_with_a_real_user(pool: PgPool) {
     assert_eq!(renamed, "Dev Mechanic (renamed)");
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let (org_id, branch_id) = seed_org_and_branch(&pool).await;
-    let rt_pool = runtime_role_pool(&pool).await;
-    let app = router(test_state(rt_pool));
+    let rt_pool = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth_pool = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+    let app = router(test_state(rt_pool).with_auth_database(auth_pool));
 
     let minted = post_cookie_session(
         app.clone(),
@@ -290,8 +297,9 @@ async fn cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding(po
     );
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
     let (org_id, branch_id) = seed_org_and_branch(&pool).await;
     let user_id: Uuid = sqlx::query_scalar(
         r#"
@@ -312,10 +320,12 @@ async fn cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user(po
         .await
         .unwrap();
 
-    let rt_pool = runtime_role_pool(&pool).await;
+    let rt_pool = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth_pool = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let issued = RefreshTokenStore
         .issue_family(
             &rt_pool,
+            &auth_pool,
             user_id,
             OrgId::from_uuid(org_id),
             time::OffsetDateTime::now_utc(),
@@ -323,7 +333,7 @@ async fn cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user(po
         )
         .await
         .unwrap();
-    let app = router(test_state(rt_pool));
+    let app = router(test_state(rt_pool).with_auth_database(auth_pool));
     let cookie = format!("console_refresh={}", issued.token.as_str());
 
     let refreshed = post_cookie_refresh(app, &cookie).await;

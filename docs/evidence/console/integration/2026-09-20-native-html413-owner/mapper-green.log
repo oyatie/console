@@ -1,0 +1,48 @@
+   Compiling console-platform-request-context v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/request-context)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.18s
+     Running unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_platform_request_context-b3cc3a66f6b1a2a5)
+
+running 31 tests
+test account::exact_authority_binding_acceptance::exact_binding_accepts_equal_current_operands ... ok
+test account::exact_authority_binding_acceptance::exact_binding_rejects_each_stale_and_unexpected_future_operand ... ok
+test tests::adr0042_ssr_session_cookie::production_cookie_name_is_not_treated_as_a_bearer ... ok
+test account::exact_authority_binding_acceptance::exact_binding_rejects_each_account_session_and_scope_identity ... ok
+test current_role_tests::current_roles_reject_empty_and_partially_invalid_sets ... ok
+test tests::delegated_group_admin_principal_does_not_gain_executive_queue_triage ... ok
+test tests::adr0042_ssr_session_cookie::cookie_does_not_override_or_supply_a_bearer ... ok
+test tests::audit_ip_uses_direct_peer_when_forwarded_chain_is_invalid ... ok
+test tests::audit_ip_accepts_ingress_resolution_across_multiple_trusted_hops ... ok
+test tests::audit_ip_uses_direct_peer_when_forwarded_chain_is_insufficient ... ok
+test tests::ingress_resolver_accepts_a_complete_trusted_proxy_suffix ... ok
+test tests::audit_ip_ignores_client_prepended_forwarded_value ... ok
+test tests::ingress_resolver_never_uses_raw_xff_without_a_configured_proxy ... ok
+test tests::ingress_resolver_rejects_an_untrusted_configured_proxy_suffix ... ok
+test tests::ingress_resolver_rejects_duplicate_forwarded_fields ... ok
+test diagnostic_nondisclosure_tests::forbidden_access_scope_failure_does_not_echo_private_diagnostic ... ok
+test diagnostic_nondisclosure_tests::internal_access_scope_failure_does_not_echo_private_diagnostic ... ok
+test diagnostic_nondisclosure_tests::branch_resolution_failure_does_not_echo_private_diagnostic ... ok
+test diagnostic_nondisclosure_tests::policy_resolution_failure_does_not_echo_private_diagnostic ... ok
+test tests::ingress_resolver_rejects_malformed_forwarded_tokens ... ok
+test tests::ingress_resolver_rejects_empty_forwarded_tokens ... ok
+test tests::ingress_resolver_rejects_xff_from_an_untrusted_transport_peer ... ok
+test tests::internal_failures_do_not_leak_into_the_json_message ... ok
+test diagnostic_nondisclosure_tests::fixed_public_failure_classes_keep_actionable_statuses ... ok
+test tests::envelope_adds_retry_after_to_json_429_without_replacing_the_body ... ok
+test tests::missing_bearer_returns_json_error_body ... ok
+test tests::ingress_middleware_reuses_proxy_policy_and_rejects_a_spoofed_suffix ... ok
+test tests::nested_audit_context_scope_restores_outer_then_clears ... ok
+test tests::envelope_rewrites_plain_408_and_413_to_json_error_body ... ok
+test tests::trusted_request_metadata_propagates_exactly_to_audit_context ... ok
+test tests::envelope_preserves_only_trusted_single_html_413_and_existing_json ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/native_error_envelope.rs (/private/tmp/console-rust1981-owner-target/debug/deps/native_error_envelope-8ae9e94152583221)
+
+running 3 tests
+test actual_body_limit_keeps_json_413_despite_html_request_hints ... ok
+test existing_json_413_preserves_bytes_and_headers_with_native_looking_metadata ... ok
+test untrusted_html_and_plain_rejections_keep_existing_json_envelopes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,59 @@
+--- formatted-predecessor
++++ successor
+@@ -566,31 +566,12 @@
+         }
+     }
+ 
+-    /// ADR-0042 tripwire. This is **not** a claim that the behavior is correct.
+-    ///
+-    /// A browser cannot attach `Authorization` to a top-level navigation, and
+-    /// `bearer_token()` accepts no other transport, so a person who navigates to
+-    /// the SSR screens gets the empty shell however they authenticated. Every
+-    /// other UI test sets the header programmatically, as an HTTP client must,
+-    /// so the suite proves composition is right GIVEN a principal and says
+-    /// nothing about whether the intended client can supply one. This pins that
+-    /// asymmetry where a reader of the suite can see it.
+-    ///
+-    /// What it does NOT do is detect an arbitrary future transport. It sends
+-    /// one credential shape -- `console_refresh` carrying an access token --
+-    /// so it goes red only for a fix that reuses that exact cookie. ADR-0042's
+-    /// recommended option mints a *new* cookie beside the existing pair, and
+-    /// the client-bootstrap option keeps serving this very shell, so neither
+-    /// would turn this red. Treat it as a pin on today's behavior and a
+-    /// pointer to the ADR, not as a gate on the fix: when a transport lands,
+-    /// delete this and put the positive test in its place -- a
+-    /// navigation-shaped request renders the authorized screens.
+-    ///
+-    /// The cookie is deliberately unrealistic in the browser's favor.
+-    /// `console_refresh` is `HttpOnly; SameSite=Strict; Path=/api/v1/auth` and
+-    /// carries a refresh token, so a real browser would never send it to `/`
+-    /// and it would never hold an access token. Handing it one anyway makes
+-    /// the negative result stronger, not representative.
++    /// Legacy console_refresh never authorizes a shipping document. The public
++    /// landing now offers native Account entry, while Bearer remains the
++    /// positive control for the same Company's authorized run and island.
++    /// Supplying an access token under the legacy cookie name is deliberately
++    /// generous: the real refresh cookie is path-scoped away from root. Native
++    /// __Host-console_account_* credentials have a separate accepted owner.
+     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+     async fn browser_navigation_reaches_no_authorized_screen_adr_0042(pool: PgPool) {
+         let keys = keys();
+@@ -713,14 +694,10 @@
+         );
+     }
+ 
+-    /// ADR-0042 option 1 is proposed, not implemented. The recommended cookie
+-    /// (`console_session`) must not authorize HTML GET `/` today. If this goes
+-    /// red, HTML documents gained a cookie transport: replace this tripwire
+-    /// with the positive HTML assertions from the proposed-until-accepted
+-    /// module. `/api/v1` Bearer-only is a separate live test.
+-    ///
+-    /// Generous on purpose: a valid access JWT is placed in that cookie, which
+-    /// production would never do for an opaque/signed session.
++    /// The proposed console_session name remains non-authorizing, even with a
++    /// valid access JWT. Root may show Public without granting any shipping
++    /// data; native Account cookie entry does not activate this old proposal.
++    /// Keep the separate live JSON API cookie-denial and Bearer controls.
+     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+     async fn proposed_ssr_session_cookie_does_not_authorize_html_get_yet(pool: PgPool) {
+         let keys = keys();

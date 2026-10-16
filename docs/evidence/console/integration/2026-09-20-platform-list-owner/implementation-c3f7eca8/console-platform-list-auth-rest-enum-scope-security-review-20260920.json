@@ -1,0 +1,11 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_MINIMAL_AUTH_REST_EXHAUSTIVE_ENUM_COMPATIBILITY_SCOPE",
+  "preimage_sha256": "c12a322d26b797f075b4ac33bcb9e83e4d5200af6a0056d8ccab3f9f0754e78a",
+  "allowed_file": "backend/crates/platform/auth-rest/src/lib.rs",
+  "exact_allowed_change": "In RestError::from_provisioning add one grouped arm: ProvisioningError::PlatformListUnauthorized | ProvisioningError::PlatformListForbidden | ProvisioningError::PlatformListUnavailable => Self::unavailable(\"platform listing unavailable on the legacy transport\"). All existing arms unchanged.",
+  "basis": "Actual source match is exhaustive. Six existing callers were inspected: signup, OTP redemption/issue, credential reset, enrollment handoff and dev principal; none calls PlatformProvisioner::list_tenants. New finite error variants require an explicit compatibility arm to compile. This does not turn legacy Auth REST into another list route or owner.",
+  "scope": "Necessary compatibility consumer added to root single-writer allowlist. Final exact diff must retain all original mapping behavior; actual list route continues its own401/403/503 mapping.",
+  "tests_or_runtime_executed": 0,
+  "repository_writes": 0
+}

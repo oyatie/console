@@ -1,0 +1,93 @@
+{
+  "kind": "proposed-standalone-company-eligibility-transition-tests",
+  "base_sha": "c613626e6dcab9c7c9ce8e4f479576d8ca0e20f7",
+  "sequencing_review_sha256": "951e613a4585b4ba7053310c5ba08532d799fef0654de3cb98e1bd5f9b4fa689",
+  "files": [
+    {
+      "path": "PROPOSAL.md",
+      "sha256": "bb5c18794ead102fa723b043ab44dfe4695ed5367123968804c799cb0e23bf21",
+      "bytes": 7790
+    },
+    {
+      "path": "audit_business_session_transition.rs",
+      "sha256": "db3d148190f9f29ae2be0157f372ae24a0e2578aa66271f88fa4fc04cf0e34e1",
+      "bytes": 28560
+    },
+    {
+      "path": "audit_company_eligibility_transition.rs",
+      "sha256": "cb4f9de86d0004c2b85b3f790cc28a1a938c6540504150d3bcd605693a417263",
+      "bytes": 36533
+    },
+    {
+      "path": "fixtures/account-business-session-c613626e-credential-state.sql",
+      "sha256": "019a4a51caf28e1f744ac254e043f60cc06d2148b495c02350bae1dc4f2d8679",
+      "bytes": 309428
+    },
+    {
+      "path": "fixtures/account-business-session-c613626e-credentials.sql",
+      "sha256": "3212d5ecf6f9d9310c5d2f3514464e425238b79f00806b5748bd029b33679905",
+      "bytes": 2780638
+    },
+    {
+      "path": "fixtures/account-business-session-c613626e-root-state.sql",
+      "sha256": "f67f391d0828aa8b35182b6bc324f46f66f57e027f9ea06a68b6e1d07a86af8e",
+      "bytes": 231481
+    },
+    {
+      "path": "fixtures/account-business-session-c613626e-root.sql",
+      "sha256": "ee152286a79ceb6432724befe426d90e89dc4c41b40b4cbbb7618b8ce1e5459a",
+      "bytes": 711154
+    },
+    {
+      "path": "fixtures/account-business-session-c613626e-verify.sql",
+      "sha256": "5bd40cbf253365934d7175b65106b9d8a91b85c3d345182aa9c15c0a64899893",
+      "bytes": 192116
+    },
+    {
+      "path": "frozen-inputs.json",
+      "sha256": "729392c78e8b458747fdf0ce8ae94614d48f1eb090fb13370f32159b13dd1b0a",
+      "bytes": 1249
+    },
+    {
+      "path": "parent-composition.patch",
+      "sha256": "061b74cd195eba05adcea64849336a6e5167cca64e1f7d78170b2f7461073e2e",
+      "bytes": 1730
+    }
+  ],
+  "inputs": [
+    {
+      "path": "backend/app/tests/auth_rest/audit_business_session_transition.rs",
+      "sha256": "fd40ac9777b4bbc2c9d80ac9b9062b04796ac971d9ab0a88861f5676c3327166"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/audit_account_transition.rs",
+      "sha256": "b4b8002c37ed850269a70c3168048cd86badc05ea77c87bb767448e63adcaa65"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/audit_account_transition_adversarial.rs",
+      "sha256": "52bfc5253714293211cd083559997234e3433be5d37f0c442f143e27cf89ac18"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_company_eligibility.rs",
+      "sha256": "c25a58ee1b8f4760d3b9ad3a8cc8ab4817b7b271fe0f7413941cd7fa0f17294d"
+    },
+    {
+      "path": "ops/generate-account-custody.py",
+      "sha256": "66d0a814b0b736d18be1f16c4172fb8eb456c64760af7c296b7577952f3af1e8"
+    }
+  ],
+  "source_expected_sqlx": 5,
+  "source_expected_pure": 1,
+  "retained_eligibility_sqlx": 11,
+  "compiled": 0,
+  "executed": 0,
+  "repository_edits": 0,
+  "verification": "rustfmt --edition 2024 --check (pass)",
+  "next": "Independent exact test review; root applies only approved files and performs source-bound RED/transition implementation",
+  "revision": "round2",
+  "prior_manifest_sha256": "9eb41788e34375dc2552f1e0198a4dee63e4cf61b69189986ab5294be45cd5f7",
+  "corrections": [
+    "ET1 exact owner/config/complete ACL GRANT boundary with independent sequence witness",
+    "ET2 unchanged original signed session read under actual Business credentials after committed helper inverse"
+  ]
+}

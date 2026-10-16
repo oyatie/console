@@ -63,6 +63,11 @@ export const PUBLIC_OPERATIONS = Object.freeze([
   ["get", "/api/v1/storefront/listings/{id}"],
   ["get", "/api/v1/storefront/listings/{id}/media/{media_id}"],
   ["post", "/api/v1/support/intake"],
+  ["post", "/api/v2/auth/passkey/login/start"],
+  ["post", "/api/v2/auth/registration/start"],
+  ["get", "/api/v2/auth/terms"],
+  ["get", "/api/v2/auth/terms/content/{sha256}"],
+  ["get", "/api/v2/auth/terms/manifests/{sha256}"],
   ["get", "/healthz"],
   ["get", "/readyz"],
 ]);

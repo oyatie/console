@@ -1,0 +1,11 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVE_DIAGNOSTICS_ONLY_ASSERTIONS_UNCHANGED",
+  "manifest_sha256": "546b475be737d3e19483867b4dc5fee5e171837f356dc2486b90aefbaa14a904",
+  "basis": [
+    "Only helper and conditional diagnostic call added before unchanged positive oracle assertion.",
+    "Outputs fixed names/counts/booleans and relative durations; no credential, row, actor, trace, absolute timestamp or SQL exception value.",
+    "Runtime cause remains unproven; identical owner test must rerun on clean diagnostic candidate."
+  ],
+  "implementation_admitted": false
+}

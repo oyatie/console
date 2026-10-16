@@ -1,0 +1,69 @@
+{
+  "reviewer": "/root/integration_security",
+  "verdict": "APPROVE_INTERMEDIATE_TEST_SOURCE_CHECKPOINT",
+  "base": "2c4ab1f8342bbdd95878014a49336795b4beca49",
+  "approved_packet_sha256": "857c3e74a49a270a9e712510a6fa91de2d19a7091dbb7732b185c26bb436c7dd",
+  "successor_source_sha256": {
+    "tools/browser/company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
+    "tools/browser/prepare_native_browser.sh": "0551794d1dabe3a5101eb6880a3423c1e86a5c432ea74b6fa82e6615f4fc5704",
+    "tools/browser/test_prepare_native_browser.py": "91abf7534c8a5e2b756fe2d0b8f18c323e023473fdaf9e5c60ded50e1e3fe657",
+    "backend/app/tests/auth_rest/native_company_browser.rs": "60b0b771c65d31dad7b6dd014dffe4d9a8976edeb04c2c926596a027a7d5febc",
+    "backend/app/tests/auth_rest/native_company_setup.rs": "6a0d7c50cb532dfe8d21b61fd58339a445846def9a5af65639dbb5ad4b0bf7be",
+    "tools/browser/company-preview.test.cjs": "70b02c5351e72a72716ea7c31b69e1b63404d7eed9a87b04a8c78272f764308a"
+  },
+  "historical_preservation": {
+    "directory": "/private/tmp/console-mvp-dev-integrate-20260921/docs/evidence/console/integration/2026-09-21-company-active-form-tests",
+    "manifest_sha256": "8a31b6f9c20c9b206ee5181a463b3c2b52de8ddbce5ec9a753cba769703f5d15",
+    "all_five_exact_base_and_packet_preimages": true,
+    "copied_independent_review_sha256": "78618a0ed5921cd898baf943e26e91034810cdb4d343c3bfab1f4a175c0e9f28"
+  },
+  "findings": [],
+  "observed_runs": {
+    "ssr-red": {
+      "path": "/private/tmp/console-company-invalid-enter-ssr-red-20260921.log",
+      "sha256": "594a97a0954ce125f80a9f2577cfc45ef4208ccf2c63e9ce0bfed9bfbaba226e",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 516
+    },
+    "ssr-green": {
+      "path": "/private/tmp/console-company-invalid-enter-ssr-green-20260921.log",
+      "sha256": "3e566fc2853a0a8d15a419d2de71b7b1372478ff1d94f07687684a5a9a406b0c",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 516
+    },
+    "node-green": {
+      "path": "/private/tmp/console-company-invalid-enter-node-green-20260921.log",
+      "sha256": "ab0f5f2ade8a965b113a646a24c4e6f87c1aa228cae8d32f52356170c643fdbf",
+      "executed": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    "installer-green": {
+      "path": "/private/tmp/console-company-invalid-enter-installer-green-20260921.log",
+      "sha256": "d31f9e8c1420d3ed4eafd85e45fb16cf61b11fd1cee196873cae52b52041db01",
+      "executed": 6,
+      "passed": 6,
+      "failed": 0
+    }
+  },
+  "evidence": [
+    "All six actual successor files match approved857c3e packet exactly; five changed existing files and one additive Node file only.",
+    "Five archived originals equal exact2c4ab1fcommitted blobs and frozen packet historical copies; copied independent receipt matches78618a hash.",
+    "Inspected actual owner-bound SSR RED reaches old1044no-form assertion, then same exact leaf GREEN. No unrelated schema failure counted as RED.",
+    "Inspected3Node and6installer results; installer log completed during review."
+  ],
+  "remaining": [
+    "Real invalid-Enter browser run not yet complete at readback.",
+    "CI registration of new machinery controls is separately reviewed and still pending adoption/execution.",
+    "Full Company creation/reopening/lost-response/denial coverage, complete connected MVP and release qualification remain pending."
+  ],
+  "reviewer_product_execution": 0,
+  "repository_edits": 0,
+  "limits": "Intermediate test-source checkpoint only. No Company workflow, MVP, production or complete-release acceptance; commit identity requires subsequent readback."
+}

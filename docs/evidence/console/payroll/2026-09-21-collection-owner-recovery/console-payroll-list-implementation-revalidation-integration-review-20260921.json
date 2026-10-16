@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_exact_source_revalidation",
+  "candidate_manifest": "/private/tmp/console-payroll-list-implementation-round1-20260921/manifest.json",
+  "candidate_manifest_sha256": "97b9dd4cbcd49f15a4a2690473a2536139bb57b15449a97385636712d3625114",
+  "prior_review": "/private/tmp/console-payroll-list-implementation-round1-integration-review-20260921.json",
+  "prior_review_sha256": "a125ab4bab8478f46725286afb080c2315cba65f3723247a85f74e3c08212938",
+  "verdict": "APPROVED exact bounded implementation source; retained suite and release qualification HOLD",
+  "checks": [
+    "Recomputed and matched all 14 immutable source hashes.",
+    "Reread application read owner, adapter audit transaction and sanitation, REST common list_runs_page, and App composition.",
+    "Fresh server principal precedes factory construction and application authorization; authorization precedes read_page. Query selectors establish no authority.",
+    "Existing with_audits commits page and list-read audit before successful return. Db failures map explicitly to internal server error; no raw sqlx diagnostic enters returned KernelError.",
+    "Authority failures remain Omitted in SSR; authorized read/audit failures become Failed; only successful committed page is Loaded.",
+    "Factory captures scoped pool only and accepts fresh Principal. No added App SQL or second mutation owner."
+  ],
+  "findings": [],
+  "execution_evidence": "Parent reports same admitted HTTP probe GREEN:1; reviewer executed no tests or compiles. Broader batch executed0 due existing missing Cargo.toml Buck test input.",
+  "remaining_holds": [
+    "Repair independently reviewed native Buck resource prerequisite and execute relevant retained suites.",
+    "Payroll-specific full current-policy race and native Account/resource mapping are not established by source approval.",
+    "Complete native workflow and assembled release qualification remain required."
+  ],
+  "repository_edits": 0
+}

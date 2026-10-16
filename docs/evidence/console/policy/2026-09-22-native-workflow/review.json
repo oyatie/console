@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/policy_browser_tests",
+  "original_manifest_sha256": "2aea34ff400915b1c6ddaab0978b4342d1e33078b292d82c1a4a9ff577f9c701",
+  "decision": "APPROVE finite API, exact eight-column form contract and original nine additive test leaves; round2 closes identified missing probes and adds agreed semantics",
+  "form_contract_sha256": "3a746c195e454e3e9c705653f7336938c81655821ae8bb25367cf1242c907aaf",
+  "findings_resolved_by_round2": [
+    "Missing application test for impossible acceptance NotVisible; root requires Unavailable and no B.",
+    "Missing foreign-source Company test; root requires selected/source equality before operation, unavailable on mismatch.",
+    "Missing grant recipient mismatch test; added actual Cedar positive/negative pair.",
+    "Missing Form finalization failure withholding view/proof test.",
+    "Missing explicit execute zero-row mapping; root clarified opaque NotFound after current authorization, never proof no effect; Unconfirmed only actual commit uncertainty.",
+    "UI display/current assignment facts are supplied by authorized identity and current form owners, separately from historical terminal; no invented view fields."
+  ],
+  "verified": [
+    "FORM8 fills real gap: material27 has no catalog/assignment witness and Payroll11 is recipient-only/current-use, so neither can render expired/revoked/operator forms.",
+    "FORM8 all-null/installed-only/full-assignment closed shapes; exact current native operator source + fixed catalog/assignment custody; no synthetic expiry/revision/recipient; no preflight/write on GET; existing projections unchanged.",
+    "API retains directional owner split, exact original command A then selector-only B, confirmed A release before B, no B after A failure/uncertainty, no returned provisional result before consuming finish.",
+    "Opaque existing AccountFormProof stays generic non-Debug wrapper outside view; exact issued proof is passed to form finish; A/B never issue replacement.",
+    "Nine original tests use real Cedar with explicit scripted fault controls, proving application sequencing only. No production stubs/test-only UI facts are authorized.",
+    "Round2 original nine leaves mechanically unchanged; four new leaves and two fixture controls authored privately, parsed by rustfmt."
+  ],
+  "round2_manifest_sha256": "a6c472c3f1673258c22b0ce3d2e37b9b6cf73afe3a58ab8235438bcbf47dd20e",
+  "review_limits": [
+    "Four additions authored by this reviewer need independent root/company_scope_review review before mounting.",
+    "No type checking/build/runtime execution by reviewer.",
+    "Actual FORM8 SQL implementation, strict13/30 adapter parsing, mutation proof/current auth, real A/B/audit closure and browser workflow still require independent owner-bound tests."
+  ],
+  "runtime_test_count": 0
+}

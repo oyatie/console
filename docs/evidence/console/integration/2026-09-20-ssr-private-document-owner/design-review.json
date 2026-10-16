@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_BOUNDED_DESIGN_FOR_EXACT_TEST_AUTHORING_ONLY",
+  "observed_head": "1085613a03bcb24511885066040f3fefd219a302",
+  "sources": {
+    "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+    "backend/crates/payroll/ui/src/native_account.rs": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e",
+    "backend/app/src/lib.rs": "b5a5a79f7c90b33f3ab19d68c5caed673ad56c21589af6f73a71aeee8f3dcf72",
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "d86781610aaae305cd7ba662f3b9fcd0484e0f5c3a453c11ca897f5c3801ad29"
+  },
+  "actual_failure": {
+    "result_sha256": "bbe6481534eeda2bdee6bf46eac47793a00ea49b78fc120d7dc6e0fea13dfaa3",
+    "owner_receipt_sha256": "be017d9e3970c351c1a41173fc92c231a43a9affe6a3f1cd42d740e9e90d2e95",
+    "status": "FAILED PRIVATE_ENVELOPE on first anonymous payroll navigation; browser process executed and cleanup confirmed; zero accepted cases and no accepted durable effect proof"
+  },
+  "owner": "console-payroll-ui SSR response construction",
+  "design": [
+    "Consolidate demonstrated common document response headers into one small SSR-only helper reused by native_account::document and all three html_shell constructors. Root App remains response composition only.",
+    "Keep Html content type and exact rendered bytes/status. Common Cache-Control:no-store, Pragma:no-cache, X-Content-Type-Options:nosniff, Referrer-Policy:no-referrer and Vary:Authorization,Cookie,Origin cover the shared root credential dispatch and native metadata; no Set-Cookie is introduced.",
+    "Keep the native Account CSP exact. Legacy shells use explicit frame-ancestors none, with object-src none/base-uri none acceptable if included, without introducing default-src/script-src/style-src restrictions that would block their existing inline stylesheet or island bootstrap.",
+    "Do not add unsafe-inline/unsafe-eval, rewrite content, externalize assets, change middleware policy, or modify source authorization to repair this response-owner defect. Existing legacy inline execution remains a separately scoped CSP hardening concern, not a newly claimed script-security guarantee.",
+    "Change public shell response return type to Response/IntoResponse as required; all existing callers must compile and keep body/status semantics. No asset behavior changes required."
+  ],
+  "required_tests": [
+    "Retain the unchanged actual browser PRIVATE_ENVELOPE assertions and rerun the actual database/browser test; its first accepted response alone is not hydration acceptance.",
+    "Owner response tests cover html_shell, html_shell_with and html_shell_with_screens for omitted/empty/authorized bodies and appropriate focused screens; parse exact privacy headers and prove body bytes/status preserved.",
+    "Native public/sign-in/registration/account/refused/unavailable documents retain their exact restrictive CSP and status/body; Vary includes all three credentials/metadata keys case-insensitively.",
+    "Keep native HTTP metadata/HEAD/privacy tests and existing rendering/WASM drift tests; real authorized JS-on filtering with no console/page errors proves the new CSP does not break the existing island.",
+    "Reject duplicate/permissive frame-ancestors directives in the new owner oracle, following the existing native structural check; no substring-only CSP oracle for newly authored tests."
+  ],
+  "premortem": [
+    "Copied native CSP blocks inline legacy style/bootstrap; existing browser filtering must detect this.",
+    "Only the currently used shell gets headers while public helpers remain unsafe; all three actual owners must be exercised.",
+    "Shared helper weakens native CSP or drops error status/body; exact retained native assertions detect this."
+  ],
+  "rollback": "Revert this bounded response-owner change without altering database/auth state; preserve failed browser evidence and do not accept privacy regression as a workaround.",
+  "holds": [
+    "No source admission or implementation review granted by this design receipt.",
+    "Full release/session-bound read qualification and comprehensive CSP hardening are not established."
+  ]
+}

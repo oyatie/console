@@ -1,0 +1,9 @@
+type: object
+additionalProperties: false
+required: [org_id, action_type_id, object_type_id, registration_revision, manifest_digest]
+properties:
+  org_id: {type: string, format: uuid}
+  action_type_id: {type: string, format: uuid}
+  object_type_id: {type: string, format: uuid}
+  registration_revision: {type: integer, format: int64, minimum: 1}
+  manifest_digest: {type: string, pattern: '^[0-9a-f]{64}$'}

@@ -1,0 +1,33 @@
+[
+  {
+    "lane": "adr-raw-evidence-log-classification",
+    "owner": "/root",
+    "base_sha": "243067e5cf8cc22766a1eaed55fc847303ce18d1",
+    "immutable_target": "Retired ADR references in exact lowercase evidence .log transcripts do not become normative assertions; all other paths remain scanned",
+    "probe": "node scripts/check-adrs.mjs",
+    "allowed_paths": [
+      "scripts/check-adrs.mjs"
+    ],
+    "mechanical_guide": "Reuse Node extname and existing isWithinDirectory(join(root,docs,evidence),path) in retired-reference scan only; preserve every existing predicate/enumeration/check and alltests",
+    "user_authorization": "User explicitly approved the class-wide rule with \"go ahead\" after the recommendation: exact lowercase .log beneath docs/evidence excluded only from retired-reference scanning; preserve other checks and evidence.",
+    "test_sha256": "1a30fa9a379d2452d7404b86f802b2bafccd4882bce96e3683e7710dcc0e55ec",
+    "pre_mortem": "Broadexemption hides normative ADRerrors",
+    "blast_radius": "Onecontentclass in retiredreference scan",
+    "detection": "SameownerGREEN,33testleaves with64injected normativefindings,all historicalhashes unchanged",
+    "rollback": "Revert only classifier preserves evidence; original falsepositives return",
+    "stop_conditions": [
+      "Any nonlog suppression",
+      "Historicalbytechange",
+      "Testweakening",
+      "MissingactualRED"
+    ],
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "Independentfinalsourcereview",
+      "Fullreleasequalification"
+    ]
+  }
+]

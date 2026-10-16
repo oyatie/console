@@ -1,0 +1,66 @@
+{
+  "base_head": "e1007b0c4235f86079cfff40f2f8280c9fa40c3a",
+  "design_manifest_sha256": "a6fa5d169a7e85568e84cdda37f5b977ba1b0aae1d628b6d825ac3386e5640fa",
+  "changes": {
+    "backend/app/tests/auth_rest.rs": {
+      "before_sha256": "fdcd288718591a0ba7bf8c3b23af7acf9f4a604416e1366a93e438f9f7f6245d",
+      "after_sha256": "39e0aabea84e2b080e5349e6b0243acae96a91c9cdc77ec5c70c0c44e95ba3f7",
+      "mechanical_replacements": [
+        [
+          "#[path = \"auth_rest/historical227.rs\"]",
+          "#[path = \"auth_rest/legacy_bound_passkey_reads.rs\"]\nmod legacy_bound_passkey_reads;\n#[path = \"auth_rest/historical227.rs\"]"
+        ],
+        [
+          "struct LegacyFenceFixture {\n    router:",
+          "struct LegacyFenceFixture {\n    signing_key: SigningKey,\n    router:"
+        ],
+        [
+          "    LegacyFenceFixture {\n        router,",
+          "    LegacyFenceFixture {\n        signing_key: key,\n        router,"
+        ]
+      ]
+    },
+    "backend/app/tests/auth_rest/deployment_operator_designation.rs": {
+      "before_sha256": "3d583a6c624b2ab2e5c4f6f46656c65aaaba132df8404674330c34e32819a09a",
+      "after_sha256": "665b67a912233f29658f16ef003e98381e897879bf73f0be29b7c3b3820641d9",
+      "mechanical_replacements": [
+        [
+          "mod deployment_operator_designation {",
+          "pub(crate) mod deployment_operator_designation {"
+        ]
+      ]
+    },
+    "backend/app/tests/auth_rest/native_company_setup.rs": {
+      "before_sha256": "ba525233f772b0c8565db173a7b4ea01bd82be7204180763c3d56c21daf7010b",
+      "after_sha256": "9f1466cc04aaedfbe731438cfb813f4c7dd8230c5021b58f31c500037ce7372e",
+      "mechanical_replacements": [
+        [
+          "mod company_setup {",
+          "pub(crate) mod company_setup {"
+        ],
+        [
+          "    async fn all_rows(pool:",
+          "    pub(crate) async fn all_rows(pool:"
+        ]
+      ]
+    },
+    "backend/app/tests/auth_rest/account_fence_transport.rs": {
+      "before_sha256": "93c5aaa322d1226676c380554eb2b45bc24365d2d6fe44954a4b2ea2d72935b7",
+      "after_sha256": "ea6fcc28984c4b0367c48df484634c42d838dae75e128e39b42b356782d4fd2f",
+      "mechanical_replacements": [
+        [
+          "async fn refresh_complete_snapshot(pool:",
+          "pub(super) async fn refresh_complete_snapshot(pool:"
+        ],
+        [
+          "mod issue_family_fence {",
+          "pub(super) mod issue_family_fence {"
+        ],
+        [
+          "    async fn assert_issue_delta(",
+          "    pub(crate) async fn assert_issue_delta("
+        ]
+      ]
+    }
+  }
+}

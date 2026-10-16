@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_FIVE_PURE_LEGACY_TOPOLOGY_CODEC_TESTS_AND_BOUNDED_ENCLOSING_SCOPE",
+  "base": "452ccc3f16e597be256855543acdf0262911bf46",
+  "test_manifest_sha256": "87109221a5430731fb93ec7fac1ac2c4c933ca5b9b2889f3cfb0fdca345ef2b3",
+  "test_source_sha256": "9b21c76134b0d61eca030f2dc43c79ad46afdc2a86468c5aa7e784bcba4cac8a",
+  "design_manifest_sha256": "cb85748f38e27874f0abd921c9f8ac6bcd6660e88ea15031edb19ec9f1e447de",
+  "lane_source_sha256": "d96aee0cb92dbc48f02a22e7f944e14ebae124adbee5283c92d513e9267bd20b",
+  "findings": [],
+  "checks": [
+    "All nine embedded golden hex/digest pairs match independently approved external vectors exactly; lengths and SHA256 independently recomputed. Cases preserve normalized arguments, duplicate ordered roles, exact head order and all nine kind tags.",
+    "Five pure tests cover all-prefix truncations/trailing bytes/unknown version and kind/nil namespaces/oversize frames; normalization only at typed new construction versus canonical stored bytes; bounded sorted distinct heads and required requested Group; exact closed status/group/tenant role tags, optional discriminators and UTF8/control/role-count limits.",
+    "Inspected mutation offsets against frozen frame and variable payload lengths; offsets address intended discriminator, text, UUID or revision, with no out-of-bounds indexing. Static expectation generation does not call candidate encoder.",
+    "Concrete API keeps private command/head fields, read-only getters and original byte/digest storage. No serde authority constructor, source-family/authorization inference or SQL behavior supplied by these tests. Existing sha2 dependency available.",
+    "Enclosing scope preserves original native Company HTTP commit/reopen target and probe. Narrow additions are provisioning codec/tests/lib/BUCK plus existing generator resource label and positive baseline. No SQL, lifecycle route, grant, credential issuer, receipt executor or caller cutover admitted by codec slice."
+  ],
+  "authored_counts": {
+    "pure_tests": 5,
+    "fixed_external_vectors": 9,
+    "runtime_executed": 0
+  },
+  "conditions": [
+    "Commit exact reviewed test source first, mechanically advance lane base to that commit, then admit original executable Company RED before codec implementation. Register new tests normally once module exists.",
+    "Production must satisfy full frozen codec contract, including all kind cardinalities/nonnil IDs and canonical historical bytes, even where multiple malformed combinations share one test. Independent source review and actual native tests remain required.",
+    "Keep source authority, receipt replay, Group-before-source locks, ten raw signature closures, clients and full Company workflow open until separately implemented and verified."
+  ],
+  "limits": [
+    "Pure codec source test approval only, no production code/runtime acceptance. Reviewer performed read-only source/hash/oracle inspection and private receipt."
+  ]
+}

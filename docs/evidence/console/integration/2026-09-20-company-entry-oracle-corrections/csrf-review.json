@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root",
+  "author": "/root/integration_tests",
+  "status": "APPROVE_EXACT_TEST_ORACLE_CORRECTION",
+  "base_sha": "03463f3c0fd0e08e9e9a7b50fc34058f7044d33f",
+  "manifest_sha256": "6a97c45aa4c32ce20f0df6bcd239d86870e764fd85f8aaa1d8186a7d6d285344",
+  "candidate_sha256": "1e13ac530520a4ee2b445d7e8b99a72b85fc77109a3b862128316fe719a8f7d5",
+  "checks": [
+    "Actual proof handler calls durable AccountCsrf limiter; document and me handlers do not",
+    "Existing four-column limiter schema matches exact key oracle",
+    "Complete before/after snapshot equality retained before proof and after owner restoration",
+    "Exactly two new first-attempt account_csrf limiter rows, expected client set, one bounded minute",
+    "added_rows preserves all prior raw row bytes; all other tables remain exactly equal",
+    "All source outside single corrected test unchanged",
+    "No product logic changed for incorrect no-CSRF-effect premise"
+  ],
+  "runtime_executed": 0,
+  "holds": [
+    "Same6-case runtime must pass",
+    "No whole workflow acceptance"
+  ]
+}

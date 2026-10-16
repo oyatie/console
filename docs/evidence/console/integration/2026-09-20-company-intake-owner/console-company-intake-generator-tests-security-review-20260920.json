@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_PRIVATE_INTAKE_GENERATOR_AND_RESOURCE_TEST_SUCCESSOR",
+  "packet": "/private/tmp/console-native-company-intake-generator-tests-20260920-round1",
+  "manifest_sha256": "8db1e4cd72d86b22529649da158d634d80ef4867c00c60ce436b79313b871d72",
+  "candidate_sha256": {
+    "ops/test_company_enrollment_input_generator.py": "7c6437e73f740efcb483656b8b44f05352d8457081cc95fca594eb8f750034d1",
+    "tools/buck/test_gen_first_party.py": "0cb3d455f5f063db378b3c8f51261b1f9a8e4c8d801a1321ecf4297928c998a8"
+  },
+  "checks": [
+    "Every packet hash and all eight current source locks independently verified; two exact patches applied privately in memory.",
+    "All66 existing Buck test methods byte-identical; one exact intake source/mapping regression gives67, with no existing source/resource tests weakened.",
+    "Preservation test retains six historical hash/disk comparisons, fixed parser hash/function/output/disk/exclusion checks, and existing schema checks. Schema additionally frozen at accepted7e1dbee0 hash. Exactly one ninth output admitted.",
+    "New intake output must equal owning generator function and disk, retain UNINSTALLED marker, and declare all four accepted public functions absent from every predecessor. These marker checks establish separation, not function correctness.",
+    "No generator body, serving profile, historical migration, command bytes, schema or runtime export/mapping mutation supplied by this packet."
+  ],
+  "findings": [],
+  "limits": [
+    "Source approval only, zero tests executed by reviewer. Root owns integration, RED/green, generated resources and independently reviewed private SQL implementation.",
+    "No missing resource/function failure is actual-owner acceptance. Broader P4/P5/global256/P7/P8, effects and release qualification remain mandatory."
+  ],
+  "execution": {
+    "reviewer_tests": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

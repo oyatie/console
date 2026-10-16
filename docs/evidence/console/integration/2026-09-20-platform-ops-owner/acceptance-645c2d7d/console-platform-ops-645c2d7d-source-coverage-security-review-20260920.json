@@ -1,0 +1,71 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact-commit source, test composition and coverage design; final runtime acceptance pending",
+  "head": "645c2d7d429003096b4e6b6b23927c03d09d2474",
+  "production_head": "4b31c70eaeb5623bb417ae7749a21fbcae0d98e8",
+  "production_files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "9ee136ebb00e3cead851f75048f9d2d26ae2050de089bcdd9739acf409efa1fb",
+    "backend/crates/platform/platform-rest/src/lib.rs": "5673e666c52c7d41899277261e9423c175baa0fdbc424aa74506409d03372623",
+    "backend/crates/platform/provisioning/src/lib.rs": "03b7deffb08499811556ac7ae4d28d87828e9a3255a6ae347e116b8d7323e340"
+  },
+  "test_files": {
+    "backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs": "6a28fec0c4979a3a2c28ed89affa8a2b31675940f12170fa4cab8662a7a1d38d",
+    "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "96133310d6f561e28476446b8c7d79432af947ddca1ab80f01e4070b9a2bd6a7",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "463b82646f4678eaea4ef014361636ec62009de4cb973ed22aee12817fc9f610",
+    "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "bf9e3c6d436dee39c650336676dc1f5c3a8e6b336ba4d926e40c533772947f56",
+    "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "46baf534433dd37a5d9fc1919d0b87e5b1ce46e9a8be1b63cefa318d5cab0436",
+    "backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "b4dff5d4853297655ea3a10bc6b6c78af7ff7ffe55af2ec346a1bb6602e712e4",
+    "backend/app/tests/auth_rest/legacy_platform_ops_current_source.rs": "9c7950154d25027333a17f565d4b2afacb2f3d987500eed776ebd938ca30988a",
+    "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs": "31fc766da7b7b8d0a49e391fefa529b1685b1ad5e492cc5ced6d121cd123bfe4",
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "2949c236fb98c54f51c759b237b08d1fbdd19a8b66a7d69e33da9a197d738c48",
+    "backend/app/tests/auth_rest/legacy_platform_ops_expiry_progress.rs": "9a1b9c17601315ee57820497e9922955b3dd4cafd1217af87e6d99ebb34b4388",
+    "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs": "0b0a7106afd6695c366c3f40b8520ca7d66b5d79cc2d0d9ab9d28d9753cab207",
+    "backend/app/tests/auth_rest/legacy_platform_ops_commit_loss.rs": "ef8de9dffa9815b15783538bf17b060acb5a4b4dba2ace9b4b5d17afdf0c0a49",
+    "backend/app/tests/console_route_telemetry.rs": "ce17b2255c832b429a1c6333970ba01b0ceb78c1613a1826d5333bbacdb76852",
+    "backend/crates/platform/platform-rest/tests/ops_dashboard.rs": "2d92ab96df3b6aa278cea4f70825dfa38d673742ee1f7eaf786dc6909ce63f59"
+  },
+  "generated_BUCK_sha256": "fc91447444ffe533cbccb19f31e1142c72cd5f6b7947a4f4dc6076cdf80fe07b",
+  "source_checks": [
+    "One retained source transaction with five current time/policy checks, fixed private policy mapping, complete projection mapping and audit commit boundary.",
+    "Finite401/403/503 semantics; auth-looking infrastructure failures remain503; finalGET/HEAD privacy also covers App timeout.",
+    "Shared list test changes limited to scoped visibility/reexports/native formatting; prior bodies and assertions retained.",
+    "Legacy dashboard2 and telemetry1 fixtures gain genuine current credentials/pools/account prerequisites without assertion changes.",
+    "Generated8source literals in67arrays preserve exact original bytes after removal; generator unchanged."
+  ],
+  "static_roster": {
+    "ops": 25,
+    "affected_list": 30,
+    "retained_legacy": 3,
+    "runtime_counts_in_this_receipt": null
+  },
+  "audit_16_lenses": {
+    "Cartesian doubt": "Source, coverage and runtime acceptance kept separate; full55 and retained3 await final results. Previous intermittent owner snapshot remains unexplained.",
+    "Essentialism / YAGNI": "Existing owner/transaction/source guard reused; closed two-case mapper serves demonstrated Companies and Operations owners only.",
+    "Chesterton's Fence": "Historical SQL, migration, projection schemas, command bytes, fingerprints, relay and old assertions preserved.",
+    "Contrarian / outside-the-box": "A valid signed token and request extractor do not establish current authority; the actual owner reverifies original material.",
+    "Socratic": "Finite denial/unavailability/unknown-commit outcomes explicit; no successful export or read inferred from unavailable response.",
+    "Pragmatism": "Existing PostgreSQL transaction and current compiled policy solve demonstrated owner bypass without new infrastructure.",
+    "Red Team": "Current role/account/family faults, malformed transport, source/projection/audit waits, expiry, revocation races and exact acknowledgement loss have independently reviewed histories.",
+    "Systems Thinking": "Business owner transaction retains source through both projections, audit and commit; outer App envelope preserves privacy and affected list paths are rerun.",
+    "Operability / Day-2": "Known denial differs from infrastructure unavailable; actual lost COMMIT acknowledgment returns no rows/no hidden retry, explicit separate recovery validates durable audit.",
+    "Opportunity Cost": "Existing SQL, strict audit oracle and PG-wire relay reused with narrow test-only visibility; no second business writer or generalized policy framework.",
+    "Blast-radius / cell-based": "Only3production files; exact named route/method privacy changes, immutable source/profile/migrations untouched; one root serializes generated source lists.",
+    "Constant-work / anti-fragility": "Cancellation and controlled waits prove cleanup; separate operator progress avoids global-source starvation claims. Full workload envelope remains unqualified.",
+    "Shared-nothing / eventual consistency": "Canonical source/family lock ordering retained; reader/revoker histories distinguish committed ordering and prevent stale disclosure.",
+    "FinOps / unit-cost": "Uses current pools and existing queries; adds fresh authorization checks without provisioning services. Connection budget/production performance not measured by these tests.",
+    "Telemetry-first": "Audit exact20fields/history/all-table deltas and corruption controls; projected14health/6adoption fields pinned independently of production SQL.",
+    "Zero-trust / defense-in-depth": "Original credentials reverified at owner; exact fixed policy tuple, serverTTL and DBclock; restricted real Business/Auth logins, no caller actor/time authority."
+  },
+  "findings": [],
+  "evidence_receipts": {
+    "console-platform-ops-owner-source-round1-security-review-20260920.json": "1e704b6db3d7aa17036170649895479cd86c90c2b522b93c8af0cc1c18e364b4",
+    "console-platform-ops-acceptance-integration-20260920.json": "c1ac9d9a047e90c4355463e614c3908e1c140494245e8c0e3c5a2a5c2e6b1761",
+    "console-platform-ops-observer-borrow-fix-security-review-20260920.json": "c167715b9f32846ba0fd6a6ee41cc7ea257140fc14940e6a8886344a0bf597fe",
+    "console-platform-ops-buck-security-review-20260920.json": "a93a5ad95adc8f7c58dd71e897df08c8a46add74edef2eb966a7225d73bbca74"
+  },
+  "remaining_holds": [
+    "Full55 combined owner/list run requires complete successful footer and exact distinct counts; retained3 tests and final clippy invocation/results still required.",
+    "PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT remains unresolved source-transition release reliability HOLD.",
+    "No broader platform route, browser journey, load, production deployment, or milestones0-10 qualification claimed."
+  ]
+}

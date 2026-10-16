@@ -1,0 +1,28 @@
+▶ the committed hydration bundle cannot drift from its source
+  ✔ rejects when the crate source is edited without rebundling (216.067917ms)
+  ✔ rejects when a source file is added that the bundle was not built from (218.937708ms)
+  ✔ rejects when a source file is deleted (201.993917ms)
+  ✔ rejects when the build recipe changes (232.630333ms)
+  ✔ rejects when an artifact is edited by hand (186.892417ms)
+  ✔ rejects when the toolchain pin moves (330.020958ms)
+  ✔ rejects when the glue was emitted by a different wasm-bindgen CLI (462.835041ms)
+  ✔ rejects when the manifest is missing (202.891958ms)
+  ✔ rejects when the manifest is truncated to a falsy scalar (292.472ms)
+  ✔ rejects when the manifest is an array (264.59375ms)
+  ✔ rejects when the manifest records no wasm-bindgen version at all (187.092333ms)
+  ✔ rejects when only the recorded CLI version is dropped (139.01275ms)
+  ✔ ignores an untracked file that git would not ship (73.155959ms)
+  ✔ refuses to WRITE a manifest whose sources git cannot enumerate (75.141458ms)
+  ✔ refuses to WRITE while an untracked source sits under src/ (77.982583ms)
+  ✔ refuses to WRITE while a gitignored source sits under src/ (80.110625ms)
+  ✔ still tolerates ignored NON-source noise when writing (574.276166ms)
+  ✔ accepts the committed bundle as it stands (76.835708ms)
+✔ the committed hydration bundle cannot drift from its source (3902.301542ms)
+ℹ tests 18
+ℹ suites 1
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3952.744667

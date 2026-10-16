@@ -2,6 +2,11 @@
 load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")
 
 export_file(
+    name = "Cargo.toml",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "crate-source-tree",
     src = "src",
     mode = "reference",
@@ -21,6 +26,7 @@ rust_library(
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )
@@ -39,6 +45,27 @@ rust_test(
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
+    ],
+)
+
+rust_test(
+    name = "console-identity-application-itest-native_hr_policy_parser_contract",
+    mapped_srcs = repo_mapped_srcs("backend/crates/identity/application", ["tests/hr_policy_fixtures/assert_fields.rs", "tests/hr_policy_fixtures/literals.rs", "tests/native_hr_policy_parser_contract.rs"]),
+    crate = "native_hr_policy_parser_contract",
+    edition = "2024",
+    crate_root = "backend/crates/identity/application/tests/native_hr_policy_parser_contract.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/identity/application"},
+    labels = ["owner.backend.crates.identity.application", "domain.identity", "test.integration", "resource.none"],
+    deps = [
+        "//backend/crates/identity/domain:console-identity-domain",
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:time",
+        "//third-party/rust:uuid",
+        ":console-identity-application",
     ],
 )

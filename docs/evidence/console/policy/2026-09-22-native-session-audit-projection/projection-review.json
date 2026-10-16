@@ -1,0 +1,26 @@
+{
+  "decision": "APPROVE_ADDITIVE_CURRENT_PROJECTION_CONSTRUCTOR_SOURCE",
+  "reviewer": "/root/policy_browser_tests",
+  "base_head": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "findings": [],
+  "checks": [
+    "Old from_initial_projection explicitly rejects every epoch!=1 before forwarding unchanged row and None pointer. No fake epoch1 or historical reserialization.",
+    "New from_current_projection rejects epoch<1,non-null epoch1,null later epoch,and any nil pointer. Positive i64 safely converts to actual u64 epoch retained with exact pointer.",
+    "Private shared birth parser retains original assignment/role revision1,positive context generation and32768byte guard.",
+    "Entire name/slug,strict serde,7-clause/16-field,canonical scalar,Company/type,delegation alias,field ordering and initial manifest validation block byte-identical to HEAD.",
+    "Current policy receipt is private with copy getter; no new writer,authority shortcut or current-source claim.",
+    "Actual existing Identity adapter caller still invokes from_initial_projection; switch to current constructor must await owner-validated successor SQL with explicit birth assignment/current receipt.",
+    "Installed4 tests byte-identical to independently approved source packet; no historical test changes."
+  ],
+  "limits": [
+    "Source review only;0 builds/runtime by reviewer.",
+    "This parser proves shape/correlation only; actual current head/receipt/native custody and locks remain owning SQL adapter responsibilities.",
+    "Until current SQL caller lands, this is constructor prerequisite, not acceptance of policy epoch advancement."
+  ],
+  "sha256": {
+    "backend/crates/identity/application/src/company_policy.rs": "d8dd8c9d80427462293871ff29047c249dbf8cd3746c5b1c3aebd28b9ac7cbb7",
+    "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs": "769662d27e803cb21942225de84dfc840fcc966bba90bd9627b9adbfbee25440",
+    "backend/crates/identity/adapter-postgres/src/company_policy.rs": "a432db866d3e8c8718658ded63a714ab959147afb31e67f43edbf8aa2166de88"
+  },
+  "patch_sha256": "6ad5242e4673add57aac4534c30b527928bc733a12d462afff4a86ebd162a870"
+}

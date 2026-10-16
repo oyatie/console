@@ -1,0 +1,13 @@
+{
+  "kind": "platform-list-source-family-lock-and-audit-expiry-test-proposal",
+  "parent_packet_manifest_sha256": "21d8e0b36b2bafc9715f3d62d95769b944a9c15257801f92005693cb9c7cd62a",
+  "files_sha256": {
+    "COMMIT-ACK-FEASIBILITY.md": "12fbd3cf073b8e1710a1773d273594adc8d5f4a1275b3e52e37f6bfa49a50852",
+    "README.md": "5db5683d974e224a2dc0abe68c47272d2f1f9d9b351e209699044d7901aab258",
+    "legacy_platform_list_credentials.rs": "8b473446149f7fa0ad7f39723111ef12642a09227d573bc403089b4a146d4a8b",
+    "legacy_platform_list_credentials.rs.preimage": "fc2a83d5091cd53e5827e1e67f19a9707bcb54defab0de3c87da2674b5baffbb",
+    "legacy_platform_list_locks.rs": "6682ab208234bd706f01ad101a5481b8b7c419de2c979040105a19713cba83d2",
+    "tests.patch": "ba4f23eb06d2486d5cd20d25e453b574a6e32f4f57f91633668b77c1cd8e935f",
+    "verification.json": "87d540e32c2a1ac5742e916ffac97d64a6af4ff3cf990072f98169e547d84dad"
+  }
+}

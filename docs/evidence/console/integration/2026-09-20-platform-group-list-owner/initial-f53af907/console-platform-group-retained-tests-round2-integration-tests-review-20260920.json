@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/integration_tests",
+  "independence": "Reviewer did not author any of these three candidate files/changes; root authored this retained fixture and semantic transport successor. Reviewer authored separate Group owner acceptance packet.",
+  "decision": "APPROVE exact round2 retained fixture and transport semantic successor for root integration and required runtime verification",
+  "manifest_sha256": "99db6770b4f57d243851b5b7bf538f9413e350ab53fe47220798df26b0293b5b",
+  "base_sha": "f53af9070693f7f41d3e23205de28e14f5ed0f71",
+  "observed_head": "99203cf2ea01404a48a97173c3bbd3f49551771c",
+  "checks": [
+    "All7packet pins and all3preimages verified against immutablef53af907 and current unmodified targetfiles.",
+    "Entire retained Group CRUD/account/grant/topology/removal SQLx leaf bytes identical. Fixture changes only replace ownerconnection+SETROLE with existing genuine Businesslogin and inject currentcompiledPolicy/30dayTTL; Auth session verifier remains genuine.",
+    "login_test_database_url uses suppliedpool only to select current disposableDB, binds independent externalLOGIN credential, rejects roleoverrides; login_test_pool verifies session_user=current_user and noSUPERUSER/BYPASSRLS/CREATEROLE/CREATEDB/REPLICATION. Passing the Businesspool to Auth helper retains sameDB without reusing privileged identity.",
+    "Two exact groupsGET sibling examples are intentionally superseded by concrete valid-shaped Groupaccounts descendant as approveddesign requires. List transport file is otherwise byteidentical; oldleaf names and allpreexisting assertions remain.",
+    "Ops transport preserves every Company/ops selectedpath and method/body/status/cache/validator/Vary assertion. Four Group GET/HEAD/query positive cases and five trailingSlash/write exclusions broaden the reviewed finitepath matrix.",
+    "Four new noheaderGETHEAD/query cases assert401, exactGETerrorJSON, HEADempty and strict privacyheaders. They reach actual transport wrapper fallback; no authentication or businessowner qualification claimed.",
+    "Round1 deterministic emptysecrets oracle failure corrected only by documented nonempty inertsentinel; strict shared private_response remains byteunchanged. No currentcredential-reflection claim is made when request contains no credential.",
+    "Round2 vs round1 Rust delta independently proven to be only emptysecrets sentinel+explanatorycomment; other two candidate files byteidentical.",
+    "No testskip/quarantine/assertionweakening, productionpolicy/source/grants/migrations/generated changes. Retainedthreeleaf runtime remains mandatory and exactcounts must be recorded."
+  ],
+  "resolved_findings": [
+    "GROUP-TRANSPORT-EMPTY-PRIVACY-INPUT"
+  ],
+  "findings": [],
+  "runtime_executed_by_reviewer": 0,
+  "compiled_or_discovered_by_reviewer": 0,
+  "required_runtime": [
+    "console-platform-rest --test platform_groups: retained1SQLx",
+    "console-app --test auth_rest legacy_platform_list_reads::histories::legacy_platform_list_credentials::list_transport_selection_preserves_sibling_routes_and_methods: retained1Tokio",
+    "console-app --test auth_rest legacy_platform_list_reads::histories::legacy_platform_ops_reads::legacy_platform_ops_credentials::legacy_platform_ops_transport::ops_transport_selection_preserves_list_and_sibling_routes_and_methods: retained1Tokio"
+  ],
+  "remaining_holds": [
+    "Actual threeleaf runtime and any resulting fixturefailure repair.",
+    "Other Group projection/decode/history/transport/commitloss acceptance and rawSQL/mutation/sourceintermittency release gaps.",
+    "No assembledrelease or productionexposure approval."
+  ]
+}

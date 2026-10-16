@@ -1,0 +1,556 @@
+{
+  "status": "LOCAL_NATIVE_BROWSER_PRODUCERS_VERIFIED_COMPANY_CREATION_RED",
+  "source_head": "14c1aa2e8",
+  "members": [
+    {
+      "path": "browser/account/01-public.png",
+      "sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/01-public.png",
+      "original_sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_bytes": 32341
+    },
+    {
+      "path": "browser/account/02-terms.png",
+      "sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/02-terms.png",
+      "original_sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_bytes": 43693
+    },
+    {
+      "path": "browser/account/03-account-enrolled.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/03-account-enrolled.png",
+      "original_sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_bytes": 34654
+    },
+    {
+      "path": "browser/account/04-sign-in.png",
+      "sha256": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/04-sign-in.png",
+      "original_sha256": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+      "original_bytes": 37548
+    },
+    {
+      "path": "browser/account/05-account-returned.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/05-account-returned.png",
+      "original_sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_bytes": 34654
+    },
+    {
+      "path": "browser/account/owner-receipt.json",
+      "sha256": "377869ad12c0bad89288d2d7002ba762c8eb82153aea8004c792e9b70b2e054b",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/owner-receipt.json",
+      "original_sha256": "377869ad12c0bad89288d2d7002ba762c8eb82153aea8004c792e9b70b2e054b",
+      "original_bytes": 485
+    },
+    {
+      "path": "browser/account/result.json",
+      "sha256": "9a7536448d2cca72dcf3295b0049224f907610ed4aa4d24cc063e8c9d198556a",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/result.json",
+      "original_sha256": "9a7536448d2cca72dcf3295b0049224f907610ed4aa4d24cc063e8c9d198556a",
+      "original_bytes": 1847
+    },
+    {
+      "path": "browser/account-ci/01-public.png",
+      "sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/01-public.png",
+      "original_sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_bytes": 32341
+    },
+    {
+      "path": "browser/account-ci/02-terms.png",
+      "sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/02-terms.png",
+      "original_sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_bytes": 43693
+    },
+    {
+      "path": "browser/account-ci/03-account-enrolled.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/03-account-enrolled.png",
+      "original_sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_bytes": 34654
+    },
+    {
+      "path": "browser/account-ci/04-sign-in.png",
+      "sha256": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/04-sign-in.png",
+      "original_sha256": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+      "original_bytes": 37548
+    },
+    {
+      "path": "browser/account-ci/05-account-returned.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/05-account-returned.png",
+      "original_sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_bytes": 34654
+    },
+    {
+      "path": "browser/account-ci/owner-receipt.json",
+      "sha256": "88a8b9ba8c4860c6450e6eeac4f923a53c4965be299890fd273c208850dbf597",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/owner-receipt.json",
+      "original_sha256": "88a8b9ba8c4860c6450e6eeac4f923a53c4965be299890fd273c208850dbf597",
+      "original_bytes": 486
+    },
+    {
+      "path": "browser/account-ci/result.json",
+      "sha256": "13d1e6a02e087d605e3bc967fd3b4ae9f3a94ebde62c609b3a0899ef14fee827",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/result.json",
+      "original_sha256": "13d1e6a02e087d605e3bc967fd3b4ae9f3a94ebde62c609b3a0899ef14fee827",
+      "original_bytes": 1848
+    },
+    {
+      "path": "browser/company/01-public.png",
+      "sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company/01-public.png",
+      "original_sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_bytes": 32341
+    },
+    {
+      "path": "browser/company/02-terms.png",
+      "sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company/02-terms.png",
+      "original_sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_bytes": 43693
+    },
+    {
+      "path": "browser/company/03-account-enrolled.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company/03-account-enrolled.png",
+      "original_sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_bytes": 34654
+    },
+    {
+      "path": "browser/company/owner-receipt.json",
+      "sha256": "9557daf3053e3061fab3bb83b0cc07c5c1c80871a5fa947df6244775787bdc57",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company/owner-receipt.json",
+      "original_sha256": "9557daf3053e3061fab3bb83b0cc07c5c1c80871a5fa947df6244775787bdc57",
+      "original_bytes": 537
+    },
+    {
+      "path": "browser/company/result.json",
+      "sha256": "40293ee82729519c96a54a28bcdde648e9eb5e2beae9b180565c6475053d3e4f",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company/result.json",
+      "original_sha256": "40293ee82729519c96a54a28bcdde648e9eb5e2beae9b180565c6475053d3e4f",
+      "original_bytes": 2993
+    },
+    {
+      "path": "browser/company-preview/01-public.png",
+      "sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company-preview/01-public.png",
+      "original_sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "original_bytes": 32341
+    },
+    {
+      "path": "browser/company-preview/02-terms.png",
+      "sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company-preview/02-terms.png",
+      "original_sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "original_bytes": 43693
+    },
+    {
+      "path": "browser/company-preview/03-account-enrolled.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company-preview/03-account-enrolled.png",
+      "original_sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "original_bytes": 34654
+    },
+    {
+      "path": "browser/company-preview/04-company-preview-input-preserved.png",
+      "sha256": "dcdd416e9d6f1a1ac4bb83ee375560a005f762dfc06553ea0d5b4e02c9c11438",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company-preview/04-company-preview-input-preserved.png",
+      "original_sha256": "dcdd416e9d6f1a1ac4bb83ee375560a005f762dfc06553ea0d5b4e02c9c11438",
+      "original_bytes": 38828
+    },
+    {
+      "path": "browser/company-preview/owner-receipt.json",
+      "sha256": "2a37b25bf5b0b498e29bcd561b0d6bb521de05dfdf47f93d1325bdf434ca3eb2",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company-preview/owner-receipt.json",
+      "original_sha256": "2a37b25bf5b0b498e29bcd561b0d6bb521de05dfdf47f93d1325bdf434ca3eb2",
+      "original_bytes": 562
+    },
+    {
+      "path": "browser/company-preview/result.json",
+      "sha256": "e977c44108562d6dbe0154b6a3da7a5ace2a129e15542587cefed7d7dccb1cb7",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/company-preview/result.json",
+      "original_sha256": "e977c44108562d6dbe0154b6a3da7a5ace2a129e15542587cefed7d7dccb1cb7",
+      "original_bytes": 3403
+    },
+    {
+      "path": "browser/hydration/authorized-before.png",
+      "sha256": "cfea45abc4ed71de5c0224c34fe869f3d5747d2982588af3a430b296599cf8a3",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/hydration/authorized-before.png",
+      "original_sha256": "cfea45abc4ed71de5c0224c34fe869f3d5747d2982588af3a430b296599cf8a3",
+      "original_bytes": 36533
+    },
+    {
+      "path": "browser/hydration/authorized-filter-1.png",
+      "sha256": "f9f08dae6c254fb651222f5ebbefe8c2e956e730ddd876e87556e0b8708ddb39",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/hydration/authorized-filter-1.png",
+      "original_sha256": "f9f08dae6c254fb651222f5ebbefe8c2e956e730ddd876e87556e0b8708ddb39",
+      "original_bytes": 27140
+    },
+    {
+      "path": "browser/hydration/authorized-filter-2.png",
+      "sha256": "8e7dbca71b6d99f43a14732865e8390625c8fd398c8e2550e7eb00d68019b762",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/hydration/authorized-filter-2.png",
+      "original_sha256": "8e7dbca71b6d99f43a14732865e8390625c8fd398c8e2550e7eb00d68019b762",
+      "original_bytes": 25206
+    },
+    {
+      "path": "browser/hydration/authorized-filter-3.png",
+      "sha256": "bc21f183a2e9563bc3605d98cfecd5e02f043c83af36997c79bef6e4822a4a66",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/hydration/authorized-filter-3.png",
+      "original_sha256": "bc21f183a2e9563bc3605d98cfecd5e02f043c83af36997c79bef6e4822a4a66",
+      "original_bytes": 36523
+    },
+    {
+      "path": "browser/hydration/owner-receipt.json",
+      "sha256": "98af5854fc6ebb0a6f42169d4ec7646ac9d13b893d382ff5d4f3ef267f92a5c3",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/hydration/owner-receipt.json",
+      "original_sha256": "98af5854fc6ebb0a6f42169d4ec7646ac9d13b893d382ff5d4f3ef267f92a5c3",
+      "original_bytes": 900
+    },
+    {
+      "path": "browser/hydration/result.json",
+      "sha256": "9d292e366a1bd69b19c6ed5b93fb44a2a76006dc14ccca6a1227c15b3f941646",
+      "original_path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/hydration/result.json",
+      "original_sha256": "9d292e366a1bd69b19c6ed5b93fb44a2a76006dc14ccca6a1227c15b3f941646",
+      "original_bytes": 5483
+    },
+    {
+      "path": "console-native-account-browser-runtime-20260920.log.gz",
+      "sha256": "438c1766ed127cfa3ef3ca25d1fa82dd16c3b73430863694c454b202231ca949",
+      "original_path": "/private/tmp/console-native-account-browser-runtime-20260920.log",
+      "original_sha256": "edbbb62d50c8a295eeaba26ef6b7819aca796b584a65f0256fb7be9cb14b9bf6",
+      "original_bytes": 2719
+    },
+    {
+      "path": "console-native-browser-account-ci-recipe-20260920.log.gz",
+      "sha256": "05682be69c38fc62b663bf8de7431c3b7e28158937b020d5752b9d4aacfb7b36",
+      "original_path": "/private/tmp/console-native-browser-account-ci-recipe-20260920.log",
+      "original_sha256": "81a981b3d9633a5a3ea1a4a05561124781846d69f19f2ab683fe4e026232b249",
+      "original_bytes": 6213
+    },
+    {
+      "path": "console-native-company-preview-browser-runtime-20260920.log.gz",
+      "sha256": "400687e389fa736a3c075a6e317208f4eacbcccad65d933c52fdabde628c5d2f",
+      "original_path": "/private/tmp/console-native-company-preview-browser-runtime-20260920.log",
+      "original_sha256": "414269e8aba9d9b5f618377ee7bc93acccead049e6fe27d96df818e8f1f6d31d",
+      "original_bytes": 2569
+    },
+    {
+      "path": "console-native-company-creation-browser-runtime-20260920.log.gz",
+      "sha256": "94ade21834d34b5ef1de1b188abc6f0f606a8da0e71acbdfeb389be173fecf6d",
+      "original_path": "/private/tmp/console-native-company-creation-browser-runtime-20260920.log",
+      "original_sha256": "21f1b75f17226a2237cc36534b1a76da05ef3fb2d6d216b1af1b20a6759791b8",
+      "original_bytes": 3798
+    },
+    {
+      "path": "console-native-payroll-hydration-browser-runtime-20260920.log.gz",
+      "sha256": "5267f4890e6189bb99d8c50184269f229f5cb2751177b6ba2d53258579cf0ecf",
+      "original_path": "/private/tmp/console-native-payroll-hydration-browser-runtime-20260920.log",
+      "original_sha256": "971ff64d1fae4e1a2fb8a8501b4f9f08cfad848eed2be8115b0abd0995bdc5f8",
+      "original_bytes": 6500
+    },
+    {
+      "path": "console-native-payroll-hydration-browser-successor-runtime-20260920.log.gz",
+      "sha256": "44878459863f6837783c85c2d70fdec1a1bbd4dfeba07c217c291e45d7f75821",
+      "original_path": "/private/tmp/console-native-payroll-hydration-browser-successor-runtime-20260920.log",
+      "original_sha256": "edd9594f0032bf1c4360ea843b8d2cfc582130b9da95642b9b69dc070b897174",
+      "original_bytes": 4461
+    },
+    {
+      "path": "console-native-browser-local-runtime-security-review-20260920.json",
+      "sha256": "4af81ee8cb1d438964bf85a7db897f08f6c51a377bb6d6558956e4843d5a23fb",
+      "original_path": "/private/tmp/console-native-browser-local-runtime-security-review-20260920.json",
+      "original_sha256": "4af81ee8cb1d438964bf85a7db897f08f6c51a377bb6d6558956e4843d5a23fb",
+      "original_bytes": 11577
+    },
+    {
+      "path": "console-native-browser-producer-tests-round3-security-review-20260920.json",
+      "sha256": "e9ccabb3d5cf9fa3da3ddeaa4881255ef2f574c6c38c394294a1ca5c5f39781a",
+      "original_path": "/private/tmp/console-native-browser-producer-tests-round3-security-review-20260920.json",
+      "original_sha256": "e9ccabb3d5cf9fa3da3ddeaa4881255ef2f574c6c38c394294a1ca5c5f39781a",
+      "original_bytes": 4615
+    },
+    {
+      "path": "console-native-browser-producer-source-security-review-20260920.json",
+      "sha256": "99f0f170403dfe76f427449edad91ba1f0a6d199d815a41abc8adeb46e559d4a",
+      "original_path": "/private/tmp/console-native-browser-producer-source-security-review-20260920.json",
+      "original_sha256": "99f0f170403dfe76f427449edad91ba1f0a6d199d815a41abc8adeb46e559d4a",
+      "original_bytes": 5751
+    },
+    {
+      "path": "console-native-browser-installer-tests-round1-security-review-20260920.json",
+      "sha256": "ba63838ab46573c39b65c504a87e5757ca0f5ceb0e57275b111dd8dc84e9fc6a",
+      "original_path": "/private/tmp/console-native-browser-installer-tests-round1-security-review-20260920.json",
+      "original_sha256": "ba63838ab46573c39b65c504a87e5757ca0f5ceb0e57275b111dd8dc84e9fc6a",
+      "original_bytes": 2787
+    },
+    {
+      "path": "console-native-browser-installer-final-security-review-20260920.json",
+      "sha256": "3b1dc26e1245628fca327963ef9e2cf534e74a45b0402187d8e6e6ad38165563",
+      "original_path": "/private/tmp/console-native-browser-installer-final-security-review-20260920.json",
+      "original_sha256": "3b1dc26e1245628fca327963ef9e2cf534e74a45b0402187d8e6e6ad38165563",
+      "original_bytes": 3289
+    },
+    {
+      "path": "console-native-browser-oracle-producer-security-review-20260920.json",
+      "sha256": "53fba19b2f69b4db1f2a0acdcb1c58be96c29984f09ae448812e1f0a9174dae9",
+      "original_path": "/private/tmp/console-native-browser-oracle-producer-security-review-20260920.json",
+      "original_sha256": "53fba19b2f69b4db1f2a0acdcb1c58be96c29984f09ae448812e1f0a9174dae9",
+      "original_bytes": 2297
+    },
+    {
+      "path": "console-native-browser-integration-tests-review-20260920.json",
+      "sha256": "ceaf161bcbd5b6490fc7d9769737ece2174290dfe2e7ba8e6f6210e488d2ab9a",
+      "original_path": "/private/tmp/console-native-browser-integration-tests-review-20260920.json",
+      "original_sha256": "ceaf161bcbd5b6490fc7d9769737ece2174290dfe2e7ba8e6f6210e488d2ab9a",
+      "original_bytes": 2095
+    },
+    {
+      "path": "console-native-health-browser-resources-review-20260920.json",
+      "sha256": "d01957938639e0d101e5f74a7405b6811c6d3f172510c63d8067dd3182166026",
+      "original_path": "/private/tmp/console-native-health-browser-resources-review-20260920.json",
+      "original_sha256": "d01957938639e0d101e5f74a7405b6811c6d3f172510c63d8067dd3182166026",
+      "original_bytes": 2911
+    },
+    {
+      "path": "console-native-account-browser-visual-critique-20260920.json",
+      "sha256": "37578f55e6b668a39f63a311ba31eedd65471c0689e418ef8f51bf346251be6e",
+      "original_path": "/private/tmp/console-native-account-browser-visual-critique-20260920.json",
+      "original_sha256": "37578f55e6b668a39f63a311ba31eedd65471c0689e418ef8f51bf346251be6e",
+      "original_bytes": 8114
+    },
+    {
+      "path": "console-native-browser-retention-round2-security-review-20260920.json",
+      "sha256": "94ceb7a49511575e8b51db52ca27d71df6b1c6eba9bed7b7e0f6fb62da134f2f",
+      "original_path": "/private/tmp/console-native-browser-retention-round2-security-review-20260920.json",
+      "original_sha256": "94ceb7a49511575e8b51db52ca27d71df6b1c6eba9bed7b7e0f6fb62da134f2f",
+      "original_bytes": 4492
+    },
+    {
+      "path": "console-native-browser-retention-tests-round2-integration-tests-review-20260920.json",
+      "sha256": "20295b76f9c857e670bc5031566f7effca6890380f3e619ead64ea1e37c140e0",
+      "original_path": "/private/tmp/console-native-browser-retention-tests-round2-integration-tests-review-20260920.json",
+      "original_sha256": "20295b76f9c857e670bc5031566f7effca6890380f3e619ead64ea1e37c140e0",
+      "original_bytes": 3759
+    },
+    {
+      "path": "console-native-browser-producer-lane-20260920.json",
+      "sha256": "68442f344b1a3171d25c516c43d64c4d890f68d4ddbbef0bb5437affc289ca10",
+      "original_path": "/private/tmp/console-native-browser-producer-lane-20260920.json",
+      "original_sha256": "68442f344b1a3171d25c516c43d64c4d890f68d4ddbbef0bb5437affc289ca10",
+      "original_bytes": 2666
+    },
+    {
+      "path": "console-native-browser-producer-admission-20260920.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "original_path": "/private/tmp/console-native-browser-producer-admission-20260920.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48
+    },
+    {
+      "path": "console-native-browser-producer-generator-red-20260920.log.gz",
+      "sha256": "18aa07442dec198f0979a97c187e7921aa044387e739ab2d99f66621aea42e33",
+      "original_path": "/private/tmp/console-native-browser-producer-generator-red-20260920.log",
+      "original_sha256": "a964587d25355e30df745939978e2e888a8b4002410cfdc7a8fab3c3f4de9a30",
+      "original_bytes": 234799
+    },
+    {
+      "path": "console-native-browser-producer-generator-green-20260920.log.gz",
+      "sha256": "1084266acb31f1fbc82134da2517d5f963ead145f58a39ee36cc224c9dbfe3a6",
+      "original_path": "/private/tmp/console-native-browser-producer-generator-green-20260920.log",
+      "original_sha256": "1ef007e1e367df59d339ee4544fa5dea72a431c99677c17c0d3c5725788444a8",
+      "original_bytes": 101
+    },
+    {
+      "path": "console-native-browser-producer-harness-red-20260920.log.gz",
+      "sha256": "6d3b9a0915ee6c3c89214ec3e4d89b750c08922f9f6dc926ed326437c92314c4",
+      "original_path": "/private/tmp/console-native-browser-producer-harness-red-20260920.log",
+      "original_sha256": "9f49413bc697d86ca4fe52a20372a807f157af0e19fb2eba93407808a4f95e20",
+      "original_bytes": 3914
+    },
+    {
+      "path": "console-native-browser-producer-harness-green-20260920.log.gz",
+      "sha256": "d39734a5ffc617b7d09bd13d13e4d9fc96f0020b22c9abb78e51645e864b2b8b",
+      "original_path": "/private/tmp/console-native-browser-producer-harness-green-20260920.log",
+      "original_sha256": "95740b80e4e45e819eab7beb773bcc21fcfce2879525ee06a0c723d64ea253c2",
+      "original_bytes": 3812
+    },
+    {
+      "path": "console-native-browser-exact-wrapper-regression-20260920.log.gz",
+      "sha256": "c9720b4f72833be9e567bc398061b74ec08da9f1aaeb08ab7635339a0e9010b8",
+      "original_path": "/private/tmp/console-native-browser-exact-wrapper-regression-20260920.log",
+      "original_sha256": "adf3af0ca26b6b4717d79b4a1ed25663bea8ca5cee09f2677852b9045be0915d",
+      "original_bytes": 315
+    },
+    {
+      "path": "console-native-browser-installer-red-20260920.log.gz",
+      "sha256": "9e8d70f12c370027c25d0ae8dd4a901d35db9f7c43bd4ccd72353ebd9b924886",
+      "original_path": "/private/tmp/console-native-browser-installer-red-20260920.log",
+      "original_sha256": "34784b76d3ef217b28226ea8382456693acb2b57244ee0b6b321e63d3fc7207b",
+      "original_bytes": 4095
+    },
+    {
+      "path": "console-native-browser-installer-green-20260920.log.gz",
+      "sha256": "df3fcb502444f3dd138d286ba900c75e4ab72de7f785b4dfdaecdd78f5436dfd",
+      "original_path": "/private/tmp/console-native-browser-installer-green-20260920.log",
+      "original_sha256": "9c57cfccaf4156bf9089d13b7186e70e886ef1233a30f2778f95df3bd17ec32c",
+      "original_bytes": 104
+    },
+    {
+      "path": "console-native-browser-generator-65tests-20260920.log.gz",
+      "sha256": "fe01a339a3bf7fc39c7b03abd63b0662b1a22dc4ca8eddea45be04339e34a497",
+      "original_path": "/private/tmp/console-native-browser-generator-65tests-20260920.log",
+      "original_sha256": "2b70ce91e33f1829a192e240df1b43fab2583b4688e70d4d44cc756881aa9771",
+      "original_bytes": 164
+    },
+    {
+      "path": "console-native-browser-missing-driver-20260920.log.gz",
+      "sha256": "52bad26c5ff484ef94af738385a95a9d9a066db8f9ae0bc0161541b1b4c3dc76",
+      "original_path": "/private/tmp/console-native-browser-missing-driver-20260920.log",
+      "original_sha256": "5b5baec8fed5be29a677f2942724052f292e7d90ebd16fe66e986e236ae074c0",
+      "original_bytes": 4943
+    },
+    {
+      "path": "console-native-browser-reachability-20260920.log.gz",
+      "sha256": "94931cfe5e9ca87545307175b91c5d7953f71e1bbba6eff4c72663f8a03f33a4",
+      "original_path": "/private/tmp/console-native-browser-reachability-20260920.log",
+      "original_sha256": "ffc9f44f95477d69d755398461715d7f5ba6f74c1f0b1f1d01a0b9aab1d100ca",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-native-browser-reachability-tests-20260920.log.gz",
+      "sha256": "841f60e0d0460ce9473be3f970c3d7bc05f7aa4eb86aa4db6c45761df1b5d85c",
+      "original_path": "/private/tmp/console-native-browser-reachability-tests-20260920.log",
+      "original_sha256": "5aff1f208bf699a12f4a7cab06b5444421ce1ce548972d8e9f620f2918f83860",
+      "original_bytes": 1815
+    },
+    {
+      "path": "console-native-browser-ci-tests-20260920.log.gz",
+      "sha256": "9eb90c149d5950a82f7bd1b4ddaf59712c057d2a9bc4fb242f42de0d8e93c46a",
+      "original_path": "/private/tmp/console-native-browser-ci-tests-20260920.log",
+      "original_sha256": "5a0f0c63d9f558915a6abe4d67b18fcf439ab2ded9b894949dfa960999a0bb4b",
+      "original_bytes": 42940
+    },
+    {
+      "path": "console-native-browser-ci-tests-unsandboxed-20260920.log.gz",
+      "sha256": "9468e86cc7edafd3985014667c3382922124f6524651f1b0095fcdc645170e78",
+      "original_path": "/private/tmp/console-native-browser-ci-tests-unsandboxed-20260920.log",
+      "original_sha256": "f213113c5602e88239700a76c237264335f217bd7df17496cb8260fb599b1f3d",
+      "original_bytes": 5869
+    },
+    {
+      "path": "console-native-browser-ci-successor-tests-20260920.log.gz",
+      "sha256": "ca8374cb8849603045ce801199382846f221be65cc8a8ebd6e6083d6c843875b",
+      "original_path": "/private/tmp/console-native-browser-ci-successor-tests-20260920.log",
+      "original_sha256": "03c476a4264a26836e0d2b0c3dd8082aaa0d36d1f1074f01352427ac047b58e0",
+      "original_bytes": 5873
+    },
+    {
+      "path": "console-native-browser-buck-run-discovery-20260920.log.gz",
+      "sha256": "ea4f8e9936371b075055897a6a102c1a2445fec5211fbb62f9d32fa7a27dd87c",
+      "original_path": "/private/tmp/console-native-browser-buck-run-discovery-20260920.log",
+      "original_sha256": "b50e9f6c740d02bd4789edc6bb858736d687986741f49a9757e49be2c2e52c83",
+      "original_bytes": 1284
+    },
+    {
+      "path": "console-native-health-readiness-full-20260920.log.gz",
+      "sha256": "7c1d9f5b398cbea343fbda86cbbd8bd5bac501d12cc8f2b27bbf52eb1587ca52",
+      "original_path": "/private/tmp/console-native-health-readiness-full-20260920.log",
+      "original_sha256": "07f6b34f9ad6bedd90d9ef25780a9e4acec7fe2b683fcb931d974d4db0c681e5",
+      "original_bytes": 5259
+    },
+    {
+      "path": "console-browser-retention-red-20260920.log.gz",
+      "sha256": "fef9572fce5fb501070acc9d50e26023f2d79bd1cfb718069cf3d79f6a63e977",
+      "original_path": "/private/tmp/console-browser-retention-red-20260920.log",
+      "original_sha256": "03a9675c36533b1c9a35396fccdb84fbfde72009c949915d7b649e9990d36f54",
+      "original_bytes": 1075
+    },
+    {
+      "path": "console-browser-retention-generator-green-20260920.log.gz",
+      "sha256": "7cc1e71f9e4e44ef5d4f8543edc7cd72e9330189caddd0b1a57884bcbb028b1d",
+      "original_path": "/private/tmp/console-browser-retention-generator-green-20260920.log",
+      "original_sha256": "4a3072e48b28fc69ef9611b48adc4ef7efa84386d82cc6600bb4b2b22473b9f0",
+      "original_bytes": 164
+    },
+    {
+      "path": "console-browser-retention-ci-green-20260920.log.gz",
+      "sha256": "573ca5f1b06d208ae90504473025f03a7ab02934e64bcfb40f1ce96905bdadce",
+      "original_path": "/private/tmp/console-browser-retention-ci-green-20260920.log",
+      "original_sha256": "7b4ae30d1056344db877b173a0d1f5c717bd5bf461c04969370cb009e6d3cdd5",
+      "original_bytes": 7329
+    },
+    {
+      "path": "console-browser-retention-ci-gate-20260920.log.gz",
+      "sha256": "b792a4464b2d3eb2ab961ad7921dd05a14f1760de99a3677b6e447c96d20ab38",
+      "original_path": "/private/tmp/console-browser-retention-ci-gate-20260920.log",
+      "original_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "original_bytes": 30
+    },
+    {
+      "path": "console-browser-retention-ci-successor-green-20260920.log.gz",
+      "sha256": "9f1e07fd27b54835943a1f541381fdb5b7b4cd6bb7a324f77b3a651e43aa71f9",
+      "original_path": "/private/tmp/console-browser-retention-ci-successor-green-20260920.log",
+      "original_sha256": "e157bf0ef394ea4ee8ea97f278df5d56540765ce2c613d06e17e211605eafe18",
+      "original_bytes": 6162
+    },
+    {
+      "path": "console-native-browser-retention-order-tests-security-review-20260920.json",
+      "sha256": "42013506265cd11963b447a510bf4b3038b7a8d27796521174921e0cd774d317",
+      "original_path": "/private/tmp/console-native-browser-retention-order-tests-security-review-20260920.json",
+      "original_sha256": "42013506265cd11963b447a510bf4b3038b7a8d27796521174921e0cd774d317",
+      "original_bytes": 1326
+    },
+    {
+      "path": "console-native-browser-retention-order-tests-round1-integration-tests-review-20260920.json",
+      "sha256": "6aea84aa7f3a35ba939950a564dc3b1251d9394a1c373cb7464adcd755b3cae3",
+      "original_path": "/private/tmp/console-native-browser-retention-order-tests-round1-integration-tests-review-20260920.json",
+      "original_sha256": "6aea84aa7f3a35ba939950a564dc3b1251d9394a1c373cb7464adcd755b3cae3",
+      "original_bytes": 1230
+    },
+    {
+      "path": "console-native-browser-retention-tests-20260920-round2.tar.gz",
+      "sha256": "bd2603010d009dad7d2d8f220873e4ca3c06a076882893de9bce15e137b5c353",
+      "original_directory": "/private/tmp/console-native-browser-retention-tests-20260920-round2"
+    },
+    {
+      "path": "console-native-browser-retention-order-tests-20260920-round1.tar.gz",
+      "sha256": "6cea02e400417707869fd8d18923bdc2d05b7a11b27db0ca4e4aa8a81b110025",
+      "original_directory": "/private/tmp/console-native-browser-retention-order-tests-20260920-round1"
+    },
+    {
+      "path": "console-native-browser-producer-final-security-review-20260920.json",
+      "sha256": "c6c17afdede112fd6f0c791bbe31514b0ddcab6392c0d68657c00baa5175f37c",
+      "original_path": "/private/tmp/console-native-browser-producer-final-security-review-20260920.json",
+      "original_sha256": "c6c17afdede112fd6f0c791bbe31514b0ddcab6392c0d68657c00baa5175f37c",
+      "original_bytes": 7801
+    }
+  ],
+  "counts": {
+    "browser_executions": 5,
+    "passed_executions": 4,
+    "distinct_passed_browser_leaves": 3,
+    "failed_company_creation": 1,
+    "pure_oracles": 3,
+    "ordinary_health_discovered": 15,
+    "ordinary_health_executed_passed": 14,
+    "ordinary_health_existing_ignored": 1,
+    "generator_passed": 65,
+    "retention_ci_first_passed": 67,
+    "retention_ci_first_failed": 1,
+    "retention_ci_successor_passed": 68
+  },
+  "remaining": [
+    "Company creation fails COMPANY_FORM before submission",
+    "Hosted Linux browser/upload/readback unexecuted",
+    "All five complete MVP business workflows remain required",
+    "No production exposure"
+  ],
+  "historical_failure": "First retention CI run67/68; reviewed test successor preserves both mutants and passes68/68.",
+  "implementation_commit": "ff7857829"
+}

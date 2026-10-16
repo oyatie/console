@@ -1,0 +1,5 @@
+{
+  "base_test_sha256": "29a7c4fb9341e4c19ade8eeed672d96950d082e803eb659e31068b8604fc711b",
+  "reason": "All7database-backed cases currently fail before router at explicit durability configuration guard. Specify existing local_development policy only in database test constructors, including retained ignored helper; no assertion, production guard, noDB case or ignore annotation change.",
+  "evidence": "/private/tmp/console-root-entry-health-regressions.log"
+}

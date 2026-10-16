@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE round3 design/tests/portable-driver custody successor for root implementation; actual installer,CI source and native execution require separate concrete review",
+  "manifest_sha256": "a50c6e0ab516ee04e3933bdd741642e48def5bb9d8c1a4bbd8adfdf055fa0c6f",
+  "proposal_sha256": "8ad6a7a4d8c49990fc1a2a1162b299c39d62bc229c0844ae2fc55eb442a2c493",
+  "superseded_holds": [
+    "Round1 unscheduled variants would grow dark set; corrected explicit CI producer contract replaces workflow-absence test.",
+    "Round2 Company exact names omitted enclosing modules; corrected full account_browser::deployment_operator_designation::company_setup path."
+  ],
+  "checks": [
+    "All 30 round3 manifest member hashes and all source/package preimage pins match. Existing60Python test methods remain AST-identical;3added methods. Existing shell wrapper tests lose no lines; old fake binary gains only exact discovery response.",
+    "Nine wrapper cases assert listing before execution,exact name and1test/0bench grammar,denial for empty/ambiguous/error/wrong-name/benchmark/missing-summary/extra-output,secret-free finite failure and child status propagation. Original positional args retained. They do not prove ignored-test state or actual native counts.",
+    "Four drivers byte-identical to reviewed round2. Diffs only runtime-relative paths,static OS/arch executable pins,151\u2192153 version and Account /_ui/account\u2192/account routes; original owner/mutation/response/cleanup assertions retained.",
+    "All4Rust custody expression changes mechanically invert to exact original files. Supported macOSarm64/Linuxx64 expected hashes are code constants,not accepted from runtime input. Unknown platform refuses.",
+    "Independently hashed Linux archive and extracted executable: a9da028861a0cf789ff25c2fed45f5f1aaf969ed9247835b6a7821a4f7af9d1d and ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e. No execution. Pins originate explicit official HTTPS download per author; this establishes retained byte custody,not platform functionality or vendor signature.",
+    "Retained package/lock/browsers files match pinned hashes; lock selects Playwright/core1.63.0 with integrity fields. Exact browser metadata153.0.8010.12/revision1243. Root installer must enforce these before staging/launch.",
+    "Exact5CI step contract requires direct visible native wrapper calls,working directory,conditions,17jobs and unchanged matrix; final existing collector reads all step outcomes. Existing CI mutation counts strengthen25\u219230backend,132\u2192137global,396\u2192411mutations; no old mutation removed and no dark-set growth admitted.",
+    "Source include chains support corrected4fully qualified exact leaves; runtime --list and1executed remain mandatory."
+  ],
+  "counts": {
+    "new_generator_methods": 3,
+    "retained_generator_methods": 60,
+    "round1_dispatch_cases_reused": 6,
+    "new_wrapper_discovery_cases": 9,
+    "scheduled_native_leaves": 4,
+    "runtime_executed_by_reviewer": 0
+  },
+  "required_followup": [
+    "Root run real generator/harness/wrapper RED and existing lane admission before corresponding production edits. Source-only test preparation is not runtime acceptance.",
+    "Review concrete generator/harness/wrapper/installer/workflow/locked-contract source and generated face. Preserve77ordinary target hashes,strict9credential keys and public12env allowlist. Full unchanged CI preflight/executed-tests gate must prove no new dark entries.",
+    "Installer tests must prove corrupt archive/driver/platform/fresh-output refusal,static pin validation,0700fresh staging,secret-free output and no newline GITHUB_ENV injection. Installer source not yet reviewed.",
+    "Run existing browser evidence-machinery positive/negative controls with reviewed mechanical custody fixture successors as needed. Native build/discover and actual missing-driver failure; then real Linux/macOS functional runs with exact1discovered/1executed per selected leaf.",
+    "Creation and preview currently contradict at same destination (form vs noform); preserve failures/history and obtain exact semantic successor review when completed creation replaces preview-stage expectation. This infrastructure approval does not skip either or declare4green."
+  ],
+  "scope_limits": [
+    "No product/Account/Company/payroll implementation accepted by this packet.",
+    "No Linux launch,runtime accessibility,production recovery or MVP/release completion inferred.",
+    "No runtime/DB/build/download executed or repository writes by reviewer."
+  ]
+}

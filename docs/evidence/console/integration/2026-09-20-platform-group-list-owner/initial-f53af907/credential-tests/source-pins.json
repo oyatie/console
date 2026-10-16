@@ -1,0 +1,13 @@
+{
+  "head_sha": "194d68dcfca48027381ccbb33deb75b9b274724a",
+  "production_worktree_dirty": true,
+  "sources_sha256": {
+    "backend/crates/platform/provisioning/src/lib.rs": "20219ba87a2adf267f4687f6a2baa6c7040adc839aa5214b7efdf06cf6fb1386",
+    "backend/crates/platform/platform-rest/src/lib.rs": "220a45f967a881dc481e33385344ed259be97ff0b0a6a752cc83c783c4fcf099",
+    "backend/crates/platform/auth-rest/src/lib.rs": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85",
+    "backend/app/tests/auth_rest/legacy_platform_group_reads.rs": "3ff0c9dfa0ec1ebb5d60b4ad5b8fa6519eaa4de51b9a03bf7e4dc8d2f3f1026a",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "463b82646f4678eaea4ef014361636ec62009de4cb973ed22aee12817fc9f610",
+    "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "bf9e3c6d436dee39c650336676dc1f5c3a8e6b336ba4d926e40c533772947f56"
+  },
+  "runtime_executed": 0
+}

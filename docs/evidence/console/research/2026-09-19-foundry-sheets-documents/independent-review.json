@@ -1,0 +1,48 @@
+{
+  "reviewer": "integration_tests",
+  "review_kind": "independent bounded public-reference and additive-inventory review",
+  "verdict": "APPROVED_BOUNDED_REFERENCE_ADDITION_ONLY",
+  "reviewed_utc": "2026-09-20T01:28:17.040303+00:00",
+  "base_head": "ace3e5368d9c009cc3b8770d5cb1a6cdf3f24c9c",
+  "base_registry_sha256": "d53e89389204bc425bb0fc2dcb1d1f782dc96534e52947c2fd6f11d1b9526347",
+  "exact_artifacts": {
+    "proposal.json": "3c9c66bcb2026a5ef94a32d4a0a7672bf9bc9f794316be36ac5eb3461910029e",
+    "candidate-patch.json": "048e9e5df863d2ab604c297c2fa85983bd9b415df9aced91ef3cb766d9ca294f",
+    "candidate-registry.json": "0772eff84fd6ad8084e70a3cd608d210b633aa8209070727ef4246bc811bf7d6",
+    "manifest.json": "edadace3de54cfb766e29168ff8a1e983f756bdd49155a07ae7cdfee0142ddc6"
+  },
+  "checks": {
+    "errors": [],
+    "sources_verified": 22,
+    "quote_checks_including_repeated_catalog_bindings": 452,
+    "exact_function_headings_verified": 202,
+    "leaves_added": 14,
+    "combined_leaves": 187,
+    "patch_operations": 91,
+    "ordered_headings_equal": true
+  },
+  "method": [
+    "Independently hashed every manifest member; decompressed all 22 source artifacts and checked raw/compressed hashes and byte counts against source records and original capture receipts. Receipt absolute temporary paths resolve to the same bytes as proposed repository destinations.",
+    "Parsed captured data-pagefind-body with an independent HTMLParser; checked all 452 quote occurrences including the repeated catalog bindings. Independently compared the complete ordered 202 h4 function signatures and their h2 sections, including literal experimental/deprecated labels.",
+    "Verified all actual UTC retrieval timestamps map to September 19 America/New_York; retained September 20 UTC captures and explicit mutable-document/historical-authentication caveats.",
+    "Applied all 91 patch operations independently to git-show base bytes and compared the resulting JSON with candidate-registry. Recursively checked every prior value unchanged, arrays prefix-preserved, no replaced map keys, and only additive changes after version test.",
+    "Checked 187 unique leaf IDs, all dependencies resolve and graph is acyclic; all 14 added leaves remain planned only with acceptance not_bound. All function required_leaf and binding IDs resolve.",
+    "Read 26 compatibility/lifecycle qualifications and nine limitations against captured sources; preserved material distinctions between sheet actions and Ontology writeback, presence/history and concurrency, import/export and round-trip fidelity, beta security envelopes and universal availability."
+  ],
+  "findings": [],
+  "limitations": [
+    "Approval covers this bounded addition only, not exhaustive F09 or Foundry inventory, executable compatibility, implementation, workflow acceptance, production qualification, or release.",
+    "Reference freeze remains partial_snapshot; all previous blocker and state values are preserved.",
+    "Acceptance commands, fixtures and owning boundary for these new leaves remain unbound.",
+    "The source artifact copies and exact proposal/candidate custody must be retained when root applies the addition; this review does not establish later committed artifact custody.",
+    "No runtime product tests were executed in this reference review."
+  ],
+  "reproduction": {
+    "script": "/private/tmp/review-f09-independent.py",
+    "script_sha256": "9436030c32a823536694d4f06b6597bab207f0eabeb822851924d51eb79f43e2",
+    "results": "/private/tmp/console-f09-independent-checks.json",
+    "results_sha256": "6e290b79ee22d1679145cea47555eb8a41b49f0aac932d74dc78d13fd3c0232c"
+  },
+  "runtime_tests_executed": 0,
+  "repository_edits": false
+}

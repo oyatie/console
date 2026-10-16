@@ -1,0 +1,88 @@
+{
+  "design_sha256": "7cf3b4208e827921e4cd0f86d5b4717df75fa9e618962cd3b3e154ea5291d9de",
+  "diagnostics": [
+    {
+      "$message_type": "diagnostic",
+      "children": [],
+      "code": {
+        "code": "E0432"
+      },
+      "level": "error",
+      "message": "unresolved import `console_identity_application::company_policy::decode_native_hr_policy_command_v1`",
+      "rendered": "\u001b[1m\u001b[91merror[E0432]\u001b[0m\u001b[1m: unresolved import `console_identity_application::company_policy::decode_native_hr_policy_command_v1`\u001b[0m\n \u001b[1m\u001b[94m--> \u001b[0mbackend/crates/identity/application/backend/crates/identity/application/tests/native_hr_policy_parser_contract.rs:1:5\n  \u001b[1m\u001b[94m|\u001b[0m\n\u001b[1m\u001b[94m1\u001b[0m \u001b[1m\u001b[94m|\u001b[0m use console_identity_application::company_policy::decode_native_hr_policy_command_v1;\n  \u001b[1m\u001b[94m|\u001b[0m     \u001b[1m\u001b[91m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u001b[0m\u001b[1m\u001b[94m----------------------------------\u001b[0m\n  \u001b[1m\u001b[94m|\u001b[0m                                                   \u001b[1m\u001b[94m|\u001b[0m\n  \u001b[1m\u001b[94m|\u001b[0m                                                   \u001b[1m\u001b[94mno `decode_native_hr_policy_command_v1` in `company_policy`\u001b[0m\n\n",
+      "spans": [
+        {
+          "byte_end": 84,
+          "byte_start": 50,
+          "column_end": 85,
+          "column_start": 51,
+          "expansion": null,
+          "file_name": "backend/crates/identity/application/backend/crates/identity/application/tests/native_hr_policy_parser_contract.rs",
+          "is_primary": false,
+          "label": "no `decode_native_hr_policy_command_v1` in `company_policy`",
+          "line_end": 1,
+          "line_start": 1,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 85,
+              "highlight_start": 51,
+              "text": "use console_identity_application::company_policy::decode_native_hr_policy_command_v1;"
+            }
+          ]
+        },
+        {
+          "byte_end": 84,
+          "byte_start": 4,
+          "column_end": 85,
+          "column_start": 5,
+          "expansion": null,
+          "file_name": "backend/crates/identity/application/backend/crates/identity/application/tests/native_hr_policy_parser_contract.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 1,
+          "line_start": 1,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 85,
+              "highlight_start": 5,
+              "text": "use console_identity_application::company_policy::decode_native_hr_policy_command_v1;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [],
+      "code": null,
+      "level": "error",
+      "message": "aborting due to 1 previous error",
+      "rendered": "\u001b[1m\u001b[91merror\u001b[0m\u001b[1m: aborting due to 1 previous error\u001b[0m\n\n",
+      "spans": []
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [],
+      "code": null,
+      "level": "failure-note",
+      "message": "For more information about this error, try `rustc --explain E0432`.",
+      "rendered": "\u001b[1mFor more information about this error, try `rustc --explain E0432`.\u001b[0m\n",
+      "spans": []
+    }
+  ],
+  "explicit_omissions": [
+    "Only diagnostics[0].code.explanation (compiler documentation; owner reads code.code and never explanation)."
+  ],
+  "observed_diagnostics_sha256": "07a057ac5c661a54442beb578fb0b86150fda690c2745df5d12f84853865b5f1",
+  "observed_response_sha256": "6600606bab4a57d21a49a19eff02d9a916fa4f973e65f2238be6879224d6502b",
+  "provenance": "Frozen real Rust diagnostics retain every other field. Temporary tool files in controls are machinery placeholders and are never executed; native qualification is not asserted.",
+  "remap_destination": "backend/crates/identity/application/",
+  "schema": "console.hr-policy-parser.observed-source-custody-fixture.v1",
+  "source_bucket": "d36860cfd4ef3e8d",
+  "source_sha256": "fc79c079f47710969458fd3ed769a9e662eba484a5a101897c203ad2d05933ac",
+  "target_name": "console-identity-application-itest-native_hr_policy_parser_contract"
+}

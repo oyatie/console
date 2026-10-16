@@ -1,0 +1,46 @@
+[
+  {
+    "lane": "legacy-self-passkey-exact-family-read",
+    "owner": "/root",
+    "base_sha": "58a2ab041584ce652db70d4476468d06a61f2d61",
+    "immutable_target": "GET /api/v1/auth/passkeys exact-family guard and private response",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-legacy-passkey-owner-map-20260920.json --only legacy-passkey-owner",
+    "allowed_paths": [
+      "backend/crates/platform/auth/src/legacy.rs",
+      "backend/crates/platform/auth/src/lib.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs"
+    ],
+    "forbidden": [
+      "migrations",
+      "lockfiles",
+      "generated contracts",
+      "issuers",
+      "historical command bytes",
+      "original checkout"
+    ],
+    "design_manifest": "a6fa5d169a7e85568e84cdda37f5b977ba1b0aae1d628b6d825ac3386e5640fa",
+    "tests_manifest": "eda1ba1d04f57dfb33e57bdd9096340779c641976a1b4e82cb2f8d4769aa9de7",
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "mechanical_guide": "Auth verifies raw signed credential, enforces direct self-security dispatch, retains Company/User/Account/exact family locks and fresh DB clocks through one Auth projection transaction; REST maps typed result and private headers. Reuse current guards/projection/clock; no bound mint.",
+    "pre_mortem": "Snapshot authorizes revoked family; broad error mapper hides outages; expiry stale after wait; cache exposes summary.",
+    "blast_radius": "One legacy credential self-read owner and response",
+    "detection": "Reviewed real HTTP A/B revocation probe, privacy controls, supplementary lifetime/tuple/lock histories and retained tests",
+    "rollback": "Revert unexposed reader change while keeping parser and issuance disabled; restore old behavior only as known unqualified release candidate",
+    "stop_conditions": [
+      "prerequisite failure rather than revoked-A200 RED",
+      "need migration/SQL/grant change",
+      "broader dispatch or role semantics change",
+      "missing independent test evidence"
+    ],
+    "remaining_holds": [
+      "all broader current-policy/effect/derived guards",
+      "bound mint",
+      "full owner supplementary acceptance",
+      "complete release qualification",
+      "ADR evidence packaging pending user approval"
+    ]
+  }
+]

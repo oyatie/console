@@ -1,0 +1,40 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Root-only disposable Platform source capture machinery; not captured pins, runtime or release approval",
+  "reviewer": "integration_security",
+  "manifest_sha256": "603ec032ae2a2aa467b9afb2639ef3c395c54e4f2b17ced7a05588f04c43b290",
+  "source_binding": "All manifest hashes verified; exact SQL install and historical/prospective generator outputs checked; retained base26d78648 binary and RED log source checks passed",
+  "checks": [
+    {
+      "command": "python3 /private/tmp/console-platform-source-capture-driver-20260920-round2/test_capture_oracle.py -v",
+      "discovered": 3,
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "positive_controls": 2,
+      "individual_corruptions": 27
+    },
+    {
+      "command": "python3 /private/tmp/console-platform-source-capture-driver-20260920-round2/capture.py --verify-sources-only",
+      "exit": 0,
+      "database_execution": false,
+      "application_execution": false
+    }
+  ],
+  "resolved_finding": "Round1 preserved; exact actual PostgreSQL JSON array now required for context signature and synthetic fixtures. No permissive shape coercion.",
+  "review_conclusions": [
+    "Exact prior profiles and real historical owner RED guard precede capture",
+    "Retained baseline binary used solely as fixture; current implementation not misrepresented",
+    "Exact two-object DDL/ACL normalization plus full rows/metadata and source text digest checks",
+    "Separate-connection rollback proves original observer/plain rows and metadata restored",
+    "Strict helper shape and effective grants; console_app/Auth/startup/other command owners denied",
+    "Exclusive private evidence creation and source-bound paths; no prior evidence overwrite"
+  ],
+  "remaining_holds": [
+    "Independent resulting capture verification and actual pin review",
+    "Finalizer/generated artifact source and runtime acceptance",
+    "Full Platform owner and release acceptance"
+  ],
+  "database_executions": 0,
+  "repository_writes": 0
+}

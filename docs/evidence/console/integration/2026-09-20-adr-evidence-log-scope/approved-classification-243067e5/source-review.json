@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_security",
+  "task": "Newly user-authorized bounded ADR raw-log classification only",
+  "decision": "APPROVE exact source candidate; root runtime and preservation evidence remain separately required",
+  "base_sha": "243067e5cf8cc22766a1eaed55fc847303ce18d1",
+  "candidate_path": "scripts/check-adrs.mjs",
+  "candidate_sha256": "c6144bea0ab9c6527ce86a010674ee0a2f18f95c0eed51fd5948a8db08a00d6d",
+  "preimage_sha256": "ce2f834007cd53a779e2e65183ca7e9cc7ed90a1ca1fc159f123446c17115d7b",
+  "approved_test_sha256": "1a30fa9a379d2452d7404b86f802b2bafccd4882bce96e3683e7710dcc0e55ec",
+  "checks": [
+    "Entire source equals exact base after removing only extname import and seven-line exception inside validateRetiredAdrIdentities; no other source behavior changed.",
+    "Exception applies only when Node path.extname equals exact lowercase .log and existing path.relative containment places the file under docs/evidence. Evidence-other, docs/evidence.log, other roots, uppercase LOG and .log.md remain scanned.",
+    "Exception is confined to retired ADR identity text scan. File discovery, Git/traversal paths, canonical ADR/design-note collection, frontmatter validation, statuses, identifiers, reserved ADR number, index and reciprocal relationship graph remain byte-identical.",
+    "No global extension exclusion, normative evidence exclusion, authority mutation, alternate scanner or dependency added. Existing portable path containment helper is reused.",
+    "Previously approved test bytes match pinned hash and base exactly. Both traversal and tracked Git modes have raw-log preservation positives and16 normative/source/IaC/outside/suffix negative paths with exact per-line diagnostics.",
+    "Tests still retain every earlier frontmatter, index, relationship, identity and retirement check; no assertions relaxed or tests removed.",
+    "Only scripts/check-adrs.mjs is dirty; this review performs no repository writes or runtime execution.",
+    "Admission log states every named probe red; prior automatic rejection does not authorize prior actions, and this receipt is limited to the newly reported explicit user go-ahead."
+  ],
+  "findings": [],
+  "runtime_tests_executed_by_reviewer": 0,
+  "limits": [
+    "This is source approval for the explicitly authorized lowercase .log class, not content authentication of raw logs.",
+    "Root must attach actual test counts, repo gate output and preservation proof before bounded task completion.",
+    "No resumption or completion of the larger usage-limited Console release goal is implied."
+  ]
+}

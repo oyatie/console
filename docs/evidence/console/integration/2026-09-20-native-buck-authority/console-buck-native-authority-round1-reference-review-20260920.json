@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "round": 1,
+  "scope": "authority source and user-intent fidelity; read-only design review",
+  "decision": "approve for remaining independent rounds; not implementation or release acceptance",
+  "packet_path": "/private/tmp/console-buck-native-authority-design-20260920-round1",
+  "manifest_sha256": "73a89553c7867074dd88dd9bcf51c9330fe8a448468242186f2004d15184d733",
+  "base_sha": "209af958af44fba8577ce8e2cae1068150a1b410",
+  "candidate_files_sha256": {
+    "docs/current/PRODUCT.md": "57e88283204471127306a9f3d20ac39baa58a066fda50be99a41275ed4d63472",
+    "docs/current/ROADMAP.md": "630047f5c57df9d1a46449080b3a853ebbdb3be44b5cfbb26dfb0f07118c9848",
+    "docs/current/DELIVERY.md": "87e9e99708c2cdeda026d29a83b9c662c3377ef076a383fab6e33bc0874abf73"
+  },
+  "verified": [
+    "Manifest and all four packet member SHA256 hashes match; three source hashes match exact base Git blobs and working files.",
+    "Diff contains only PRODUCT target-direction replacement, ROADMAP convergence-direction replacement, and DELIVERY native-evidence paragraph addition. Existing surrounding release requirements preserved.",
+    "Latest user requirement is reflected as a target and acceptance criterion, not a claim of already-completed native migration.",
+    "Application and worker binaries, SSR, hydration WASM, compiled gates, required Rust tests and release artifacts are in scope. Cargo product build delegation explicitly does not qualify.",
+    "Cargo dependency metadata, formatting/editor compatibility and separately pinned tooling bootstrap are separated from Console product artifact production.",
+    "Existing Cargo test producers and historical evidence stay until native equivalents demonstrate complete coverage; no permission to delete historical ADRs/DNs, test cases or evidence is introduced.",
+    "Native compiler action/artifact identity, test counts, PostgreSQL credential isolation and feature-variant evidence match actual source audit gaps.",
+    "Current mixed graph is explicitly unqualified; native execution does not establish full hermeticity, cache reuse, performance or release completion."
+  ],
+  "findings": [],
+  "source_audit_path": "/private/tmp/console-buck-native-source-audit-20260920-round3.md",
+  "source_audit_sha256": "cc606553af1b33f64735202edd661e22a925cdb9a18716f282791b5e2834585d",
+  "limits": [
+    "This first-round review approves only authority/source fidelity at the named immutable packet.",
+    "No repository edits, builds, generator runs, gate/test executions, installations or network actions performed.",
+    "Subsequent independent rounds, root application, manifest projection and required verification remain pending."
+  ],
+  "executed_tests": 0
+}

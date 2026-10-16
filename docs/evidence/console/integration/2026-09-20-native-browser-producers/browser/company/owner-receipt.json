@@ -1,0 +1,14 @@
+{
+  "kind": "INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS",
+  "checkpoints": [
+    "ENROLLED"
+  ],
+  "source_unchanged": true,
+  "driver_exit_success": false,
+  "server_shutdown": true,
+  "browser_pid": 8296,
+  "browser_seen_alive": true,
+  "browser_pid_exit_confirmed": true,
+  "browser_final_alive_observation": false,
+  "limits": "TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"
+}

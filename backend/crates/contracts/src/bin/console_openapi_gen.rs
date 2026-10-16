@@ -25,6 +25,22 @@ use console_contracts::{
 };
 
 fn main() {
+    // Buck materializes compiler inputs in its action tree. An explicit output
+    // root keeps generated files out of those immutable build inputs.
+    let args: Vec<_> = env::args_os().skip(1).collect();
+    let output_root = match args.as_slice() {
+        [] => None,
+        [flag, root] if flag == "--output-root" && PathBuf::from(root).is_absolute() => {
+            Some(PathBuf::from(root))
+        }
+        _ => {
+            eprintln!(
+                "console-openapi-gen: output arguments: expected --output-root ABSOLUTE_REPOSITORY_ROOT"
+            );
+            process::exit(1);
+        }
+    };
+
     // Examined-zero must fail: a registry that forgot the faces would "regen"
     // an empty/partial document and `git diff` would not catch the omission if
     // openapi.yaml was deleted in the same commit. Require the shared fragment
@@ -99,15 +115,6 @@ fn main() {
         }
     };
 
-    if let Err(err) = fs::write(&out, &doc) {
-        eprintln!(
-            "console-openapi-gen: failed to write {}: {err}",
-            out.display()
-        );
-        process::exit(1);
-    }
-    println!("wrote {} ({} bytes)", out.display(), doc.len());
-
     let rust = match generated_typed_action_rs() {
         Ok(rust) => rust,
         Err(err) => {
@@ -151,12 +158,31 @@ fn main() {
         }
     };
 
-    if let Err(err) = fs::write(&rust_out, &rust) {
-        eprintln!(
-            "console-openapi-gen: failed to write {}: {err}",
-            rust_out.display()
-        );
-        process::exit(1);
+    let out = output_root
+        .as_ref()
+        .map_or(out, |root| root.join("backend/openapi/openapi.yaml"));
+    let rust_out = output_root.as_ref().map_or(rust_out, |root| {
+        root.join("backend/crates/ontology/rest/src/typed_action_generated.rs")
+    });
+    // Validate both destinations and both generated documents before any write.
+    // This is not an atomic two-file commit: callers retain normal Git review.
+    for path in [&out, &rust_out] {
+        if path.parent().is_none_or(|parent| !parent.is_dir()) {
+            eprintln!(
+                "console-openapi-gen: output directory missing for {}",
+                path.display()
+            );
+            process::exit(1);
+        }
     }
-    println!("wrote {} ({} bytes)", rust_out.display(), rust.len());
+    for (path, contents) in [(&out, &doc), (&rust_out, &rust)] {
+        if let Err(err) = fs::write(path, contents) {
+            eprintln!(
+                "console-openapi-gen: failed to write {}: {err}",
+                path.display()
+            );
+            process::exit(1);
+        }
+        println!("wrote {} ({} bytes)", path.display(), contents.len());
+    }
 }

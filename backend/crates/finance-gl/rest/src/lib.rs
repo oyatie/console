@@ -22,7 +22,7 @@ use console_finance_gl_application::{
 };
 use console_finance_gl_domain::{VoucherId, VoucherStatus};
 use console_kernel_core::{BranchId, ErrorKind, KernelError, TraceContext};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
 use console_platform_db::DbError;
 use serde::{Deserialize, Serialize};
@@ -33,15 +33,15 @@ const VOUCHER_FEATURE: Feature = Feature::PeriodLockManage;
 #[derive(Clone)]
 pub struct FinanceGlRestState {
     store: PgVoucherStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl FinanceGlRestState {
     #[must_use]
-    pub fn new(store: PgVoucherStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgVoucherStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
@@ -70,7 +70,7 @@ pub const FINANCE_GL_ROUTE_PATHS: &[&str] = &[
 ];
 
 pub fn router(state: FinanceGlRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(
@@ -306,7 +306,7 @@ async fn principal_from_headers(
     state: &FinanceGlRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for finance-GL API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -319,6 +319,17 @@ fn rest_error_from_request_context(
 ) -> RestError {
     use console_platform_request_context::RequestContextError as E;
     match err {
+        error @ E::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError {
+                status,
+                code_override: Some(code),
+                ..RestError::unavailable(message)
+            }
+        }
+        E::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for finance-GL API")
         }
@@ -329,7 +340,9 @@ fn rest_error_from_request_context(
         E::BranchScope(message) | E::EffectivePolicy(message) => RestError::internal(message),
         E::MissingOrg => RestError::internal("no tenant context is bound to the current request"),
         E::MissingBearer => RestError::unauthorized("missing or malformed bearer token"),
-        E::InvalidToken => RestError::unauthorized("invalid bearer token"),
+        E::InvalidToken | E::LegacySessionRejected => {
+            RestError::unauthorized("invalid bearer token")
+        }
         E::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }
@@ -340,6 +353,7 @@ fn rest_error_from_request_context(
 struct RestError {
     status: StatusCode,
     kind: ErrorKind,
+    code_override: Option<&'static str>,
     message: String,
 }
 
@@ -348,6 +362,7 @@ impl RestError {
         Self {
             status: StatusCode::UNAUTHORIZED,
             kind: ErrorKind::Forbidden,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -356,6 +371,7 @@ impl RestError {
         Self {
             status: StatusCode::SERVICE_UNAVAILABLE,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -364,6 +380,7 @@ impl RestError {
         Self {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -372,6 +389,7 @@ impl RestError {
         Self {
             status: status_for_error_kind(error.kind),
             kind: error.kind,
+            code_override: None,
             message: error.message,
         }
     }
@@ -406,6 +424,9 @@ impl RestError {
     }
 
     fn code(&self) -> &'static str {
+        if let Some(code) = self.code_override {
+            return code;
+        }
         match self.kind {
             ErrorKind::Validation => "validation",
             ErrorKind::NotFound => "not_found",

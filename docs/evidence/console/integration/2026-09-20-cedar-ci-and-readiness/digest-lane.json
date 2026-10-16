@@ -1,0 +1,26 @@
+[
+  {
+    "lane": "cedar-ci-proof-digest",
+    "owner": "/root",
+    "base_sha": "769bcde0aec010ee09c1638c5f0ca2dfd5f8f2f2",
+    "immutable_target": "Preserve exact protected domain-unit script guard for the reviewed SDK invocation",
+    "allowed_paths": [
+      "scripts/check-ci-preflight.mjs"
+    ],
+    "probe": "node --test --test-name-pattern 'accepts the workflow.s cheap preflight' scripts/check-ci-preflight.test.mjs",
+    "mechanical_guide": "Apply only independently approved digest29894e...\u219205c010... for exact+3line SDK invocation; no logic/test changes",
+    "reviewer": "/root/integration_tests",
+    "pre_mortem": "Blindly blessing unrelated workflow mutation",
+    "blast_radius": "One guarded script digest",
+    "detection": "Exact old/new parsedscript hashes and retained bypass regression suite",
+    "rollback": "Revert CI invocation with its matching digest together",
+    "stop_conditions": [
+      "Any other edit",
+      "Owner failure other than exact digest"
+    ],
+    "remaining_holds": [
+      "Assembled release",
+      "HostedCI"
+    ]
+  }
+]

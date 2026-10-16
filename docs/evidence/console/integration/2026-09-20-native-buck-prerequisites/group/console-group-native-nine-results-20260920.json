@@ -1,0 +1,191 @@
+[
+  {
+    "label": "ops-head-transport",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_ops_reads::legacy_platform_ops_credentials::legacy_platform_ops_transport::ops_transport_selection_preserves_list_and_sibling_routes_and_methods",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 52.28087599994615,
+    "log": "/private/tmp/console-group-native-ops-head-transport-20260920.log"
+  },
+  {
+    "label": "retained-list-transport",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_list_credentials::list_transport_selection_preserves_sibling_routes_and_methods",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 59.331377124995925,
+    "log": "/private/tmp/console-group-native-retained-list-transport-20260920.log"
+  },
+  {
+    "label": "group-audit-oracle",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::group_audit_allstate_oracle_rejects_omission_corruption_and_rewritten_history",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 55.14191175007727,
+    "log": "/private/tmp/console-group-native-group-audit-oracle-20260920.log"
+  },
+  {
+    "label": "group-projection-oracle",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::group_projection_oracle_rejects_every_field_topology_and_order_corruption",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 56.86482070805505,
+    "log": "/private/tmp/console-group-native-group-projection-oracle-20260920.log"
+  },
+  {
+    "label": "group-current-role",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::mounted_group_list_current_member_denies_and_recovers",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 66.63180674996693,
+    "log": "/private/tmp/console-group-native-group-current-role-20260920.log"
+  },
+  {
+    "label": "group-raw-credentials",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_group_owner_reverifies_raw_credentials_and_current_role",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 88.01781179208774,
+    "log": "/private/tmp/console-group-native-group-raw-credentials-20260920.log"
+  },
+  {
+    "label": "group-family-rotation",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::bound_group_rotation_preserves_access_and_exact_logout_refuses_only_selected_family",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 67.91546099993866,
+    "log": "/private/tmp/console-group-native-group-family-rotation-20260920.log"
+  },
+  {
+    "label": "group-present-family",
+    "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_and_mounted_group_present_family_faults_do_not_fall_back_to_historical",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 85.93717525003012,
+    "log": "/private/tmp/console-group-native-group-present-family-20260920.log"
+  },
+  {
+    "label": "group-retained-crud",
+    "test": "platform_group_crud_assigns_subsidiaries_and_audits",
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:platform-platform-rest-platform-groups-pg"
+    ],
+    "exit": 0,
+    "counts": [
+      [
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "exact_one_executed_and_passed": true,
+    "seconds": 49.68619804200716,
+    "log": "/private/tmp/console-group-native-group-retained-crud-20260920.log"
+  }
+]

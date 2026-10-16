@@ -1,0 +1,36 @@
+✖ Cargo PostgreSQL harness transports distinct restricted credentials privately (677.064375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 712.4265
+
+✖ failing tests:
+
+test at tools/ci/cargo-needs-postgres-args.test.mjs:66:1
+✖ Cargo PostgreSQL harness transports distinct restricted credentials privately (677.064375ms)
+  AssertionError [ERR_ASSERTION]: cargo: 
+  Traceback (most recent call last):
+    File "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-cargo-transport-iwtn8P/bin/docker", line 12, in <module>
+      assert len({env[k] for k in keys}) == len(keys)
+                  ~~~^^^
+  KeyError: 'CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD'
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/tools/ci/cargo-needs-postgres-args.test.mjs:125:14)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

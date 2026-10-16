@@ -1,0 +1,14 @@
+{
+  "README.md": "bb2890fcfaee86fa4b35ea25ed3a020bcfd2659fe25c8d463e20b5b159d047d0",
+  "additions.rs": "28543338ef562e27d933499a0670a56e94bc908eebd8a3fc669de4d9b8016b4d",
+  "author_browser.py": "31d2412da7717d47c498db012c2a8e13cd4f3db5cc7b1c04ceb4ffd75283c962",
+  "browser-addition.rs": "4d9c369d290831845f80fc70acd299bdd53d6a83fe9f5120ca9604871302733f",
+  "browser-prerequisite-custody.json": "b373dd65228e2fb290f6680304dec35c45efde0e51d1a9bd7a5300db5b18a176",
+  "candidate.diff": "96bfdbdd0123e3edaa78a1cf0d52fae9f233144914ddafb8e22ccf6dd59c1821",
+  "company-preview.cjs": "46e9ed85d0434d2e51a0515c142660c2a86bd8d8df8ed1271907458719505e0f",
+  "freshness-addition.rs": "5ab527d6067e04240020a703c4ec5802c60023468d45fc2de6833f4e1d1891b3",
+  "native_company_browser.rs": "372206ba75bc1cf0fba23800bf150bac0156af2c06eead8acc94a081d7d849c7",
+  "native_company_setup.rs": "ec6a41648ff7bb99bfeb61a674623d11ecb24199459c8290e41df12571e09dff",
+  "preview-controls.cjs": "9daabedf0ccb183b9a4b1c7ecc6848b0b4d443e4d75a823f7809be2892df50f2",
+  "source-custody.json": "8d235d48795fa9a62ee34d4dca732a07c6f271141c2626e6f6b172c64c7e8e4b"
+}

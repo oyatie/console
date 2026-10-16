@@ -1,0 +1,42 @@
+{
+  "test_commit": "f6e21a80a790422d76b969d7d2a11f383a4be062",
+  "source_lock": "/private/tmp/console-native-browser-classification-implementation-20260920.json",
+  "source_lock_sha256": "21b9af9a8fae6cbc0110ffd1cc2abc5ea85ea1de76ebbbe413b5752e305051b0",
+  "tests": {
+    "discovered": 13,
+    "executed": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0
+  },
+  "native_graph_contract": {
+    "executed": 2,
+    "passed": 2,
+    "failed": 0
+  },
+  "preflight": {
+    "command": "node tools/ci/gate-sweep.mjs",
+    "exit": 0,
+    "checks_passed": 16,
+    "checks_failed": 0
+  },
+  "evidence": {
+    "/private/tmp/console-native-browser-classification-tests-red-20260920.log": "178bec1481a700367a5d9eef6ef2d821e866ebb6d152016d35fe0e572380211d",
+    "/private/tmp/console-native-browser-classification-probe-20260920.log": "d35b3b8ef18bec42c6768b7a629070ec18937f06d481ba34803ca2500edea467",
+    "/private/tmp/console-native-browser-classification-native-contract-20260920.log": "d83cff09c17b51a8c38f6e03a60c556e22f94fd1df1453361c87ccb4725e6147",
+    "/private/tmp/console-native-browser-classification-native-contract-round2-20260920.log": "1b9a4e0e5350d5b29af00e135266ab03840265e8dd11e6913363ce1cb5485152",
+    "/private/tmp/console-native-browser-classification-preflight-20260920.log": "012c81cd63b18b32f3e35d53f29b44dce313f5599584804325bb079b0c278728",
+    "/private/tmp/console-native-browser-classification-preflight-round2-20260920.log": "1880ef23d52729b74f436be800e180f96d3a055ab0e1b1603d0f88184ac09623",
+    "/private/tmp/console-native-browser-map-round1-failed-ceiling-20260920.log": "db307df1e14a51a09003eee71252ba59c1bec61c36afd073c1fa5ed737956ed7"
+  },
+  "retained_failures": [
+    "Original metadata candidate violated actual7legacy ceiling with9; restored before successor",
+    "Wrong Python unittest class:2loader errors,0actual test cases; corrected invocation2pass",
+    "Sandbox denied git write-tree source provenance; unchanged-source preflight rerun with Git metadata access16pass"
+  ],
+  "limits": [
+    "Classification and native graph wiring, not browser journey acceptance",
+    "Full npm verify not rerun yet after repairs",
+    "MVP and release incomplete"
+  ]
+}

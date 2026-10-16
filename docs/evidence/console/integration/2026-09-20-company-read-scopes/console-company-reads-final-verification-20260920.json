@@ -1,0 +1,49 @@
+[
+  {
+    "command": [
+      "tools/buck2",
+      "test",
+      "//backend/crates/platform/authz:console-platform-authz-unit"
+    ],
+    "exit": 0,
+    "seconds": 13.94,
+    "log": "/private/tmp/console-company-reads-final-0-20260920.log",
+    "sha256": "58bd295bf420514b314dffea71fde8cd56bab16b7c6307ecb124f77eae0bea0a"
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-identity-application",
+      "-p",
+      "console-platform-authz",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 1.47,
+    "log": "/private/tmp/console-company-reads-final-1-20260920.log",
+    "sha256": "046e02aa25c51fcaf9758dd0c4699302d67a6ac3f4900debff6101fab1d4ced8"
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "--all",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 3.08,
+    "log": "/private/tmp/console-company-reads-final-2-20260920.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

@@ -34,7 +34,9 @@ async fn readyz_is_ready_without_configured_dependencies() -> Result<(), Box<dyn
 #[tokio::test]
 async fn readyz_returns_503_when_configured_database_is_unreachable()
 -> Result<(), Box<dyn std::error::Error>> {
-    let config = app_config(AppRole::Api)?;
+    let mut config = app_config(AppRole::Api)?;
+    config.database_durability =
+        Some(console_platform_db::durability::DurabilityPolicy::local_development());
     let pool = PgPoolOptions::new()
         .max_connections(1)
         .acquire_timeout(Duration::from_millis(100))
@@ -108,16 +110,101 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
     let config = app_config(AppRole::Api)?;
     let state = AppState::new(config, DatabaseDependency::NotConfigured)?;
     let app = build_router(state);
-    let mut last = String::new();
-    for uri in ["/", "/organization", "/hr", "/payroll"] {
+    // Public root is a concrete native document even without configured Auth.
+    // Every protected route is checked separately; no early-success escape.
+    for cookie in [None, Some("theme=root-no-database-marker")] {
+        for method in ["GET", "HEAD"] {
+            let mut request = Request::builder().method(method).uri("/");
+            if let Some(cookie) = cookie {
+                request = request.header("Cookie", cookie);
+            }
+            let response = app.clone().oneshot(request.body(Body::empty())?).await?;
+            assert_eq!(response.status(), StatusCode::OK);
+            assert_eq!(
+                response
+                    .headers()
+                    .get("cache-control")
+                    .and_then(|v| v.to_str().ok()),
+                Some("no-store")
+            );
+            assert_eq!(
+                response
+                    .headers()
+                    .get("pragma")
+                    .and_then(|v| v.to_str().ok()),
+                Some("no-cache")
+            );
+            assert!(!response.headers().contains_key("set-cookie"));
+            let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
+            if method == "HEAD" {
+                assert!(body.is_empty());
+            } else {
+                assert!(
+                    String::from_utf8(body.to_vec())?
+                        == console_payroll_ui::native_account::render(
+                            console_payroll_ui::native_account::Page::Public
+                        )
+                );
+            }
+        }
+    }
+    // Native credentials and parser errors retain configuration-before-parse
+    // precedence. Neither mixed Bearer nor oversize may manufacture Public.
+    let oversized = format!("theme={}", "z".repeat(16 * 1024 + 1));
+    for headers in [
+        vec![(
+            "Cookie",
+            "__Host-console_account_session=root-unavailable-marker",
+        )],
+        vec![
+            (
+                "Cookie",
+                "__Host-console_account_session=root-unavailable-marker",
+            ),
+            ("Authorization", "Bearer root-unavailable-bearer"),
+        ],
+        vec![
+            ("Cookie", oversized.as_str()),
+            ("Authorization", "Bearer root-unavailable-bearer"),
+        ],
+    ] {
+        for path in ["/", "/account", "/account/register"] {
+            for (method, expected) in [
+                ("GET", StatusCode::SERVICE_UNAVAILABLE),
+                ("HEAD", StatusCode::METHOD_NOT_ALLOWED),
+            ] {
+                let mut builder = Request::builder().method(method).uri(path);
+                for (name, value) in &headers {
+                    builder = builder.header(*name, *value);
+                }
+                let response = app.clone().oneshot(builder.body(Body::empty())?).await?;
+                assert_eq!(response.status(), expected);
+                assert!(!response.headers().contains_key("set-cookie"));
+                let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
+                if method == "HEAD" {
+                    assert!(body.is_empty());
+                } else {
+                    assert!(
+                        String::from_utf8(body.to_vec())?
+                            == console_payroll_ui::native_account::render(
+                                console_payroll_ui::native_account::Page::Unavailable
+                            )
+                    );
+                    // Literal assertions must independently detect a wrong retry
+                    // destination even when the shared renderer matches itself.
+                    let html = std::str::from_utf8(&body)?;
+                    assert!(html.contains("<a class=\"button primary\" href=\"\">다시 시도</a>"));
+                    assert!(html.contains("<a class=\"text-link\" href=\"/\">시작 화면으로</a>"));
+                }
+            }
+        }
+    }
+    for uri in ["/work", "/organization", "/hr", "/payroll"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty())?)
             .await?;
-        if response.status() != StatusCode::OK {
-            last = format!("{uri} {}", response.status());
-            continue;
-        }
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
         let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
         let text = String::from_utf8(body.to_vec())?;
         assert_eq!(text, console_payroll_ui::render_shell());
@@ -125,9 +212,8 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
             !text.contains("291_520") && !text.to_ascii_lowercase().contains("payslip"),
             "{uri} leaked payroll: {text}"
         );
-        return Ok(());
     }
-    Err(format!("/ did not return 200 ({last})").into())
+    Ok(())
 }
 
 #[tokio::test]
@@ -327,8 +413,24 @@ mod authorized {
             .unwrap()
     }
 
-    fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
+    async fn jwt_app_state(owner_pool: &PgPool, public_key_pem: String) -> AppState {
+        // The session verifier reads current legacy context and Account fencing
+        // through its actual restricted Auth login, independent of token issuance.
+        let auth_database = console_platform_test_support::login_test_pool(
+            owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
+        let runtime_pool = console_platform_test_support::login_test_pool(
+            owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Business,
+        )
+        .await;
         let config = AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -336,7 +438,9 @@ mod authorized {
             ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
         ])
         .unwrap();
-        AppState::new(config, DatabaseDependency::Postgres(runtime_pool)).unwrap()
+        AppState::new(config, DatabaseDependency::Postgres(runtime_pool))
+            .unwrap()
+            .with_auth_database(auth_database)
     }
 
     async fn seed_user(pool: &PgPool, org: OrgId, user: UserId, role: &str) {
@@ -499,42 +603,21 @@ mod authorized {
         }
     }
 
-    /// ADR-0042 tripwire. This is **not** a claim that the behavior is correct.
-    ///
-    /// A browser cannot attach `Authorization` to a top-level navigation, and
-    /// `bearer_token()` accepts no other transport, so a person who navigates to
-    /// the SSR screens gets the empty shell however they authenticated. Every
-    /// other UI test sets the header programmatically, as an HTTP client must,
-    /// so the suite proves composition is right GIVEN a principal and says
-    /// nothing about whether the intended client can supply one. This pins that
-    /// asymmetry where a reader of the suite can see it.
-    ///
-    /// What it does NOT do is detect an arbitrary future transport. It sends
-    /// one credential shape -- `console_refresh` carrying an access token --
-    /// so it goes red only for a fix that reuses that exact cookie. ADR-0042's
-    /// recommended option mints a *new* cookie beside the existing pair, and
-    /// the client-bootstrap option keeps serving this very shell, so neither
-    /// would turn this red. Treat it as a pin on today's behavior and a
-    /// pointer to the ADR, not as a gate on the fix: when a transport lands,
-    /// delete this and put the positive test in its place -- a
-    /// navigation-shaped request renders the authorized screens.
-    ///
-    /// The cookie is deliberately unrealistic in the browser's favor.
-    /// `console_refresh` is `HttpOnly; SameSite=Strict; Path=/api/v1/auth` and
-    /// carries a refresh token, so a real browser would never send it to `/`
-    /// and it would never hold an access token. Handing it one anyway makes
-    /// the negative result stronger, not representative.
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    /// Legacy console_refresh never authorizes a shipping document. The public
+    /// landing now offers native Account entry, while Bearer remains the
+    /// positive control for the same Company's authorized run and island.
+    /// Supplying an access token under the legacy cookie name is deliberately
+    /// generous: the real refresh cookie is path-scoped away from root. Native
+    /// __Host-console_account_* credentials have a separate accepted owner.
+    #[sqlx::test(migrations = false)]
     async fn browser_navigation_reaches_no_authorized_screen_adr_0042(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let admin = UserId::new();
         seed_user(&pool, org, admin, "SUPER_ADMIN").await;
         let run = seed_run(&pool, org, admin).await;
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
         let token = bearer(&keys, org, admin, "SUPER_ADMIN");
 
         // One principal, over the transport an HTTP client can use.
@@ -549,11 +632,74 @@ mod authorized {
             "header transport must reach the hydrated island: {with_header}"
         );
 
+        // Unrelated cookies are not alternate authority. The legacy Bearer
+        // response, including its CSP/hydration envelope, stays byte-identical.
+        let baseline = service
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/")
+                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(baseline.status(), StatusCode::OK);
+        let baseline_headers = baseline.headers().clone();
+        let baseline_body = to_bytes(baseline.into_body(), usize::MAX).await.unwrap();
+        assert!(baseline_body.as_ref() == with_header.as_bytes());
+        for cookie in [
+            "theme=root-legacy-theme-marker",
+            "console_refresh=root-non-native-marker",
+            "console_session=root-proposed-marker",
+        ] {
+            for method in ["GET", "HEAD"] {
+                let response = service
+                    .clone()
+                    .oneshot(
+                        Request::builder()
+                            .method(method)
+                            .uri("/")
+                            .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                            .header(header::COOKIE, cookie)
+                            .body(Body::empty())
+                            .unwrap(),
+                    )
+                    .await
+                    .unwrap();
+                assert_eq!(response.status(), StatusCode::OK);
+                for name in [
+                    header::CONTENT_TYPE,
+                    header::CONTENT_SECURITY_POLICY,
+                    header::CACHE_CONTROL,
+                    header::PRAGMA,
+                    header::VARY,
+                ] {
+                    assert!(
+                        response
+                            .headers()
+                            .get_all(&name)
+                            .iter()
+                            .eq(baseline_headers.get_all(&name).iter()),
+                        "legacy response envelope changed"
+                    );
+                }
+                assert!(!response.headers().contains_key(header::SET_COOKIE));
+                let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+                if method == "HEAD" {
+                    assert!(body.is_empty());
+                } else {
+                    assert!(body == baseline_body);
+                }
+            }
+        }
+
         // The same principal, over what a browser navigation can carry.
         // Generous on purpose: this hands the browser a real access token in
         // the only cookie the system sets at all -- a cookie that is
         // path-scoped away from `/` and never holds an access token. Even so
-        // the page is empty.
+        // no authorized screen is disclosed; the public landing offers Account entry.
         let navigation = Request::builder()
             .uri("/")
             .header(
@@ -572,36 +718,30 @@ mod authorized {
 
         assert_eq!(
             navigated,
-            console_payroll_ui::render_shell(),
-            "ADR-0042: a navigation still renders the empty shell. If this line \
-             failed, a cookie transport now exists -- replace this test with \
-             the positive one rather than loosening it."
+            console_payroll_ui::native_account::render(
+                console_payroll_ui::native_account::Page::Public
+            ),
+            "Legacy refresh cookies must render only the public entry, never authorize shipping work."
         );
         assert!(
             !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
-            "the empty shell must leak neither the run nor the island: {navigated}"
+            "the public entry must leak neither the run nor the island: {navigated}"
         );
     }
 
-    /// ADR-0042 option 1 is proposed, not implemented. The recommended cookie
-    /// (`console_session`) must not authorize HTML GET `/` today. If this goes
-    /// red, HTML documents gained a cookie transport: replace this tripwire
-    /// with the positive HTML assertions from the proposed-until-accepted
-    /// module. `/api/v1` Bearer-only is a separate live test.
-    ///
-    /// Generous on purpose: a valid access JWT is placed in that cookie, which
-    /// production would never do for an opaque/signed session.
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    /// The proposed console_session name remains non-authorizing, even with a
+    /// valid access JWT. Root may show Public without granting any shipping
+    /// data; native Account cookie entry does not activate this old proposal.
+    /// Keep the separate live JSON API cookie-denial and Bearer controls.
+    #[sqlx::test(migrations = false)]
     async fn proposed_ssr_session_cookie_does_not_authorize_html_get_yet(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let admin = UserId::new();
         seed_user(&pool, org, admin, "SUPER_ADMIN").await;
         let run = seed_run(&pool, org, admin).await;
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
         let token = bearer(&keys, org, admin, "SUPER_ADMIN");
 
         let (status, with_header) = get_ui(service.clone(), Some(&token)).await;
@@ -623,15 +763,14 @@ mod authorized {
         assert_eq!(status, StatusCode::OK, "{navigated}");
         assert_eq!(
             navigated,
-            console_payroll_ui::render_shell(),
-            "ADR-0042 proposed: `console_session` still does not authorize HTML GET `/`. \
-             If this line failed, HTML gained a cookie transport — replace this \
-             tripwire with the proposed-until-accepted HTML assertions rather than \
-             loosening it. Keep `cookie_does_not_authorize_json_api` live."
+            console_payroll_ui::native_account::render(
+                console_payroll_ui::native_account::Page::Public
+            ),
+            "Proposed console_session cookies must remain non-authorizing public entry; native Account cookies have a separate owner."
         );
         assert!(
             !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
-            "the empty shell must leak neither the run nor the island: {navigated}"
+            "the public entry must leak neither the run nor the island: {navigated}"
         );
     }
 
@@ -657,8 +796,9 @@ mod authorized {
         (status, String::from_utf8(bytes.to_vec()).unwrap())
     }
 
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_shell_omits_runs_unless_payroll_run_read(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let super_admin = UserId::new();
@@ -667,17 +807,19 @@ mod authorized {
         seed_user(&pool, org, member, "MEMBER").await;
         let run = seed_run(&pool, org, super_admin).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
 
         let (status, unauth) = get_ui(service.clone(), None).await;
         assert_eq!(status, StatusCode::OK, "{unauth}");
-        assert_eq!(unauth, console_payroll_ui::render_shell());
+        assert_eq!(
+            unauth,
+            console_payroll_ui::native_account::render(
+                console_payroll_ui::native_account::Page::Public
+            )
+        );
         assert!(
             !unauth.contains("/pkg/"),
-            "empty shell must not load WASM: {unauth}"
+            "public entry must not load WASM: {unauth}"
         );
 
         let (status, member_html) =
@@ -729,8 +871,9 @@ mod authorized {
         .unwrap();
     }
 
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_shipping_screens_deny_by_omission(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let super_admin = UserId::new();
@@ -741,10 +884,7 @@ mod authorized {
         let run = seed_run(&pool, org, super_admin).await;
         let heads = seed_heads(&pool, org, super_admin).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
         let admin = bearer(&keys, org, super_admin, "SUPER_ADMIN");
         let member_tok = bearer(&keys, org, member, "MEMBER");
 
@@ -819,6 +959,144 @@ mod authorized {
         assert!(!lowered.contains("comms-rail"), "{payroll_html}");
     }
 
+    /// Real mounted-route regression. Legacy owner fixtures establish transport
+    /// compatibility only; this does not claim native browser workflow acceptance.
+    #[sqlx::test(migrations = false)]
+    async fn payroll_listing_audit_failure_is_recoverable_and_never_empty(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
+        let keys = keys();
+        let org = OrgId::knl();
+        let administrator = UserId::new();
+        let member = UserId::new();
+        seed_user(&pool, org, administrator, "SUPER_ADMIN").await;
+        seed_user(&pool, org, member, "MEMBER").await;
+        let run = seed_run(&pool, org, administrator).await;
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+        let admin_token = bearer(&keys, org, administrator, "SUPER_ADMIN");
+        let member_token = bearer(&keys, org, member, "MEMBER");
+
+        let (status, json) =
+            get_ui_path(service.clone(), "/api/v1/payroll/runs", Some(&admin_token)).await;
+        assert_eq!(status, StatusCode::OK, "JSON prerequisite: {json}");
+        let page: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert!(
+            page["items"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|row| row["id"] == run.to_string())
+        );
+        let (status, before) = get_ui_path(service.clone(), "/payroll", Some(&admin_token)).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(
+            before.contains(&format!("data-run-id=\"{run}\"")),
+            "SSR prerequisite: {before}"
+        );
+        let audits_before = list_read_audits(&pool, administrator).await;
+        assert_eq!(
+            audits_before, 2,
+            "both positive reads must commit their actual audit"
+        );
+
+        // Inject only the actual read-audit failure after every prerequisite
+        // passes. Authentication, policy, source tables and queries stay intact.
+        sqlx::raw_sql(
+            r#"
+            CREATE FUNCTION public.test_payroll_list_audit_refusal() RETURNS trigger
+            LANGUAGE plpgsql SET search_path=pg_catalog,pg_temp AS $body$
+            BEGIN
+                IF NEW.action='payroll_run.list_read' THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='private-payroll-audit-fault';
+                END IF;
+                RETURN NEW;
+            END
+            $body$;
+            CREATE TRIGGER test_payroll_list_audit_refusal BEFORE INSERT ON public.audit_events
+            FOR EACH ROW EXECUTE FUNCTION public.test_payroll_list_audit_refusal();
+        "#,
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+        let (status, failed_json) =
+            get_ui_path(service.clone(), "/api/v1/payroll/runs", Some(&admin_token)).await;
+        assert_eq!(
+            status,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "fault must reach actual audit path"
+        );
+        assert!(!failed_json.contains(&run.to_string()));
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&failed_json).unwrap(),
+            json!({"error":{"code":"internal","message":"internal server error"}}),
+            "audit failures must retain the exact sanitized public error envelope"
+        );
+        let (status, failed) = get_ui_path(service.clone(), "/payroll", Some(&admin_token)).await;
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "SSR document keeps its existing response envelope"
+        );
+        assert!(
+            failed.contains("data-state=\"failure\""),
+            "authorized read failure was swallowed: {failed}"
+        );
+        assert!(failed.contains("다시 불러오기") && failed.contains("href=\"/payroll\""));
+        for forbidden in [
+            "data-state=\"empty\"",
+            "data-run-id",
+            "/pkg/",
+            "private-payroll-audit-fault",
+        ] {
+            assert!(
+                !failed.contains(forbidden),
+                "failure disclosed {forbidden}: {failed}"
+            );
+        }
+        for token in [None, Some(member_token.as_str()), Some("invalid-token")] {
+            let (status, denied) = get_ui_path(service.clone(), "/payroll", token).await;
+            assert_eq!(status, StatusCode::OK);
+            assert_eq!(
+                denied,
+                console_payroll_ui::render_shell(),
+                "failure must not disclose a denied payroll destination"
+            );
+        }
+        assert_eq!(
+            list_read_audits(&pool, administrator).await,
+            audits_before,
+            "failed reads must not commit audits"
+        );
+        assert_eq!(list_read_audits(&pool, member).await, 0);
+
+        sqlx::raw_sql(
+            r#"
+            DROP TRIGGER test_payroll_list_audit_refusal ON public.audit_events;
+            DROP FUNCTION public.test_payroll_list_audit_refusal();
+        "#,
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+        let (status, recovered) = get_ui_path(service, "/payroll", Some(&admin_token)).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(recovered.contains(&format!("data-run-id=\"{run}\"")));
+        assert!(!recovered.contains("data-state=\"failure\""));
+        assert_eq!(
+            list_read_audits(&pool, administrator).await,
+            audits_before + 1
+        );
+        let stored: Uuid = sqlx::query_scalar("SELECT id FROM payroll_draft_runs WHERE id=$1")
+            .bind(run)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(
+            stored, run,
+            "read failure and repair must preserve the owner record"
+        );
+    }
+
     async fn list_read_audits(pool: &PgPool, actor: UserId) -> i64 {
         sqlx::query_scalar(
             "SELECT COUNT(*) FROM audit_events \
@@ -860,8 +1138,9 @@ mod authorized {
     }
 
     /// ADR-0025 §4 persona real-backend E2E on `/`, `/organization`, `/hr`, `/payroll`.
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_persona_e2e(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let member = UserId::new();
@@ -890,10 +1169,7 @@ mod authorized {
         seed_user(&pool, other_org, foreign, "SUPER_ADMIN").await;
         grant_group_viewer(&pool, other_org, foreign).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
         let member_tok = bearer(&keys, org, member, "MEMBER");
         let admin_tok = bearer(&keys, org, admin, "ADMIN");
         let exec_tok = bearer(&keys, org, executive, "EXECUTIVE");
@@ -906,7 +1182,19 @@ mod authorized {
         for uri in routes {
             let (status, html) = get_ui_path(service.clone(), uri, None).await;
             assert_eq!(status, StatusCode::OK, "unauth {uri} {html}");
-            assert_eq!(html, console_payroll_ui::render_shell(), "{uri}");
+            let expected = if uri == "/" {
+                console_payroll_ui::native_account::render(
+                    console_payroll_ui::native_account::Page::Public,
+                )
+            } else {
+                console_payroll_ui::render_shell()
+            };
+            assert_eq!(html, expected, "{uri}");
+            assert!(!html.contains(&run_id), "unauth saw run at {uri}: {html}");
+            assert!(
+                !html.contains("/pkg/"),
+                "unauth loads WASM at {uri}: {html}"
+            );
             assert_ui_invariants(&html);
 
             let (status, html) = get_ui_path(service.clone(), uri, Some(&member_tok)).await;
@@ -954,7 +1242,7 @@ mod authorized {
                 && exec_home.contains("href=\"/hr\"")
                 && exec_home.contains("href=\"/payroll\"")
                 && exec_home.contains("조직")
-                && exec_home.contains("인사")
+                && exec_home.contains("사람과 고용")
                 && exec_home.contains("급여"),
             "EXECUTIVE nav must expose authorized screens: {exec_home}"
         );
@@ -1061,6 +1349,417 @@ mod authorized {
         assert_ui_invariants(&super_html);
     }
 
+    #[cfg(feature = "test-browser")]
+    #[sqlx::test(migrations = false)]
+    async fn authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser(
+        pool: PgPool,
+    ) {
+        use futures::FutureExt;
+        use serde_json::Value;
+        use sha2::{Digest, Sha256};
+        use std::collections::{BTreeMap, BTreeSet};
+        use std::path::PathBuf;
+        use std::process::Stdio;
+        use std::sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        };
+        use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt};
+
+        async fn rows(pool: &PgPool) -> BTreeMap<String, String> {
+            let tables: Vec<String> = sqlx::query_scalar("SELECT relname::text FROM pg_class WHERE relnamespace='public'::regnamespace AND relkind IN ('r','p') ORDER BY relname COLLATE \"C\"").fetch_all(pool).await.unwrap();
+            assert!(!tables.is_empty() && tables.len() <= 1024);
+            let mut captured = BTreeMap::new();
+            for table in tables {
+                let quoted = table.replace('"', "\"\"");
+                let sql = format!(
+                    "SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text COLLATE \"C\"),'[]'::jsonb)::text FROM public.\"{quoted}\" t"
+                );
+                let value: String = sqlx::query_scalar(sqlx::AssertSqlSafe(sql))
+                    .fetch_one(pool)
+                    .await
+                    .unwrap();
+                assert!(captured.insert(table, value).is_none());
+            }
+            assert!(
+                captured.contains_key("_sqlx_migrations")
+                    && captured.contains_key("audit_events")
+                    && captured.contains_key("payroll_draft_runs")
+                    && captured.contains_key("accounts")
+            );
+            captured
+        }
+        fn audit_delta(before: &str, after: &str) -> Vec<Value> {
+            use serde_json::value::RawValue;
+            let before: Vec<&RawValue> = serde_json::from_str(before).unwrap();
+            let after: Vec<&RawValue> = serde_json::from_str(after).unwrap();
+            let mut retained: BTreeSet<_> = before.iter().map(|r| r.get()).collect();
+            assert_eq!(retained.len(), before.len());
+            let mut seen = BTreeSet::new();
+            let mut added = Vec::new();
+            for row in after {
+                assert!(seen.insert(row.get()));
+                if !retained.remove(row.get()) {
+                    added.push(serde_json::from_str(row.get()).unwrap());
+                }
+            }
+            assert!(
+                retained.is_empty(),
+                "prior audit history was changed or omitted"
+            );
+            added
+        }
+        async fn event(reader: &mut tokio::io::BufReader<tokio::process::ChildStdout>) -> Value {
+            let mut line = String::new();
+            let size = tokio::time::timeout(Duration::from_secs(100), reader.read_line(&mut line))
+                .await
+                .unwrap()
+                .unwrap();
+            assert!(size > 0 && size < 4096, "bounded browser protocol required");
+            serde_json::from_str(&line).unwrap()
+        }
+        fn alive(pid: u32) -> bool {
+            assert!(pid > 1);
+            std::process::Command::new("/bin/kill")
+                .args(["-0", &pid.to_string()])
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status()
+                .unwrap()
+                .success()
+        }
+
+        let driver = PathBuf::from(
+            std::env::var_os("CONSOLE_HYDRATION_BROWSER_DRIVER").expect("reviewed driver required"),
+        );
+        let expected = std::env::var("CONSOLE_HYDRATION_BROWSER_SHA256")
+            .expect("reviewed driver hash required");
+        assert!(
+            driver.is_absolute()
+                && std::fs::symlink_metadata(&driver)
+                    .unwrap()
+                    .file_type()
+                    .is_file()
+        );
+        let driver_bytes = std::fs::read(&driver).unwrap();
+        assert_eq!(hex::encode(Sha256::digest(&driver_bytes)), expected);
+        let output = PathBuf::from(
+            std::env::var_os("CONSOLE_HYDRATION_BROWSER_OUTPUT").expect("fresh output required"),
+        );
+        assert!(output.is_absolute() && !output.exists());
+        console_platform_test_support::prepare_account_test_database(&pool).await;
+        let keys = keys();
+        let org = OrgId::knl();
+        let admin = UserId::new();
+        let member = UserId::new();
+        seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+        seed_user(&pool, org, member, "MEMBER").await;
+        let first = seed_run(&pool, org, admin).await;
+        let port = PgPayRunPort::new(
+            runtime_role_pool(&pool).await,
+            tokio::runtime::Handle::current(),
+        );
+        let command = PayRunCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: admin,
+            query: PayRunQuery::CreateRun {
+                run_id: Uuid::new_v4(),
+                period_start: date!(2026 - 06 - 01),
+                period_end: date!(2026 - 06 - 30),
+                connector: Some("m2".to_owned()),
+                job: Some("hydration-distinct-presentation".to_owned()),
+            },
+            action_key: "create_run".to_owned(),
+            object_type_id: Uuid::nil(),
+        };
+        let created = tokio::task::spawn_blocking(move || port.execute(&command))
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+        let second: Uuid = created.result()["draft_run_id"]
+            .as_str()
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_ne!(first, second);
+        // TEST_ONLY rendering fixture, as in retained PayRun port tests. This does
+        // not claim that a payroll calculation or legal transition was completed.
+        assert_eq!(
+            sqlx::query(
+                "UPDATE payroll_draft_runs SET status='CALCULATED' WHERE id=$1 AND status='BLOCKED_LEGAL_GATE'"
+            )
+            .bind(second)
+            .execute(&pool)
+            .await
+            .unwrap()
+            .rows_affected(),
+            1
+        );
+        let statuses: Vec<(Uuid, String)> =
+            sqlx::query_as("SELECT id,status FROM payroll_draft_runs WHERE id=ANY($1) ORDER BY id")
+                .bind(vec![first, second])
+                .fetch_all(&pool)
+                .await
+                .unwrap();
+        assert_eq!(statuses.len(), 2);
+        assert!(
+            statuses
+                .iter()
+                .any(|(id, status)| *id == first && status == "BLOCKED_LEGAL_GATE")
+                && statuses
+                    .iter()
+                    .any(|(id, status)| *id == second && status == "CALCULATED")
+        );
+        let foreign_org = OrgId::from_uuid(Uuid::new_v4());
+        sqlx::query(
+            "INSERT INTO organizations (id,slug,name) VALUES ($1,$2,'Hydration empty Company')",
+        )
+        .bind(*foreign_org.as_uuid())
+        .bind(format!("hydrate-{}", foreign_org.as_uuid().simple()))
+        .execute(&pool)
+        .await
+        .unwrap();
+        let foreign = UserId::new();
+        seed_user(&pool, foreign_org, foreign, "SUPER_ADMIN").await;
+        let state = jwt_app_state(&pool, keys.public_pem.clone()).await;
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let (stop, stopped) = tokio::sync::oneshot::channel();
+        let admin_token = bearer(&keys, org, admin, "SUPER_ADMIN");
+        // TEST_ONLY real foreign-origin sink. A credential-free TCP/HTTP request
+        // below must prove observation before the redirect's zero-request claim.
+        let sink_listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let sink_address = sink_listener.local_addr().unwrap();
+        let sink_url = format!("http://{sink_address}/__test__/hydration/sink");
+        let sink_counts = Arc::new([AtomicUsize::new(0), AtomicUsize::new(0)]);
+        let observed_sink = sink_counts.clone();
+        let sink_router = axum::Router::new().fallback(move |headers: http::HeaderMap| {
+            let counts = observed_sink.clone();
+            async move {
+                counts[0].fetch_add(1, Ordering::SeqCst);
+                if headers.contains_key(http::header::AUTHORIZATION) {
+                    counts[1].fetch_add(1, Ordering::SeqCst);
+                }
+                (StatusCode::OK, "TEST_ONLY_SINK_OBSERVED")
+            }
+        });
+        let (sink_stop, sink_stopped) = tokio::sync::oneshot::channel();
+        let mut sink_server = tokio::spawn(async move {
+            axum::serve(sink_listener, sink_router)
+                .with_graceful_shutdown(async {
+                    let _ = sink_stopped.await;
+                })
+                .await
+        });
+        let source_counts = Arc::new([AtomicUsize::new(0), AtomicUsize::new(0)]);
+        let observed_source = source_counts.clone();
+        let expected_authorization = format!("Bearer {admin_token}");
+        let target = sink_url.clone();
+        // This additional fixture route never replaces a production response.
+        let router = build_router(state.clone()).route(
+            "/__test__/hydration/redirect",
+            axum::routing::get(move |headers: http::HeaderMap| {
+                let counts = observed_source.clone();
+                let expected = expected_authorization.clone();
+                let target = target.clone();
+                async move {
+                    counts[0].fetch_add(1, Ordering::SeqCst);
+                    if headers
+                        .get(http::header::AUTHORIZATION)
+                        .and_then(|v| v.to_str().ok())
+                        == Some(expected.as_str())
+                    {
+                        counts[1].fetch_add(1, Ordering::SeqCst);
+                    }
+                    (StatusCode::FOUND, [(http::header::LOCATION, target)])
+                }
+            }),
+        );
+        let mut server = tokio::spawn(async move {
+            axum::serve(
+                listener,
+                router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+            )
+            .with_graceful_shutdown(async {
+                let _ = stopped.await;
+            })
+            .await
+        });
+        let before = rows(&pool).await;
+        let js_hash = hex::encode(Sha256::digest(console_payroll_ui::payroll_ui_js()));
+        let wasm_hash = hex::encode(Sha256::digest(console_payroll_ui::payroll_ui_wasm()));
+        let payload = json!({"origin":format!("http://{address}"),"admin":admin_token,"redirect_sink":sink_url,"member":bearer(&keys,org,member,"MEMBER"),"foreign":bearer(&keys,foreign_org,foreign,"SUPER_ADMIN"),"runs":statuses.iter().map(|(id,status)|json!({"id":id,"status":status})).collect::<Vec<_>>(),"assets":{"js":js_hash,"wasm":wasm_hash}});
+        let mut child = tokio::process::Command::new("node")
+            .arg(&driver)
+            .arg(&output)
+            .env_remove("DEBUG")
+            .env_remove("PWDEBUG")
+            .env_remove("NODE_DEBUG")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let mut input = child.stdin.take().unwrap();
+        let mut reader = tokio::io::BufReader::new(child.stdout.take().unwrap());
+        let mut owned_pid = None;
+        let mut checkpoint_ok = false;
+        let mut sink_positive = false;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            let mut positive = tokio::time::timeout(Duration::from_secs(5), tokio::net::TcpStream::connect(sink_address)).await.unwrap().unwrap();
+            let request = format!("GET /__test__/hydration/sink HTTP/1.1\r\nHost: {sink_address}\r\nConnection: close\r\n\r\n");
+            positive.write_all(request.as_bytes()).await.unwrap();
+            let mut response = Vec::new();
+            tokio::time::timeout(Duration::from_secs(5), positive.read_to_end(&mut response)).await.unwrap().unwrap();
+            assert!(response.starts_with(b"HTTP/1.1 200 ") && response.windows(b"TEST_ONLY_SINK_OBSERVED".len()).any(|w| w == b"TEST_ONLY_SINK_OBSERVED"));
+            assert_eq!(sink_counts[0].load(Ordering::SeqCst), 1);
+            assert_eq!(sink_counts[1].load(Ordering::SeqCst), 0);
+            sink_counts[0].store(0, Ordering::SeqCst);
+            sink_positive = true;
+            let mut bytes = serde_json::to_vec(&payload).unwrap();
+            bytes.push(b'\n');
+            input.write_all(&bytes).await.unwrap();
+            input.flush().await.unwrap();
+            bytes.fill(0);
+            let owned = event(&mut reader).await;
+            assert!(
+                owned["kind"] == "BROWSER_OWNED"
+                    && owned["executable_sha256"]
+                        == match (std::env::consts::OS, std::env::consts::ARCH) {
+                ("macos", "aarch64") => "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282",
+                ("linux", "x86_64") => "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+                _ => panic!("unsupported reviewed browser platform"),
+            }
+            );
+            let pid = u32::try_from(owned["pid"].as_u64().unwrap()).unwrap();
+            assert!(alive(pid));
+            owned_pid = Some(pid);
+            let result = event(&mut reader).await;
+            assert!(
+                result["kind"] == "RESULT" && result["status"] == "PASSED",
+                "actual hydration browser proof failed; inspect sanitized result"
+            );
+            assert_eq!(source_counts[0].load(Ordering::SeqCst), 1);
+            assert_eq!(source_counts[1].load(Ordering::SeqCst), 1);
+            assert_eq!(sink_counts[0].load(Ordering::SeqCst), 0);
+            assert_eq!(sink_counts[1].load(Ordering::SeqCst), 0);
+            let after = rows(&pool).await;
+            assert_eq!(
+                before.keys().collect::<Vec<_>>(),
+                after.keys().collect::<Vec<_>>()
+            );
+            for (name, value) in &before {
+                if name != "audit_events" {
+                    assert!(
+                        after[name] == *value,
+                        "browser changed non-audit durable facts"
+                    );
+                }
+            }
+            let delta = audit_delta(&before["audit_events"], &after["audit_events"]);
+            assert_eq!(
+                delta.len(),
+                3,
+                "exact authorized document read audit count required"
+            );
+            let mut actors = BTreeMap::new();
+            let mut new_audit_ids = BTreeSet::new();
+            for row in delta {
+                assert_eq!(row.as_object().unwrap().keys().map(String::as_str).collect::<BTreeSet<_>>(), BTreeSet::from([
+                    "id", "actor", "action", "target_type", "target_id", "branch_id", "before_snap", "after_snap", "trace_id", "span_id", "occurred_at", "created_at", "org_id", "ip", "user_agent", "auth_method", "device", "classification_badges", "anomaly", "reason"
+                ]));
+                for name in ["branch_id", "before_snap", "after_snap", "ip", "user_agent", "auth_method", "device", "classification_badges", "anomaly", "reason"] {
+                    assert!(row[name].is_null(), "plain list audit contains unexpected context");
+                }
+                let audit_id = Uuid::parse_str(row["id"].as_str().unwrap()).unwrap();
+                assert!(!audit_id.is_nil() && new_audit_ids.insert(audit_id));
+                assert!(
+                    row["action"] == "payroll_run.list_read"
+                        && row["target_type"] == "payroll_draft_run"
+                        && row["target_id"] == "query"
+                );
+                let actor: Uuid = row["actor"].as_str().unwrap().parse().unwrap();
+                let expected_org = if actor == *admin.as_uuid() {
+                    *org.as_uuid()
+                } else {
+                    assert_eq!(actor, *foreign.as_uuid());
+                    *foreign_org.as_uuid()
+                };
+                assert_eq!(row["org_id"], json!(expected_org));
+                for (name, length) in [("trace_id", 32), ("span_id", 16)] {
+                    let value = row[name].as_str().unwrap();
+                    assert!(
+                        value.len() == length
+                            && value.bytes().all(|b| b.is_ascii_hexdigit())
+                            && value.bytes().any(|b| b != b'0')
+                    );
+                }
+                assert!(row["occurred_at"].is_string() && row["created_at"].is_string());
+                *actors.entry(actor).or_insert(0usize) += 1;
+            }
+            assert_eq!(
+                actors,
+                BTreeMap::from([(*admin.as_uuid(), 2), (*foreign.as_uuid(), 1)])
+            );
+            checkpoint_ok = true;
+        })
+        .catch_unwind()
+        .await;
+        if outcome.is_err() {
+            let _ = input.write_all(b"{\"kind\":\"ABORT\"}\n").await;
+            let _ = input.flush().await;
+        }
+        drop(input);
+        let child_status = tokio::time::timeout(Duration::from_secs(25), child.wait()).await;
+        if child_status.is_err() {
+            let _ = child.kill().await;
+        }
+        let _ = stop.send(());
+        let server_clean = matches!(
+            tokio::time::timeout(Duration::from_secs(5), &mut server).await,
+            Ok(Ok(Ok(())))
+        );
+        if !server_clean {
+            server.abort();
+            let _ = server.await;
+        }
+        let _ = sink_stop.send(());
+        let sink_clean = matches!(
+            tokio::time::timeout(Duration::from_secs(5), &mut sink_server).await,
+            Ok(Ok(Ok(())))
+        );
+        if !sink_clean {
+            sink_server.abort();
+            let _ = sink_server.await;
+        }
+        state.shutdown_realtime().await;
+        let source_unchanged = std::fs::read(&driver).is_ok_and(|bytes| bytes == driver_bytes);
+        let browser_exited = owned_pid.is_some_and(|pid| !alive(pid));
+        let exit_ok = matches!(child_status,Ok(Ok(status)) if status.success());
+        let receipt = json!({"kind":"INDEPENDENT_HYDRATION_DATABASE_EFFECTS","driver_sha256":expected,"driver_source_unchanged":source_unchanged,"browser_pid":owned_pid,"browser_exited":browser_exited,"driver_exit_success":exit_ok,"server_stopped":server_clean,"redirect_control":{"sink_stopped":sink_clean,"sink_positive_observed_then_reset":sink_positive,"source_requests":source_counts[0].load(Ordering::SeqCst),"source_expected_authorization":source_counts[1].load(Ordering::SeqCst),"sink_requests":sink_counts[0].load(Ordering::SeqCst),"sink_authorization":sink_counts[1].load(Ordering::SeqCst)},"exact_durable_effects_accepted":checkpoint_ok,"expected_authorized_read_audits":3,"embedded_assets":{"js":js_hash,"wasm":wasm_hash},"limits":"Fixture Bearer only; TEST_ONLY status projection; no native Account/Company/payroll workflow or release acceptance"});
+        if output.is_dir() {
+            std::fs::write(
+                output.join("owner-receipt.json"),
+                serde_json::to_vec_pretty(&receipt).unwrap(),
+            )
+            .unwrap();
+        }
+        assert!(
+            source_unchanged
+                && server_clean
+                && sink_clean
+                && (owned_pid.is_none() || browser_exited),
+            "owned cleanup/source verification failed"
+        );
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+        assert!(exit_ok && browser_exited && checkpoint_ok);
+    }
+
     /// Proposed-until-accepted ADR-0042 option 1 assertions. The ADR decides
     /// nothing. Live `/api/v1` Cookie deny is `cookie_does_not_authorize_json_api`,
     /// not this ignored module.
@@ -1108,17 +1807,15 @@ mod authorized {
         /// would mint `console_session` with Path=/ so a browser sends it to
         /// JSON API too; the server must still ignore it. Keep this live after
         /// a session cookie exists.
-        #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+        #[sqlx::test(migrations = false)]
         async fn cookie_does_not_authorize_json_api(pool: PgPool) {
+            console_platform_test_support::prepare_account_test_database(&pool).await;
             let keys = keys();
             let org = OrgId::knl();
             let admin = UserId::new();
             seed_user(&pool, org, admin, "SUPER_ADMIN").await;
             let _run = seed_run(&pool, org, admin).await;
-            let service = build_router(jwt_app_state(
-                runtime_role_pool(&pool).await,
-                keys.public_pem.clone(),
-            ));
+            let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
             let token = bearer(&keys, org, admin, "SUPER_ADMIN");
 
             for cookie in [
@@ -1165,6 +1862,10 @@ mod authorized {
 
         fn jwt_app_state_with_auth(runtime_pool: PgPool, keys: &Keys) -> AppState {
             let config = AppConfig::from_pairs([
+                (
+                    "CONSOLE_DATABASE_DURABILITY",
+                    r#"{"mode":"local_development"}"#.to_owned(),
+                ),
                 ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
                 ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
                 ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),

@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact lossless archive storage successor",
+  "archive": "docs/evidence/console/integration/2026-09-20-native-buck-prerequisites",
+  "manifest_sha256": "ea186e6d00f21cc7b056dfde84cc34b8f2ee4175ff3ac965028fb949b7d51ec1",
+  "storage_metadata_sha256": "1b14d00b64717747899b956e72427e124e58bc0a06782acdd8f91cf922e78a6b",
+  "checks": [
+    "Both gzip members decompress byte-for-byte to original private archive and original /private/tmp log. Compiler log uncompressed SHA2562a82a88c552e49dfc0a61a3f07054e992244ec3acd3347e1b916505afd7b4fc6; retained CRUD log062166d45eb3d81725c7b4e07c06a89f9492a1fec7e2e5503b3519e1366f3956.",
+    "Both gzip headers carry mtime0. Raw trailing whitespace survives decompression; no log normalization or historical evidence rewriting.",
+    "Every other file from previous private archive is byte-identical except recomputed manifest. Added archive-independent-review.json matches sealed284516c\u2026 receipt; added lossless-log-storage.json precisely maps both original/stored filenames and uncompressed hashes.",
+    "All37 manifest entries match SHA256 and actual inventory equals those37 entries plus manifest itself (38files). No unmanifested file.",
+    "No archive path exists in HEAD: replacing these raw files affects only new staged archive copies, not committed historical evidence. Original private raw logs remain unchanged."
+  ],
+  "scope": "Storage representation only; previous bounded acceptance/counts/HOLDs unchanged. Full verification pending at root.",
+  "repository_mutations": 0,
+  "runtime_executed": 0
+}

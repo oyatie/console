@@ -1,0 +1,34 @@
+[
+  {
+    "lane": "company-intake-test-helper-lints",
+    "base": "4d6451836eb379d9a4b711e02d770d1608db0033",
+    "owner": "/root",
+    "allow": [
+      "backend/app/tests/auth_rest/native_company_intake_owner.rs",
+      "backend/app/tests/auth_rest/native_company_intake_guards.rs",
+      "backend/app/tests/auth_rest/native_company_signed_credentials.rs"
+    ],
+    "immutable_target": "Strict existing Clippy accepts semantically unchanged Company intake tests",
+    "mechanical_guide": "/private/tmp/console-company-intake-lint-20260920-round2/CONTRACT.md",
+    "probe": "SQLX_OFFLINE=true cargo clippy --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings > /private/tmp/console-company-intake-lint-probe-round2-20260920.log 2>&1",
+    "pre_mortem": [
+      "test assertion accidentally altered",
+      "a caller passes different time bound"
+    ],
+    "detection": [
+      "independent full diff review",
+      "existing strict Clippy",
+      "native owner and guard SQLx checks"
+    ],
+    "rollback": "Revert only helper representation, preserve historical evidence",
+    "stop_conditions": [
+      "unexpected source drift",
+      "test semantic change",
+      "unrelated prerequisite failure"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ]
+  }
+]

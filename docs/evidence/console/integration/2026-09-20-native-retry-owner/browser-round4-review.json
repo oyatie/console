@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact round4 console-oracle correction and browser rerun",
+  "manifest_sha256": "0e70858e46fe3424e3f68c2033fa880635199123605f77330e7b6c81a02c320b",
+  "script_sha256": "dc6d6a8ce8e245564d8f96c3d7a973bc20f2e5ee2da8923dcb23eabd90788504",
+  "failed_run_sha256": "824f8549073ea437734f5996fbe4b98d4b48dbbacac3f07f3d8870f2acf1d775",
+  "evidence": [
+    "Exactround3\u21924diff only factorsconsole classifier and strips URLfragment; request/navigation/status/route/query/body/header oracles unchanged.",
+    "Classifier requires exactobserved Chromium503error message, matching actuallyobserved navigationresponse503 with full normalizedorigin/path/query. Fragment is absent from HTTP requestURL by protocol; removing it does not widenroute/query matching.",
+    "Independently executed25actualerror positive controls includingfragment and8wrongorigin/path/query/status/navigation/text/URL/response mutations; all8rejected. nodecheck0 and allmanifesthashes verified.",
+    "Prior13retryhistories and189pass2failreport remain immutable; no browser acceptance claimed by classifier reanalysis."
+  ],
+  "limits": [
+    "New actualbrowser run required; no productcode change caused by harness correction.",
+    "Allprior noDB scope and independentbrowser acceptance limitations remain."
+  ]
+}

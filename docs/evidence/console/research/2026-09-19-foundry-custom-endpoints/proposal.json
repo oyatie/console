@@ -1,0 +1,744 @@
+{
+  "kind": "bounded-custom-endpoints-reference-proposal",
+  "observed_head_sha": "5a954d1232856cf6daabc83263225bcef43e4e01",
+  "registry_sha256": "02e57a510cac8e40e52ff396423134ac60ed03dbbfe4f87c7c8ad453eba2fa2c",
+  "reference_date": "2026-09-19",
+  "reference_timezone": "America/New_York",
+  "retrieval_utc_date": "2026-09-20",
+  "exhaustive": false,
+  "sources": [
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/custom-endpoints/core-concepts/",
+      "effective_url": "https://www.palantir.com/docs/foundry/custom-endpoints/core-concepts",
+      "retrieved_utc": "2026-09-20T02:36:53.229571+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "333042",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"b1c2c286993be9f62b06fe9e9d845833\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:36:53 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660065-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871813.081742,VS0,VE141",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+      "bytes": 333042,
+      "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+      "compressed_sha256": "95b22a9d872bc43cd0037897240a71f8f192f1c49ee4b2c9e03b906d27471a88",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "custom-endpoints-core-concepts",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-custom-endpoints-20260919/custom-endpoints-core-concepts.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/custom-endpoints/create-endpoint-set/",
+      "effective_url": "https://www.palantir.com/docs/foundry/custom-endpoints/create-endpoint-set",
+      "retrieved_utc": "2026-09-20T02:36:53.248055+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "329777",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"0765074099d577645cf9452097722866\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:36:53 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660068-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871813.082590,VS0,VE159",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-create-endpoint-set.html.gz",
+      "bytes": 329777,
+      "sha256": "44cd4a5afaea17efd67d3e3bd12a663fd939b3cdaf2f35763ceb80a97bbf3bc8",
+      "compressed_sha256": "3f0a33cf72c726e438af345c680a89d9e479afc38e914ea600fc2f4801f868a3",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "custom-endpoints-create-endpoint-set",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-custom-endpoints-20260919/custom-endpoints-create-endpoint-set.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/custom-endpoints/define-endpoints/",
+      "effective_url": "https://www.palantir.com/docs/foundry/custom-endpoints/define-endpoints",
+      "retrieved_utc": "2026-09-20T02:36:53.214224+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "329547",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"0b7cd7d7c877b0e4a115676b80c038ff\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:36:53 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660030-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871813.080714,VS0,VE128",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-define-endpoints.html.gz",
+      "bytes": 329547,
+      "sha256": "3523ec3be17675b01fd484dd1269dbe14b10c3536219c4105da2e89ea97046c1",
+      "compressed_sha256": "ea041da700a82838f12fa3a02b16807c8f3dfc7058d959272e7d147bf6ea0b28",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "custom-endpoints-define-endpoints",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-custom-endpoints-20260919/custom-endpoints-define-endpoints.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/custom-endpoints/overview/",
+      "effective_url": "https://www.palantir.com/docs/foundry/custom-endpoints/overview",
+      "retrieved_utc": "2026-09-20T02:25:35.337325+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "332467",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"3b2d62034c98211e8f50e681b34ad40b\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:25:35 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660078-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871135.162645,VS0,VE171",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-overview.html.gz",
+      "bytes": 332467,
+      "sha256": "0c8c1d007343b9058716411c08dd5527dc18b80a80b51d272f79827a3a0abcda",
+      "compressed_sha256": "fad6f1c60923fc3f5c397ef7d476c08a056a1e29cf79fc5f327ba00512ad94be",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "custom-endpoints-overview",
+      "capture_path_at_retrieval": "/private/tmp/console-release-completeness-audit-20260919/custom-endpoints-overview.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/custom-endpoints/publish/",
+      "effective_url": "https://www.palantir.com/docs/foundry/custom-endpoints/publish",
+      "retrieved_utc": "2026-09-20T02:36:53.276342+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "335764",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"788979b006197c4c9032a538a0355edf\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:36:53 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660036-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871813.082051,VS0,VE188",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-publish.html.gz",
+      "bytes": 335764,
+      "sha256": "41ffe80aba0b57cb72031210859b3960b7addbf2bd418a8f617076105c4a3f24",
+      "compressed_sha256": "09c9e54da129cfef6b1c882336f56e4ee7c3381775e352bb5d9713e2a785610d",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "custom-endpoints-publish",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-custom-endpoints-20260919/custom-endpoints-publish.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/custom-endpoints/use-custom-endpoints/",
+      "effective_url": "https://www.palantir.com/docs/foundry/custom-endpoints/use-custom-endpoints",
+      "retrieved_utc": "2026-09-20T02:36:53.367784+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "327018",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"c272ad019d8fcde9600dd0a55834c983\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:36:53 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660043-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871813.235732,VS0,VE126",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-use-custom-endpoints.html.gz",
+      "bytes": 327018,
+      "sha256": "25e0e30de8d70aae5c10de976fd0f7d1183c2901bfe8d2c4248e8de40fc5c5fe",
+      "compressed_sha256": "ae911153044587caf7f48d2cf15b2b01b87d7fd5898c70e0a11e4cd8c172d2d8",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "custom-endpoints-use-custom-endpoints",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-custom-endpoints-20260919/custom-endpoints-use-custom-endpoints.html.gz"
+    }
+  ],
+  "leaves_to_append": [
+    {
+      "id": "F11.endpoint-parameter-mapping",
+      "milestone": 8,
+      "required": true,
+      "owner": "custom endpoint application use cases and canonical Action/function owners",
+      "dependencies": [
+        "F11.endpoints",
+        "F06.typed",
+        "F11.function-version-publication"
+      ],
+      "journey": "Author versioned custom URL/method/header/query/path/body parameter mappings to a pinned classical function or canonical Action with complete typed validation",
+      "acceptance": {
+        "outcome": "Author versioned custom URL/method/header/query/path/body parameter mappings to a pinned classical function or canonical Action with complete typed validation",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Documented response mapping and application restriction limitations need explicit local support contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F11.endpoint-response-contracts",
+      "milestone": 8,
+      "required": true,
+      "owner": "custom endpoint application use cases and canonical Action/function owners",
+      "dependencies": [
+        "F11.endpoint-parameter-mapping",
+        "F11.api"
+      ],
+      "journey": "Define and validate custom response shapes and endpoint specifications while preserving canonical result receipts and current field disclosure",
+      "acceptance": {
+        "outcome": "Define and validate custom response shapes and endpoint specifications while preserving canonical result receipts and current field disclosure",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Documented response mapping and application restriction limitations need explicit local support contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F11.endpoint-version-publication",
+      "milestone": 8,
+      "required": true,
+      "owner": "custom endpoint application use cases and canonical Action/function owners",
+      "dependencies": [
+        "F11.endpoint-parameter-mapping",
+        "F11.endpoint-response-contracts",
+        "F15.versions"
+      ],
+      "journey": "Publish immutable semantically versioned endpoint-set snapshots separately from deployment and retain exact backing dependency and historical command identities",
+      "acceptance": {
+        "outcome": "Publish immutable semantically versioned endpoint-set snapshots separately from deployment and retain exact backing dependency and historical command identities",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Documented response mapping and application restriction limitations need explicit local support contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F11.endpoint-version-dispatch",
+      "milestone": 8,
+      "required": true,
+      "owner": "custom endpoint application use cases and canonical Action/function owners",
+      "dependencies": [
+        "F11.endpoint-version-publication",
+        "F06.history"
+      ],
+      "journey": "Deploy concurrent endpoint releases and resolve explicit/default request versions with durable execution provenance and recoverable rollback",
+      "acceptance": {
+        "outcome": "Deploy concurrent endpoint releases and resolve explicit/default request versions with durable execution provenance and recoverable rollback",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Documented response mapping and application restriction limitations need explicit local support contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F11.endpoint-hosting-governance",
+      "milestone": 8,
+      "required": true,
+      "owner": "custom endpoint application use cases and canonical Action/function owners",
+      "dependencies": [
+        "F11.endpoint-version-publication",
+        "F17.administrative-approval-history",
+        "F16.policy"
+      ],
+      "journey": "Create permissioned endpoint sets request approved hosting domains and manage publication/deployment through accountable current-authority administration",
+      "acceptance": {
+        "outcome": "Create permissioned endpoint sets request approved hosting domains and manage publication/deployment through accountable current-authority administration",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Documented response mapping and application restriction limitations need explicit local support contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F11.endpoint-application-authority",
+      "milestone": 8,
+      "required": true,
+      "owner": "custom endpoint application use cases and canonical Action/function owners",
+      "dependencies": [
+        "F11.endpoint-version-dispatch",
+        "F11.application-api-restrictions",
+        "F06.typed",
+        "F11.function-execution-modes"
+      ],
+      "journey": "Execute custom endpoints through authenticated user or scoped application authority intersected with current backing Action/function/resource policy",
+      "acceptance": {
+        "outcome": "Execute custom endpoints through authenticated user or scoped application authority intersected with current backing Action/function/resource policy",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Documented response mapping and application restriction limitations need explicit local support contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  ],
+  "source_bindings": {
+    "F11.endpoint-parameter-mapping": [
+      {
+        "source_id": "custom-endpoints-define-endpoints",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-define-endpoints.html.gz",
+        "sha256": "3523ec3be17675b01fd484dd1269dbe14b10c3536219c4105da2e89ea97046c1",
+        "quote": "All parameters must be mapped in the custom endpoint definition, including optional parameters. Some JSON parameters can only be mapped to the endpoint's requestBody.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.endpoint-response-contracts": [
+      {
+        "source_id": "custom-endpoints-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-overview.html.gz",
+        "sha256": "0c8c1d007343b9058716411c08dd5527dc18b80a80b51d272f79827a3a0abcda",
+        "quote": "Users can also configure request and response shapes and endpoint specifications, while leveraging Foundry's back-end capabilities.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.endpoint-version-publication": [
+      {
+        "source_id": "custom-endpoints-core-concepts",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+        "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+        "quote": "Publishing an endpoint set creates an immutable release tied to a semantic version, and is similar to using Git.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.endpoint-version-dispatch": [
+      {
+        "source_id": "custom-endpoints-core-concepts",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+        "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+        "quote": "Requests use the version specified in the endpoint-api-version header, defaulting to the latest deployed version when unspecified.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.endpoint-hosting-governance": [
+      {
+        "source_id": "custom-endpoints-core-concepts",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+        "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+        "quote": "A subdomain must be registered and approved through Control Panel before endpoints can be served.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.endpoint-application-authority": [
+      {
+        "source_id": "custom-endpoints-use-custom-endpoints",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-use-custom-endpoints.html.gz",
+        "sha256": "25e0e30de8d70aae5c10de976fd0f7d1183c2901bfe8d2c4248e8de40fc5c5fe",
+        "quote": "Each custom endpoint is backed by an ontology function or action.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.endpoints": [
+      {
+        "source_id": "custom-endpoints-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-overview.html.gz",
+        "sha256": "0c8c1d007343b9058716411c08dd5527dc18b80a80b51d272f79827a3a0abcda",
+        "quote": "Custom endpoints are backed by the ontology through actions and functions.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F11.api": [
+      {
+        "source_id": "custom-endpoints-core-concepts",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+        "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+        "quote": "An endpoint definition defines an API endpoint that consumes header, query, path, and body parameters to call Foundry functions or actions with those parameters.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ]
+  },
+  "support_matrix_additions": {
+    "runtimes": [
+      {
+        "runtime": "Custom endpoint parameter locations",
+        "reference_status": "All optional/required parameters mapped; some JSON only body; exact type/location combinations unspecified",
+        "source": "custom-endpoints-define-endpoints",
+        "source_bindings": [
+          {
+            "source_id": "custom-endpoints-define-endpoints",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-define-endpoints.html.gz",
+            "sha256": "3523ec3be17675b01fd484dd1269dbe14b10c3536219c4105da2e89ea97046c1",
+            "quote": "User-defined request types: GET, POST, PUT, DELETE, and PATCH.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "custom-endpoints-define-endpoints",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-define-endpoints.html.gz",
+            "sha256": "3523ec3be17675b01fd484dd1269dbe14b10c3536219c4105da2e89ea97046c1",
+            "quote": "User-defined request body: Custom request body shape definitions for POST, PUT, PATCH, and DELETE requests.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F11.endpoint-parameter-mapping",
+        "console_acceptance": "not established",
+        "command": null,
+        "methods": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE",
+          "PATCH"
+        ],
+        "body_methods": [
+          "POST",
+          "PUT",
+          "PATCH",
+          "DELETE"
+        ],
+        "parameter_locations": [
+          "header",
+          "query",
+          "path",
+          "body"
+        ]
+      },
+      {
+        "runtime": "Custom endpoint application access",
+        "reference_status": "Unrestricted apps only; same page mentions backing resource restrictions; scope semantics unresolved",
+        "source": "custom-endpoints-use-custom-endpoints",
+        "source_bindings": [
+          {
+            "source_id": "custom-endpoints-use-custom-endpoints",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-use-custom-endpoints.html.gz",
+            "sha256": "25e0e30de8d70aae5c10de976fd0f7d1183c2901bfe8d2c4248e8de40fc5c5fe",
+            "quote": "Custom endpoints are currently only supported by unrestricted applications in Developer Console. Restricted applications do not currently support custom endpoints.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "custom-endpoints-use-custom-endpoints",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-use-custom-endpoints.html.gz",
+            "sha256": "25e0e30de8d70aae5c10de976fd0f7d1183c2901bfe8d2c4248e8de40fc5c5fe",
+            "quote": "To give your Developer Console application permission to execute your custom endpoints, identify the backing ontology resources and add them to the resource access restrictions that your OAuth client needs permission to access.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F11.endpoint-application-authority",
+        "console_acceptance": "not established",
+        "command": null,
+        "supported_application_mode": "unrestricted vendor application; Console scoped authority remains required",
+        "unsupported_application_mode": "restricted vendor application"
+      },
+      {
+        "runtime": "Custom endpoint release dispatch",
+        "reference_status": "Concurrent immutable semver releases; endpoint-api-version header or latest deployed default",
+        "source": "custom-endpoints-core-concepts",
+        "source_bindings": [
+          {
+            "source_id": "custom-endpoints-core-concepts",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+            "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+            "quote": "Each endpoint set release is immutable, but can be deleted.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "custom-endpoints-core-concepts",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+            "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+            "quote": "Requests use the version specified in the endpoint-api-version header, defaulting to the latest deployed version when unspecified.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F11.endpoint-version-dispatch",
+        "console_acceptance": "not established",
+        "command": null
+      }
+    ]
+  },
+  "compatibility_and_security_qualifications": [
+    {
+      "source_id": "custom-endpoints-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-overview.html.gz",
+      "sha256": "0c8c1d007343b9058716411c08dd5527dc18b80a80b51d272f79827a3a0abcda",
+      "quote": "The Custom Endpoints application is in the beta phase of development and may not be available on your enrollment.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-core-concepts",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+      "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+      "quote": "An endpoint set is a Compass resource for grouping related endpoints. This resource manages permissions for developers to view, edit, publish, and deploy endpoint definitions.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-core-concepts",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+      "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+      "quote": "Standalone subdomains created manually through Control Panel are not supported by Custom Endpoints.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-core-concepts",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+      "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+      "quote": "Each endpoint set release is immutable, but can be deleted.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-core-concepts",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-core-concepts.html.gz",
+      "sha256": "c9c3ef200cf12a712c74af5023ca8fa6c1b828f5bcac4795938c6ea3d8fa6402",
+      "quote": "Endpoints become accessible only after deploying an endpoint set release to a subdomain. Multiple releases can be deployed simultaneously.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-create-endpoint-set",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-create-endpoint-set.html.gz",
+      "sha256": "44cd4a5afaea17efd67d3e3bd12a663fd939b3cdaf2f35763ceb80a97bbf3bc8",
+      "quote": "The new endpoint set will inherit permissions from its parent project or folder.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-create-endpoint-set",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-create-endpoint-set.html.gz",
+      "sha256": "44cd4a5afaea17efd67d3e3bd12a663fd939b3cdaf2f35763ceb80a97bbf3bc8",
+      "quote": "While waiting for approval, you can continue to configure and test your endpoint definitions.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-define-endpoints",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-define-endpoints.html.gz",
+      "sha256": "3523ec3be17675b01fd484dd1269dbe14b10c3536219c4105da2e89ea97046c1",
+      "quote": "User-defined request types: GET, POST, PUT, DELETE, and PATCH.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-define-endpoints",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-define-endpoints.html.gz",
+      "sha256": "3523ec3be17675b01fd484dd1269dbe14b10c3536219c4105da2e89ea97046c1",
+      "quote": "User-defined request body: Custom request body shape definitions for POST, PUT, PATCH, and DELETE requests.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-publish",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-publish.html.gz",
+      "sha256": "41ffe80aba0b57cb72031210859b3960b7addbf2bd418a8f617076105c4a3f24",
+      "quote": "To avoid automatically deploying this version, select Tag without deploying.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-publish",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-publish.html.gz",
+      "sha256": "41ffe80aba0b57cb72031210859b3960b7addbf2bd418a8f617076105c4a3f24",
+      "quote": "Versions should be accessible on approved subdomains immediately after the version is published and deployed.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-publish",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-publish.html.gz",
+      "sha256": "41ffe80aba0b57cb72031210859b3960b7addbf2bd418a8f617076105c4a3f24",
+      "quote": "with a user-generated token",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-use-custom-endpoints",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-use-custom-endpoints.html.gz",
+      "sha256": "25e0e30de8d70aae5c10de976fd0f7d1183c2901bfe8d2c4248e8de40fc5c5fe",
+      "quote": "Custom endpoints are currently only supported by unrestricted applications in Developer Console. Restricted applications do not currently support custom endpoints.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "custom-endpoints-use-custom-endpoints",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-custom-endpoints/custom-endpoints-use-custom-endpoints.html.gz",
+      "sha256": "25e0e30de8d70aae5c10de976fd0f7d1183c2901bfe8d2c4248e8de40fc5c5fe",
+      "quote": "To give your Developer Console application permission to execute your custom endpoints, identify the backing ontology resources and add them to the resource access restrictions that your OAuth client needs permission to access.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    }
+  ],
+  "limitations": [
+    "Six captured indexed Custom Endpoints pages are the bounded reference packet, not proof of complete vendor or Console API equivalence. Beta availability does not remove explicitly requested custom endpoint capability.",
+    "Only unrestricted Developer Console applications are documented as supported; the same page instructs configuring backing resource access restrictions. This public ambiguity must remain visible. Console requires scoped application authority intersected with current resource/field/Action/function policy and never exposes unrestricted credentials to user code.",
+    "Endpoint-set edit/view/publish/deploy authority differs from executing its backing resource. Folder permission inheritance is a vendor illustration, not a replacement for Console Group/Company and Cedar enforcement.",
+    "All parameters including optional ones require mapping; certain JSON values are body-only. GET/POST/PUT/DELETE/PATCH are listed, but no exhaustive type/location compatibility table is published in these six pages. Unsupported mapping combinations require explicit errors and reviewed local type oracles.",
+    "Overview promises response-shape/specification customization; detailed pages document request mapping but do not specify an exhaustive response transformation grammar, error/status mapping, or OpenAPI export. Keep those support dimensions unresolved rather than inventing vendor semantics.",
+    "User-defined method remapping does not authorize unsafe GET mutations, weaker preflight/execute validation, missing CSRF/idempotency controls, or another writer. Consequential requests invoke canonical typed commands and preserve receipts; classical user functions execute outside trusted Console.",
+    "Publishing creates immutable semantic-version snapshots; tagging without deployment must remain possible. Deleting a vendor release does not authorize deleting Console audit/history, historical command bytes, custody fingerprints, or retention/legal-hold-protected artifacts.",
+    "An omitted version selects latest deployed in the reference; Console execution must record the resolved immutable version and backing dependencies. Historical retries must not silently resolve against a later release, and rollback must preserve completed-effect reconciliation.",
+    "Custom domain registration/approval and endpoint deployment are separate from publication. Local implementation/testing remains permitted before domain approval. Live domain/DNS/TLS/exposure decisions remain separately authorized; this research grants none.",
+    "Documentation uses generated bearer tokens and OAuth-backed apps, but does not specify complete scopes, token revocation/cache timing, streaming, CORS, limits, cancellation, or ambiguous response recovery; exact support and acceptance remain unbound.",
+    "Reference mappings describe native Console-equivalent functionality only; no Palantir SDK/API dependency or vendor import/export compatibility is asserted."
+  ]
+}

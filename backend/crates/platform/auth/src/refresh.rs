@@ -1,14 +1,13 @@
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
-use console_platform_db::with_audit;
 use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-use crate::AuthError;
+use crate::{AuthError, append_legacy_auth_audit_in_tx, guard_legacy_subject_in_tx};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RefreshToken(String);
+pub struct RefreshToken(pub(crate) String);
 
 impl RefreshToken {
     #[must_use]
@@ -47,12 +46,31 @@ pub struct RefreshTokenStore;
 impl RefreshTokenStore {
     pub async fn issue_family(
         &self,
-        pool: &PgPool,
+        _pool: &PgPool,
+        auth_pool: &PgPool,
         user_id: Uuid,
         org_id: OrgId,
         now: OffsetDateTime,
         ttl: Duration,
     ) -> Result<RefreshTokenIssue, AuthError> {
+        let mut tx = auth_pool.begin().await?;
+        let issue = self
+            .issue_family_in_tx(&mut tx, user_id, org_id, now, ttl)
+            .await?;
+        tx.commit().await?;
+        Ok(issue)
+    }
+
+    /// Issue credentials and their audit inside the caller's Auth transaction.
+    pub async fn issue_family_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        user_id: Uuid,
+        org_id: OrgId,
+        now: OffsetDateTime,
+        ttl: Duration,
+    ) -> Result<RefreshTokenIssue, AuthError> {
+        guard_refresh_subject(tx, org_id, user_id).await?;
         let family_id = Uuid::new_v4();
         let token_id = Uuid::new_v4();
         let token = generate_refresh_token();
@@ -82,42 +100,37 @@ impl RefreshTokenStore {
             })),
         );
 
-        with_audit::<_, (), AuthError>(pool, audit, |tx| {
-            Box::pin(async move {
-                sqlx::query(
-                    r#"
-                    INSERT INTO auth_refresh_token_families (id, user_id, created_at, org_id)
-                    VALUES ($1, $2, $3, $4)
-                    "#,
-                )
-                .bind(family_id)
-                .bind(user_id)
-                .bind(now)
-                .bind(org_uuid)
-                .execute(tx.as_mut())
-                .await?;
-
-                sqlx::query(
-                    r#"
-                    INSERT INTO auth_refresh_tokens (
-                        id, family_id, user_id, token_hash, issued_at, expires_at, org_id
-                    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-                    "#,
-                )
-                .bind(token_id)
-                .bind(family_id)
-                .bind(user_id)
-                .bind(token_hash)
-                .bind(now)
-                .bind(expires_at)
-                .bind(org_uuid)
-                .execute(tx.as_mut())
-                .await?;
-
-                Ok(())
-            })
-        })
+        sqlx::query(
+            r#"
+            INSERT INTO auth_refresh_token_families (id, user_id, created_at, org_id)
+            VALUES ($1, $2, $3, $4)
+            "#,
+        )
+        .bind(family_id)
+        .bind(user_id)
+        .bind(now)
+        .bind(org_uuid)
+        .execute(tx.as_mut())
         .await?;
+
+        sqlx::query(
+            r#"
+            INSERT INTO auth_refresh_tokens (
+                id, family_id, user_id, token_hash, issued_at, expires_at, org_id
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+            "#,
+        )
+        .bind(token_id)
+        .bind(family_id)
+        .bind(user_id)
+        .bind(token_hash)
+        .bind(now)
+        .bind(expires_at)
+        .bind(org_uuid)
+        .execute(tx.as_mut())
+        .await?;
+
+        append_legacy_auth_audit_in_tx(tx, &audit).await?;
 
         Ok(RefreshTokenIssue {
             token: RefreshToken(token),
@@ -132,12 +145,13 @@ impl RefreshTokenStore {
     pub async fn rotate(
         &self,
         pool: &PgPool,
+        auth_pool: &PgPool,
         presented_token: &str,
         now: OffsetDateTime,
         ttl: Duration,
         absolute_ttl: Duration,
     ) -> Result<RefreshTokenIssue, RefreshTokenUseError> {
-        self.rotate_inner(pool, presented_token, now, ttl, absolute_ttl)
+        self.rotate_inner(pool, auth_pool, presented_token, now, ttl, absolute_ttl)
             .await
             .map_err(|err| match err {
                 AuthError::Refresh(refresh) => refresh,
@@ -147,14 +161,32 @@ impl RefreshTokenStore {
 
     async fn rotate_inner(
         &self,
-        pool: &PgPool,
+        _pool: &PgPool,
+        auth_pool: &PgPool,
         presented_token: &str,
         now: OffsetDateTime,
         ttl: Duration,
         absolute_ttl: Duration,
     ) -> Result<RefreshTokenIssue, AuthError> {
+        let mut tx = auth_pool.begin().await?;
+        let outcome = self
+            .rotate_in_tx(&mut tx, presented_token, now, ttl, absolute_ttl)
+            .await?;
+        tx.commit().await?;
+        outcome.map_err(AuthError::from)
+    }
+
+    /// An inner refusal can include revocation effects and MUST be committed.
+    /// An outer storage/authority error MUST roll back the transaction.
+    pub async fn rotate_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        presented_token: &str,
+        now: OffsetDateTime,
+        ttl: Duration,
+        absolute_ttl: Duration,
+    ) -> Result<Result<RefreshTokenIssue, RefreshTokenUseError>, AuthError> {
         let token_hash = hash_token(presented_token);
-        let mut tx = pool.begin().await?;
 
         // Resolve the family's tenant from the token hash FIRST, then arm the
         // GUC, THEN do the RLS-gated read. `auth_refresh_tokens` is FORCE RLS
@@ -163,14 +195,22 @@ impl RefreshTokenStore {
         // we need to set it. The narrow SECURITY DEFINER resolver
         // `platform_resolve_token_org` returns only the family's org_id, breaking
         // that chicken-and-egg so refresh works for ANY tenant (not just KNL).
-        let Some(org_uuid) = resolve_token_org(&mut tx, &token_hash).await? else {
-            tx.rollback().await?;
-            return Err(RefreshTokenUseError::InvalidToken.into());
+        let Some(org_uuid) = resolve_token_org(tx, &token_hash).await? else {
+            return Ok(Err(RefreshTokenUseError::InvalidToken));
         };
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
             .bind(org_uuid.to_string())
             .execute(tx.as_mut())
             .await?;
+
+        let Some(subject) = correlate_token_subject(tx, &token_hash, org_uuid).await? else {
+            return Ok(Err(RefreshTokenUseError::InvalidToken));
+        };
+        if subject.2 {
+            return Ok(Err(RefreshTokenUseError::FamilyRevoked));
+        }
+        guard_refresh_subject(tx, OrgId::from_uuid(org_uuid), subject.1).await?;
+        lock_refresh_family(tx, subject.0, subject.1).await?;
 
         let row = sqlx::query(
             r#"
@@ -185,17 +225,20 @@ impl RefreshTokenStore {
                 f.created_at AS family_created_at
             FROM auth_refresh_tokens t
             JOIN auth_refresh_token_families f ON f.id = t.family_id
-            WHERE t.token_hash = $1
-            FOR UPDATE OF t, f
+            WHERE t.token_hash = $1 AND t.family_id = $2 AND t.user_id = $3
+              AND f.user_id = t.user_id AND t.org_id = $4 AND f.org_id = $4
+            FOR UPDATE OF t
             "#,
         )
         .bind(token_hash)
+        .bind(subject.0)
+        .bind(subject.1)
+        .bind(org_uuid)
         .fetch_optional(tx.as_mut())
         .await?;
 
         let Some(row) = row else {
-            tx.rollback().await?;
-            return Err(RefreshTokenUseError::InvalidToken.into());
+            return Ok(Err(RefreshTokenUseError::InvalidToken));
         };
 
         let token_id: Uuid = row.try_get("token_id")?;
@@ -208,8 +251,7 @@ impl RefreshTokenStore {
         let family_created_at: OffsetDateTime = row.try_get("family_created_at")?;
 
         if family_revoked_at.is_some() {
-            tx.rollback().await?;
-            return Err(RefreshTokenUseError::FamilyRevoked.into());
+            return Ok(Err(RefreshTokenUseError::FamilyRevoked));
         }
 
         // Absolute session-lifetime cap (NIST 800-63B AAL2 reauthentication):
@@ -239,7 +281,7 @@ impl RefreshTokenStore {
             .execute(tx.as_mut())
             .await?;
             insert_audit_in_tx(
-                &mut tx,
+                tx,
                 OrgId::from_uuid(org_uuid),
                 user_id,
                 family_id,
@@ -252,14 +294,13 @@ impl RefreshTokenStore {
                 }),
             )
             .await?;
-            tx.commit().await?;
-            return Err(RefreshTokenUseError::FamilyRevoked.into());
+            return Ok(Err(RefreshTokenUseError::FamilyRevoked));
         }
 
         if used_at.is_some() || token_revoked_at.is_some() {
-            revoke_family_for_reuse(&mut tx, family_id, token_id, now).await?;
+            revoke_family_for_reuse(tx, family_id, token_id, now).await?;
             insert_audit_in_tx(
-                &mut tx,
+                tx,
                 OrgId::from_uuid(org_uuid),
                 user_id,
                 family_id,
@@ -272,8 +313,7 @@ impl RefreshTokenStore {
                 }),
             )
             .await?;
-            tx.commit().await?;
-            return Err(RefreshTokenUseError::ReuseDetected.into());
+            return Ok(Err(RefreshTokenUseError::ReuseDetected));
         }
 
         if expires_at <= now {
@@ -282,8 +322,7 @@ impl RefreshTokenStore {
                 .bind(token_id)
                 .execute(tx.as_mut())
                 .await?;
-            tx.commit().await?;
-            return Err(RefreshTokenUseError::Expired.into());
+            return Ok(Err(RefreshTokenUseError::Expired));
         }
 
         let replacement_id = Uuid::new_v4();
@@ -322,7 +361,7 @@ impl RefreshTokenStore {
         .await?;
 
         insert_audit_in_tx(
-            &mut tx,
+            tx,
             OrgId::from_uuid(org_uuid),
             user_id,
             family_id,
@@ -337,16 +376,14 @@ impl RefreshTokenStore {
         )
         .await?;
 
-        tx.commit().await?;
-
-        Ok(RefreshTokenIssue {
+        Ok(Ok(RefreshTokenIssue {
             token: RefreshToken(replacement),
             family_id,
             token_id: replacement_id,
             user_id,
             org_id: OrgId::from_uuid(org_uuid),
             expires_at: replacement_expires_at,
-        })
+        }))
     }
 
     pub async fn revoke_family_for_logout(
@@ -369,20 +406,40 @@ impl RefreshTokenStore {
         presented_token: &str,
         now: OffsetDateTime,
     ) -> Result<(), AuthError> {
-        let token_hash = hash_token(presented_token);
         let mut tx = pool.begin().await?;
+        self.revoke_family_for_logout_in_tx(&mut tx, presented_token, now)
+            .await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn revoke_family_for_logout_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        presented_token: &str,
+        now: OffsetDateTime,
+    ) -> Result<(), AuthError> {
+        let token_hash = hash_token(presented_token);
 
         // Resolve the family's tenant from the token hash and arm the GUC BEFORE
         // the RLS-gated read, so logout works under `console_rt` for any tenant.
         // See `rotate_inner` for the chicken-and-egg rationale.
-        let Some(org_uuid) = resolve_token_org(&mut tx, &token_hash).await? else {
-            tx.rollback().await?;
+        let Some(org_uuid) = resolve_token_org(tx, &token_hash).await? else {
             return Err(RefreshTokenUseError::InvalidToken.into());
         };
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
             .bind(org_uuid.to_string())
             .execute(tx.as_mut())
             .await?;
+
+        let Some(subject) = correlate_token_subject(tx, &token_hash, org_uuid).await? else {
+            return Err(RefreshTokenUseError::InvalidToken.into());
+        };
+        if subject.2 {
+            return Err(RefreshTokenUseError::FamilyRevoked.into());
+        }
+        guard_refresh_subject(tx, OrgId::from_uuid(org_uuid), subject.1).await?;
+        lock_refresh_family(tx, subject.0, subject.1).await?;
 
         let row = sqlx::query(
             r#"
@@ -392,16 +449,19 @@ impl RefreshTokenStore {
                 f.revoked_at AS family_revoked_at
             FROM auth_refresh_tokens t
             JOIN auth_refresh_token_families f ON f.id = t.family_id
-            WHERE t.token_hash = $1
-            FOR UPDATE OF t, f
+            WHERE t.token_hash = $1 AND t.family_id = $2 AND t.user_id = $3
+              AND f.user_id = t.user_id AND t.org_id = $4 AND f.org_id = $4
+            FOR UPDATE OF t
             "#,
         )
         .bind(token_hash)
+        .bind(subject.0)
+        .bind(subject.1)
+        .bind(org_uuid)
         .fetch_optional(tx.as_mut())
         .await?;
 
         let Some(row) = row else {
-            tx.rollback().await?;
             return Err(RefreshTokenUseError::InvalidToken.into());
         };
 
@@ -410,7 +470,6 @@ impl RefreshTokenStore {
         let family_revoked_at: Option<OffsetDateTime> = row.try_get("family_revoked_at")?;
 
         if family_revoked_at.is_some() {
-            tx.rollback().await?;
             return Err(RefreshTokenUseError::FamilyRevoked.into());
         }
 
@@ -439,7 +498,7 @@ impl RefreshTokenStore {
         .await?;
 
         insert_audit_in_tx(
-            &mut tx,
+            tx,
             OrgId::from_uuid(org_uuid),
             user_id,
             family_id,
@@ -452,7 +511,6 @@ impl RefreshTokenStore {
         )
         .await?;
 
-        tx.commit().await?;
         Ok(())
     }
 }
@@ -473,6 +531,50 @@ async fn resolve_token_org(
         .bind(token_hash)
         .fetch_one(tx.as_mut())
         .await?)
+}
+
+async fn correlate_token_subject(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    hash: &[u8],
+    org: Uuid,
+) -> Result<Option<(Uuid, Uuid, bool)>, AuthError> {
+    // An already-dead family can only refuse. Live observations still require
+    // the subject guard, ordered row locks and the locked revocation reread.
+    Ok(sqlx::query_as(
+        "SELECT t.family_id, t.user_id, f.revoked_at IS NOT NULL
+         FROM public.auth_refresh_tokens t
+         JOIN public.auth_refresh_token_families f ON f.id=t.family_id AND f.user_id=t.user_id
+         WHERE t.token_hash=$1 AND t.org_id=$2 AND f.org_id=$2",
+    )
+    .bind(hash)
+    .bind(org)
+    .fetch_optional(tx.as_mut())
+    .await?)
+}
+
+async fn guard_refresh_subject(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    org: OrgId,
+    subject: Uuid,
+) -> Result<(), AuthError> {
+    guard_legacy_subject_in_tx(tx, org, subject)
+        .await
+        .map_err(|err| match err {
+            AuthError::InvalidStoredData(_) | AuthError::Kernel(_) => {
+                RefreshTokenUseError::InvalidToken.into()
+            }
+            other => other,
+        })
+}
+
+async fn lock_refresh_family(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    family: Uuid,
+    subject: Uuid,
+) -> Result<(), AuthError> {
+    sqlx::query("SELECT id FROM public.auth_refresh_token_families WHERE id = $1 AND user_id = $2 FOR UPDATE")
+        .bind(family).bind(subject).fetch_optional(tx.as_mut()).await?;
+    Ok(())
 }
 
 async fn revoke_family_for_reuse(
@@ -530,45 +632,17 @@ async fn insert_audit_in_tx(
     .with_org(org)
     .with_snapshots(None, Some(after));
 
-    // Stamp `org_id` on the row (the enclosing tx already armed `app.current_org`
-    // to this org before the RLS-gated read). Omitting it lands the row with
-    // NULL org_id — which the FORCE-RLS WITH CHECK still permits, but then a
-    // tenant-scoped `/api/audit` read (RLS `USING (org_id = app.current_org)`)
-    // can never see these refresh/logout events.
-    sqlx::query(
-        r#"
-        INSERT INTO audit_events (
-            id, actor, action, target_type, target_id, branch_id,
-            before_snap, after_snap, trace_id, span_id, occurred_at, org_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        "#,
-    )
-    .bind(*event.id.as_uuid())
-    .bind(event.actor.map(|actor| *actor.as_uuid()))
-    .bind(event.action.as_str())
-    .bind(event.target_type)
-    .bind(event.target_id)
-    .bind(event.branch_id.map(|branch| *branch.as_uuid()))
-    .bind(event.before)
-    .bind(event.after)
-    .bind(event.trace.trace_id())
-    .bind(event.trace.span_id())
-    .bind(event.occurred_at)
-    .bind(event.org_id.map(|org_id| *org_id.as_uuid()))
-    .execute(tx.as_mut())
-    .await?;
-
-    Ok(())
+    append_legacy_auth_audit_in_tx(tx, &event).await
 }
 
-fn generate_refresh_token() -> String {
+pub(crate) fn generate_refresh_token() -> String {
     let mut bytes = [0u8; 32];
     bytes[..16].copy_from_slice(Uuid::new_v4().as_bytes());
     bytes[16..].copy_from_slice(Uuid::new_v4().as_bytes());
     format!("console_rt_{}", hex_encode(&bytes))
 }
 
-fn hash_token(token: &str) -> Vec<u8> {
+pub(crate) fn hash_token(token: &str) -> Vec<u8> {
     Sha256::digest(token.as_bytes()).to_vec()
 }
 
@@ -580,4 +654,218 @@ fn hex_encode(bytes: &[u8]) -> String {
         out.push(HEX[(byte & 0x0f) as usize] as char);
     }
     out
+}
+
+impl RefreshTokenStore {
+    /// Tentative native credentials, never released until actual WebAuthn proof,
+    /// terms acceptance, activation, signing and the caller's commit succeed.
+    pub async fn issue_account_family_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        pending: &crate::account::AccountSecurityState,
+        refresh_ttl: Duration,
+        absolute_ttl: Duration,
+    ) -> Result<crate::account::AccountFamilyIssue, crate::account::AccountOperationError> {
+        use crate::account::{AccountFamilyIssue, AccountOperationError};
+        let locked =
+            crate::account::lock_pending_account_registration_in_tx(tx, pending.account_id).await?;
+        if locked.security_generation != 1
+            || locked.revision != 1
+            || locked.context_generation != 1
+            || pending.security_generation != locked.security_generation
+            || pending.revision != locked.revision
+            || pending.context_generation != locked.context_generation
+        {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        if refresh_ttl <= Duration::ZERO || absolute_ttl <= Duration::ZERO {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        let now = crate::account::account_now_in_tx(tx).await?;
+        let family_expires_at = now
+            .checked_add(absolute_ttl)
+            .ok_or(AccountOperationError::AuthorityUnavailable)?;
+        let token_expires_at = now
+            .checked_add(refresh_ttl)
+            .ok_or(AccountOperationError::AuthorityUnavailable)?
+            .min(family_expires_at);
+        let family_id = Uuid::new_v4();
+        let token_id = Uuid::new_v4();
+        let token = RefreshToken(generate_refresh_token());
+        sqlx::query("INSERT INTO public.auth_refresh_token_families (id, user_id, created_at, org_id, protocol, account_security_generation, auth_time, assurance) VALUES ($1,$2,$3,NULL,'ACCOUNT_V1',$4,$3,'PASSKEY_PRIMARY')")
+            .bind(family_id).bind(pending.account_id).bind(now).bind(locked.security_generation)
+            .execute(tx.as_mut()).await?;
+        sqlx::query("INSERT INTO public.auth_refresh_tokens (id, family_id, user_id, token_hash, issued_at, expires_at, org_id) VALUES ($1,$2,$3,$4,$5,$6,NULL)")
+            .bind(token_id).bind(family_id).bind(pending.account_id).bind(hash_token(token.as_str()))
+            .bind(now).bind(token_expires_at).execute(tx.as_mut()).await?;
+        Ok(AccountFamilyIssue {
+            family_id,
+            token,
+            token_expires_at,
+            family_expires_at,
+            auth_time: now,
+        })
+    }
+}
+
+impl RefreshTokenStore {
+    /// Tentative ACTIVE-account family under the caller's Account guard. Only
+    /// native primary login calls this, before acquiring key/ceremony locks.
+    /// Invalid proof/consent/signing must roll the complete transaction back.
+    pub(crate) async fn prepare_account_login_family_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        security: &crate::account::AccountSecurityState,
+        refresh_ttl: Duration,
+        absolute_ttl: Duration,
+    ) -> Result<crate::account::AccountFamilyIssue, crate::account::AccountOperationError> {
+        use crate::account::{AccountFamilyIssue, AccountOperationError};
+        let locked =
+            crate::account::lock_account_in_tx(tx, security.account_id, false, "ACTIVE").await?;
+        if security.security_generation != locked.security_generation
+            || security.revision != locked.revision
+            || security.context_generation != locked.context_generation
+        {
+            return Err(AccountOperationError::AuthenticationInvalid);
+        }
+        if refresh_ttl <= Duration::ZERO || absolute_ttl <= Duration::ZERO {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        let now = crate::account::account_now_in_tx(tx).await?;
+        let family_expires_at = now
+            .checked_add(absolute_ttl)
+            .ok_or(AccountOperationError::AuthorityUnavailable)?;
+        let token_expires_at = now
+            .checked_add(refresh_ttl)
+            .ok_or(AccountOperationError::AuthorityUnavailable)?
+            .min(family_expires_at);
+        let family_id = Uuid::new_v4();
+        let token = RefreshToken(generate_refresh_token());
+        sqlx::query("INSERT INTO public.auth_refresh_token_families (id, user_id, created_at, org_id, protocol, account_security_generation, auth_time, assurance) VALUES ($1,$2,$3,NULL,'ACCOUNT_V1',$4,$3,'PASSKEY_PRIMARY')")
+            .bind(family_id).bind(security.account_id).bind(now).bind(locked.security_generation)
+            .execute(tx.as_mut()).await?;
+        sqlx::query("INSERT INTO public.auth_refresh_tokens (id, family_id, user_id, token_hash, issued_at, expires_at, org_id) VALUES ($1,$2,$3,$4,$5,$6,NULL)")
+            .bind(Uuid::new_v4()).bind(family_id).bind(security.account_id).bind(hash_token(token.as_str()))
+            .bind(now).bind(token_expires_at).execute(tx.as_mut()).await?;
+        Ok(AccountFamilyIssue {
+            family_id,
+            token,
+            token_expires_at,
+            family_expires_at,
+            auth_time: now,
+        })
+    }
+}
+
+impl RefreshTokenStore {
+    /// Native rotation under the caller's Auth transaction. An inner refusal
+    /// carries a verified reuse revocation and MUST commit. Every outer error,
+    /// including late proof expiry, MUST roll back; no replay success/grace.
+    // Keep credential/proof and lifetime inputs explicit at this security boundary.
+    #[allow(clippy::too_many_arguments)]
+    pub async fn rotate_account_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        verifier: &crate::JwtVerifier,
+        access: Option<&str>,
+        presented_token: &str,
+        proof: &str,
+        refresh_ttl: Duration,
+        absolute_ttl: Duration,
+    ) -> Result<
+        Result<
+            (
+                crate::account::AccountFamilyIssue,
+                crate::account::AccountLiveSession,
+            ),
+            RefreshTokenUseError,
+        >,
+        crate::account::AccountOperationError,
+    > {
+        use crate::account::{AccountFamilyIssue, AccountOperationError};
+        use crate::session::{account_refresh_session_in_tx, validate_account_refresh_proof_in_tx};
+        if refresh_ttl <= Duration::ZERO || absolute_ttl <= Duration::ZERO {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        let locked = account_refresh_session_in_tx(
+            tx,
+            verifier,
+            access,
+            presented_token,
+            proof,
+            absolute_ttl,
+        )
+        .await?;
+        let now =
+            validate_account_refresh_proof_in_tx(tx, verifier, proof, &locked.session).await?;
+        if locked.used {
+            // Credential authority verifies the exact consumed token again;
+            // Account authority writes the independent SESSION_REVOKED event.
+            let row = sqlx::query(
+                "SELECT * FROM public.account_session_refresh_reuse_v1($1,$2,$3,$4,$5,$6)",
+            )
+            .bind(locked.session.account_id)
+            .bind(locked.session.session_id)
+            .bind(locked.token_id)
+            .bind(hash_token(presented_token))
+            .bind(locked.session.security_generation)
+            .bind(absolute_ttl)
+            .fetch_one(tx.as_mut())
+            .await
+            .map_err(|error| match error.as_database_error() {
+                Some(db)
+                    if db.code().as_deref() == Some("P0001")
+                        && db.message() == "account.authentication_invalid" =>
+                {
+                    AccountOperationError::AuthenticationInvalid
+                }
+                _ => AccountOperationError::AuthorityUnavailable,
+            })?;
+            let event_id: Uuid = row.try_get("event_id")?;
+            let revoked_at: OffsetDateTime = row.try_get("revoked_at")?;
+            if event_id.is_nil()
+                || revoked_at < now
+                || revoked_at >= locked.session.family_expires_at
+            {
+                return Err(AccountOperationError::AuthorityUnavailable);
+            }
+            // The helper's event read/write can wait after initial validation.
+            // Fresh DB time after the entire helper must still admit this proof;
+            // failure rolls back BOTH revocation and event despite an HTTP401 path.
+            let checked_at =
+                validate_account_refresh_proof_in_tx(tx, verifier, proof, &locked.session).await?;
+            if revoked_at > checked_at {
+                return Err(AccountOperationError::AuthorityUnavailable);
+            }
+            return Ok(Err(RefreshTokenUseError::ReuseDetected));
+        }
+        let expires_at = now
+            .checked_add(refresh_ttl)
+            .ok_or(AccountOperationError::AuthorityUnavailable)?
+            .min(locked.session.family_expires_at);
+        let replacement_id = Uuid::new_v4();
+        let replacement = RefreshToken(generate_refresh_token());
+        sqlx::query("INSERT INTO public.auth_refresh_tokens (id, family_id, user_id, token_hash, issued_at, expires_at, org_id) VALUES ($1,$2,$3,$4,$5,$6,NULL)")
+            .bind(replacement_id).bind(locked.session.session_id).bind(locked.session.account_id)
+            .bind(hash_token(replacement.as_str())).bind(now).bind(expires_at)
+            .execute(tx.as_mut()).await?;
+        let changed = sqlx::query("UPDATE public.auth_refresh_tokens SET used_at=$1,replaced_by=$2 WHERE id=$3 AND family_id=$4 AND user_id=$5 AND token_hash=$6 AND org_id IS NULL AND used_at IS NULL AND revoked_at IS NULL")
+            .bind(now).bind(replacement_id).bind(locked.token_id).bind(locked.session.session_id)
+            .bind(locked.session.account_id).bind(hash_token(presented_token))
+            .execute(tx.as_mut()).await?;
+        if changed.rows_affected() != 1 {
+            return Err(AccountOperationError::AuthenticationInvalid);
+        }
+        validate_account_refresh_proof_in_tx(tx, verifier, proof, &locked.session).await?;
+        Ok(Ok((
+            AccountFamilyIssue {
+                family_id: locked.session.session_id,
+                token: replacement,
+                token_expires_at: expires_at,
+                family_expires_at: locked.session.family_expires_at,
+                auth_time: locked.session.auth_time,
+            },
+            locked.session,
+        )))
+    }
 }

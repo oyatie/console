@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_BOUNDED_DESIGN_AND_EXISTING_TEST_REUSE",
+  "base_sha": "34bbb9aa4c0d4d337fb5a803d3e713f6af720476",
+  "before_sha256": {
+    "tools/buck/gen_first_party.py": "34752e99eb3688276007e87d3c3e8ecca7bc1a97ea25993599ce6f9f1e845bb4",
+    "tools/buck/test_gen_first_party.py": "3ed2f4b81d27c5c46e2682dd86f8428771f4de749485061939914504b9d7e7e5",
+    "backend/crates/platform/authz/BUCK": "e917968c391c575e760934e9f494bc4c1f88bfcbe98f0c8ea5d3e27ba132060d",
+    "backend/crates/platform/authz/tests/cedar_sdk_identity.rs": "60f4a3d7ef8d56367e3fd6c1296440053ddcfe00aaa96dda3a8f855a1cb5c2d5"
+  },
+  "approved_change": [
+    "Add exactly 'tests/cedar_sdk_identity.rs': 'none' to existing console-platform-authz integration resource metadata.",
+    "Regenerate using the existing otherwise unchanged generator; only the authz BUCK integration test target is expected. Any additional generated delta requires review."
+  ],
+  "test_reuse": {
+    "name": "FirstPartyBuckGeneratorTests.test_generation_is_clean_for_all_first_party_buck_faces",
+    "scope": "Actual generator validates discovered test resources then checks generated first-party BUCK faces against Git. Existing assertion unchanged; exact lane RED must execute this named test, not merely the diagnostic generator command.",
+    "green_condition": "Because the retained test compares generated files to Git HEAD, root must use its established commit/verification procedure; do not weaken the cleanliness assertion."
+  },
+  "evidence": {
+    "diagnostic": "/private/tmp/console-cedar-sdk-generator-diagnostic-20260920.log",
+    "sha256": "e7e7a3bc0196ad64c45eabe4a20ee8c3e6b39a02e9c100315858826b7f6cd749",
+    "finding": "Actual validation refuses only the missing console-platform-authz/test.integration/tests/cedar_sdk_identity.rs resource entry."
+  },
+  "checks": [
+    "Inspected both existing test bodies: two ordinary synchronous Rust tests compile/evaluate Cedar and serialize in-memory keys; no database/network runtime resource is required.",
+    "Resource none matches neighboring pure Cedar tests, while policy.rs retains postgres.",
+    "No test semantics, Cargo dependencies, historical policy artifacts or generator logic changes are approved."
+  ],
+  "holds": [
+    "Requires root lane admission and exact generated diff review; not runtime or release acceptance."
+  ]
+}

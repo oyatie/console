@@ -1,0 +1,68 @@
+{
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "owner": "/root at /private/tmp/console-mvp-dev-integrate-20260921",
+  "target": "Connected native Leptos UI/UX for Work, People, Employment, Organization, Approvals and Payroll; first delivery is isolated local synthetic preview, not workflow or production acceptance.",
+  "user_priority": "UI/UX exists before additional logic hardening. Reuse previous prototypes/screenshots/dc.html and SAP, Palantir, Workday, Slack interaction lessons.",
+  "reuse": [
+    "Adapt retained69e01b7ff Workspace/Panel/preview boundary and2025d78aa evidence-first layout, not old broad Person API projection.",
+    "Current actual app, closed Head DTOs, Account screens and security owners unchanged by isolated preview.",
+    "Leptos SSR, native links/forms/details, CSS responsive layouts; no browser framework or universal screen generator."
+  ],
+  "ux_contract": [
+    "One sample Company-scoped story links Person, Employment, OrgUnit, change Approval and monthly PayrollRun. Every record has stable normal route; lists lead to object pages rather than JSON APIs.",
+    "Work starts with actionable requests and exceptions, their owners/deadlines and progress. People supports search/list -> person detail -> employment; no blank form as primary landing.",
+    "Employment object shows employer, engagement, dates, current assignment, pending change, before/after, evidence and history. Change form opens prefilled from record; local preview comparison renders entered values without claiming save/submission.",
+    "Organization shows readable hierarchy and selected-unit facts/people, effective context and link to same pending reassignment.",
+    "Approvals has inbox/outbox and selected decision page with subject, Company, exact difference, evidence, chronology, owner and explicit consequence. Preview decision control opens consequence explanation; no simulated approved outcome.",
+    "Payroll shows Company/period/revision/owner, ordered preparation-review-publication progress, roster, exact sample totals, actionable exceptions linking the same Person/Employment/Approval, and separate export/reconciliation meaning.",
+    "Five navigation groups Work/People/Communications/Data/Administration. Only built destinations are active links. Non-MVP destinations may be labeled in preview as unavailable with no false route. Payroll and approvals immediately discoverable.",
+    "Desktop evidence beside decision; narrow layout stacks both with anchors. One complete light theme, Korean readable text, accessible labels/headings/focus, no decorative KPI walls, primary action only one per decision.",
+    "Sample-data notice always visible on isolated host, including errors and unknown routes. No Account/session/DB/business owner registered. Unsupported business POST never acknowledges persistence or success."
+  ],
+  "implementation": [
+    "Place shared cross-workflow presentation in new console-platform-ui at backend/crates/platform/ui, the Layer::Ui location explicitly supported by existing classifier. Adapt retained Workspace/Panel patterns here; no copies of current native_account or Payroll hydration component. Current app and payroll/ui remain unchanged until later real projection integration.",
+    "Place standalone preview host in this new SSR-only crate src/bin/workspace_preview.rs, declared [[bin]], using installed Axum/Tokio/Leptos. Canonical generator already supports declared bins; add CSS resource declaration and explicit no-Postgres unit-test metadata for new UI package. Existing platform/* workspace glob includes package; lockfile adds local package and existing dependency edges only.",
+    "Preview binds literal127.0.0.1 on dedicated fixed port; exact local Host allowlist, no-store/no-referrer, no external assets or API calls. Fixture data exists only in preview/test module, never fallback production data.",
+    "Ordinary GETs and form GET comparison preserve normal product route shapes; query values escaped via Leptos. No form submit to a real business route; comparison named Preview, state not retained across process restart and never called saved.",
+    "New shared UI crate is SSR-only and emits noWASM. Existing payroll hydration source/recipe/bundle/manifest remain byte-identical; no gate waiver or hash refresh. This separates shared cross-workflow presentation ownership from payroll-specific hydration. No custom compiler or Cargo product build.",
+    "All responses from preview host including421/404/405 use a visible synthetic/no-persistence notice and safe headers; unsupported business mutations produce405, never success. Do not reuse unnecessary pkg_router or hydration. Query values appear as escaped content only; known fixed route builders select links/actions."
+  ],
+  "test_first": [
+    "New renderer boundary is introduced with minimal approved presentation types and empty renderer in test commit, unmounted from application. A native Rust regression executes it and asserts all six routes have subject/scope, related links, accessible nav and labeled preview boundary; expected semantic assertions fail. No compile failure counted asRED.",
+    "Review this test/API contract independently, commit clean, then admit exact red via fanout.py; fill renderer and host in same bounded lane, preserve every old test.",
+    "Native UI tests plus canonical generator checks; actual browser traverses all five workflows and workqueue, searches roster, opens and compares assignment, reads approval consequences and links payroll exception back to person.",
+    "Capture desktop,320px,200percent zoom; verify keyboard focus and no document horizontal overflow except internal tables. Independently critique actual screenshots and interactions against references.",
+    "Existing runtime/security/backend acceptance remains separately outstanding; do not mark corresponding release leaves accepted."
+  ],
+  "allowed_paths": [
+    "backend/crates/platform/ui/",
+    "backend/Cargo.lock (local package plus installed dependency edges only)",
+    "tools/buck/gen_first_party.py (new crate CSS and unit-test metadata only)",
+    "tools/browser/workspace-preview.cjs",
+    "docs/evidence/console/ux/2026-09-21-workspace/"
+  ],
+  "forbidden": [
+    "Historical migrations/codecs",
+    "App/router/auth/policy/business owner changes",
+    "Original dirty checkout",
+    "Other generated artifacts or authority rewrites",
+    "Existing backend/crates/payroll/ui/ including source,hydrate artifacts,bundle.lock",
+    "tools/ui/build-payroll-wasm.sh and WASM drift gate"
+  ],
+  "premortem": [
+    "Polished fixture mistaken for completed product -> persistent explicit notice and no business success.",
+    "Generic textboxes repeated -> concrete lists/object pages/difference/evidence/progress required by test and visual critique.",
+    "Preserved prototype density makes320px unusable -> reflow browser check.",
+    "Entity links become disconnected screens -> shared fixture IDs and full traversal test."
+  ],
+  "rollback": "Remove isolated preview binary; no schema/data effects. Current production renderers remain untouched.",
+  "stop_conditions": [
+    "Existing test weakened",
+    "Synthetic values reach actual app",
+    "Non-native artifact build",
+    "Authority/security behavior changed",
+    "Review drift"
+  ],
+  "remaining": "Actual native Account/policy/owner persistence and all full-release requirements remain active; UI preview not completion.",
+  "supersedes_design_sha256": "36a9d873430f294b78a6bbb668ebcbc21c8bafe9a80a66442cb7542a395fdf83"
+}

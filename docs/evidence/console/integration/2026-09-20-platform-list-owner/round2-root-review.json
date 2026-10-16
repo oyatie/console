@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root",
+  "round": 2,
+  "status": "APPROVE_EXACT_BRIDGE_ACL_CUSTODY_AND_COMPOSITION_DESIGN_ONLY",
+  "manifest_sha256": "4e6e37fd1d8960b84f6c6699ab95eaece8bc7b444b657c7bab240428e4f4967a",
+  "basis": [
+    "Checked current helper bodies and grants: reuse Company KEY SHARE, User/Account UPDATE then exact family SHARE; ten-column fact bridge adds no business credential-table grants.",
+    "Exact new bridge is credential-owned, only Business serving EXECUTE; only existing ACL delta is credential owner EXECUTE on session context.",
+    "Prospective outer custody classifier and new exact pins preserve historical serializers and bytes; changed ACL necessarily changes new profile digest, old software compatibility is unproven.",
+    "Actual App root provides configured family TTL and compiled immutable policy; missing list dependencies fail unavailable, no invented App fields or duplicated defaults."
+  ],
+  "conditions": [
+    "Round3 freezes recognized SQL error mapping and transport all-exit privacy.",
+    "Round4 and exact independently approved tests precede implementation admission.",
+    "Runtime source/grant/pin delta remains to be independently reviewed and measured; design receipt is not runtime acceptance."
+  ],
+  "runtime_executed": 0
+}

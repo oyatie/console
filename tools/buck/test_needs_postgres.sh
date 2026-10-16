@@ -14,6 +14,9 @@ fi
 database="console_buck_test_$$_contract"
 container_env_file=""
 test_env_file=""
+container_cid_dir=""
+container_cid_file=""
+container_created=0
 active_buck_pid=""
 exact_test="${CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT:-}"
 if [[ -n "${exact_test}" && ! "${exact_test}" =~ ^[[:alnum:]_:]+$ ]]; then
@@ -30,9 +33,32 @@ for arg in "$@"; do
 done
 
 cleanup() {
-  docker rm -f "${container_name}" >/dev/null 2>&1 || true
-  [[ -z "${container_env_file}" ]] || rm -f "${container_env_file}"
-  [[ -z "${test_env_file}" ]] || rm -f "${test_env_file}"
+  local status="$?" failed=0 cid=""
+  trap - EXIT
+  if [[ -n "${container_cid_file}" && -s "${container_cid_file}" ]]; then
+    if [[ -f "${container_cid_file}" && ! -L "${container_cid_file}" ]]; then
+      if ! cid="$(cat "${container_cid_file}" 2>/dev/null)"; then
+        cid=""
+        failed=1
+      fi
+    fi
+    if [[ "${cid}" =~ ^[0-9a-f]{64}$ ]]; then
+      docker rm -f -v "${cid}" >/dev/null 2>&1 || failed=1
+    else
+      failed=1
+    fi
+  elif ((container_created)); then
+    failed=1
+  fi
+  [[ -z "${container_env_file}" ]] || rm -f "${container_env_file}" 2>/dev/null || failed=1
+  [[ -z "${test_env_file}" ]] || rm -f "${test_env_file}" 2>/dev/null || failed=1
+  [[ -z "${container_cid_file}" ]] || rm -f "${container_cid_file}" 2>/dev/null || failed=1
+  [[ -z "${container_cid_dir}" ]] || rmdir "${container_cid_dir}" 2>/dev/null || failed=1
+  if ((failed)); then
+    echo "buck-postgres: owned disposable PostgreSQL cleanup failed" >&2
+    [[ "${status}" != 0 ]] || status=1
+  fi
+  exit "${status}"
 }
 
 on_signal() {
@@ -54,10 +80,12 @@ secret() { openssl rand -hex 32; }
 admin_password="$(secret)"
 app_password="$(secret)"
 runtime_password="$(secret)"
+auth_password="$(secret)"
+startup_auth_password="$(secret)"
 leave_command_password="$(secret)"
 ontology_command_password="$(secret)"
 platform_force_command_password="$(secret)"
-passwords=("${admin_password}" "${app_password}" "${runtime_password}" "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}")
+passwords=("${auth_password}" "${admin_password}" "${app_password}" "${runtime_password}" "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}" "${startup_auth_password}")
 for ((i = 0; i < ${#passwords[@]}; i++)); do
   for ((j = i + 1; j < ${#passwords[@]}; j++)); do
     if [[ "${passwords[i]}" == "${passwords[j]}" ]]; then
@@ -68,11 +96,16 @@ for ((i = 0; i < ${#passwords[@]}; i++)); do
 done
 
 umask 077
+container_cid_dir="$(mktemp -d "${TMPDIR:-/tmp}/console-buck-postgres-cid.XXXXXX")"
+chmod 700 "${container_cid_dir}"
+container_cid_file="${container_cid_dir}/container.cid"
 container_env_file="$(mktemp "${TMPDIR:-/tmp}/console-buck-postgres-container.XXXXXX")"
 chmod 600 "${container_env_file}"
 {
   printf 'POSTGRES_DB=%s\nPOSTGRES_USER=console_buck_admin\nPOSTGRES_PASSWORD=%s\n' "${database}" "${admin_password}"
   printf 'POSTGRES_HOST=127.0.0.1\nPOSTGRES_PORT=5432\nPOSTGRES_ADMIN_USER=console_buck_admin\nPOSTGRES_ADMIN_PASSWORD=%s\n' "${admin_password}"
+  printf 'CONSOLE_AUTH_POSTGRES_PASSWORD=%s\n' "${auth_password}"
+  printf 'CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD=%s\n' "${startup_auth_password}"
   printf 'CONSOLE_APP_POSTGRES_PASSWORD=%s\nCONSOLE_RT_POSTGRES_PASSWORD=%s\n' "${app_password}" "${runtime_password}"
   printf 'CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=%s\n' "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}"
 } >"${container_env_file}"
@@ -107,8 +140,9 @@ if ! docker image inspect "${postgres_image}" >/dev/null 2>&1; then
 fi
 
 docker run -d --rm --name "${container_name}" -p 127.0.0.1::5432 \
-  --env-file "${container_env_file}" "${postgres_image}" \
+  --cidfile "${container_cid_file}" --env-file "${container_env_file}" "${postgres_image}" \
   -c fsync=off -c synchronous_commit=off -c full_page_writes=off >/dev/null
+container_created=1
 docker cp "${repo_root}/ops/postgres-reconcile-topology.sh" "${container_name}:/topology.sh"
 docker cp "${container_env_file}" "${container_name}:/topology.env"
 
@@ -141,6 +175,11 @@ chmod 600 "${test_env_file}"
   printf 'CONSOLE_APALIS_OWNER_DATABASE_URL=%s\n' "${apalis_owner_database_url}"
   printf 'CONSOLE_APALIS_RUNTIME_DATABASE_URL=%s\n' "${apalis_runtime_database_url}"
   printf 'CONSOLE_APALIS_ADMIN_DATABASE_URL=%s\n' "${database_url}"
+  printf 'CONSOLE_TEST_AUTH_DATABASE_URL=postgres://console_auth_rt:%s@127.0.0.1:%s/%s\n' "${auth_password}" "${port}" "${database}"
+  printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=postgres://console_auth_startup:%s@127.0.0.1:%s/%s\n' "${startup_auth_password}" "${port}" "${database}"
+  printf 'CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:%s@127.0.0.1:%s/%s\n' "${leave_command_password}" "${port}" "${database}"
+  printf 'CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:%s@127.0.0.1:%s/%s\n' "${ontology_command_password}" "${port}" "${database}"
+  printf 'CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:%s@127.0.0.1:%s/%s\n' "${platform_force_command_password}" "${port}" "${database}"
 } >"${test_env_file}"
 
 # Only a mode-0600 path crosses Buck's test-executor argv. The wrapper parses
@@ -171,6 +210,38 @@ for arg in "$@"; do
     //*|root//*) build_targets+=("${arg}") ;;
   esac
 done
+# Browser configuration is public runtime data, never a credential-file key or
+# compiler input. Forward only these fixed names for the two browser wrappers.
+for target in "${build_targets[@]}"; do
+  case "${target}" in
+    //tools/buck:app-auth-rest-browser-pg|root//tools/buck:app-auth-rest-browser-pg|//tools/buck:app-health-readiness-browser-pg|root//tools/buck:app-health-readiness-browser-pg)
+      for prefix in CONSOLE_BROWSER_JOURNEY CONSOLE_COMPANY_BROWSER CONSOLE_COMPANY_PREVIEW_BROWSER CONSOLE_HYDRATION_BROWSER; do
+        for suffix in DRIVER SHA256 OUTPUT; do
+          key="${prefix}_${suffix}"
+          if [[ -n "${!key:-}" ]]; then
+            test_executor_args+=(--env "${key}=${!key}")
+          fi
+        done
+      done
+      for key in CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR CONSOLE_GROUP_PROCESS_SOURCE_DESCRIPTOR_SHA256; do
+        if [[ -n "${!key:-}" ]]; then
+          test_executor_args+=(--env "${key}=${!key}")
+        fi
+      done
+      break
+      ;;
+  esac
+done
+# The complete Account suite includes hundreds of serial populated-custody
+# histories (one seven-relation ACL case alone takes 150s locally). Keep SQL
+# deadlines and serial execution; give only this full binary a six-hour budget.
+if [[ -z "${exact_test}" && "${#build_targets[@]}" == 1 ]]; then
+  case "${build_targets[0]}" in
+    //tools/buck:app-auth-rest-pg|root//tools/buck:app-auth-rest-pg)
+      test_executor_args+=(--timeout 21600)
+      ;;
+  esac
+fi
 if ((${#build_targets[@]} > 0)); then
   if [[ -n "${isolation_name}" ]]; then
     BUCK_ISOLATION_DIR="${isolation_name}" "${buck_bin}" build --local-only "${build_targets[@]}"

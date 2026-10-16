@@ -1,0 +1,42 @@
+{
+  "base_sha": "0c893dd3",
+  "owner": "root sole repository writer",
+  "problem": "Seven test binaries persistently mutate cluster roles/passwords; nextest serialization groups do not isolate peer sessions or reset credentials.",
+  "paths": [
+    "tools/ci/cargo_needs_postgres.sh",
+    "tools/ci/cargo-needs-postgres-args.test.mjs"
+  ],
+  "mechanical_guide": [
+    "Keep existing initial topology/canonical-enforcement before selection, preserving its guard contract.",
+    "After canonical row selection, use canonical package::test identities to partition selected rows into seven known hazardous binary groups and one ordinary cohort. Preserve every selected row/alias.",
+    "If multiple groups exist, recursively invoke same harness per group with unchanged map path, only selected row names, runner and shard ID; each subprocess owns a new container/credentials. Terminal groups do not recurse. Parent preflight container is unused for execution and cleaned normally.",
+    "For terminal hazardous group force per-test serial execution in Cargo and nextest; preserve nextest finite per-test deadlines. Ordinary cohort retains configured concurrency.",
+    "Aggregate all child outcomes by default; honor fail-fast explicitly. Propagate nonzero and report groups; use no-fail-fast for nextest keep-going.",
+    "Reuse existing mocked Docker/Cargo harness test to prove distinct cluster identities, aliases preserved, ordinary cohort isolated, threads1 hazardous, failures do not omit later groups, cleanup; mutation controls remove grouping/serialization and must fail.",
+    "Then execute real retained hazardous/consumer target pairs and compare actual discovered/executed counts, log restricted login positive controls and zero contamination."
+  ],
+  "hazardous_binary_ids": [
+    "console-app::auth_rest",
+    "console-leave-adapter-postgres::leave_migration_expand_contract",
+    "console-ontology-adapter-postgres::key_revision_migration_upgrade",
+    "console-platform-db::attendance_console_migration_contract",
+    "console-platform-db::group_of_one_expand_contract",
+    "console-platform-jobs::apalis_adapter",
+    "console-platform-jobs::apalis_schema_contract"
+  ],
+  "premortem": "Grouping drops aliases/tests or recursive calls silently narrow selection; failures stop unrelated work.",
+  "blast_radius": "CI harness cluster allocation and selected execution only; no product or historical SQL changes.",
+  "detection": "Actual harness regression with mocked boundaries plus real PostgreSQL pair; independent review and exact count records.",
+  "rollback": "Revert bounded harness commit; private disposable clusters only.",
+  "stop_conditions": [
+    "Untranslated canonical ID",
+    "Missing requested rows",
+    "Zero executed real tests",
+    "Any credential exposure",
+    "Need to modify custody bytes"
+  ],
+  "remaining_holds": [
+    "Shared Account finalizer role-creation race independently investigated; this design alone does not qualify ordinary parallel cohort.",
+    "Full release acceptance pending."
+  ]
+}

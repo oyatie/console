@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "base": "63e267b1432b55a736912b7a1cb286d15f27dfab",
+  "design_sha256": "5c00c86c343a13a7b597e2047ea6f2598c65f53f39e013008bd05d3caa16ac19",
+  "source_control_artifact": "/private/tmp/console-company-long-content-and-admission-archive-source-controls-20260921.json",
+  "source_control_sha256": "8157687420d3738280942c89b03f4818438c2d9d4b531bdc9e298827d4729477",
+  "executed_source_controls": 11,
+  "passed_source_controls": 11,
+  "product_tests_executed": 0,
+  "browser_runs": 0,
+  "product_writes": false,
+  "decision": "admission archive accurately preserves reviewed evidence; complete file inventory before final archive freeze",
+  "archive": "/private/tmp/console-mvp-dev-integrate-20260921/docs/evidence/console/integration/2026-09-21-company-admission-repair",
+  "findings": [
+    "Nine archived evidence files independently byte-identical to original private artifacts.",
+    "Allsevenreceipt.files hashes match.",
+    "Receipt accurately distinguishes invalid zero-test Docker predecessor from prospective clean85fe Company404/201 realRED and retains workflow/releaseHOLD.",
+    "Archived runtime/scope reviews preserve exact bounds; no retroactive approval claim."
+  ],
+  "inventory_followup": [
+    "Add hash entries for already-archived console-company-owner-scope-successor-20260921.json and console-company-recovery-path-scope-security-review-round2-20260921.json; they are byte-identical but currently omitted from receipt.files."
+  ]
+}

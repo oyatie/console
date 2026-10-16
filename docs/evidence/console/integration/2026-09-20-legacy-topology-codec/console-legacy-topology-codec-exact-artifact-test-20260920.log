@@ -1,0 +1,17 @@
+legacy_topology::tests::topology_closed_status_role_tags_optional_tags_and_utf8_bounds: test
+legacy_topology::tests::topology_heads_are_bounded_sorted_distinct_and_bound_to_requested_group: test
+legacy_topology::tests::topology_nine_frozen_vectors_preserve_intent_identity_and_exact_bytes: test
+legacy_topology::tests::topology_normalizes_only_new_text_and_never_repairs_stored_bytes: test
+legacy_topology::tests::topology_rejects_truncated_trailing_oversized_unknown_and_nil_frames: test
+
+5 tests, 0 benchmarks
+
+running 5 tests
+test legacy_topology::tests::topology_heads_are_bounded_sorted_distinct_and_bound_to_requested_group ... ok
+test legacy_topology::tests::topology_nine_frozen_vectors_preserve_intent_identity_and_exact_bytes ... ok
+test legacy_topology::tests::topology_closed_status_role_tags_optional_tags_and_utf8_bounds ... ok
+test legacy_topology::tests::topology_normalizes_only_new_text_and_never_repairs_stored_bytes ... ok
+test legacy_topology::tests::topology_rejects_truncated_trailing_oversized_unknown_and_nil_frames ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

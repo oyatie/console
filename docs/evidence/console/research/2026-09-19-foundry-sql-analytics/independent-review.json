@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_ADDITIVE_REFERENCE_ONLY",
+  "artifact_sha256": {
+    "proposal.json": "7bef912eddd6b60dc157621f11b9e151a11e8f13375b55faaa77972858b94154",
+    "candidate-patch.json": "4eada7c03f7ef590be17a383ee8253b5c3041f6990a296ebad3e2a3c55986d4e",
+    "manifest.json": "6420587a6a7031e8d32f4a4d4993a898dedf38af20fdeb1a98a696c2c7d18e58"
+  },
+  "reviewed_registry_sha256": "6634a93279b822f05e720e992dd193b766ab6d59bbb177a61a6d53ac365ef7af",
+  "proposal_historical_registry_sha256": "02e57a510cac8e40e52ff396423134ac60ed03dbbfe4f87c7c8ad453eba2fa2c",
+  "manifest_files_checked": 122,
+  "sources": 37,
+  "source_integrity_checks": 111,
+  "body_quote_occurrences_checked_recursively": 1131,
+  "catalog_rows_all_columns_checked_whitespace_ignored": 332,
+  "existing_leaves_preserved": 366,
+  "new_planned_leaves": 20,
+  "combined_dag_nodes": 386,
+  "new_runtime_rows": 20,
+  "new_security_qualifications": 59,
+  "findings": [],
+  "preservation": [
+    "Patchindependentlyrebased historical360baseontoexactcurrent366registry; allpriorobjectvalues/listprefixes preserved, includingCustomEndpoints andallruntimequalifications/completionlimitations.",
+    "No duplicatesourceIDs; all386leafdependenciesresolveandacyclic. All20newleavesplannedonlywithunboundcommands/fixtures/boundariesandevidencenotestablished."
+  ],
+  "retained_qualifications": [
+    "SQLinterfaces/branch/scenarioclaimscontradict acrossvendorentrypoints; preview/export/externalresultlimits remaindistinctandunverified.",
+    "Iceberg/Furnacewritesscope doesnotselect Consolestorageformatorgrant userSQLtrustedbusinesscredentials; canonicaldatasetowner andimmutablehistoryrequired.",
+    "ExternalBIextracts/servicecredentialreports haveindependentdisclosureauthority; laterrevocationcannotretractalreadyexportedcopies.",
+    "ODBCWindows64/JDBCJava11\u201315defaultand16+moduleflag,timezone/typeconversionbugs,PowerBIauthcontradictions,TableauBridgeunsupported,QlikDSNsecretleaks andMicroStrategytokenonlyconstraintsremainvisible.",
+    "AIassistedSQL excludedtoIntelligence; classicalquery/protocolsemantics remainrequired. Noexternaldriverimport/publication/exposureauthorization."
+  ],
+  "limits": [
+    "Authorverificationcombined380nodes refershistorical360base; reviewedcurrentintegrationwouldbe386. Do notpresent380ascurrentinventorysize.",
+    "Authorreported467quotemembershipchecks usesdifferentcountingscope; independentrecursivewalkchecked1131bindingoccurrencesincludingcatalogrepetitions; not1131uniquefacts.",
+    "PublicmutablecapturesonrequestedNewYorkdate are notauthenticatedhistoricalvendorstate orexhaustiveequivalence.",
+    "No SQLexecution, actualclientcompatibility, performance, implementationacceptance orreleasequalification. Permissivestructuralvalidatoraloneisnotcustody/signedcandidateproof."
+  ]
+}

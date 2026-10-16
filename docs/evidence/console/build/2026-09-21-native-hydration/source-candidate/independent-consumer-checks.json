@@ -1,0 +1,87 @@
+{
+  "exact_revision": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "archive_sha256": "c66ddb6282341a9d245fc568b93322985005053bf05d44c4d3b3206b3832af1a",
+  "restored_archived_regular_files": 8200,
+  "corruption": {
+    "path": "backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+    "before_sha256": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
+    "after_sha256": "9e9ebd1466e6fb5715486de690f33cf919f6c42722e3f28e18f477094f482a2d"
+  },
+  "build_records": [
+    {
+      "state": "positive",
+      "target": "console-payroll-ui",
+      "returncode": 0,
+      "build_id": "ab768f2e-ff18-42d8-b1da-1bc67d3ddabd",
+      "command_record_sha256": "989ec5766776599fcf2895304b2dc073b2eba4233ccceb0e96ea8afcabbcfd87",
+      "stderr_sha256": "36d420697e930a3b82a1be5732eee46b202c18c9c122fd6960a9276c675161fe"
+    },
+    {
+      "state": "positive",
+      "target": "console-payroll-ui-unit",
+      "returncode": 0,
+      "build_id": "ca958b8e-c4ea-45fa-9bbb-81298bb0b15c",
+      "command_record_sha256": "555e4c7c3cd911dc5e28ddda547a0600f0bc4ac0606ad10d3f4554d3afce9b2f",
+      "stderr_sha256": "3dda2019f3e3561144fe8fd276ad85d902e5e48e03e2c52c826e00598ed6fa48"
+    },
+    {
+      "state": "corrupted",
+      "target": "console-payroll-ui",
+      "returncode": 3,
+      "build_id": "26031ed4-f8e4-4f5f-9495-22ce34f06262",
+      "command_record_sha256": "9f4ebd2b16217f5b4738c04c9463bc30121b71d810e25e8b6bb3abb475dfbe18",
+      "stderr_sha256": "d7f2bc810f4c8208257d690de94eaa0b4b2842bc4e8a0e2607125e7d1c208366"
+    },
+    {
+      "state": "corrupted",
+      "target": "console-payroll-ui-unit",
+      "returncode": 3,
+      "build_id": "ce1472ca-d45a-4fc4-9988-c1eebae7bea8",
+      "command_record_sha256": "de7b442a3a8bab16bc8208c42134974687eef4eb295b5ebe59151f2eb510207b",
+      "stderr_sha256": "b8339bfa7e3ec2f326187f94095e11dac211757ffa50eb341434aafd24d57db5"
+    },
+    {
+      "state": "repaired",
+      "target": "console-payroll-ui",
+      "returncode": 0,
+      "build_id": "c02f99da-fae1-4b29-8cfc-479a818b0e18",
+      "command_record_sha256": "989ec5766776599fcf2895304b2dc073b2eba4233ccceb0e96ea8afcabbcfd87",
+      "stderr_sha256": "104080fa58a19bde8c701a5146ba5c631c90fa7180a89a3246345f0bccafeced"
+    },
+    {
+      "state": "repaired",
+      "target": "console-payroll-ui-unit",
+      "returncode": 0,
+      "build_id": "a6b0913c-f796-4bbf-965d-f219d38b05ed",
+      "command_record_sha256": "555e4c7c3cd911dc5e28ddda547a0600f0bc4ac0606ad10d3f4554d3afce9b2f",
+      "stderr_sha256": "f4044ad8b5d7c9e8561f3cd3057acbd881730924fdbd761c7adee9668acfce60"
+    }
+  ],
+  "validated_native_committed_pair_equal": true,
+  "manifest_sha256": "364d92cd494bf718b643ed4ad516cad75264588c7bd884165b367c49ae41f7f9",
+  "evidence_hashes": {
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/baseline-integrity.command.json": "114f8581ef430fe7ae89383738a9ad8a698ce2f845559defd8b9149dba17b877",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/baseline-integrity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/baseline-integrity.stdout": "dd91a6b5a977cc3cb74415da269408828f248fe19f3c43a9686b4397a46c1ba1",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-0.command.json": "9f4ebd2b16217f5b4738c04c9463bc30121b71d810e25e8b6bb3abb475dfbe18",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-0.stderr": "d7f2bc810f4c8208257d690de94eaa0b4b2842bc4e8a0e2607125e7d1c208366",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-1.command.json": "de7b442a3a8bab16bc8208c42134974687eef4eb295b5ebe59151f2eb510207b",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-1.stderr": "b8339bfa7e3ec2f326187f94095e11dac211757ffa50eb341434aafd24d57db5",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-0.command.json": "989ec5766776599fcf2895304b2dc073b2eba4233ccceb0e96ea8afcabbcfd87",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-0.stderr": "36d420697e930a3b82a1be5732eee46b202c18c9c122fd6960a9276c675161fe",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-1.command.json": "555e4c7c3cd911dc5e28ddda547a0600f0bc4ac0606ad10d3f4554d3afce9b2f",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-1.stderr": "3dda2019f3e3561144fe8fd276ad85d902e5e48e03e2c52c826e00598ed6fa48",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-0.command.json": "989ec5766776599fcf2895304b2dc073b2eba4233ccceb0e96ea8afcabbcfd87",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-0.stderr": "104080fa58a19bde8c701a5146ba5c631c90fa7180a89a3246345f0bccafeced",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-1.command.json": "555e4c7c3cd911dc5e28ddda547a0600f0bc4ac0606ad10d3f4554d3afce9b2f",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-1.stderr": "f4044ad8b5d7c9e8561f3cd3057acbd881730924fdbd761c7adee9668acfce60",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-1.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/corruption.json": "d296936a35f957b89654e703be2573ffe9a51dd67251381e533ec73dc76bf7b9",
+    "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/fixture.json": "37967e4297749ee062e84af2eccd64501270202cbc94e659f713a1ac5d09bc26"
+  }
+}

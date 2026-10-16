@@ -1,0 +1,11 @@
+[2026-09-21T16:33:52.964-04:00] Build ID: bd3eecda-7ca9-4212-b3f7-2b338c37fa85
+[2026-09-21T16:33:52.966-04:00] Directory changed: root//tools/buck/_probe_envmain
+[2026-09-21T16:33:52.966-04:00] Directory changed: root//tools/buck/_probe_envmain/src
+[2026-09-21T16:33:52.966-04:00] Directory changed: root//tools/buck/_probe_envmain/tests
+[2026-09-21T16:33:52.966-04:00] 275 additional file change events
+[2026-09-21T16:33:53.142-04:00] Cache hits: 0%
+[2026-09-21T16:33:53.142-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T16:33:53.142-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+writer-ownership: scanned 357 production source files
+writer-ownership: OK — no new second writer, no stale ratchet entry, no unpermitted shared-table writer

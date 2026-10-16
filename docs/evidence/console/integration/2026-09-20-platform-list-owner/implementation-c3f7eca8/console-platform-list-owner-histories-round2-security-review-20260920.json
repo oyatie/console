@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_SUPPLEMENTAL_OWNER_HISTORIES_TEST_SOURCE_ROUND2",
+  "manifest_sha256": "9682b1602ee9f3132224d09442a6b84e7dfcc375b3b76bb68593da729e286e94",
+  "child_source_sha256": "8ac610f763bdf121643452b8ab06f8e2ed7a5fe957b28d2e30675d72955c6a95",
+  "preservation": "Packet hashes and exact additive parent include verified; approved parent bytes unchanged.",
+  "reviewed": [
+    "Four SQLx cases reuse genuine platform OTP/passkey and actual App roots/runtime LOGIN roles. Source-demotion waiter is owning Business bridge, restores current source before exact403/private/role-only-delta assertions.",
+    "Actual App configured3-second GET/HEAD timeout pauses groups projection after source guards, returns408 while blocker held, requires final private GET envelope/HEAD-empty body, unchanged complete state and recovery.",
+    "Borrowed RepeatableRead Auth source call must refuse Unavailable; fresh ReadCommitted success exposes exact private-source facts without effects. No isolation downgrade.",
+    "Two pure corruption leaves use same privacy/current-input/noecho, waiter, cancellation and exact-role-delta oracles; retained audit/metadata/full-state oracles reused.",
+    "Round2 closes cancellation gap: dedicated observer retained before blocker and excluded from owned PIDset; require zero open owned transactions of any state and zero dependent blocking edges, not merely no idle/wait state. Positive and four negative count controls added."
+  ],
+  "prospective_sqlx": 4,
+  "prospective_pure": 2,
+  "runtime_executed_by_reviewer": 0,
+  "remaining": [
+    "Root compile/execute after exact SQL bridge/custody/runtime wiring exists. No missingAPI/schema error counts as owner RED.",
+    "Bound family/reader-first/final audit expiry/unknown commit/direct list API/ACL/profile and remaining full design histories remain mandatory."
+  ],
+  "reviewer_actions": "Read-only full candidate source, fixture and interface checks; private receipt only."
+}

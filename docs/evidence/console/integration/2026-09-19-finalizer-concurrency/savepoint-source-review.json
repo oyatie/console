@@ -1,0 +1,21 @@
+{
+  "kind": "independent-finalizer-source-review",
+  "reviewer": "/root/integration_security",
+  "base_head": "8510a9ba0f33dd3df7a6ae59d48d4f0b42908020",
+  "source_path": "backend/crates/platform/test-support/src/lib.rs",
+  "source_sha256": "bb4ace9c9864db932253ae3013114e9aac9681da72192c1058ff7de6b57f414c",
+  "design_sha256": "5880a91c4ad3481af2986277a08badbabbbe7817704c70681bebf4f5fa355135",
+  "verdict": "APPROVE_SOURCE_CONFORMANCE_PENDING_RUNTIME_QUALIFICATION",
+  "findings": [],
+  "verified": [
+    "Same private coordination function called after verified administrator/configuration in both real helpers.",
+    "Separate shared-row lock and post-wait committed-role query under READ COMMITTED.",
+    "Warm ROLLBACK TO followed by RELEASE; cold RELEASE retains lock in owning outer transaction.",
+    "Full historical SQL executes on both branches; no presence-derived authority or manufactured role.",
+    "Historical SQL bodies and configuration/deadlines unchanged by this diff."
+  ],
+  "limits": [
+    "Actual helper/cold-create/ordinary-cohort and corruption-control outcomes remain separate evidence.",
+    "Source review does not prove workload acceptance or complete release."
+  ]
+}

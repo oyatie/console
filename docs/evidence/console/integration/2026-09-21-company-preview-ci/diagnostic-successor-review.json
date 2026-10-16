@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "verdict": "APPROVE_ONE_EXPECTED_DIAGNOSTIC_STRING_CORRECTION",
+  "path": "/private/tmp/console-mvp-dev-integrate-20260921/scripts/check-ci-preflight.test.mjs",
+  "before_sha256": "b2d245f185e042ddf9fd5adca0cf4b36edb3982ebe1dfab4a0d3ad699a2a24e5",
+  "after_sha256": "18854ba30937f0dfdb83870018992ba4dc8280e037bca760823fcfc0bb32ae5f",
+  "old_expected": "\"backend must preserve the locked fail-fast step multiset and failure semantics\"",
+  "new_expected": "\"must preserve its exact name, command, condition, and execution semantics\"",
+  "findings": [],
+  "evidence": [
+    "Inspected exact focused run:1executed0pass1fail, actual expected-registration diagnostic occurs at expectFailure includes assertion; no product gate success misclassified as negative.",
+    "Actual gate at check-ci-preflight.mjs2355 generates the requested exact diagnostic suffix for preserved-order run command mismatch; expectFailure at test.mjs106 uses includes.",
+    "Only expected diagnostic literal in newly appended regression changes. Parsed positive/first/unique command, four mutation replacements and assertNotEqual remain unchanged; gate source untouched."
+  ],
+  "observed_failure_log": {
+    "path": "/private/tmp/console-company-preview-ci-registration-green-runtime-20260921.log",
+    "sha256": "3eb9e9d353c3194bcf9eaf3fff1047229ff9d0b9d4b4d45b9eb657d59a172bad",
+    "executed": 1,
+    "failed": 1
+  },
+  "required_followup": "Root must inspect all four mutation outputs and rerun corrected focused plus full72preflight suite; retain original failure log.",
+  "reviewer_execution": 0,
+  "repository_edits": 0,
+  "limits": "Test diagnostic correction only; no full CI or Company workflow acceptance. Full72suite71/1reported by root, not claimed as independently inspected in focused log."
+}

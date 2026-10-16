@@ -1,0 +1,32 @@
+{
+  "base": "41f785dee7d3fbad16bea428d72edd40a013566c",
+  "test_commit": "e40ab56519bfd2432d2c9d126cf85bc730a6900f",
+  "owner": "/root",
+  "implementation": "Exactly one eight-line standard sh_test; existing map, inner target and protected loader unchanged.",
+  "verification": {
+    "regression": {
+      "red": 1,
+      "green": 1
+    },
+    "generator": {
+      "executed": 69,
+      "passed": 69
+    },
+    "native_owner": {
+      "discovered": 17,
+      "executed": 17,
+      "passed": 17,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "native_command": "DOCKER_CONTEXT=colima-console-release-20260919 bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg",
+    "private_native_log_sha256": "ff8b061e3c8bf0e2240254507b5d2b29d71eed980ecf4f6156490ff761d8f143",
+    "published_native_log_redaction": "one vendor tool-download URL line omitted; original private artifact retained",
+    "native_build_id": "8de7ae26-1182-448a-b983-9e3dfaa949ef"
+  },
+  "holds": [
+    "Owner suite uses SET ROLE; not genuine restricted session_user proof.",
+    "Same-Person approval guard and native Account integration absent.",
+    "MVP and full release incomplete; no exposure authority."
+  ]
+}

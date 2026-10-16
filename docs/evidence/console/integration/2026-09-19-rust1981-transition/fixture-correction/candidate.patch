@@ -1,0 +1,70 @@
+--- scripts/check-toolchain-pin.test.mjs	2026-09-19 14:41:32
++++ /private/tmp/console-rust-pin-fixture-correction-20260919/check-toolchain-pin.test.mjs	2026-09-19 22:59:33
+@@ -100,29 +100,27 @@
+  * passes -- leaving the three lock checks with no coverage at all, which is
+  * exactly where the `field indentation` bypass below was found.
+  */
+-function craft(workflow, mutate = (t) => t, pinText = PIN) {
++function craft(workflow, mutate = (t) => t, pinText = PIN, lockText = REAL_LOCK) {
+   const dir = mkdtempSync(join(tmpdir(), "pin-gate-"));
+   mkdirSync(join(dir, ".github/workflows"), { recursive: true });
+   mkdirSync(join(dir, "toolchains/rust"), { recursive: true });
+   writeFileSync(join(dir, "rust-toolchain.toml"), pinText);
+-  writeFileSync(join(dir, "toolchains/rust/lock.bzl"), mutate(REAL_LOCK));
++  writeFileSync(join(dir, "toolchains/rust/lock.bzl"), mutate(lockText));
+   writeFileSync(join(dir, ".github/workflows/probe.yml"), workflow);
+   return dir;
+ }
+ 
+-/** The same lock, reshaped as a stable release publishes it.
+- *
+- * Stable has no dated directory and carries the version in the filename
+- * (`rustc-1.97.1-<triple>.tar.xz`), so it takes the OTHER branch of the
+- * url-names-the-channel check. The repository pin is a dated nightly, which
+- * means that branch runs in none of the cases above -- it was the only
+- * uncovered branch in the three lock checks.
+- */
++/** Shape fixtures explicitly so both URL branches stay covered under any pin. */
+ const asStable = (version) => (t) =>
+   t.replace(/^RUST_CHANNEL = "[^"]+"/m, `RUST_CHANNEL = "${version}"`)
+     .replace(/dist\/\d{4}-\d\d-\d\d\//g, "dist/")
+-    .replace(/-nightly-/g, `-${version}-`);
++    .replace(/-(?:nightly|\d+\.\d+\.\d+)-/g, `-${version}-`);
+ const stablePin = (version) => PIN.replace(/^(\s*channel\s*=\s*)"[^"]+"/m, `$1"${version}"`);
++const NIGHTLY_PIN = stablePin("nightly-2026-09-10");
++const NIGHTLY_LOCK = REAL_LOCK
++  .replace(/^RUST_CHANNEL = "[^"]+"/m, 'RUST_CHANNEL = "nightly-2026-09-10"')
++  .replace(/dist\/(?:\d{4}-\d\d-\d\d\/)?/g, "dist/2026-09-10/")
++  .replace(/-(?:nightly|\d+\.\d+\.\d+)-/g, "-nightly-");
+ 
+ /** Exit code of the real gate against a crafted tree. 0 = the input passed. */
+ function gate(dir) {
+@@ -214,7 +212,7 @@
+   };
+   for (const [name, mutate] of Object.entries(DRIFTS)) {
+     it(`rejects ${name}`, () => {
+-      const dir = craft(OK, mutate);
++      const dir = craft(OK, mutate, NIGHTLY_PIN, NIGHTLY_LOCK);
+       try {
+         assert.notEqual(gate(dir), 0, `${name} passed the gate`);
+       } finally {
+@@ -243,9 +241,16 @@
+     }
+   });
+ 
+-  // A stable pin takes the other branch of the url-names-the-channel check:
+-  // no dated directory, version in the filename. The repository pin is a dated
+-  // nightly, so without these two the branch never executes.
++  it("accepts the nightly fixture before corruption", () => {
++    const dir = craft(OK, (t) => t, NIGHTLY_PIN, NIGHTLY_LOCK);
++    try {
++      assert.equal(gate(dir), 0);
++    } finally {
++      rmSync(dir, { recursive: true, force: true });
++    }
++  });
++
++  // Keep stable URL checks independent of the repository's current channel.
+   it("accepts a stable lock that names the stable pin", () => {
+     const dir = craft(OK, asStable("1.97.1"), stablePin("1.97.1"));
+     try {

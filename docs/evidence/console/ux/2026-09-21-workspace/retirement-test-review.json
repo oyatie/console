@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_RETIREMENT",
+  "authority": "Root relayed explicit user rejection of stubs, seeded demo and demo-only dead paths; real UI must invoke actual owners. This supersedes isolated preview design approval; not permission to weaken product tests.",
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "reviewed_head": "728b549173dd7e545ccc43b95b2a3034e47443f0",
+  "archive_manifest": "/private/tmp/console-rejected-preview-preserved-20260921/manifest.json",
+  "archive_manifest_sha256": "a59566b2310c99242318290d0fe54fe2691458ba1626cd41069b94718b7d94a1",
+  "archive_verification": "All 17 manifest file contents independently rehashed and matched. No product build/test/SQL/browser executed.",
+  "allowed_removal": [
+    "new backend/crates/platform/ui directory and its three unmounted synthetic renderer tests",
+    "new tools/browser/workspace-preview.cjs"
+  ],
+  "allowed_restoration": {
+    "backend/Cargo.lock": "Remove only added console-platform-ui local package block; exact base content.",
+    "tools/buck/gen_first_party.py": "Remove only console-platform-ui CSS RESOURCE_CONFIG and unit TEST_RESOURCE_REQUIREMENTS additions; exact base content.",
+    "backend/ci/gates/layer-boundary/BUCK": "Remove only two console-platform-ui resource mappings; exact base content."
+  },
+  "preserve": [
+    "All docs/evidence/console/ux/2026-09-21-workspace historical baseline/review/RED records; append truthful rejection record.",
+    "Every preexisting product test, including 13 console-payroll-ui tests and all real browser Account/Company/hydration probes.",
+    "Historical migrations, codecs, generated payroll WASM and original dirty checkout."
+  ],
+  "rationale": "Compared exact base-to-current scoped diff: retirement removes only separately introduced preview crate/driver and its graph edges. Three tests solely exercised rejected unmounted synthetic renderer; no existing runtime capability or regression guard is retired.",
+  "postconditions": [
+    "Diff from base outside retained/appended evidence must contain no preview source or graph changes.",
+    "Existing payroll UI source and all preexisting product tests byte-identical to pre-preview base.",
+    "Do not record preview as implemented or accepted workflow."
+  ],
+  "limits": "Prospective retirement review only; root must verify final diff and run applicable graph checks after restoration."
+}

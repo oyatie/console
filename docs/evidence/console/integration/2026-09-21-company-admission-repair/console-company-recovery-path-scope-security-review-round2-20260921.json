@@ -1,0 +1,61 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approve exact15file scope only; source/test/runtime acceptance remains separate",
+  "request": "/private/tmp/console-company-owner-sql-20260921/legacy-command-http-recovery-path-request-round1.json",
+  "request_sha256": "c891c8ee92d01ecabfe7982947dfa8df5a214ba4942d14ac0a06d229a48bbc20",
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "owner": "/root/company_owner",
+  "implementation_root": "/private/tmp/console-client-release-20260919",
+  "lenses": [
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "approved_exact_paths": [
+    "backend/crates/platform/provisioning/src/legacy_force.rs",
+    "backend/crates/platform/provisioning/src/legacy_command_owner.rs",
+    "backend/crates/platform/platform-rest/src/legacy_command_input.rs",
+    "backend/crates/platform/platform-rest/src/legacy_command_input_tests.rs",
+    "backend/crates/platform/platform-rest/src/legacy-command-input-golden.json",
+    "backend/crates/platform/platform-rest/src/legacy_command_http.rs",
+    "backend/crates/platform/platform-rest/Cargo.toml",
+    "backend/crates/platform/platform-rest/BUCK",
+    "backend/crates/platform/platform-rest/tests/onboard_seeds_config_objects.rs",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs",
+    "backend/app/tests/auth_rest/legacy_platform_command_credentials_tests.rs",
+    "backend/app/tests/auth_rest/legacy_command_owner_tests.rs",
+    "backend/app/tests/auth_rest/legacy_command_recovery_tests.rs",
+    "backend/app/tests/auth_rest/legacy_command_http_tests.rs",
+    "backend/crates/platform/provisioning/src/legacy_force_tests.rs"
+  ],
+  "scope_evidence": [
+    "All14paths are unique exact files,10new and4existing; no directory wildcard.",
+    "All9claimed existing_allowed_units are covered by predecessor allowlist.",
+    "Verified request/predecessor/freeze identities and all9frozen source/contract hashes.",
+    "Existing PlatformProvisioner is canonical owning transaction; source successor implements methods on same owner. REST parser/handler and app composition remain separate from owner.",
+    "Parser sibling test declaration and golden include match requested exact paths. Existing onboarding-seed and list-history tests require semantic successor review rather than weakened assertions.",
+    "Force codec and ordinary topology remain distinct; no historical codec/reseal or new writer approval.",
+    "Root explicitly requested15th exact sibling test path after omission finding; verified both force module/test hashes against force-codec source manifest. No include/resource dependencies inside sibling test; no inlining/removal workaround."
+  ],
+  "blocked_exact_paths": [],
+  "conditions": [
+    "Scope permission does not approve source/test semantics or runtime behavior and does not by itself release writer. Root owns prospective valid-admission handoff.",
+    "Do not copy unreviewed recoveryHTTP/history sources or assertions; exact test/source reviews and approved tests remain required.",
+    "Serialize manifests/BUCK/dependencies/lockfiles and custody changes; Cargo.toml allowance is mechanical bounded dependency wiring only, no unrelated upgrades.",
+    "Existing provisioning/BUCK and app registration allowances do not admit unspecified new source/fixture paths.",
+    "New current-head projection/client source and extra resources remain outside scope until exact successor.",
+    "Preserve prior admission failure evidence; this review does not retroactively validate prior writer handoff."
+  ],
+  "executed_product_tests": 0,
+  "product_writes": false,
+  "predecessor_review": {
+    "path": "/private/tmp/console-company-recovery-path-scope-security-review-20260921.json",
+    "sha256": "fa1e9276252c8c77940cca1b2b776e3616a2c8444d997fb7ef93d3e341c98284"
+  },
+  "force_source_hashes_verified_for_path_review": {
+    "legacy_force.rs": "16d752350f1117e5036b61d7e3181cf3e811740f8ac40bac73f4141b0c017da0",
+    "legacy_force_tests.rs": "a88088869bcfd33e6fea029794096fddadb417a712eb1497a306712f29d29381"
+  }
+}

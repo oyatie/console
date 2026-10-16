@@ -1,0 +1,9 @@
+BEGIN
+              set_config              
+--------------------------------------
+ ed8647f7-c66a-45d4-bd4f-8c82459cc45e
+(1 row)
+
+SET
+ERROR:  permission denied for function native_company_policy_participant_admit_v1
+CONTEXT:  PL/pgSQL function public.identity_native_root_guard_v2() line 4 at IF

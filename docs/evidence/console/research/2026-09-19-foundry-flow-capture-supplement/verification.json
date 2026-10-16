@@ -1,0 +1,20 @@
+{
+  "prerequisite_packets": 2,
+  "base_leaf_count": 386,
+  "prerequisite_leaf_count": 400,
+  "combined_leaf_count": 401,
+  "reused_source_count": 1,
+  "new_source_count": 0,
+  "new_leaf_count": 1,
+  "binding_keys": 5,
+  "qualification_count": 4,
+  "matrix_rows": 3,
+  "quote_membership_checks": 15,
+  "source_size_and_hash_checks": 3,
+  "strict_additive_patch_operations": 26,
+  "existing_leaf_bytes_preserved_as_values": true,
+  "all_dependencies_resolve": true,
+  "acyclic_dependencies": true,
+  "runtime_tests_executed": 0,
+  "implementation_accepted": false
+}

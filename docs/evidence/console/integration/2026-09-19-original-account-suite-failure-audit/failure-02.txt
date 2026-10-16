@@ -1,0 +1,2 @@
+thread 'account_browser::audit_account_transition::adversarial::null_actor_writer_has_observed_users_blocker_and_bounded_lock_timeout' (62431544) panicked at backend/app/backend/app/tests/auth_rest/audit_account_transition_adversarial.rs:906:14:
+bounded clean retry after NULL writer rollback: Elapsed(())

@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-ops-owner-implementation-source-runtime-pending",
+  "base_sha": "10269cc6d5b9841d22869810f6a00fd095a703f8",
+  "source_sha256": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "9ee136ebb00e3cead851f75048f9d2d26ae2050de089bcdd9739acf409efa1fb",
+    "backend/crates/platform/platform-rest/src/lib.rs": "5673e666c52c7d41899277261e9423c175baa0fdbc424aa74506409d03372623",
+    "backend/crates/platform/provisioning/src/lib.rs": "03b7deffb08499811556ac7ae4d28d87828e9a3255a6ae347e116b8d7323e340"
+  },
+  "lane_scope_sha256": "e9c1751e05c3e7f6d8adf0f1b4f660649304fde3f4fe7a353e2c0cd1710ecfe4",
+  "checks": [
+    "Exactly three admitted production files differ from10269base; no SQL/profile/migration/history/generator change. Both healthprojection SQL strings mechanically identical.",
+    "Public health owner accepts original access/verifier/serverTTL/compiledpolicy, no actor/time overload; soleproductioncaller actualops route.",
+    "One READ COMMITTED Business transaction acquires existing retainedlive source and keeps it through bothqueries/mapping/audit/COMMIT. Five actualfreshchecks: beforehealth,betweenqueries,afteradoption/beforemapping,beforeaudit,afteraudit.",
+    "Closed private two-variant owner discriminator binds fixed Direct/TenantHealthRead/Operations/ReadProjection/DirectPlatformOwner; list maps retain exact priorfeature/target/errors/threefreshchecks. No caller supplied policy tuple.",
+    "Both query/decoding/audit/COMMIT errors finite503; authlooking audit SQL errors cannot map401. LostCOMMIT ack returns unavailable/no collectedrows/noautomaticretry.",
+    "Original14health/6adoption fields/order/null behavior and strict audit schema retained; verifiedsubject and DBfresh time replace calleractor/hostclock.",
+    "HTTP owner extracts exact originalBearer and server state; finalprivacy selects exactGETHEAD ops/orgs including query after outertimeout envelope; otherroute/method behavior retained.",
+    "Legacy auth-rest exhaustive consumer only adds new finitevariants to prior unavailable arm; no new legacy writer.",
+    "Sharedhelper extraction is demonstrated twoowner reuse; no universal router/policy framework or productionfault seam."
+  ],
+  "findings": [],
+  "runtime_tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Same mountedowner probeGREEN and full approved ops acceptance packets/pureoracles plus retained list/legacyops regressions required.",
+    "Current production changes affect listsharedmapper/transport, so earlierlist30reuse alone is insufficient after this delta.",
+    "Exact testcomposition,lint/checks and finalimmutable source/runtime/custody plus16lens audit remain required.",
+    "Prior unresolvedcfd owner-snapshot issue remains release/reliabilityHOLD; rawSQL/otherowners/fullrelease qualification separate."
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "base_sha": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "decision": "APPROVE_EXACT_METADATA_CANDIDATE_PENDING_ROOT_VERIFICATION",
+  "packet": "/private/tmp/console-native-browser-map-20260920-round1",
+  "packet_hashes": {
+    "CONTRACT.md": "a32838ef462a745a1337cb02fce3761c9d43d046298e4226c35e5d0b845e537b",
+    "changes.patch": "9d7236a096fe9a168076b1327822b38fc8f572ec7e26f001b528f2912b5ce41b",
+    "lane.json": "883ebf9fe67950115fcba1c0a534f86a5a6300153c6a4b3f55cd32546b271fed",
+    "postgres-cargo-map.json": "93b71810215e83e1b5d15291949e8df32712ddd58215bf03fee63eee98fd5ea8",
+    "source-lock.json": "f3949b3b18e5b085fbab005a81dc895914f83f3350fd8caab9c8e4acc2ecd0fa"
+  },
+  "findings": [
+    "Source and candidate hashes verified. All238entries,223workflow memberships,3previous unmapped rows and all other JSON fields preserved; exactly2native rows and derivedcount5 added.",
+    "Both wrapper loc values match actual tools/buck/BUCK deps. Their real CI commands remain independently pinned by tools/buck/test_gen_first_party.py.",
+    "Consumers use entries for Cargo scheduling. Existing unmapped classification is sufficient; no separate registry needed. Unknown/ceiling7/missing-reason checks and all tests unchanged."
+  ],
+  "limits": [
+    "Root must admit actual residual-test RED then run same test, map tests/gate and preflight.",
+    "Metadata classification is not browser execution, migration completion or release acceptance."
+  ],
+  "execution": "Read-only source/Git review and hash comparisons; no product tests, builds, SQL or runtime executed by reviewer."
+}

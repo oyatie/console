@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_TEST_AND_ORACLE_SUCCESSOR_PENDING_OWNER_RED",
+  "packet_manifest_sha256": "39fe4d89c95ccbc9957730102b803a07708e7e32b4da03a7bb9f10ca91b91ad2",
+  "browser_driver_sha256": "0f9d9e435c4ed3faef07774f7164bd8ad97cb55428ef531281d0d97d29796cdf",
+  "supersedes_hold_sha256": "d498b690facaa1c136cb3fea5c7e68745428b618794ab0edefdd4046ae7ca28e",
+  "closed": {
+    "HTML413-VARY-1": "Mounted and browser private-header oracles require exactly one Vary field containing exactly Authorization,Cookie,Origin case/order independently. Existing native CSP remains exact. Five additional missing/extra/duplicate-key controls and reordered positive accompany the Rust oracle."
+  },
+  "checks": [
+    "All18 manifest artifacts rehashed. Three unrelated Rust candidates, trusted-marker unit and browser machinery unchanged from reviewed predecessor.",
+    "Full predecessor review remains valid for mounted current owner/full snapshots, API JSON precedence, real marker isolation, unchanged retained consumer vectors and browser outgoing Cookie witness/recovery.",
+    "Browser node syntax and same acceptance machinery independently rerun:1positive and21corruptions pass; no actual browser/database execution.",
+    "Reviewed supplementary marker unit intentionally cannot compile before future helper; never use that missing prerequisite as admissionRED."
+  ],
+  "prerequisites": [
+    "Root must first accept the shared SSR privacy repair or otherwise bind exact intended3-keyVary source before renderer positive is GREEN. Revalidate current source preimages after that dependency changes native_account.rs.",
+    "Root independent test review, compile/discovery and actual mounted native_cookie_413 owner RED before source admission.",
+    "Serialize new integration target resource/generated/CI handling; retain all six new Rust leaves and old tests."
+  ],
+  "limits": [
+    "Test/oracle approval only; no source, DB, browser, Company workflow or release acceptance.",
+    "Prior packet and HOLD receipt remain immutable historical evidence."
+  ]
+}

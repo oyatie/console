@@ -1,0 +1,19 @@
+{
+  "kind": "private-bounded-Quiver-card-matrix-design",
+  "round": 2,
+  "predecessor_manifest_sha256": "4fcedc48a7b666bb0635a13a869d036d0a0091a1381dfe0d00f792d4885247a0",
+  "authority": "none;round2/3/4 independent reviews and exact root consensus remain required before tests",
+  "changes": [
+    "Explicit actual enumerable-own-key membership, not own property/count shortcut",
+    "Count-preserving nonenumerable-required-key plus omitted-extra controls at four levels; classified digest-visible",
+    "Root/security confirmed all3canonical pins; optional bounded local helper reuse"
+  ],
+  "files": {
+    "design.md": "3b2b22fb135a54fc6b199cbab8a1160e2e0d81347f4d4b63e09d53b08ab00858",
+    "oracle-roster.json": "cfe9e3e6c0d6b33a6138c8ba2d3f36ceb2656c6dc52e42b9703db6cf73db6fa2",
+    "predecessor-manifest.json": "4fcedc48a7b666bb0635a13a869d036d0a0091a1381dfe0d00f792d4885247a0",
+    "prospective-runtime-rows.json": "d9b76ab5a4d9116785fe85ce71602c5dc4f6ce8dbee1e2dce03a41efff3b39ea",
+    "review-provenance.json": "2684e2933690714687a74884e411b6ce9fd6763619aafd081af46a06c3c02197",
+    "source-custody.json": "c56b4a2fc3cd9a1f2d2d36ebf9a7a039c50b1deaefd75b617c48e8b72e8c335a"
+  }
+}

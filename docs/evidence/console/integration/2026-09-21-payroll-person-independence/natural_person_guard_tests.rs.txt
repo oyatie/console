@@ -1,0 +1,583 @@
+// Append as a child module of pay_run_port_as_runtime_role.rs.
+// Tests execute the existing canonical owner and shared lifecycle transaction.
+// Fixture calculation is explicit; these tests do not qualify wage calculation.
+mod natural_person_guard_tests {
+    use super::*;
+    use console_payroll_adapter_postgres::lifecycle::decide_run_in_tx;
+    use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
+    use serde_json::Value;
+    use sqlx::{Postgres, Transaction};
+    use std::collections::BTreeMap;
+    use std::time::Duration;
+
+    async fn arm(pool: &PgPool) -> Transaction<'static, Postgres> {
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(ORG.to_string())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        tx
+    }
+
+    async fn employee(owner: &PgPool, org: OrgId, tag: &str) -> Uuid {
+        let id = Uuid::new_v4();
+        sqlx::query("INSERT INTO employees (id, org_id, company, name, source_filename, source_sheet, source_row, source_key) VALUES ($1, $2, 'ACME', $3, 'fixture', 'fixture', 1, $4)")
+            .bind(id).bind(*org.as_uuid()).bind(tag).bind(id.to_string())
+            .execute(owner).await.unwrap();
+        id
+    }
+
+    async fn person(
+        pool: &PgPool,
+        org: OrgId,
+        actor: UserId,
+        employee: Uuid,
+        existing: Option<Uuid>,
+    ) -> Uuid {
+        let port = PgPersonPort::new(pool.clone(), tokio::runtime::Handle::current());
+        let attributes = json!({"legal_name": "검증 참여자"});
+        let query = match existing {
+            Some(person_id) => PersonQuery::Revise {
+                person_id,
+                employee_id: Some(employee),
+                attributes,
+            },
+            None => PersonQuery::Create {
+                employee_id: Some(employee),
+                attributes,
+            },
+        };
+        let receipt = execute_sync(
+            &port,
+            PersonCommand {
+                org_id: org,
+                command_id: CommandId::from_uuid(Uuid::new_v4()),
+                actor_id: actor,
+                query,
+                action_key: if existing.is_some() {
+                    "revise_person"
+                } else {
+                    "create_person"
+                }
+                .to_owned(),
+                object_type_id: Uuid::nil(),
+            },
+        )
+        .await
+        .unwrap();
+        receipt.result()["person_id"]
+            .as_str()
+            .unwrap()
+            .parse()
+            .unwrap()
+    }
+
+    // Fixture successor called ONLY by the two existing positive decision
+    // journeys; no old negative or assertion is replaced.
+    pub(super) async fn bind_distinct_actors(
+        owner: &PgPool,
+        org: OrgId,
+        first: UserId,
+        second: UserId,
+    ) {
+        let pool = login_test_pool(owner, TestDatabaseLogin::Business).await;
+        let mut persons = Vec::new();
+        for actor in [first, second] {
+            let employee = employee(owner, org, "independent reviewer").await;
+            persons.push(person(&pool, org, actor, employee, None).await);
+            sqlx::query("UPDATE users SET employee_id = $1 WHERE id = $2 AND org_id = $3")
+                .bind(employee)
+                .bind(*actor.as_uuid())
+                .bind(*org.as_uuid())
+                .execute(owner)
+                .await
+                .unwrap();
+        }
+        assert_ne!(persons[0], persons[1]);
+        pool.close().await;
+    }
+
+    struct Fixture {
+        org: OrgId,
+        submitter: UserId,
+        decider: UserId,
+        employees: [Uuid; 3],
+        persons: [Uuid; 2],
+        pool: PgPool,
+        port: PgPayRunPort,
+    }
+
+    async fn fixture(owner: &PgPool, same: bool) -> Fixture {
+        let submitter = seed_org_and_user(owner, ORG, "person-submitter").await;
+        let decider = seed_org_and_user(owner, ORG, "person-decider").await;
+        let org = OrgId::from_uuid(ORG);
+        let pool = login_test_pool(owner, TestDatabaseLogin::Business).await;
+        let e1 = employee(owner, org, "first employment").await;
+        let e2 = employee(owner, org, "second employment").await;
+        let e3 = employee(owner, org, "unassigned alternate employment").await;
+        let p1 = person(&pool, org, submitter, e1, None).await;
+        let p2 = person(&pool, org, decider, e2, same.then_some(p1)).await;
+        assert_eq!(person(&pool, org, submitter, e3, Some(p1)).await, p1);
+        for (user, employee) in [(submitter, e1), (decider, e2)] {
+            let changed =
+                sqlx::query("UPDATE users SET employee_id = $1 WHERE id = $2 AND org_id = $3")
+                    .bind(employee)
+                    .bind(*user.as_uuid())
+                    .bind(ORG)
+                    .execute(owner)
+                    .await
+                    .unwrap();
+            assert_eq!(changed.rows_affected(), 1);
+        }
+        let resolved: Vec<(Uuid, Uuid, Uuid)> = sqlx::query_as("SELECT u.id, u.employee_id, b.person_id FROM users u JOIN employee_person_bindings b ON b.org_id=u.org_id AND b.employee_id=u.employee_id WHERE u.org_id=$1 ORDER BY u.id")
+            .bind(ORG).fetch_all(owner).await.unwrap();
+        assert_eq!(resolved.len(), 2);
+        assert_ne!(resolved[0].0, resolved[1].0);
+        assert_ne!(resolved[0].1, resolved[1].1);
+        assert_eq!(resolved[0].2 == resolved[1].2, same);
+        let port = PgPayRunPort::new(pool.clone(), tokio::runtime::Handle::current());
+        Fixture {
+            org,
+            submitter,
+            decider,
+            employees: [e1, e2, e3],
+            persons: [p1, p2],
+            pool,
+            port,
+        }
+    }
+
+    async fn submitted(owner: &PgPool, f: &Fixture) -> Uuid {
+        let label = Uuid::new_v4();
+        let receipt = execute(&f.port, command(f.org, f.submitter, create(label)))
+            .await
+            .unwrap();
+        let id: Uuid = receipt.result()["draft_run_id"]
+            .as_str()
+            .unwrap()
+            .parse()
+            .unwrap();
+        mark_calculated(owner, id).await;
+        execute(
+            &f.port,
+            command(f.org, f.submitter, PayRunQuery::SubmitRun { run_id: id }),
+        )
+        .await
+        .unwrap();
+        id
+    }
+
+    fn decision(f: &Fixture, id: Uuid, decision: &str) -> PayRunCommand {
+        command(
+            f.org,
+            f.decider,
+            PayRunQuery::DecideRun {
+                run_id: id,
+                decision: decision.to_owned(),
+                reason: Some("독립 검토".to_owned()),
+            },
+        )
+    }
+
+    // Every durable public row, including all payroll tables, receipts, audit,
+    // and identity history. Names come from pg_catalog and are quoted.
+    async fn census(owner: &PgPool) -> BTreeMap<String, Value> {
+        let tables: Vec<String> = sqlx::query_scalar("SELECT c.relname::text FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p') ORDER BY c.relname")
+            .fetch_all(owner).await.unwrap();
+        let mut result = BTreeMap::new();
+        for table in tables {
+            let quoted = table.replace('"', "\"\"");
+            let sql = format!(
+                "SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text), '[]'::jsonb) FROM public.\"{quoted}\" t"
+            );
+            // SqlSafeStr: table is pg_catalog metadata and every identifier quote is doubled.
+            let rows: Value = sqlx::query_scalar(sqlx::AssertSqlSafe(sql.as_str()))
+                .fetch_one(owner)
+                .await
+                .unwrap();
+            result.insert(table, rows);
+        }
+        result
+    }
+
+    fn assert_sod(error: PayRunError) {
+        assert!(
+            matches!(error, PayRunError::Lifecycle(LifecycleError::SodViolation)),
+            "{error:?}"
+        );
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn distinct_users_and_employees_for_one_person_cannot_approve_or_reject(owner: PgPool) {
+        let f = fixture(&owner, true).await;
+        for verb in ["APPROVE", "REJECT"] {
+            let id = submitted(&owner, &f).await;
+            let command = decision(&f, id, verb);
+            let before = census(&owner).await;
+            assert_sod(execute(&f.port, command.clone()).await.unwrap_err());
+            assert_eq!(
+                census(&owner).await,
+                before,
+                "{verb} must have zero durable effects"
+            );
+            assert_sod(execute(&f.port, command).await.unwrap_err());
+            assert_eq!(
+                census(&owner).await,
+                before,
+                "repeat denial must have zero effects"
+            );
+        }
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn unresolved_or_foreign_person_identity_refuses_both_decisions(owner: PgPool) {
+        let f = fixture(&owner, false).await;
+        let foreign = seed_org_and_user(&owner, FOREIGN_ORG, "foreign-reviewer").await;
+        for verb in ["APPROVE", "REJECT"] {
+            for case in [
+                "missing_submitter",
+                "submitter_employee",
+                "decider_employee",
+                "submitter_binding",
+                "decider_binding",
+                "foreign_decider",
+                "absent_decider",
+            ] {
+                let id = submitted(&owner, &f).await;
+                // Fixture mutations commit before the command so full durable
+                // census can detect any accidentally committed side effect.
+                let employee_index = usize::from(case == "decider_binding");
+                let original_binding: Value = sqlx::query_scalar("SELECT to_jsonb(b) FROM employee_person_bindings b WHERE org_id=$1 AND employee_id=$2")
+                    .bind(ORG).bind(f.employees[employee_index]).fetch_one(&owner).await.unwrap();
+                let actor = match case {
+                    "missing_submitter" => {
+                        sqlx::query("UPDATE payroll_draft_runs SET submitted_by=NULL WHERE id=$1")
+                            .bind(id)
+                            .execute(&owner)
+                            .await
+                            .unwrap();
+                        f.decider
+                    }
+                    "submitter_employee" | "decider_employee" => {
+                        let user = if case == "submitter_employee" {
+                            f.submitter
+                        } else {
+                            f.decider
+                        };
+                        sqlx::query("UPDATE users SET employee_id=NULL WHERE id=$1")
+                            .bind(*user.as_uuid())
+                            .execute(&owner)
+                            .await
+                            .unwrap();
+                        f.decider
+                    }
+                    "submitter_binding" | "decider_binding" => {
+                        sqlx::query("DELETE FROM employee_person_bindings WHERE org_id=$1 AND employee_id=$2").bind(ORG).bind(f.employees[employee_index]).execute(&owner).await.unwrap();
+                        f.decider
+                    }
+                    "foreign_decider" => foreign,
+                    "absent_decider" => UserId::new(),
+                    _ => unreachable!(),
+                };
+                let before = census(&owner).await;
+                let cmd = command(
+                    f.org,
+                    actor,
+                    PayRunQuery::DecideRun {
+                        run_id: id,
+                        decision: verb.to_owned(),
+                        reason: Some("검토".to_owned()),
+                    },
+                );
+                assert_sod(execute(&f.port, cmd).await.unwrap_err());
+                assert_eq!(census(&owner).await, before, "{verb}/{case}");
+                match case {
+                    "submitter_employee" | "decider_employee" => {
+                        let index = usize::from(case == "decider_employee");
+                        let user = [f.submitter, f.decider][index];
+                        sqlx::query("UPDATE users SET employee_id=$1 WHERE id=$2")
+                            .bind(f.employees[index])
+                            .bind(*user.as_uuid())
+                            .execute(&owner)
+                            .await
+                            .unwrap();
+                    }
+                    "submitter_binding" | "decider_binding" => {
+                        sqlx::query("INSERT INTO employee_person_bindings SELECT * FROM jsonb_populate_record(NULL::employee_person_bindings, $1)").bind(original_binding).execute(&owner).await.unwrap();
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn distinct_people_can_decide_and_exact_command_replay_has_no_effect(owner: PgPool) {
+        let f = fixture(&owner, false).await;
+        for verb in ["APPROVE", "REJECT"] {
+            let id = submitted(&owner, &f).await;
+            let command = decision(&f, id, verb);
+            let receipt = execute(&f.port, command.clone()).await.unwrap();
+            assert_eq!(receipt.target(), DispatchTarget::PayrollDecideRun);
+            let row = sqlx::query("SELECT status, submitted_by, decided_by, decided_at, decision_reason, approved_by, approved_at FROM payroll_draft_runs WHERE id=$1").bind(id).fetch_one(&owner).await.unwrap();
+            assert_eq!(
+                row.get::<String, _>("status"),
+                if verb == "APPROVE" {
+                    "APPROVED"
+                } else {
+                    "REJECTED"
+                }
+            );
+            assert_eq!(row.get::<Uuid, _>("submitted_by"), *f.submitter.as_uuid());
+            assert_eq!(row.get::<Uuid, _>("decided_by"), *f.decider.as_uuid());
+            assert!(row.get::<Option<OffsetDateTime>, _>("decided_at").is_some());
+            assert_eq!(row.get::<String, _>("decision_reason"), "독립 검토");
+            assert_eq!(
+                row.get::<Option<Uuid>, _>("approved_by"),
+                (verb == "APPROVE").then_some(*f.decider.as_uuid())
+            );
+            assert_eq!(
+                row.get::<Option<OffsetDateTime>, _>("approved_at")
+                    .is_some(),
+                verb == "APPROVE"
+            );
+            let after = census(&owner).await;
+            let replay = execute(&f.port, command).await.unwrap();
+            assert_eq!(replay, receipt);
+            assert_eq!(census(&owner).await, after);
+        }
+    }
+
+    async fn pid(tx: &mut Transaction<'_, Postgres>) -> i32 {
+        sqlx::query_scalar("SELECT pg_backend_pid()")
+            .fetch_one(&mut **tx)
+            .await
+            .unwrap()
+    }
+
+    async fn wait_blocked(owner: &PgPool, waiter: i32, holder: i32) {
+        tokio::time::timeout(Duration::from_secs(20), async {
+            loop {
+                let blocked: bool =
+                    sqlx::query_scalar("SELECT $2 = ANY(pg_catalog.pg_blocking_pids($1))")
+                        .bind(waiter)
+                        .bind(holder)
+                        .fetch_one(owner)
+                        .await
+                        .unwrap();
+                if blocked {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(20)).await;
+            }
+        })
+        .await
+        .expect("actual PostgreSQL blocking edge must be observed");
+    }
+
+    async fn change_identity(tx: &mut Transaction<'_, Postgres>, kind: &str, f: &Fixture) {
+        let index = usize::from(!kind.starts_with("submitter_"));
+        let actor = [f.submitter, f.decider][index];
+        if kind.ends_with("user") {
+            let changed = sqlx::query("UPDATE users SET employee_id=$1 WHERE id=$2 AND org_id=$3")
+                .bind(if index == 0 {
+                    f.employees[0]
+                } else {
+                    f.employees[2]
+                })
+                .bind(*actor.as_uuid())
+                .bind(ORG)
+                .execute(&mut **tx)
+                .await
+                .unwrap();
+            assert_eq!(changed.rows_affected(), 1);
+        } else {
+            let deleted = sqlx::query(
+                "DELETE FROM employee_person_bindings WHERE org_id=$1 AND employee_id=$2",
+            )
+            .bind(ORG)
+            .bind(f.employees[index])
+            .execute(&mut **tx)
+            .await
+            .unwrap();
+            assert_eq!(deleted.rows_affected(), 1);
+            sqlx::query("INSERT INTO employee_person_bindings (org_id, employee_id, person_id, actor_id, payload_digest) VALUES ($1,$2,$3,$4,decode(repeat('ab',32),'hex'))")
+                .bind(ORG).bind(f.employees[index]).bind(f.persons[0]).bind(*actor.as_uuid()).execute(&mut **tx).await.unwrap();
+        }
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn decision_retains_user_and_binding_locks_until_commit_or_rollback(owner: PgPool) {
+        let f = std::sync::Arc::new(fixture(&owner, false).await);
+        for kind in ["user", "binding", "submitter_user", "submitter_binding"] {
+            for commit in [false, true] {
+                let id = submitted(&owner, &f).await;
+                let before = census(&owner).await;
+                let mut reader = arm(&f.pool).await;
+                let reader_pid = pid(&mut reader).await;
+                decide_run_in_tx(
+                    &mut reader,
+                    id,
+                    *f.decider.as_uuid(),
+                    "APPROVE",
+                    Some("검토"),
+                )
+                .await
+                .unwrap();
+                let mut writer = arm(&f.pool).await;
+                let writer_pid = pid(&mut writer).await;
+                let writer_f = f.clone();
+                let task = tokio::spawn(async move {
+                    change_identity(&mut writer, kind, &writer_f).await;
+                    writer.rollback().await.unwrap();
+                });
+                wait_blocked(&owner, writer_pid, reader_pid).await;
+                assert!(!task.is_finished());
+                if commit {
+                    reader.commit().await.unwrap();
+                } else {
+                    reader.rollback().await.unwrap();
+                }
+                tokio::time::timeout(Duration::from_secs(20), task)
+                    .await
+                    .unwrap()
+                    .unwrap();
+                if commit {
+                    let status: String =
+                        sqlx::query_scalar("SELECT status FROM payroll_draft_runs WHERE id=$1")
+                            .bind(id)
+                            .fetch_one(&owner)
+                            .await
+                            .unwrap();
+                    assert_eq!(status, "APPROVED");
+                    let mut after = census(&owner).await;
+                    // Direct shared owner does not claim canonical receipts/audit.
+                    let before_runs = before.get("payroll_draft_runs").unwrap().clone();
+                    let after_runs = after
+                        .insert("payroll_draft_runs".to_owned(), before_runs)
+                        .unwrap();
+                    assert_ne!(after_runs, before["payroll_draft_runs"]);
+                    assert_eq!(after, before, "no identity/receipt/audit changes");
+                } else {
+                    assert_eq!(census(&owner).await, before);
+                }
+            }
+        }
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn identity_writer_winning_first_cannot_leave_a_stale_approval(owner: PgPool) {
+        // Fresh fixture per schema is not needed: restore only the disposable
+        // identity writer after each case, using the original immutable row.
+        let f = std::sync::Arc::new(fixture(&owner, false).await);
+        for kind in ["user", "binding"] {
+            let id = submitted(&owner, &f).await;
+            let original: Value = sqlx::query_scalar("SELECT to_jsonb(b) FROM employee_person_bindings b WHERE org_id=$1 AND employee_id=$2")
+                .bind(ORG).bind(f.employees[1]).fetch_one(&owner).await.unwrap();
+            let before = census(&owner).await;
+            let mut writer = arm(&f.pool).await;
+            let writer_pid = pid(&mut writer).await;
+            change_identity(&mut writer, kind, &f).await;
+            let mut reader = arm(&f.pool).await;
+            let reader_pid = pid(&mut reader).await;
+            let actor = *f.decider.as_uuid();
+            let task = tokio::spawn(async move {
+                let result =
+                    decide_run_in_tx(&mut reader, id, actor, "APPROVE", Some("검토")).await;
+                assert!(
+                    matches!(result, Err(LifecycleError::SodViolation)),
+                    "{result:?}"
+                );
+                reader.rollback().await.unwrap();
+            });
+            wait_blocked(&owner, reader_pid, writer_pid).await;
+            writer.commit().await.unwrap();
+            tokio::time::timeout(Duration::from_secs(20), task)
+                .await
+                .unwrap()
+                .unwrap();
+            let mut after = census(&owner).await;
+            for table in ["users", "employee_person_bindings"] {
+                after.insert(table.to_owned(), before[table].clone());
+            }
+            assert_eq!(
+                after, before,
+                "writer-first denial must not affect payroll, receipts, audit, or any unrelated row"
+            );
+            let status: String =
+                sqlx::query_scalar("SELECT status FROM payroll_draft_runs WHERE id=$1")
+                    .bind(id)
+                    .fetch_one(&owner)
+                    .await
+                    .unwrap();
+            assert_eq!(status, "SUBMITTED");
+            let count: i64 = sqlx::query_scalar("SELECT count(*) FROM ont_action_command_receipts WHERE org_id=$1 AND target='payroll.decide_run'")
+                .bind(ORG).fetch_one(&owner).await.unwrap();
+            assert_eq!(count, 0);
+            if kind == "user" {
+                sqlx::query("UPDATE users SET employee_id=$1 WHERE id=$2")
+                    .bind(f.employees[1])
+                    .bind(*f.decider.as_uuid())
+                    .execute(&owner)
+                    .await
+                    .unwrap();
+            } else {
+                let mut restore = owner.begin().await.unwrap();
+                sqlx::query(
+                    "DELETE FROM employee_person_bindings WHERE org_id=$1 AND employee_id=$2",
+                )
+                .bind(ORG)
+                .bind(f.employees[1])
+                .execute(&mut *restore)
+                .await
+                .unwrap();
+                sqlx::query("INSERT INTO employee_person_bindings SELECT * FROM jsonb_populate_record(NULL::employee_person_bindings, $1)").bind(original).execute(&mut *restore).await.unwrap();
+                restore.commit().await.unwrap();
+            }
+        }
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn identity_lock_timeout_rolls_back_then_canonical_retry_and_replay_succeed(
+        owner: PgPool,
+    ) {
+        let f = fixture(&owner, false).await;
+        let id = submitted(&owner, &f).await;
+        let before = census(&owner).await;
+        let mut holder = arm(&f.pool).await;
+        sqlx::query("SELECT id FROM users WHERE id=$1 FOR UPDATE")
+            .bind(*f.decider.as_uuid())
+            .fetch_one(&mut *holder)
+            .await
+            .unwrap();
+        let mut reader = arm(&f.pool).await;
+        sqlx::query("SET LOCAL lock_timeout='200ms'")
+            .execute(&mut *reader)
+            .await
+            .unwrap();
+        let result = decide_run_in_tx(
+            &mut reader,
+            id,
+            *f.decider.as_uuid(),
+            "APPROVE",
+            Some("검토"),
+        )
+        .await;
+        match result {
+            Err(LifecycleError::Db(console_platform_db::DbError::Sqlx(error))) => assert_eq!(
+                error.as_database_error().and_then(|e| e.code()).as_deref(),
+                Some("55P03")
+            ),
+            other => panic!("expected exact lock timeout, got {other:?}"),
+        }
+        reader.rollback().await.unwrap();
+        holder.rollback().await.unwrap();
+        assert_eq!(census(&owner).await, before);
+        let command = decision(&f, id, "APPROVE");
+        let receipt = execute(&f.port, command.clone()).await.unwrap();
+        let after = census(&owner).await;
+        assert_eq!(execute(&f.port, command).await.unwrap(), receipt);
+        assert_eq!(census(&owner).await, after);
+    }
+}

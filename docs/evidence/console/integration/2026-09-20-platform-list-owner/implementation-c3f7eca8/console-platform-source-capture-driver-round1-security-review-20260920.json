@@ -1,0 +1,14 @@
+{
+  "verdict": "CHANGES_REQUIRED",
+  "scope": "Platform source capture machinery only",
+  "manifest_sha256": "274564eebca62271e05ec5d23ee03fdf8ad6def0443baa61b7f6a879d89a44d6",
+  "reviewer": "integration_security",
+  "command": "python3 /private/tmp/console-platform-source-capture-driver-20260920-round1/test_capture_oracle.py -v",
+  "discovered": 3,
+  "executed": 3,
+  "passed": 2,
+  "failed": 1,
+  "finding": "validate_delta requires string proargtypes but actual retained pg_proc JSON carries exact array [\"2950\",\"2950\"]. Retained positive failed before capture. Synthetic fixture hides actual shape. Require exact array assertion and matching fixture in preserved successor.",
+  "database_executions": 0,
+  "repository_writes": 0
+}

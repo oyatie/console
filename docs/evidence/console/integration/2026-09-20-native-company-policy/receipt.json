@@ -1,0 +1,77 @@
+{
+  "status": "PREREQUISITES_VERIFIED_NOT_COMPANY_WORKFLOW_ACCEPTANCE",
+  "test_commit": "79a0da316",
+  "source_sha256": "52397c9cf42d10322d19ef8617fc3a8f926137f89fcabe729f3c47f49b6fa8dd",
+  "focused": {
+    "executed": 7,
+    "passed": 7,
+    "filtered": 110
+  },
+  "full": {
+    "executed": 117,
+    "passed": 117,
+    "filtered": 0
+  },
+  "distinct_total": 117,
+  "historical_failure": {
+    "passed": 5,
+    "failed": 2,
+    "cause": "empty set literal rejected by strict Cedar validator; test template corrected to isEmpty without weakening validation"
+  },
+  "members": [
+    {
+      "path": "console-company-cedar-native-focused-20260920.log.gz",
+      "sha256": "8fbd1ae18da21f356a7db9a66884541f7de746f04cfc883d419d46e21741f3d4",
+      "original_path": "/private/tmp/console-company-cedar-native-focused-20260920.log",
+      "original_sha256": "7880b47239869c1a0068ffc1e8834ffadb85b26637d2f6875f5b491cbdfce448",
+      "original_bytes": 2259
+    },
+    {
+      "path": "console-company-cedar-native-successor-build-20260920.log.gz",
+      "sha256": "68e4b01c74572d7f041681157bb04e737b020f164306c0df7a762221513d23ff",
+      "original_path": "/private/tmp/console-company-cedar-native-successor-build-20260920.log",
+      "original_sha256": "51148da7670af251c824d9262df6c6b4de81a16707f7e5336625e696fb11c0e5",
+      "original_bytes": 1379
+    },
+    {
+      "path": "console-company-cedar-native-successor-focused-20260920.log.gz",
+      "sha256": "b9a68b577d1ae70d26f48db68b70af3405e5619c2d764d11c27f8f4c08334ba5",
+      "original_path": "/private/tmp/console-company-cedar-native-successor-focused-20260920.log",
+      "original_sha256": "3a25a6936cf16bfc1efbce2d3219da632943ae827f7e34957b35dc859b48586d",
+      "original_bytes": 1007
+    },
+    {
+      "path": "console-company-cedar-native-successor-full-20260920.log.gz",
+      "sha256": "31522b2e817f856f35b2faf8069f73bb83f5851dc719390f64f67b1ee602da63",
+      "original_path": "/private/tmp/console-company-cedar-native-successor-full-20260920.log",
+      "original_sha256": "f53f0048c725a1ce5cd7823c4cd69e9b3ec3bec10d2b9024d13c9f0e5fee58ea",
+      "original_bytes": 10503
+    },
+    {
+      "path": "console-company-cedar-empty-predicate-security-review-20260920.json",
+      "sha256": "30f866542762640d9bc18845b4782b4bb8e4a715e032cd13f78dfa2b22237937",
+      "original_path": "/private/tmp/console-company-cedar-empty-predicate-security-review-20260920.json",
+      "original_sha256": "30f866542762640d9bc18845b4782b4bb8e4a715e032cd13f78dfa2b22237937",
+      "original_bytes": 2068
+    },
+    {
+      "path": "console-company-cedar-exact-selection-final-security-review-20260920.json",
+      "sha256": "20899f610b32576d4ce3a7d755d93098029bbdc2b6749c55384024e697038605",
+      "original_path": "/private/tmp/console-company-cedar-exact-selection-final-security-review-20260920.json",
+      "original_sha256": "20899f610b32576d4ce3a7d755d93098029bbdc2b6749c55384024e697038605",
+      "original_bytes": 2586
+    },
+    {
+      "path": "console-native-company-empty-field-template-amendment-20260920-round2.json",
+      "sha256": "1bf3c9c6e2b0ac70bd4e8d6e13b81b7ea24f7f33a87e04d50dd306b59e91f867",
+      "original_path": "/private/tmp/console-native-company-empty-field-template-amendment-20260920-round2.json",
+      "original_sha256": "1bf3c9c6e2b0ac70bd4e8d6e13b81b7ea24f7f33a87e04d50dd306b59e91f867",
+      "original_bytes": 2129
+    }
+  ],
+  "remaining": [
+    "Company enrollment transaction, native authorized browser workflows, five-area MVP, production qualification"
+  ],
+  "owner": "/root",
+  "reviewer": "/root/integration_security"
+}

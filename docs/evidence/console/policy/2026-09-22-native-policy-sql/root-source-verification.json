@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root",
+  "candidate": "e8dec7a8d",
+  "source_commit": "8d646dafd98efcd283487693274b577bf5ed7385",
+  "checks": {
+    "packet_hashes_verified": 29,
+    "declared_routine_bodies_matched_to_metadata": 49,
+    "input_columns": 13,
+    "terminal_columns": 30,
+    "plain_metadata_sha256": "ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2",
+    "observer_metadata_sha256": "5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005",
+    "generated_outputs_match_reviewed_source_commit": 4
+  },
+  "commands": [
+    "python3 ops/generate-account-custody.py --check",
+    "git diff --check"
+  ],
+  "proof_limit": "Bounded source/custody verification; physical fixture, actual Rust A/B common audit and browser acceptance pending."
+}

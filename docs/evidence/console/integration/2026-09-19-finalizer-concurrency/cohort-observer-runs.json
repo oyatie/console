@@ -1,0 +1,60 @@
+[
+  {
+    "argv_sha256": "eba460b4551ece7ccbfe6312cbe3e352efee65e75485e181d6be749055894896",
+    "expected_tests_per_phase": 15,
+    "phases": [
+      {
+        "name": "cold",
+        "accepted": false,
+        "returncode": 100,
+        "before": {
+          "credential_role_present": false,
+          "system_identifier": "7687426412910530602",
+          "database": "console_cargo_test_8555_contract",
+          "server_version_num": "180004",
+          "marked_admin": true
+        },
+        "log": "/private/tmp/console-finalizer-cohort-observer/run-shl310bl/cold.log",
+        "started_utc": "2026-09-20T01:41:06.963214+00:00",
+        "elapsed_seconds": 30.707,
+        "summary": "     Summary [  19.525s] 15 tests run: 1 passed, 14 failed, 0 skipped",
+        "tests_run": 15,
+        "passed": 1,
+        "skipped": 0
+      },
+      {
+        "name": "warm",
+        "accepted": false,
+        "returncode": 100,
+        "before": {
+          "credential_role_present": true,
+          "system_identifier": "7687426412910530602",
+          "database": "console_cargo_test_8555_contract",
+          "server_version_num": "180004",
+          "marked_admin": true
+        },
+        "log": "/private/tmp/console-finalizer-cohort-observer/run-shl310bl/warm.log",
+        "started_utc": "2026-09-20T01:41:37.702836+00:00",
+        "elapsed_seconds": 15.1,
+        "summary": "     Summary [  13.807s] 15 tests run: 0 passed, 15 failed, 0 skipped",
+        "tests_run": 15,
+        "passed": 0,
+        "skipped": 0
+      }
+    ],
+    "accepted": false
+  },
+  {
+    "argv_sha256": "eba460b4551ece7ccbfe6312cbe3e352efee65e75485e181d6be749055894896",
+    "expected_tests_per_phase": 15,
+    "phases": [
+      {
+        "name": "cold",
+        "accepted": false,
+        "returncode": null
+      }
+    ],
+    "accepted": false,
+    "observer_error": "read-only PostgreSQL observation failed, status 2"
+  }
+]

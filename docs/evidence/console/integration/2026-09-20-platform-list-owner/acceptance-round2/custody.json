@@ -1,0 +1,71 @@
+{
+  "state": "PENDING_RUNTIME",
+  "files": [
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/jit-manifest.json",
+      "source": "/private/tmp/console-platform-retained-drift-jit-20260920-round1/manifest.json",
+      "sha256": "d8cf55c20c64085091f215ea0b09db82abcd175236a7680d2f69e73a235dd28d"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/jit-security-review.json",
+      "source": "/private/tmp/console-platform-retained-drift-jit-round1-security-review-20260920.json",
+      "sha256": "f8b9f73503245c9f30cb699c4c930a350553be924779b9f03613f4a7826f57c5"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/jit-root-review.json",
+      "source": "/private/tmp/console-platform-retained-drift-jit-round1-root-review-20260920.json",
+      "sha256": "d3b012f2d3f36f8a09c82370603f1663944c1673dbce28ba375965412d240086"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/full52-interrupted-run1.log",
+      "source": "/private/tmp/console-platform-source-stability-and-full-run1-20260920.log",
+      "sha256": "64e20474287184d3d81fba08aa8dbba6c589753bbab306d86063fb246c5f176a"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/full52-roster.txt",
+      "source": "/private/tmp/console-platform-source-full-transition-roster-20260920.txt",
+      "sha256": "0223d1296b1961e0c395ee82f1269078d3f470912973d0715c4d179687813b6d"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/pending-security-audit.json",
+      "source": "/private/tmp/console-platform-list-final-security-audit-pending-round2-20260920.json",
+      "sha256": "dc5d71cdcb3245a70387009cac3b1ca1346da0d2d6131772cd50108f8d1a4420"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/mounted503-round1-manifest.json",
+      "source": "/private/tmp/console-platform-list-unavailable-tests-20260920-round1/manifest.json",
+      "sha256": "d99993db1c56c2421aef2662a2c6cff70af858db10d087640aa0665e720ead79"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/mounted503-round1-security.json",
+      "source": "/private/tmp/console-platform-list-unavailable-tests-round1-security-review-20260920.json",
+      "sha256": "8f7f34e743603857a1f351bb9167d1761e483a472ec5d974388a2b6a194eac15"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/mounted503-round1-root.json",
+      "source": "/private/tmp/console-platform-list-unavailable-tests-round1-root-review-20260920.json",
+      "sha256": "dc8b8fb19f4e8580cc24069ffc0742fc6508cc71739230185b804d9f580db81d"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/mounted503-round2-manifest.json",
+      "source": "/private/tmp/console-platform-list-unavailable-tests-20260920-round2/manifest.json",
+      "sha256": "7278b03eed0a145bf9088e2183d7ace7633a938a39166578ced70c19eee06e9c"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/lane-scope11.json",
+      "source": "/private/tmp/console-platform-list-owner-lane-scope11-20260920.json",
+      "sha256": "0d7c7e8fcd7165d78286b563a5b65410629aba96bf6813e19ec6ad3dd56055d7"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/final30-map.json",
+      "source": "/private/tmp/console-platform-list-final30-map-20260920.json",
+      "sha256": "426a82b2bddd015a6afad9b1be7e37fbdcac8afa87d6f5c96c3ab26993e3e26f"
+    }
+  ],
+  "limits": [
+    "run1 corrected corruption tests each1pass; full52 interrupted after1pass and second active7m48s, never complete",
+    "run2 current full52 pending",
+    "mounted503 round2 private pending independent approval; no runtime",
+    "no release acceptance or qualification state advanced"
+  ]
+}

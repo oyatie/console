@@ -75,6 +75,10 @@
 //! trait ever gains an async form.
 
 use console_kernel_core::{KernelError, OrgId, UserId};
+use console_ontology_canonical_domain::legacy_receipt_compatibility::{
+    LegacyReceiptBinding, LegacyReceiptExpectation, legacy_receipt_binding,
+    legacy_user_receipt_shape,
+};
 use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     Employment, ObjectKey, Preflight, ReceiptOwner,
@@ -725,21 +729,52 @@ pub async fn write_in_tx(
     let command_uuid = *command.command_id.as_uuid();
 
     if let Some(stored) = sqlx::query(
-        "SELECT actor_id, payload_digest, receipt, created_at \
-         FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
+        "SELECT r.actor_id, r.payload_digest, r.receipt, r.created_at, r.owner, r.target, r.action_key, r.object_type_id, \
+             to_jsonb(r)->'actor_kind' AS receipt_actor_kind, to_jsonb(r)->'actor_account_id' AS receipt_actor_account \
+             FROM ont_action_command_receipts r WHERE r.org_id = $1 AND r.command_id = $2",
     )
     .bind(org)
     .bind(command_uuid)
     .fetch_optional(tx.as_mut())
     .await?
     {
+        let kind: Option<serde_json::Value> = stored.try_get("receipt_actor_kind")?;
+        let account: Option<serde_json::Value> = stored.try_get("receipt_actor_account")?;
+        if !legacy_user_receipt_shape(kind.as_ref(), account.as_ref()) {
+            return Err(EmploymentError::DigestConflict(command_uuid));
+        }
+        let stored_actor: Option<Uuid> = stored.try_get("actor_id")?;
+        let owner: String = stored.try_get("owner")?;
+        let stored_target_key: Option<String> = stored.try_get("target")?;
+        let action_key: Option<String> = stored.try_get("action_key")?;
+        if !legacy_receipt_binding(
+            &LegacyReceiptBinding {
+                actor: stored_actor,
+                owner: &owner,
+                target: stored_target_key.as_deref(),
+                action_key: action_key.as_deref(),
+                object_type_id: stored.try_get("object_type_id")?,
+            },
+            &LegacyReceiptExpectation {
+                actor: *command.actor_id.as_uuid(),
+                target: Some(command.query.target()),
+                action_key: &command.action_key,
+                object_type_id: command.object_type_id,
+            },
+        ) {
+            return Err(EmploymentError::DigestConflict(command_uuid));
+        }
+        let stored_actor = stored_actor.ok_or(EmploymentError::DigestConflict(command_uuid))?;
         let stored_digest: Vec<u8> = stored.get("payload_digest");
         if stored_digest != digest {
             return Err(EmploymentError::DigestConflict(command_uuid));
         }
         let result: serde_json::Value = stored.get("receipt");
         let target = stored_target(command_uuid, &result)?;
-        let stored_actor: Uuid = stored.get("actor_id");
+        if target != command.query.target() {
+            return Err(EmploymentError::DigestConflict(command_uuid));
+        }
+
         let created_at: OffsetDateTime = stored.get("created_at");
         return Ok(receipt(
             command,
@@ -1324,6 +1359,27 @@ fn head_from_row(row: sqlx::postgres::PgRow) -> EmploymentHead {
         appointed_on: row.get("appointed_on"),
         version: row.get("version"),
     }
+}
+
+/// Native directory registration creates an identity record, not Employment.
+/// Protected native terminal and deferred closure must exist in this SAME tx.
+pub(crate) async fn insert_native_directory_employee_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    terminal: &console_ontology_application::people::DirectoryTerminalV1,
+) -> Result<(), sqlx::Error> {
+    use console_ontology_application::people::DirectoryTerminalOutcomeV1;
+    if terminal.outcome() != DirectoryTerminalOutcomeV1::Committed {
+        return Err(sqlx::Error::Protocol(
+            "native directory writer requires committed terminal".into(),
+        ));
+    }
+    let command = terminal.accepted().command();
+    let result=sqlx::query("INSERT INTO public.employees (id,org_id,company,name,employee_number,source_filename,source_sheet,source_row,source_key,source_kind,native_command_id,raw_row,source_metadata,employment_status,identity_resolution_strategy,identity_resolution_confidence,identity_review_required,identity_name_only_merge,created_at,updated_at) SELECT $1,$2,o.name,$3,$4,NULL,NULL,NULL,$5,'NATIVE_DIRECTORY',$6,'{}'::jsonb,'{}'::jsonb,'UNKNOWN','employee_number','low',true,false,$7,$7 FROM public.organizations o WHERE o.id=$2")
+      .bind(command.employee_id()).bind(*command.company().as_uuid()).bind(command.input().legal_name()).bind(command.input().employee_number()).bind(format!("native-directory:{}",command.command_id())).bind(command.command_id()).bind(terminal.terminal_at()).execute(tx.as_mut()).await?;
+    if result.rows_affected() != 1 {
+        return Err(sqlx::Error::RowNotFound);
+    }
+    Ok(())
 }
 
 #[cfg(test)]

@@ -7,6 +7,8 @@
 // `echo cargo test ...`, or a step guarded by literal `if: false`, therefore cannot
 // manufacture test reachability.
 
+import { accessSync, constants, realpathSync, statSync } from "node:fs";
+
 function jobBlocks(workflow) {
   // Match the top-level `jobs:` key even when it carries a trailing YAML comment
   // (`jobs: # scanner bypass`), which is still a valid key.
@@ -228,6 +230,7 @@ export function shellCommandTokens(script) {
 
   return commands.map((source) => {
     const tokens = [];
+    const operators = [];
     let token = "";
     let quote = null;
     let escaped = false;
@@ -251,6 +254,7 @@ export function shellCommandTokens(script) {
         flush();
       } else if (";|&".includes(character)) {
         flush();
+        operators.push(tokens.length);
         if ((character === "|" || character === "&") && source[index + 1] === character) {
           tokens.push(`${character}${character}`);
           index += 1;
@@ -264,21 +268,25 @@ export function shellCommandTokens(script) {
     const malformed = quote !== null || escaped;
     if (escaped) token += "\\";
     flush();
-    return { source, tokens, malformed };
+    return { source, tokens, malformed, operators };
   });
 }
 
-function commandSegments(surface) {
+function commandSegments(surface, literalOperatorsOnly = false) {
   const segments = [];
   let segment = [];
   let conditional = false;
-  for (const token of [...surface.tokens, ";"]) {
-    if ([";", "|", "&", "||", "&&"].includes(token)) {
-      if (segment.length > 0) segments.push({ tokens: segment, conditional });
+  let operator = ";";
+  for (const [index, token] of [...surface.tokens, ";"].entries()) {
+    const separator = literalOperatorsOnly ? index === surface.tokens.length || surface.operators.includes(index)
+      : [";", "|", "&", "||", "&&"].includes(token);
+    if (separator) {
+      if (segment.length > 0) segments.push({ tokens: segment, conditional, operator });
       segment = [];
       // `;` is a sequence operator (the next segment runs regardless); `&&`, `||`,
       // `|`, and `&` make the next segment conditional on the previous one.
       conditional = token !== ";";
+      operator = token;
     } else {
       segment.push(token);
     }
@@ -286,20 +294,127 @@ function commandSegments(surface) {
   return segments;
 }
 
-function collectWorkflowCommands(workflow, includeNonGating) {
+/** Bounded shell reachability; audit callers retain the unfiltered token surface. */
+export function reachableShellCommands(script) {
+  const parts = shellCommandTokens(script).flatMap(surface => {
+    // Pipelines/background jobs need a separate execution contract; quoted operators are argv data.
+    if (surface.operators.some(index => ["|", "&"].includes(surface.tokens[index]))) return [{
+      tokens: surface.tokens, malformed: true, operator: ";", conditional: false, controlFlow: true,
+    }];
+    return commandSegments(surface, true)
+      .map(part => ({ ...part, malformed: surface.malformed,
+        controlFlow: surface.operators.length > 0 }));
+  });
+  const functions = new Map();
+  const opener = tokens => tokens[0] === "{" || /^(?:function\b|[A-Za-z_][A-Za-z0-9_]*\(\))/.test(tokens[0] ?? "")
+    || /^[A-Za-z_][A-Za-z0-9_]*$/.test(tokens[0] ?? "") && ["()", "("].includes(tokens[1]) && tokens.includes("{");
+  function closing(start, end, open, close) {
+    let depth = 1;
+    let otherwise = -1;
+    for (let index = start + 1; index < end; index += 1) {
+      const head = parts[index].tokens[0];
+      if (open(parts[index].tokens)) depth += 1;
+      if (head === close && --depth === 0) return { end: index, otherwise };
+      if (depth === 1 && head === "elif") otherwise = -2;
+      else if (depth === 1 && head === "else" && otherwise !== -2) otherwise = index;
+    }
+    return null;
+  }
+  function project(start, end, stack = []) {
+    const commands = [];
+    let status = null;
+    for (let index = start; index < end; index += 1) {
+      const part = parts[index];
+      const { tokens, operator } = part;
+      const head = tokens[0];
+      const skipped = (operator === "&&" && status === false) || (operator === "||" && status === true);
+      const certain = !["&&", "||", "|", "&"].includes(operator)
+        || (operator === "&&" && status === true) || (operator === "||" && status === false);
+      if (part.malformed) return { commands, status: null };
+      if (opener(tokens)) {
+        const block = closing(index, end, opener, "}");
+        if (!block) return { commands, status: null };
+        const name = tokens.length === 2 && tokens[1] === "{" && tokens[0].match(/^([A-Za-z_][A-Za-z0-9_]*)\(\)$/)?.[1];
+        if (!skipped && name) functions.set(name, { start: index + 1, end: block.end });
+        index = block.end;
+        if (!skipped) status = true;
+        continue;
+      }
+      if (head === "if") {
+        const block = closing(index, end, inner => inner[0] === "if", "fi");
+        if (!block) return { commands, status: null };
+        const literal = tokens.length === 2 && ["true", "false"].includes(tokens[1]);
+        const then = parts[index + 1]?.tokens;
+        if (!skipped && literal && then?.length === 1 && then[0] === "then"
+            && block.otherwise !== -2) {
+          const branchStart = tokens[1] === "true" ? index + 2 : block.otherwise < 0 ? block.end : block.otherwise + 1;
+          const branchEnd = tokens[1] === "true" && block.otherwise >= 0 ? block.otherwise : block.end;
+          const branch = project(branchStart, branchEnd, stack);
+          commands.push(...branch.commands.map(command => ({ ...command, conditional: command.conditional || !certain })));
+          status = certain ? branch.status : null;
+          if (branch.stop && certain) return { commands, status, stop: branch.stop };
+        } else if (!skipped) status = null;
+        index = block.end;
+        continue;
+      }
+      if (["case", "for", "while", "until", "select"].includes(head)) {
+        const close = head === "case" ? "esac" : "done";
+        const block = closing(index, end, inner => close === "esac" ? inner[0] === "case" : ["for", "while", "until", "select"].includes(inner[0]), close);
+        if (!block) return { commands, status: null };
+        index = block.end;
+        if (!skipped) status = null;
+        continue;
+      }
+      if (skipped) continue;
+      const direct = directExecutable(tokens);
+      if (direct.malformed || ["then", "else", "elif", "fi", "esac", "do", "done", "}", "(", ")", "!", "eval", "exec", "source", "."].includes(direct.tokens[0])) return { commands, status: null };
+      const body = functions.get(direct.tokens[0]);
+      if (body) {
+        if (stack.length >= 12 || stack.includes(direct.tokens[0]) || direct.tokens.length !== 1) return { commands, status: null };
+        const called = project(body.start, body.end, [...stack, direct.tokens[0]]);
+        commands.push(...called.commands.map(command => ({ ...command, conditional: command.conditional || !certain })));
+        status = certain ? called.status : null;
+        if (called.stop === "exit" && certain) return { commands, status, stop: "exit" };
+      } else {
+        commands.push({ ...part, conditional: part.conditional || !certain });
+        status = direct.tokens[0] === "true" ? true : direct.tokens[0] === "false" ? false : null;
+        const truthPaths = ["/usr/bin/true", "/usr/bin/false", "/bin/true", "/bin/false"];
+        if (truthPaths.includes(direct.tokens[0])) {
+          if (direct.tokens.length !== 1) return { commands, status: null };
+          try {
+            const canonical = realpathSync(direct.tokens[0]);
+            if (!truthPaths.includes(canonical) || !statSync(canonical).isFile()) return { commands, status: null };
+            accessSync(canonical, constants.X_OK);
+            status = canonical.endsWith("/true");
+          } catch { return { commands, status: null }; }
+        }
+        if (["exit", "return"].includes(direct.tokens[0]) && certain) {
+          const code = direct.tokens[1];
+          return { commands, status: code === undefined ? status : /^\d+$/.test(code) ? Number(code) === 0 : null, stop: direct.tokens[0] };
+        }
+      }
+    }
+    return { commands, status };
+  }
+  return project(0, parts.length).commands;
+}
+
+function collectWorkflowCommands(workflow, includeNonGating, reachableOnly = false) {
   const commands = [];
   const workflowShell = defaultsRunShell(workflow, 0);
   for (const job of jobBlocks(workflow)) {
     const jobGating = canGate(job.block, 4);
     const jobShell = yamlValue(job.block, "shell", 4) ?? defaultsRunShell(job.block, 4);
     for (const step of stepBlocks(job.block)) {
-      const gating = jobGating && canGate(step, 8);
+      // Restore the first property's indentation while preserving raw step bytes for audits.
+      const parsedStep = `        ${step}`;
+      const gating = jobGating && canGate(parsedStep, 8);
       if (!includeNonGating && !gating) continue;
-      const script = runScript(step);
+      const script = runScript(parsedStep);
       if (!script) continue;
       // Effective shell: step override, else job default (direct or defaults.run),
       // else workflow defaults.run, else the runner default.
-      const shell = yamlValue(step, "shell", 8) ?? jobShell ?? workflowShell ?? null;
+      const shell = yamlValue(parsedStep, "shell", 8) ?? jobShell ?? workflowShell ?? null;
       // A fail-slow keep-going block collects per-invocation failures and re-raises
       // them with a summary `exit 1`, so a `set +e` inside it does NOT make the cargo
       // runs non-gating. The `ci-keep-going:` comment is an explicit contract on the
@@ -307,14 +422,16 @@ function collectWorkflowCommands(workflow, includeNonGating) {
       const keepGoing = /ci-keep-going:/.test(script);
       let terminated = false;
       let errexitDisabled = false;
-      for (const surface of shellCommandTokens(script)) {
+      for (const surface of reachableOnly ? reachableShellCommands(script) : shellCommandTokens(script)) {
         if (terminated) break;
         if (surface.malformed) {
           commands.push({ job: job.name, step, tokens: surface.tokens, malformed: true, controlFlow: false, gating, shell });
           continue;
         }
-        const controlFlow = surface.tokens.some((token) => [";", "|", "&", "||", "&&"].includes(token));
-        for (const { tokens, conditional } of commandSegments(surface)) {
+        const controlFlow = surface.controlFlow ?? surface.tokens.some((token) => [";", "|", "&", "||", "&&"].includes(token));
+        for (const segment of reachableOnly ? [surface] : commandSegments(surface)) {
+          const { tokens } = segment;
+          const conditional = segment.conditional || surface.conditional;
           const executable = directExecutable(tokens);
           // `set -e`/`set +e` on a conditional branch (`false && set -e`) never runs, so
           // it must not change the errexit state that governs later commands.
@@ -337,7 +454,7 @@ function collectWorkflowCommands(workflow, includeNonGating) {
           });
           // Only an unconditional exit/return terminates the script; `false && exit 0`
           // or `cmd || exit 1` does not, so later commands must still be scanned.
-          if ((executable.tokens[0] === "exit" || executable.tokens[0] === "return") && !conditional) {
+          if (!reachableOnly && (executable.tokens[0] === "exit" || executable.tokens[0] === "return") && !conditional) {
             terminated = true;
             break;
           }
@@ -351,6 +468,11 @@ function collectWorkflowCommands(workflow, includeNonGating) {
 /** Commands from workflow steps whose result can make the workflow fail. */
 export function executableWorkflowCommands(workflow) {
   return collectWorkflowCommands(workflow, false);
+}
+
+/** Reachable commands only; allWorkflowCommands remains the full audit projection. */
+export function reachableWorkflowCommands(workflow) {
+  return collectWorkflowCommands(workflow, false, true);
 }
 
 /**

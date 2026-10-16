@@ -1,0 +1,13 @@
+{
+  "author": "/root/integration_security",
+  "status": "private-test-proposal-independent-root-review-required",
+  "preimage_sha256": "2eca1c58d20621500d9200420f7f03405af6f465b9e3a2b578c7f1fb651633f0",
+  "finding_receipt_sha256": "1225be588b3192864464bd0b9099b8bddecddf8c7ec6d8d2d87fea605c7d090f",
+  "files": {
+    "README.md": "cbe44aa6facaac8ee0ffcf375cc206e4da13e3dfe458babcb5409c381011af97",
+    "additive-tests.mjs": "679bb4cc7d258954ff3b3323d343d0acc9e3e5bb8a7855f95629f64e6692f15a",
+    "validate-console-truth-ledger.test.mjs": "14e17a51766f6bbe4d946a054da6cf81b9a80f3a7ce1e8194bfbee34cbcf21e9"
+  },
+  "runtime_tests_executed": 0,
+  "repo_writes": 0
+}

@@ -1,0 +1,14 @@
+type: object
+additionalProperties: false
+required:
+- assurance
+- expires_at
+properties:
+  assurance:
+    type: string
+    enum:
+    - PASSKEY_PRIMARY
+  expires_at:
+    type: string
+    format: date-time
+    description: UTC RFC3339 timestamp.

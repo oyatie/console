@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync, existsSync, openSync, closeSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { tmpdir } from "node:os";
+import { setTimeout as delay } from "node:timers/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadGates, report, sweep } from "./gate-sweep.mjs";
@@ -95,4 +99,60 @@ test("gate-sweep", async (t) => {
     );
     assert.ok(loadGates().length >= 10, "the sweep must carry the full gate set");
   });
+});
+
+test("gate-sweep CLI preserves completed failures and the active gate before the sweep finishes", async () => {
+  const root = mkdtempSync(resolve(tmpdir(), "gate-sweep-progress-"));
+  const output = resolve(root, "output.log");
+  const marker = resolve(root, "second.started");
+  const release = resolve(root, "second.release");
+  mkdirSync(resolve(root, "tools/ci"), { recursive: true });
+  writeFileSync(resolve(root, "tools/ci/gate-sweep.mjs"), readFileSync(resolve(ROOT, "tools/ci/gate-sweep.mjs")));
+  writeFileSync(resolve(root, "first.mjs"), 'console.error("ACTUAL_FIRST_GATE_FAILURE"); process.exit(7);\n');
+  writeFileSync(resolve(root, "second.mjs"),
+    'import {writeFileSync, existsSync} from "node:fs";\n' +
+    'console.error("ACTUAL_SECOND_GATE_PROGRESS");\n' +
+    'writeFileSync("second.started", "started");\n' +
+    'const deadline = Date.now() + 10000;\n' +
+    'while (!existsSync("second.release") && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10));\n' +
+    'if (!existsSync("second.release")) process.exit(2);\n');
+  writeFileSync(resolve(root, "last.mjs"),
+    'import {writeFileSync} from "node:fs"; writeFileSync("last.executed", "executed"); console.error("ACTUAL_LAST_GATE_FAILURE"); process.exit(5);\n');
+  const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
+  writeFileSync(resolve(root, "tools/ci/gate-sweep.json"), JSON.stringify({ gates:
+    ["first", "second", "last"].map(id => ({ id, run: `${quote(process.execPath)} ${id}.mjs` })) }));
+  const env = { ...process.env, NODE_OPTIONS: "", NODE_PATH: "" };
+  delete env.NODE_TEST_CONTEXT;
+  const fd = openSync(output, "w");
+  const child = spawn(process.execPath, ["tools/ci/gate-sweep.mjs"], { cwd: root, env, stdio: ["ignore", fd, fd] });
+  closeSync(fd);
+  const completion = once(child, "close");
+  let during, prerequisiteError;
+  try {
+    const deadline = Date.now() + 10000;
+    while (!existsSync(marker) && child.exitCode === null && Date.now() < deadline) await delay(10);
+    assert(existsSync(marker), "the real second gate must start before checking progress");
+    assert(!existsSync(resolve(root, "last.executed")), "the last gate must still be pending");
+    during = readFileSync(output, "utf8");
+  } catch (error) {
+    prerequisiteError = error;
+  } finally {
+    writeFileSync(release, "release");
+  }
+  try {
+    const [status, signal] = await completion;
+    if (prerequisiteError) throw prerequisiteError;
+    assert.equal(status, 1, readFileSync(output, "utf8"));
+    assert.equal(signal, null);
+    assert(existsSync(resolve(root, "last.executed")), "failure must not stop later gates");
+    const complete = readFileSync(output, "utf8");
+    assert.match(complete, /FAILED first, last/);
+    assert.match(complete, /ACTUAL_LAST_GATE_FAILURE/);
+    assert.match(during, /FAIL\s+first/, "a completed failure must survive a later interruption");
+    assert.match(during, /ACTUAL_FIRST_GATE_FAILURE/, "retain actual failure output before continuing");
+    assert.match(during, /RUN\s+second/, "identify the active gate before waiting for it");
+    assert.match(during, /ACTUAL_SECOND_GATE_PROGRESS/, "retain the active child's diagnostics before completion");
+  } finally {
+    rmSync(root, { recursive: true });
+  }
 });

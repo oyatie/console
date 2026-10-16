@@ -1,0 +1,52 @@
+{
+  "kind": "INDEPENDENT_ACTUAL_ACCOUNT_VISUAL_REVIEW",
+  "reviewer": "/root/integration_tests",
+  "candidate": "79d04ffbdb5c1a43a299b420101f0897d794d3ea",
+  "files": [
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/01-public.png",
+      "bytes": 32291,
+      "sha256": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/02-terms.png",
+      "bytes": 42977,
+      "sha256": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/03-account-enrolled.png",
+      "bytes": 34379,
+      "sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/04-sign-in.png",
+      "bytes": 37239,
+      "sha256": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/05-account-returned.png",
+      "bytes": 34379,
+      "sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/owner-receipt.json",
+      "bytes": 486,
+      "sha256": "36c0d944feac2fcb2368d036e9a72f2899e7cb131d25c3ef02cd277543970bf6"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/result.json",
+      "bytes": 1940,
+      "sha256": "1ca1793ac43754d6a65d95d763d6d4674a74eddba36ee424bea09ea8e87a79fc"
+    },
+    {
+      "path": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/run.log",
+      "bytes": 15229,
+      "sha256": "77e5fb39dc23017f911db1daea8e0095aa8b0d64ddbddd01896cd13818cef8c7"
+    },
+    {
+      "path": "/private/tmp/console-entry-policy-journey-critique-20260921/ACTUAL-ACCOUNT-VISUAL-REVIEW.md",
+      "bytes": 4323,
+      "sha256": "ae4a580a8e09bde97684f98b812cd601c48f45657f185b1d1512afc6d1ed3522"
+    }
+  ]
+}

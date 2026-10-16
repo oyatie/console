@@ -1,0 +1,21 @@
+{
+  "base": "2445cacbf22cca2859dad9f5a04d50c010073e91",
+  "source_root": "/private/tmp/console-mvp-dev-integrate-20260921",
+  "files": {
+    "backend/Cargo.lock": "ac377162699a97f7f0dedc5bed39ba86d7c053955621a87ff97ea5ecf4b1f2c6",
+    "backend/app/src/lib.rs": "8def6423800df683145dfca70b2a89b3426dddcf7e916e88d7e2c273314724f6",
+    "backend/crates/payroll/adapter-postgres/BUCK": "07d01714be19d60b6bc315ae284240a253c98d9fb7aa8f8e688f51e9c75b02bc",
+    "backend/crates/payroll/adapter-postgres/Cargo.toml": "256480daaa2a578873cc6f92494c9fdd042a581da79fd2a2efca874ebd056fa9",
+    "backend/crates/payroll/adapter-postgres/src/lib.rs": "881d91816775c45e57c0c5963ccaab215f798e16a1aecf5307bd921ce4abeb77",
+    "backend/crates/payroll/application/BUCK": "27183e58948d602fda1ca6e8577563cff490b5eeb77e3815c3a7d07b1995450f",
+    "backend/crates/payroll/application/Cargo.toml": "251d3da5ab9e3e2cae7eb3a492cd1cfeeeecbecac2d6ccc698a91eb2ea2b6a04",
+    "backend/crates/payroll/application/src/lib.rs": "30aed9d14e713a5b48a23bae3066e68317a7d246cca8d34a1e1985c9591c4961",
+    "backend/crates/payroll/rest/src/lib.rs": "78a9fb42e55dc204f9d1f6b57fdc1d305f291bb729f675a5eea36bf910462e26",
+    "backend/crates/payroll/rest/tests/api.rs": "38d8af09f11eb0860b4f13c243c31dfefabf21ddd2e02cd300b4b0c0a0970c47",
+    "backend/crates/payroll/rest/tests/payslip_draft_api.rs": "71bed42d0d8a0e12c0f5a5e2103019512954c1a39385a86b2e7198c128ad210c",
+    "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": "271260801400b68ed38ed0dab7194fcbb02e4cfd8158f003a7713dd8b32c0ec8",
+    "backend/crates/payroll/application/src/read.rs": "7345225cdd8ca7e0dd9c4e5536dd4fccf44fe5cb2fda3812c92d13c2b5808020",
+    "backend/crates/payroll/adapter-postgres/src/read.rs": "ee83ee4830028a985361d2e0ed56b85b6f140f5256a5d3bdd477bef0ae3d1ae7"
+  },
+  "tests": "Exact approved HTTP leaf unchanged since test commit; only3approved mechanical REST factory ctor edits"
+}

@@ -1,0 +1,93 @@
+[2026-09-21T16:33:28.762-04:00] Build ID: c33c6839-6e17-4827-bbbd-4a62c9c65356
+[2026-09-21T16:33:29.505-04:00] ✓ Pass: root//backend/ci/gates/writer-ownership:console-gate-writer-ownership-unit (0.3s)
+[2026-09-21T16:33:29.505-04:00] ---- STDOUT ----
+[2026-09-21T16:33:29.505-04:00]
+[2026-09-21T16:33:29.505-04:00] running 10 tests
+[2026-09-21T16:33:29.505-04:00] test tests::flattening_every_token_into_the_statement_reading_manufactures_writes ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::non_dml_uses_of_the_verbs_are_not_writes ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::a_marker_in_the_target_position_is_unresolved_not_absent ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::every_target_spelling_resolves_to_the_table ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::text_scan_skips_package_rename_directives ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::a_dependency_without_the_rename_form_records_only_its_key ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::comments_are_resolved_inside_the_literal_that_holds_them ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::a_block_comment_does_not_close_on_a_later_literals_text ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::cfg_truth_is_evaluated_with_test_false ... ok
+[2026-09-21T16:33:29.505-04:00] test tests::cargo_metadata_records_workspace_inherited_package_renames ... ok
+[2026-09-21T16:33:29.505-04:00]
+[2026-09-21T16:33:29.505-04:00] test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+[2026-09-21T16:33:29.505-04:00]
+[2026-09-21T16:33:29.505-04:00]
+[2026-09-21T16:33:29.505-04:00] ---- STDERR ----
+[2026-09-21T16:33:29.505-04:00]
+[2026-09-21T16:33:31.527-04:00] ✓ Pass: root//backend/ci/gates/writer-ownership:console-gate-writer-ownership-itest-gate_detects_violation (2.7s)
+[2026-09-21T16:33:31.527-04:00] ---- STDOUT ----
+[2026-09-21T16:33:31.527-04:00]
+[2026-09-21T16:33:31.527-04:00] running 58 tests
+[2026-09-21T16:33:31.527-04:00] test a_permitted_crate_that_writes_nothing_is_stale ... ok
+[2026-09-21T16:33:31.527-04:00] test a_commented_closing_brace_does_not_swallow_the_file ... ok
+[2026-09-21T16:33:31.527-04:00] test a_cfg_test_attribute_and_its_item_on_one_line_consume_only_that_item ... ok
+[2026-09-21T16:33:31.527-04:00] test a_command_line_flag_after_a_verb_word_is_not_a_write ... ok
+[2026-09-21T16:33:31.527-04:00] test an_unparseable_file_is_scanned_rather_than_skipped ... ok
+[2026-09-21T16:33:31.527-04:00] test broken_source_symlink_is_an_error ... ok
+[2026-09-21T16:33:31.527-04:00] test a_test_support_name_alone_buys_no_exemption ... ok
+[2026-09-21T16:33:31.527-04:00] test an_unresolved_write_naming_the_shared_store_is_still_charged ... ok
+[2026-09-21T16:33:31.527-04:00] test comments_are_not_writers ... ok
+[2026-09-21T16:33:31.527-04:00] test cfg_test_modules_inside_src_are_excluded ... ok
+[2026-09-21T16:33:31.527-04:00] test dev_dependency_only_crates_are_excluded ... ok
+[2026-09-21T16:33:31.527-04:00] test a_gate_name_outside_ci_gates_buys_no_exemption ... ok
+[2026-09-21T16:33:31.527-04:00] test a_verbatim_foreign_item_is_read_rather_than_skipped ... ok
+[2026-09-21T16:33:31.527-04:00] test escaped_newline_line_comment_still_charges_the_write ... ok
+[2026-09-21T16:33:31.527-04:00] test a_block_comment_body_may_hold_a_quote_and_a_semicolon ... ok
+[2026-09-21T16:33:31.527-04:00] test a_verbatim_item_is_read_rather_than_skipped ... ok
+[2026-09-21T16:33:31.527-04:00] test an_unreadable_target_is_charged_to_a_table_the_file_names_as_an_identifier ... ok
+[2026-09-21T16:33:31.527-04:00] test a_hash_in_a_macro_token_stream_does_not_hide_the_next_group ... ok
+[2026-09-21T16:33:31.527-04:00] test gate_roster_covers_every_object_key ... ok
+[2026-09-21T16:33:31.527-04:00] test gate_passes_when_only_the_owner_writes ... ok
+[2026-09-21T16:33:31.527-04:00] test gate_detects_an_unpermitted_writer_of_the_shared_receipt_store ... ok
+[2026-09-21T16:33:31.527-04:00] test gate_detects_second_writer_of_an_owned_table ... ok
+[2026-09-21T16:33:31.527-04:00] test gate_detects_creatively_spelled_second_writer ... ok
+[2026-09-21T16:33:31.527-04:00] test integration_tests_and_migrations_are_excluded_from_the_static_gate ... ok
+[2026-09-21T16:33:31.527-04:00] test every_permitted_crate_may_write_the_shared_receipt_store ... ok
+[2026-09-21T16:33:31.527-04:00] test known_residual_a_line_comment_that_runs_off_the_end_of_its_literal ... ok
+[2026-09-21T16:33:31.527-04:00] test linked_source_paths_keep_every_crate_owner ... ok
+[2026-09-21T16:33:31.527-04:00] test orgchange_no_longer_compiles_the_employment_seam ... ok
+[2026-09-21T16:33:31.527-04:00] test a_comment_where_the_statement_expects_a_separator_or_a_table_is_charged ... ok
+[2026-09-21T16:33:31.527-04:00] test production_code_after_a_cfg_test_module_is_still_scanned ... ok
+[2026-09-21T16:33:31.527-04:00] test ratchet_entries_are_well_formed ... ok
+[2026-09-21T16:33:31.527-04:00] test every_verbatim_arm_syn_emits_is_read_rather_than_skipped ... ok
+[2026-09-21T16:33:31.527-04:00] test quoted_sql_data_is_not_a_write_target ... ok
+[2026-09-21T16:33:31.527-04:00] test source_directory_cycle_is_an_error ... ok
+[2026-09-21T16:33:31.527-04:00] test selecting_from_the_shared_receipt_store_is_not_a_write ... ok
+[2026-09-21T16:33:31.527-04:00] test the_permitted_set_is_derived_from_the_receipt_owner_roster ... ok
+[2026-09-21T16:33:31.527-04:00] test the_shared_roster_is_disjoint_from_the_owned_registry ... ok
+[2026-09-21T16:33:31.527-04:00] test topology_script_names_the_roles_that_lose_dml ... ok
+[2026-09-21T16:33:31.527-04:00] test topology_script_table_roster_matches_the_registry ... ok
+[2026-09-21T16:33:31.527-04:00] test a_write_whose_target_position_holds_a_placeholder_or_a_literal_boundary_is_charged_as_unresolved ... ok
+[2026-09-21T16:33:31.527-04:00] test every_literal_kind_that_can_carry_a_statement_is_read ... ok
+[2026-09-21T16:33:31.527-04:00] test stale_ratchet_entries_fail_the_gate ... ok
+[2026-09-21T16:33:31.527-04:00] test unresolved_fallback_does_not_fire_on_reads ... ok
+[2026-09-21T16:33:31.527-04:00] test ordinary_rust_that_puts_a_block_comment_marker_near_a_verb_is_not_charged ... ok
+[2026-09-21T16:33:31.527-04:00] test cfg_predicates_that_do_not_gate_on_test_are_production ... ok
+[2026-09-21T16:33:31.527-04:00] test workspace_inherited_package_rename_does_not_skip_a_shipped_writer ... ok
+[2026-09-21T16:33:31.527-04:00] test known_residual_a_dash_inside_quoted_sql_data_hides_a_later_statement ... ok
+[2026-09-21T16:33:31.527-04:00] test known_residual_a_write_that_misses_either_charging_condition_is_not_charged ... ok
+[2026-09-21T16:33:31.527-04:00] test a_cfg_test_item_is_consumed_by_its_own_shape ... ok
+[2026-09-21T16:33:31.527-04:00] test a_verb_ending_a_token_stream_does_not_take_the_next_node_as_its_target ... ok
+[2026-09-21T16:33:31.527-04:00] test only_a_doc_attribute_is_dropped_at_item_level ... ok
+[2026-09-21T16:33:31.527-04:00] test an_item_is_skipped_only_when_its_cfg_cannot_hold_without_test ... ok
+[2026-09-21T16:33:31.527-04:00] test the_doc_attribute_rule_is_the_same_in_both_positions ... ok
+[2026-09-21T16:33:31.527-04:00] test gate_detects_every_measured_evasion ... ok
+[2026-09-21T16:33:31.527-04:00] test measured_tip_has_exactly_the_ratcheted_dual_writers ... ok
+[2026-09-21T16:33:31.527-04:00] test console_app_no_longer_writes_the_employment_tables ... ok
+[2026-09-21T16:33:31.527-04:00] test console_workflow_no_longer_writes_the_pay_run_tables ... ok
+[2026-09-21T16:33:31.527-04:00] test employment_is_owned_by_the_canonical_adapter ... ok
+[2026-09-21T16:33:31.527-04:00]
+[2026-09-21T16:33:31.527-04:00] test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.73s
+[2026-09-21T16:33:31.527-04:00]
+[2026-09-21T16:33:31.527-04:00]
+[2026-09-21T16:33:31.527-04:00] ---- STDERR ----
+[2026-09-21T16:33:31.527-04:00]
+[2026-09-21T16:33:31.529-04:00] Cache hits: 0%
+[2026-09-21T16:33:31.529-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T16:33:31.529-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 2[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

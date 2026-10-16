@@ -1,0 +1,36 @@
+{
+  "head": "203116497472dfb88d77998e4536771161bd9664",
+  "files": [
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/company_policy.rs",
+      "sha256": "520094fa680b6c624529f5b6c5d328b54ce086187d8526238b781d510d5396ee"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "sha256": "447ffe9b8fe48eaa889d42e39bf755d56e75a695c1b3c8d98eafac2c0164dd97"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/Cargo.toml",
+      "sha256": "b05ed890b9f14c4a84ad3331cb513dc9e1df0957375a8902a269a6d31f0414e6"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/BUCK",
+      "sha256": "85ebffd4580b6b0970ef23ba9dfc3d37a0181cbbacf3a71923cc2ea5482cded5"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/session/company_enrollment.rs",
+      "sha256": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_company_signed_credentials.rs",
+      "sha256": "684c176ebc67b16b62bb2ddd69080d9a6583ba9a99373e5d6dd23f52d0bd29b8"
+    },
+    {
+      "path": "backend/app/BUCK",
+      "sha256": "c617eb87444c8c07845483e90f1f8e720927de77af6674ede4658dc5c36ecb1a"
+    }
+  ],
+  "source_review": "/private/tmp/console-company-pg-read-adapter-source-security-review-20260920.json",
+  "auth_source_tests_review": "/private/tmp/console-company-auth-read-wrappers-round1-security-review-20260920.json",
+  "state": "source implemented; native Auth test run pending; SQL projection not implemented; no Company acceptance"
+}

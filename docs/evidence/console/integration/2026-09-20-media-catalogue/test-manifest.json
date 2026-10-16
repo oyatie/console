@@ -1,0 +1,39 @@
+{
+  "kind": "private-additive-media-catalogue-test-candidate",
+  "round": 1,
+  "observed_head_sha": "99203cf2ea01404a48a97173c3bbd3f49551771c",
+  "design_manifest_sha256": "637bfad1291c85539eb19f5593b24c5c2592dff72e8a0a155da30ee881c2aafd",
+  "root_design_consensus_sha256": "6cad3aa644068d45ade76ab8d114dfac002bddb8bde484c744104b5ce606365f",
+  "target": "scripts/console/validate-console-truth-ledger.test.mjs",
+  "target_preimage_sha256": "382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf",
+  "source_pins": {
+    "README.md": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+    "docs/current/ROADMAP.md": "f37adb9e9e487e19deb7753934a1f0fd7a0b4e9667f3db4ff136165e9434398c",
+    "docs/current/DELIVERY.md": "2a746d23c9ac7864013a8f3b3a33a37df2b667a00395776575031a107a45dc20",
+    "docs/program/console-capability-registry.json": "f9a2dbd5bdeab6176c3da34a7b06134ce8d1461fe5d5e5a5e89f6c8a59deaebd",
+    "scripts/console/validate-console-truth-ledger.mjs": "7b2738f8b1883c0d6f689c8d9f53a86d247bc521567866ac3482836606ac3643",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf",
+    "scripts/console/plan-fanout.mjs": "a8a53569d9eb68ac86b5fa77a122729e1a06f52302963205244f732302e5db44",
+    "scripts/console/verify-console-authority-train.mjs": "3809bde7bf9bd085e5376ea0deba2d5e5cf576f945235fd3d502d3af9bead20b",
+    "tools/ci/assess-tip-contention.mjs": "4f93632242b2a428b8ea8d1246e3e7c1e4f1ab57ac15fd20e14421179f27d8c5",
+    ".github/workflows/ci.yml": "3fde3529edf7c59c6f3bd489e68907a54dc78250d658c152a5ce75957d301cb8",
+    "package.json": "86f60cf9c4e1954c4fdfab25ef270d8592d8dc7d8ec535f625002f5a5bd3f391",
+    "docs/evidence/console/research/2026-09-19-foundry-transforms/proposal.json": "3d27a8cc372fba47d5f16b8d94415e82e26512742ece24d0d2f1b205e4c58d1d",
+    "docs/evidence/console/research/2026-09-19-foundry-transforms/independent-review.json": "4fbeb6cd78ced4f729e6561b6cf322d543cc01867c43d0c5f5c8b5021ccf3284",
+    "docs/evidence/console/research/2026-09-19-foundry-transforms/integration.json": "c80ab09104727b3d6405e32560bf495d1504e66be2c553d54ee4b3d4d5c6895d",
+    "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz": "8eceaa3b77f2f1376c87ff6bafc26c521a5224b58748f5351c814bdc780ef4f4"
+  },
+  "runtime_counts": null,
+  "tests_executed": 0,
+  "implementation_admitted": false,
+  "files": {
+    "README.md": "7aea6757ae7fe5b594531f9e014c36500b5e82f738441967d790227ddd394bfc",
+    "additive-tests.mjs": "da42925b824d705ca68b016d30be2ff436c30e74888edc507e061a9d60006735",
+    "coverage.json": "33a4d77058cad03da269cd62c8ac05d829362b1ef0e9e6c34b6474284e25fd7c",
+    "design-manifest.json": "637bfad1291c85539eb19f5593b24c5c2592dff72e8a0a155da30ee881c2aafd",
+    "root-design-consensus.json": "6cad3aa644068d45ade76ab8d114dfac002bddb8bde484c744104b5ce606365f",
+    "source-checks.json": "3c6bce879cdbce5c3abf141fc33d2ae293bc691347b5b87ee14ec98b5e9f6f6b",
+    "validate-console-truth-ledger.test.mjs": "e1f0a269c2679c50004be55c478cf44eb2d0403b54b8c341e0a472dfd4f13f59"
+  }
+}

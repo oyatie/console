@@ -1,0 +1,11 @@
+{
+  "kind": "immutable-legacy-family-verifier-prerequisite-tests",
+  "files_sha256": {
+    "README.md": "862591228bf7356e748f882cf8e17edcfee803abac0dc8d2018ff2770cbe6b4b",
+    "addition.rs": "6744300a13836271c3caebbafc456c79bbc0ea4f18ea8dfff2c0dab74184ac72",
+    "jwt_verifier.rs": "cecb65364c501b2b29c4f1ca9c7bdb8f02211c26f13cffd39c9b8ff1a08cfc56",
+    "preimage.rs": "9a68df9056b171aa3efafa7130771b9c48675a74c9f5987c7da9566285c49086",
+    "source-custody.json": "a0a628f2cd17b9c9e8c11b3d90b23129682b2093d62394d1afbfe3ac313ac2a0",
+    "tests.patch": "60b300c73f0cf3b0da5e643d4503d8fc88f7c7b926b5f1700289500b772c4fab"
+  }
+}

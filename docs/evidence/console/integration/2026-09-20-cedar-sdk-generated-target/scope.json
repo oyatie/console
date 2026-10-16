@@ -1,0 +1,9 @@
+{
+  "status": "exact_generated_output_reviewed_pending_committed_cleanliness_verification",
+  "source": "One resource:none entry, unchanged generator, exactlyone22lineBUCKtarget",
+  "holds": [
+    "Existingcleanliness test andfullgenerator suite aftercommit",
+    "NoBuckruntimequalification",
+    "Assembledrelease"
+  ]
+}

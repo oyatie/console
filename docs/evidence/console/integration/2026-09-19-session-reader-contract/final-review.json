@@ -1,0 +1,61 @@
+{
+  "kind": "independent-final-session-reader-test-and-evidence-review",
+  "reviewer": "/root/integration_tests",
+  "base_sha": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "status": "APPROVE_EXACT_LOCAL_TEST_CORRECTION",
+  "source_sha256": "93c5aaa322d1226676c380554eb2b45bc24365d2d6fe44954a4b2ea2d72935b7",
+  "prior_exact_review_sha256": "51d791e96671846475220835f0ceedf487c27326f1af455a2738610083b1d856",
+  "working_tree_readback": [
+    " M backend/app/tests/auth_rest/account_fence_transport.rs"
+  ],
+  "diff_check_exit": 0,
+  "evidence": {
+    "red": {
+      "path": "/private/tmp/console-session-reader-current-red.log",
+      "sha256": "453ec54baeb9455ec22fed0aafa725bc436f5989f2a602a92984f60d512184e0"
+    },
+    "green": {
+      "path": "/private/tmp/console-session-reader-current-green.log",
+      "sha256": "729e48ea47db55e26231be8fbbc2e0fb30ddcf57ef53a0412696adccadeeb933"
+    },
+    "admission": {
+      "path": "/private/tmp/console-session-reader-admission.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    }
+  },
+  "cargo_argv_from_retained_map": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "auth_rest",
+    "account_fence_transport::session_reader_contract",
+    "--",
+    "--test-threads=1"
+  ],
+  "red": {
+    "executed": 7,
+    "passed": 4,
+    "failed": 3,
+    "ignored": 0,
+    "filtered": 346,
+    "seconds": 33.4,
+    "failure": "All three at exact expected503 code mismatch: actual service_unavailable vs stale unavailable"
+  },
+  "green": {
+    "executed": 7,
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 346,
+    "seconds": 33.84,
+    "covers": "Exact same seven session_reader_contract leaves, including all three corrected actual fault boundaries and unchanged fence/security positives"
+  },
+  "admission_readback": "admitted: every named probe is red on this tree",
+  "reviewer_test_executions": 0,
+  "not_claimed": "No production/session source changed, full353leaf suite not run here, no Company/release completion or protected merge proof."
+}

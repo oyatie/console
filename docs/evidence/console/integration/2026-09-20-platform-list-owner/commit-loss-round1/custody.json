@@ -1,0 +1,56 @@
+{
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "source": "base plus reviewed lock, mechanical lint and actual commit-loss test packets",
+  "runtime": {
+    "discovered": 4,
+    "executed": 4,
+    "passed": 4,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 421,
+    "seconds": 8.69
+  },
+  "boundary": "Actual owner through authenticated restricted loopback connection; genuine successful COMMIT response suppressed; independent exact durable audit/no-other-effects and separate recovery",
+  "limits": [
+    "Isolated local plaintext test connection only; production TLS unchanged and unqualified",
+    "Committed candidate and remaining owner/custody/regression evidence pending",
+    "Full release incomplete"
+  ],
+  "artifacts": [
+    {
+      "original": "/private/tmp/console-platform-list-commit-loss-tests-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/test-manifest.json",
+      "sha256": "f4271546d600093737faa2216f02f9ddc8ddcf047b0ca836e9519bbe00951666"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-commit-loss-tests-round1-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/root-review.json",
+      "sha256": "72a76425c1eb680fa6bd06ab8421b74f2ff346eb55e8855f66ac397e4742066b"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-commit-loss-tests-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/security-review.json",
+      "sha256": "a524941e4aef96d986a6309fcdb4506c88e57e096a9f5c86dbf6a9e0650ad061"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-commit-loss-run1-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/runtime4.log",
+      "sha256": "d31b3027999609895eece3b91d3188873c7e95ef7da72c44dbd629de52671b3f"
+    },
+    {
+      "original": "/private/tmp/console-platform-list27-clippy-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/clippy27.log",
+      "sha256": "bcede3fa575fade24d2e0144919b6003f0f24d5737250b00c350f9e44c59e9cd"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-commit-loss-map-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/runtime-map.json",
+      "sha256": "a5a72711f55138c19ba88cbfb530eb55695fe4d6beba27f054dc93a0f05f623a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-lane-scope8-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/commit-loss-round1/lane-scope.json",
+      "sha256": "b311f414d30eae375fbd3bd61d129598d0754d3dd4ade35694f3c7c8ff32ea4e"
+    }
+  ]
+}

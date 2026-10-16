@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "narrow-source-successor-required",
+  "base_sha": "a33913110a84a38c4f072c6ba1c8442ed8bce17b",
+  "source_sha256": {
+    "docs/program/console-capability-registry.json": "d16cebf023d9ce19e473841815b068ce68c4a9a937eb9bbf32f78bd0724e717c",
+    "scripts/console/validate-console-truth-ledger.mjs": "f00d63c865bf77fc30c18cc76e42208936369fadb0627906f8b2cce8c62c3125",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "2eca1c58d20621500d9200420f7f03405af6f465b9e3a2b578c7f1fb651633f0"
+  },
+  "checks": [
+    "Registry exactly appends reviewed202row as89thruntime; removing it yields entire exact preimage, preserving all401leaves/state/source/authority values.",
+    "Approved test source2eca1c58 unchanged. Existing owner only, fixed catalogue pin, shared-binding membership, conservative support states and existing attestation lifecycle preserved."
+  ],
+  "findings": [
+    {
+      "id": "FUSION-EXACT-ENUMERABLE-KEYSET",
+      "location": "scripts/console/validate-console-truth-ledger.mjs fusionKeys",
+      "finding": "Equal enumerable-key count plus expected Object.hasOwn does not establish expected enumerable-key set. A nonenumerable expected command plus an extra enumerable undefined property retains count and hasOwn checks while extra key remains.",
+      "required_repair": "Compare actual Object.keys set itself to expected keys, preserving count (e.g actual.length===keys.length && keys.every(key=>actual.includes(key))). No descriptor/prototype sandbox or global serialization change required."
+    }
+  ],
+  "runtime_tests_executed": 0,
+  "remaining_holds": [
+    "Exact narrow successor source review and affected validation",
+    "Full owner and planner runtime footer plus final committed source/evidence binding",
+    "No full Foundry/reference runtime/release acceptance claim"
+  ]
+}

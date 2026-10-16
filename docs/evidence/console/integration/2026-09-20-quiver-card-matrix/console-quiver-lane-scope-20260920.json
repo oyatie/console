@@ -1,0 +1,39 @@
+[
+  {
+    "lane": "frozen-quiver-card-matrices",
+    "owner": "/root",
+    "base_sha": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+    "immutable_target": "60exact retained Quiver index tuples in two existing-source runtime rows; all prior states preserved",
+    "probe": "node --test --test-name-pattern='Quiver catalogue rejects changed operation' scripts/console/validate-console-truth-ledger.test.mjs",
+    "allowed_paths": [
+      "docs/program/console-capability-registry.json",
+      "scripts/console/validate-console-truth-ledger.mjs"
+    ],
+    "design_manifest": "3d4074e3ab3e7850e68dc7cfc127b220e708c851cdede4394ebe5a00faa342f0",
+    "tests_manifest": "24c7073ab37ecf060609ac349a3650ab19678bdbb601ecc84fa058abc0e790d7",
+    "mechanical_guide": "Append reviewed39+21runtime rows; require both identities and exact enumerable keys before fixed ordered catalogue digests, null unknown semantics, current exact binding membership. Reuse local Fusion key guard with unchanged Fusion diagnostics. Preserve both distinct same-path chart labels and whole preimage.",
+    "pre_mortem": "Ignored catalogue or invisible added own keys produce false validation authority",
+    "blast_radius": "Existing reference inventory/checker only",
+    "detection": "Actual owner RED/GREEN, complete owner/planner suites, preimage removal equality",
+    "rollback": "Preserve immutable evidence; fence invalid registry, revert candidate before acceptance only",
+    "stop_conditions": [
+      "source or preimage mismatch",
+      "unexpected prerequisite RED",
+      "state promotion",
+      "unreviewed semantic test changes"
+    ],
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "full Foundry reference freeze",
+      "all analytical execution semantics",
+      "milestones0-10 qualification",
+      "historical cfd source snapshot intermittency"
+    ],
+    "leases": [
+      "root sole registry/checker/generated writer"
+    ]
+  }
+]

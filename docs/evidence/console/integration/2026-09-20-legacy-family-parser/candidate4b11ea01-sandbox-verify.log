@@ -1,0 +1,8 @@
+HISTORICAL LOG LOCATOR - NOT ORIGINAL TEST OUTPUT
+recovery_commit: 6f15a1671e823293b2025d3b1f72d04034ab7693
+original_path: docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log
+git_blob_sha: de0ccb6862d4e3640c47f45fcad65ec393060a90
+sha256: 70882bb929794167772c536b14f8fd243e5d122e16beb9d9048b65af15506f90
+bytes: 606280
+custody: docs/evidence/console/integration/2026-10-13-historical-download-log-locators/custody.json
+Resolve the exact Git original before assessing historical output.

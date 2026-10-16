@@ -1,0 +1,91 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPTED_PRIVATE_EMPTY_COMPANY_SCHEMA_SOURCE_AND_NATIVE_SQLX_BOUNDARY",
+  "commit": "c8a7363e4314183084f529618f55f45d7b4f72a3",
+  "source_review_sha256": "57c43e2fc7d18ca7bdd8b19464d9915d5a98dbc3ec8dcf3a59b4c2c344c86981",
+  "source_sha256": {
+    "ops/generate-account-custody.py": "3892a65afb3208e764701ce423b3302986535dd0a146388dbf3c4cf3f02c50b1",
+    "ops/postgres-company-enrollment-schema.sql": "7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb",
+    "ops/BUCK": "54972cfef71f526be2f46a6c2952737578e478d8d44ca10f54cf726e6015e730",
+    "tools/buck/gen_first_party.py": "37fb41f71d6f37863ed7551e9d89c6599479aab18765fb22a1cdf8e61b509c54",
+    "backend/app/BUCK": "e869850ccd1fea496c186bf64710c144fbc771372221309dc0217846eb1c86de"
+  },
+  "test_sha256": {
+    "backend/app/tests/auth_rest/native_company_intake_schema.rs": "8a01f9b531ac33acc8ec57a45a4688a268ecf78667a7c529bf820bdb2259768e",
+    "backend/app/tests/auth_rest/fixtures/company-enrollment-schema-acl.sql": "757d00081adb2df23c55444028642a05001efaa6054954f16b81d54432ba677a",
+    "backend/app/tests/auth_rest/fixtures/company-enrollment-schema-references.sql": "ae5783e1123075e4579be8efd94ed3d1fb774fdc8b42376f58b9f3170487c37c",
+    "ops/test_company_enrollment_input_generator.py": "d6275ff6b7215e422b36d91f5808adb5ad43230e72c4e3cb1321928406ddacaf",
+    "tools/buck/test_gen_first_party.py": "2e1922aef32b4c3dfe3b4b81b68ceea69acc9663478f9afe3d9a43a1f8b798cc"
+  },
+  "log_sha256": {
+    "console-company-schema-generator-red-20260920.log": "f30ca647884cc6c4d63c2ad7732a220d05fcb84ad077dc7fe811cad683d4e353",
+    "console-company-schema-admission-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-company-schema-generator-green-20260920.log": "089d0839d954b9a44fdc2dd1b8565fcc1fa1a84d3c547561f4019d04b6674324",
+    "console-company-schema-buck-tests-20260920.log": "e9e5844e311531b76e7c6c0ac19c989421ad3deb8214a9236f81567bb94490cc",
+    "console-company-schema-buck-successor-tests-20260920.log": "a361ac0464f332dd6edce4844081f3039370f3387d5dbe04f2cdfa1fe2f2654a",
+    "console-company-schema-native-runtime-20260920.log": "9900c866cb193eaa81d206016e357bf866b85cbeabe509709abdee5b056efc77",
+    "console-company-schema-native-successor-runtime-20260920.log": "d7f5e49bfdc10dbdb23e91fc40a0cc055ed7e4b783f077265e15057dbcf4ee7f",
+    "console-company-schema-reachability-20260920.log": "ffc9f44f95477d69d755398461715d7f5ba6f74c1f0b1f1d01a0b9aab1d100ca"
+  },
+  "checks": [
+    "All five implementation sources match approved source receipt, current files and exact commit Git blobs.",
+    "Actual test differs original integrated source only approved corruption SQL lifetime to static plus exact rustfmt signature wrap; all SQL, call sites, assertions and fixtures preserved.",
+    "Native successor executes exact named private-schema leaf against actual SQLx fixture and six restricted LOGIN roles:1pass,0fail,0ignored,477filtered,42.35sec body. Native initial E0521 build failure preserved separately and counted as zero executed product tests.",
+    "Test first validates actual native serving root/credential classifiers, then private installs parser/schema in bounded transaction, and requires both unchanged classifiers profile_mismatch throughout.",
+    "Schema ACL oracle verifies exact owner/grantor/grantee/table/column privileges, no PUBLIC/unknown/serving privileges and unconditional ALWAYS SECURITY INVOKER receipt guard; references oracle enforces exact12real FK tuples, modes and zero new serving participants.",
+    "Six real session_user=current_user non-superuser/non-bypass LOGIN pools each attempt5operations across3tables:90exact42501denials. No SET ROLE substituted for these serving tests.",
+    "Separate nonlogin owner transaction executes empty-table SELECT FOR KEY SHARE and refuses even zero-row receipt UPDATE with exact P0001 immutable error.",
+    "Two real catalog corruptions (unexpected SELECT grant and ALWAYS\u2192ordinary trigger) provoke exact oracle errors, rollback, and restored passing ACL oracle.",
+    "Full durable all_rows census removes only3verified-new empty tables and compares all predecessor table bytes unchanged. No Company/receipt/assignment/engagement fixture effects invented.",
+    "Generator preservation passes1/1; Buck generator suite66/66 after reviewed generated projection staged. Earlier65pass/1generated-drift failure retained; no test weakened.",
+    "Reachability reports388/388defined binaries reachable, unchanged existing seaweedfs_worm dark source.3109static attributes are cfg/ignore-unaware and not execution counts."
+  ],
+  "counts": {
+    "native_sqlx": {
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 477
+    },
+    "within_sqlx_derived_from_exact_source_and_pass": {
+      "real_login_denials": 90,
+      "fk_tuples": 12,
+      "owner_empty_keyshare": 1,
+      "owner_zero_row_immutable_denial": 1,
+      "reversible_corruption_controls": 2,
+      "new_empty_tables": 3
+    },
+    "preservation": {
+      "executed": 1,
+      "passed": 1
+    },
+    "buck_generator": {
+      "executed": 66,
+      "passed": 66
+    }
+  },
+  "findings": [],
+  "remaining_holds": [
+    "Schema remains UNINSTALLED in serving finalizers; both existing profiles deliberately reject partial installation.",
+    "Empty-table key-share proves permission, not populated FK locking. Native assignment revision FK, session/account correlation and populated COMMITTED receipt closure remain incomplete.",
+    "Request/event mutation and deferred guards, authenticated prepare/status/cancel/execute, idempotency/concurrency/recovery and real Company browser journey remain unaccepted.",
+    "Functional SQLx environment does not establish production durability, migration, recovery, security-complete or workload qualification.",
+    "No milestone/full client release, payroll legal compliance, production exposure or payment execution approval.",
+    "Archive storage verification is separate; evidence assembly in progress."
+  ],
+  "execution": {
+    "reviewer_tests": 0,
+    "reviewer_builds": 0,
+    "reviewer_sql": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

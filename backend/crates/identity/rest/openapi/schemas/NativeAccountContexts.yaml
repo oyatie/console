@@ -1,0 +1,11 @@
+type: object
+additionalProperties: false
+required:
+- contexts
+properties:
+  contexts:
+    type: array
+    maxItems: 0
+    items: false
+description: Current owner returns only a proven empty list. Candidate contexts or unknown provenance
+  fail with navigation_unavailable; they are never fabricated or mapped to an empty success.

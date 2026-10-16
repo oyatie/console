@@ -1,0 +1,8 @@
+{
+  "decision": "APPROVED_SOURCE_ONLY",
+  "reviewer": "/root",
+  "manifest_sha256": "d99993db1c56c2421aef2662a2c6cff70af858db10d087640aa0665e720ead79",
+  "security_sha256": "8f7f34e743603857a1f351bb9167d1761e483a472ec5d974388a2b6a194eac15",
+  "coverage": "Six actual mounted GET/HEAD bridge/projection/audit failure attempts, exact503/privacy/full rows/recovery; no altered historical oracle",
+  "runtime_tests": 0
+}

@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "HOLD_EXACT_FUNCTION_ACL_HARDENING",
+  "source": "/private/tmp/company-intake-owner-generator-body.py",
+  "sha256": "f0eeca42da4c29a82671efd93d6b54a7c26ddd5abd621b6ab828b8ac84a5dd0a",
+  "findings": [
+    {
+      "id": "INTAKE-OWNER-ACL-DEFAULTS",
+      "priority": "P1",
+      "location": "company_enrollment_intake_sql final ALTER/REVOKE/GRANT loop",
+      "problem": "The fixed REVOKE roster leaves arbitrary EXECUTE grantees inherited from creator default function privileges; contract permits only console_account_owner and console_rt. A private owner function cannot trust role-list completeness without a check.",
+      "required_fix": "Remove every actual direct function ACL grantee for each exact new pg_proc signature before granting exact owner/runtime set, or fail installation closed when any extra grantee exists. Add actual P4 custom-default-ACL fixture before claiming exhaustive ACL acceptance."
+    }
+  ],
+  "checks": [
+    "Immutable original recipient selection before sorted Account EXCLUSIVE locks; caller family SHARE, fresh postwait original-plan check and40001 restart.",
+    "Prepare independently invokes current material owner; new eligibility retains designation head SHARE and native birth/consent checks; capacity precedes command fence. Existing replay uses current Account/family without new eligibility.",
+    "New request and full PREPARED event share observed DB time inside caller transaction; state/event cancellation and lazy expiry atomic, exact immutable digest conflict, zero rows foreign/absent recovery.",
+    "Separate UNINSTALLED four-function output; no serving profile/finalizer/history reseal. COMMITTED fails closed rather than inventing effect receipt.",
+    "SQL trusted identifiers remain separate from required opaque signed credential/Auth integration; no browser authentication or complete intake acceptance inferred."
+  ],
+  "limits": [
+    "No tests, builds or SQL executed by reviewer. Exact runtime evidence and remaining P4/P5/P6global/P7/P8/effects remain required.",
+    "No additional blocking source defect found in private pending scope, but runtime and exact integrated bytes remain unreviewed."
+  ],
+  "repository_writes": 0
+}

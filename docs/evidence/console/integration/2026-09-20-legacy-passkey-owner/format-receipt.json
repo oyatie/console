@@ -1,0 +1,6 @@
+{
+  "reviewer": "/root",
+  "change": "Required rustfmt alphabetical module declaration ordering only; explicit path and module bindings unchanged. No functions, assertions or test semantics changed.",
+  "before_sha256": "39e0aabea84e2b080e5349e6b0243acae96a91c9cdc77ec5c70c0c44e95ba3f7",
+  "after_sha256": "fb3100ce50bf40ef64b156a4fe22a996bee3bbb7390204c41b08cb744e22f7ce"
+}

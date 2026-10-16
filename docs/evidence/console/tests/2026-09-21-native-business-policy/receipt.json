@@ -1,0 +1,33 @@
+{
+  "application_base": "4902050c8",
+  "owner": "/root",
+  "status": "reviewed additive tests; actual Rust compilation and semantic RED not yet established",
+  "browser_manifest_sha256": "470ce043b633afbd84cb1dec95aeca242dafc197a8ff3398cd01c456179da35b",
+  "physical_source_sha256": "de2d6b5b3edd9a58def0c1e879bd0fd885c4508abdbdf5a1032bcea330ff36d1",
+  "unchanged_original_leaves": true,
+  "prerequisites": "Actual Company browsergreen on integrated9f2fb8530 with native bundle; evidence committed4902050c8",
+  "reviews": [
+    "/root/policy_owner_tests",
+    "/root/policy_browser_tests",
+    "/root/company_scope_review"
+  ],
+  "node_controls": {
+    "passed": 34,
+    "rust_compilation": false,
+    "runtime_claim": false
+  },
+  "remaining": [
+    "Compile exact new probes before admission",
+    "Require semantic RED at real owner boundary",
+    "Implement complete policy\u2192Payroll read\u2192revoke journey",
+    "Register all new browser/oracle controls in protected CI before workflow acceptance",
+    "All MVP and release requirements remain open"
+  ],
+  "artifacts": {
+    "reviewed-browser-candidate.tar.gz": "6d266605cf26de724f36b11aceb34405f0acce4997d856f0132ef4ab9cc75e0d",
+    "browser-format-review.json": "4c92c9ececf95a6865b5ce0a5ae18fc623850f303c51148cb5a9320566fea496",
+    "browser-semantic-review.json": "f3ebded83fd42df81d1762cbabc7df9d8ae1eb04ff774a09ecc65a73ab52f450",
+    "physical-review.json": "ce53fef5ae2cfc52cdbc222d0d0e8c08986a3cc43fa38338cc311c94f86aecb8",
+    "runtime-contract.json": "da20cb8767949eedc16f5a423c4bdc83b7102e5f12b40b47b0f09e946d71957e"
+  }
+}

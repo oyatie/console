@@ -1,0 +1,136 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling serde_core v1.0.229
+   Compiling generic-array v0.14.7
+   Compiling zeroize v1.9.0
+   Compiling num-traits v0.2.19
+   Compiling crossbeam-utils v0.8.21
+   Compiling futures-sink v0.3.34
+   Compiling tokio v1.53.1
+   Compiling form_urlencoded v1.2.2
+   Compiling aws-lc-rs v1.18.1
+   Compiling subtle v2.6.1
+   Compiling base64 v0.22.1
+   Compiling thiserror v2.0.20
+   Compiling ena v0.14.4
+   Compiling unicode-xid v0.2.6
+   Compiling rand v0.10.1
+   Compiling regex-automata v0.4.18
+   Compiling uuid v1.26.1
+   Compiling rustls-pki-types v1.14.1
+   Compiling futures-util v0.3.34
+   Compiling futures-channel v0.3.34
+   Compiling byteorder v1.5.0
+   Compiling whoami v2.1.2
+   Compiling bitflags v2.13.0
+   Compiling md-5 v0.11.0
+   Compiling rustls v0.23.45
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling concurrent-queue v2.5.0
+   Compiling crossbeam-queue v0.3.12
+   Compiling webpki-roots v1.0.9
+   Compiling atoi v2.0.0
+   Compiling chrono v0.4.45
+   Compiling regex v1.12.4
+   Compiling lalrpop-util v0.22.2
+   Compiling serde_json v1.0.151
+   Compiling deranged v0.5.8
+   Compiling digest v0.10.7
+   Compiling smol_str v0.3.6
+   Compiling event-listener v5.4.1
+   Compiling rustls-webpki v0.103.15
+   Compiling sha2 v0.10.9
+   Compiling sha3 v0.10.9
+   Compiling syn v2.0.119
+   Compiling syn v3.0.5
+   Compiling tokio-stream v0.1.18
+   Compiling time v0.3.55
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.20
+   Compiling synstructure v0.13.2
+   Compiling darling_core v0.23.0
+   Compiling logos-codegen v0.16.1
+   Compiling zerovec-derive v0.11.3
+   Compiling displaydoc v0.2.6
+   Compiling tracing-attributes v0.1.31
+   Compiling enum-ordinalize-derive v4.4.1
+   Compiling miette-derive v7.6.0
+   Compiling ref-cast-impl v1.0.25
+   Compiling serde v1.0.229
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling logos-derive v0.16.1
+   Compiling ref-cast v1.0.25
+   Compiling enum-ordinalize v4.4.1
+   Compiling tracing v0.1.44
+   Compiling zerofrom v0.1.8
+   Compiling darling_macro v0.23.0
+   Compiling logos v0.16.1
+   Compiling darling v0.23.0
+   Compiling smallvec v1.15.2
+   Compiling either v1.16.0
+   Compiling linked-hash-map v0.5.6
+   Compiling nonempty v0.12.0
+   Compiling miette v7.6.0
+   Compiling console-kernel-core v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/kernel/core)
+   Compiling linked_hash_set v0.1.6
+   Compiling parking_lot_core v0.9.12
+   Compiling itertools v0.14.0
+   Compiling itertools v0.15.0
+   Compiling educe v0.7.6
+   Compiling parking_lot v0.12.5
+   Compiling futures-intrusive v0.5.0
+   Compiling string_cache v0.8.9
+   Compiling lalrpop v0.22.2
+   Compiling yoke v0.8.3
+   Compiling cedar-policy-core v4.12.0
+   Compiling serde_with_macros v3.21.0
+   Compiling serde_with v3.21.0
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_provider v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling icu_properties v2.2.0
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling sqlx-core v0.9.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling cedar-policy-formatter v4.12.0
+   Compiling cedar-policy v4.12.0
+   Compiling console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.62s
+     Running tests/cedar_sdk_identity.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_sdk_identity-8aafb91acc6fb01c)
+
+running 2 tests
+
+thread 'current_sdk_evaluation_rejects_historical_key_without_relabeling_it' (66204400) panicked at crates/platform/authz/tests/cedar_sdk_identity.rs:82:5:
+assertion `left == right` failed: actual SDK registration must match the evaluated bundle
+  left: Deny
+ right: Allow
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test current_sdk_evaluation_rejects_historical_key_without_relabeling_it ... FAILED
+
+thread 'compiled_bundle_keys_name_the_actual_linked_cedar_sdk' (66204399) panicked at crates/platform/authz/tests/cedar_sdk_identity.rs:27:9:
+assertion `left == right` failed: compiled bundle identity must name its actual linked Cedar SDK
+  left: "4.11.2"
+ right: "4.12.0"
+test compiled_bundle_keys_name_the_actual_linked_cedar_sdk ... FAILED
+
+failures:
+
+failures:
+    compiled_bundle_keys_name_the_actual_linked_cedar_sdk
+    current_sdk_evaluation_rejects_historical_key_without_relabeling_it
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p console-platform-authz --test cedar_sdk_identity`

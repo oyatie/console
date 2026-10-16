@@ -1,0 +1,19 @@
+{
+  "original_path": "/private/tmp/console-company-entry-read-tests-20260920-round3",
+  "original_manifest_sha256": "bd15a346833a594cd55bb08f058b0391cf0813c30a127526c03cbe34ad8e303b",
+  "path_mapping": {
+    "freshness-addition.rs": "freshness-addition.rs",
+    "native_company_browser.rs": "native_company_browser.rs",
+    "README.md": "README.txt",
+    "source-custody.json": "source-custody.json",
+    "browser-addition.rs": "browser-addition.rs",
+    "manifest.json": "manifest.json",
+    "candidate.diff": "candidate.diff",
+    "browser-prerequisite-custody.json": "browser-prerequisite-custody.json",
+    "company-preview.cjs": "company-preview.cjs",
+    "author_browser.py": "author_browser.py",
+    "preview-controls.cjs": "preview-controls.cjs",
+    "additions.rs": "additions.rs",
+    "native_company_setup.rs": "native_company_setup.rs"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "kind": "startup-disposable-transport-verification",
+  "test_base_sha": "6d2f085dd30c036119ef8ff416a65746441e1a23",
+  "owner": "root",
+  "source_paths": [
+    "tools/ci/cargo_needs_postgres.sh",
+    "tools/buck/test_needs_postgres.sh",
+    "tools/buck/run_test_with_postgres_env.sh"
+  ],
+  "admission": "Three actual named harness probes admitted by tools/lanes/fanout.py, intendedRED verified.",
+  "targeted_cargo": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "cargo_regression": {
+    "executed": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0
+  },
+  "buck_transport": {
+    "executed_shell_suites": 1,
+    "exit_code": 0,
+    "individual_assertion_count": "not individually reported by existing shell suite",
+    "inherited_fake_build_diagnostics": "Missing empty envfile greps precede fakebuild guard; actualtest oracle independently enforced. No clean-diagnostic claim."
+  },
+  "buck_loader": {
+    "executed_shell_suites": 1,
+    "exit_code": 0,
+    "individual_assertion_count": "not individually reported by existing shell suite"
+  },
+  "real_designation": {
+    "runner": "cargo",
+    "executed": 1,
+    "passed": 1,
+    "filtered_out": 352,
+    "duration_seconds": 5.29
+  },
+  "company_entry": {
+    "executed": 1,
+    "failed": 1,
+    "filtered_out": 352,
+    "duration_seconds": 7.14,
+    "marker": "NATIVE_COMPANY_ENTRY",
+    "meaningful_owner_red": true
+  },
+  "remaining_holds": [
+    "Actual rebuilt Buck designation proof running separately.",
+    "Company implementation and fullworkflow acceptance incomplete.",
+    "Inherited root nightly toolchain used; requiredRust1.98.1qualification remains separate work."
+  ],
+  "source_hashes": {
+    "tools/ci/cargo_needs_postgres.sh": "0cad14fc74a61c09afd26edba2f926c6593bb06e108aeef1f733bedcc85b5b49",
+    "tools/buck/test_needs_postgres.sh": "dab2d09477de84e658d766382edead131247200c4401fdd74e51418bb2c1ef93",
+    "tools/buck/run_test_with_postgres_env.sh": "76a14a44c8fa46a461dacd5691e1ec370dfeb01ea2c33a0f55f165bca6a67647"
+  }
+}

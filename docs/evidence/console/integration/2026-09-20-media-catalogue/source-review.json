@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact Media catalogue source candidate; full runtime and immutable acceptance pending",
+  "base_sha": "9fc8b80bdf3766ab9295a5d7e2c3ce925b277495",
+  "source_sha256": {
+    "docs/program/console-capability-registry.json": "a508582601506411e8f511a63cce6248b8b5f59909f1ca80cc1d375db937abf0",
+    "scripts/console/validate-console-truth-ledger.mjs": "7c978ed3799c8fc0cfc72e093f0930c4d3dd18b084fd7f0d64dd8b49aeb0dd25",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "e1f0a269c2679c50004be55c478cf44eb2d0403b54b8c341e0a472dfd4f13f59"
+  },
+  "preimage_registry_sha256": "f9a2dbd5bdeab6176c3da34a7b06134ce8d1461fe5d5e5a5e89f6c8a59deaebd",
+  "prospective_row_sha256": "aa4b00df68176048c3b079525e72bd8292ea610584da4018f70eb7e4def89685",
+  "checks": [
+    "Exactly two production files changed. Candidate registry appends exactly the four-round reviewed prospective row;92 runtime rows versus91. Removing only that row restores entire parsed preimage, including all401 leaves/states, source bindings, exclusions, prior Fusion/Quiver data and unrelated authority metadata.",
+    "Validator differs by exactly one32-line local Media block; removing it reproduces original bytes. No old guard, canonical helper, attestation owner, source resolver, caller or policy behavior changed.",
+    "Exact enumerable runtime/semantic/card/binding key sets precede fixed whole-catalogue hash. All nine semantic dimensions remain null and no caller-provided expected digest is accepted.",
+    "Fixed44-row pin preserves every original category/operation/rate/mapping/scope/binding and repeated name across categories; no model version or execution equivalence inferred.",
+    "Every one of44 bindings invokes existing source binding validation; every one of43 nonnull mappings must resolve an allowed existing leaf and its exact current shared binding.",
+    "Exactly one null mapping is accepted only for the original Documents/VLM275 tuple and explicit Intelligence exclusion; source binding still validated. No invented null leaf or shared binding.",
+    "Reference status/unit explicitly reject Console pricing, latency and throughput claims; embedding scope remains fixed by catalogue pin and excluded VLM remains outside Console implementation authority.",
+    "Reviewed test candidate e1f0a269 unchanged. Anchored named GREEN log shows one test passed, zero failed/skipped in716.101625ms; earlier unanchored selection matched two tests and must not be reported as one."
+  ],
+  "findings": [],
+  "runtime_tests_executed_by_reviewer": 0,
+  "observed_named_green": {
+    "log_sha256": "b523def0140800fdb4222f57c55428ba70ca48c9d6dc3f435dac38960e1e3ea4",
+    "test_pattern": "^Media catalogue rejects changed reference rate$",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "remaining_holds": [
+    "Full207 owner suite and retained29 planner suite results, immutable candidate commit and final acceptance audit required.",
+    "Only reference catalogue custody is covered; Media execution, format/model/source-policy/recovery semantics and Console cost/performance remain unqualified.",
+    "Reference freeze remains partial; no release leaf stage, milestone0-10 or production exposure qualification established."
+  ]
+}

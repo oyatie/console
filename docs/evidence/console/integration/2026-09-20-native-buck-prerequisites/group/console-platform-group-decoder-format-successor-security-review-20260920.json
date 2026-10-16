@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE formatter-only successor of independently approved Group decoder test",
+  "source_approval_sha256": "d932302ee2e96a2a4afb687814f18862b900e0058ed5d7a70fc95d07277142e9",
+  "before_child_sha256": "bf3698eb2922c2c2b164066ee6fd56a9540bee77aa91404f7c46b2310729665b",
+  "after_child_sha256": "c2e6b7aec42c7dca4ac327f48da18cae28f2d148c278884f44f791b922660441",
+  "unchanged_parent_sha256": "a845ec25a81d14d5d98d5554f5c2e54f3b1069c5f043650d42b552051c2d31b1",
+  "reported_root_command": "rustfmt +1.98.1 --edition 2024 --emit stdout with approved source on stdin",
+  "verification": [
+    "Exact formatted child hash matches c2e6b7aec42c7dca4ac327f48da18cae28f2d148c278884f44f791b922660441.",
+    "Parent candidate bytes remain exactly approved a845ec25a81d14d5d98d5554f5c2e54f3b1069c5f043650d42b552051c2d31b1.",
+    "Read complete source diff and independently compared lexical tokens preserving all raw/ordinary string literals and comments. All tokens identical after accounting for whitespace, optional trailing commas and one matches-expression arm wrapped in a block.",
+    "The single added match-arm block contains the identical boolean matches expression and no statements/effects; existing branch result preserved.",
+    "SQL strings, catalog fields, fixture UUID substitution, exact outcomes, assertions, actual barriers, timeout values, cleanup/restoration sequence and recovery calls unchanged."
+  ],
+  "findings": [],
+  "reviewer_formatter_or_runtime_executions": 0,
+  "remaining_holds": [
+    "Root compile, actual SQLx execution and serialized generated source inclusion remain required.",
+    "All original source-approval scope limits and open Group supplemental/full-release qualification remain unchanged."
+  ]
+}

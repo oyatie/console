@@ -1,0 +1,29 @@
+{
+  "kind": "independent-company-eligibility-sequencing-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T02:57:04.647110+00:00",
+  "decision": "APPROVE_BOUNDED_SEQUENCING_AMENDMENT_FOR_EXACT_TRANSITION_CANDIDATE_AUTHORING",
+  "base_sha": "c613626e6dcab9c7c9ce8e4f479576d8ca0e20f7",
+  "manifest_sha256": "dca3e192450870be7415d4d2ec4fee145c772660c50dc6b72588298a3c6155e1",
+  "amendment_sha256": "811aac3f00a135598510d36823821aa496453623dd22736f357000e1c193ae8c",
+  "reviewed_bindings": 5,
+  "retained_eleven_tests_sha256": "c25a58ee1b8f4760d3b9ad3a8cc8ab4817b7b271fe0f7413941cd7fa0f17294d",
+  "findings": [],
+  "reasons": [
+    "Eligibility is a non-mutating read over existing enrolled ACTIVE Account/current designation; no dependency on unbound Company topology mutation or legacy token family authority.",
+    "One finite prospective59-to60 layer may follow unchanged historical serializers/profiles. New serializer predecessor hashes differ from historical finalized hashes and must be independently source-bound.",
+    "Exact owner/Auth-only ACL, current same-session identity, Account/head locks and post-wait database clock remain unchanged; eligibility is never mutation authority.",
+    "Foreign owner/extra overload/wrong body/ACL/partial install are fail-closed profile mismatch; finalizer is sole installation owner.",
+    "Explicit preservation, rerun, fault-after-create atomicity, corrupted target and drained-reader rollback tests remain required before implementation admission."
+  ],
+  "approved_next_action": "Root may author exact additive transition design/source-bound fixtures and test candidate, obtain independent test/source review and meaningful clean owner RED. This receipt does not admit implementation or approve new constants.",
+  "remaining_holds": [
+    "Exact source SQL and both metadata variant predecessor/successor fingerprints are not supplied here.",
+    "Exact transition/adversarial tests remain to be independently reviewed and executed.",
+    "All11 retained read behavior tests plus transition tests must pass; catalog-only green is insufficient.",
+    "No disconnected CTA/user-delivered milestone/Company acceptance or release acceptance.",
+    "Broader Company current Cedar and family-bound legacy topology authority contracts remain unresolved."
+  ],
+  "runtime_executions": 0,
+  "repository_mutations": 0
+}

@@ -1,0 +1,10 @@
+[2026-09-21T23:13:06.523-04:00] Build ID: c4f2a421-eb07-45cb-b013-b8c8f5648ef5
+[2026-09-21T23:13:06.523-04:00] Directory changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-integrated-account-browser
+[2026-09-21T23:13:06.523-04:00] File changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-integrated-account-browser/01-public.png
+[2026-09-21T23:13:06.523-04:00] File changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-integrated-account-browser/02-terms.png
+[2026-09-21T23:13:06.523-04:00] 462 additional file change events (since mergebase)
+[2026-09-21T23:13:06.523-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T23:13:12.051-04:00] Cache hits: 0%
+[2026-09-21T23:13:12.051-04:00] Commands: 3 (cached: 0, remote: 0, local: 3)
+[2026-09-21T23:13:12.051-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED

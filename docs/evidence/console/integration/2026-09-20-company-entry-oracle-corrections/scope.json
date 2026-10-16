@@ -1,0 +1,26 @@
+{
+  "status": "reviewed_test_oracle_corrections_runtime_partial",
+  "failures_retained": {
+    "entry_http": {
+      "passed": 5,
+      "failed": 1
+    },
+    "eligibility": {
+      "passed": 11,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 0,
+      "failed": 1
+    }
+  },
+  "corrections": [
+    "Exact complete owner paragraph match",
+    "Separate precise CSRF limiter effects from inert document/me reads"
+  ],
+  "holds": [
+    "Corrected HTTP rerun",
+    "Source runtime and visual final review",
+    "Full Company command and release"
+  ]
+}

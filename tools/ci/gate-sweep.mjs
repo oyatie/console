@@ -61,14 +61,14 @@ export function loadGates(path = resolve(ROOT, "tools/ci/gate-sweep.json")) {
  * Run every gate, regardless of earlier failures.
  *
  * @param {Array<{id: string, run: string}>} gates
- * @param {(cmd: string) => {status: number, stdout: string, stderr: string}} exec
+ * @param {(cmd: string, gate: {id:string,run:string}) => {status: number, stdout: string, stderr: string}} exec
  * @returns {Array<{id: string, ok: boolean, seconds: number, output: string}>}
  */
 export function sweep(gates, exec) {
   const results = [];
   for (const gate of gates) {
     const started = Date.now();
-    const done = exec(gate.run);
+    const done = exec(gate.run, gate);
     results.push({
       id: gate.id,
       ok: done.status === 0,
@@ -134,14 +134,21 @@ export function sweepReachableText(root) {
 const isMain = process.argv[1] && process.argv[1].endsWith("gate-sweep.mjs");
 if (isMain) {
   const gates = loadGates();
-  const results = sweep(gates, (cmd) => {
+  const results = sweep(gates, (cmd, gate) => {
+    // Preserve the active gate and completed failures if the runner is interrupted.
+    console.error(`RUN  ${gate.id}`);
     const done = spawnSync(cmd, {
       cwd: ROOT,
       shell: true,
       encoding: "utf8",
       env: { ...process.env },
-      maxBuffer: 64 * 1024 * 1024,
+      stdio: ["ignore", "inherit", "inherit"],
     });
+    console.error(`${done.status === 0 ? "PASS" : "FAIL"}  ${gate.id}`);
+    if (done.status !== 0) {
+      if (done.error) console.error(done.error.message);
+      if (done.signal) console.error(`gate-sweep: ${gate.id} terminated by ${done.signal}`);
+    }
     return { status: done.status ?? 1, stdout: done.stdout ?? "", stderr: done.stderr ?? "" };
   });
   console.log(report(results));

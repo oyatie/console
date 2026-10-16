@@ -1,0 +1,39 @@
+{
+  "reviewer": "integration_tests",
+  "scope": "Independent bounded F10/F11 reference packet review; no implementation or full-release acceptance",
+  "verdict": "APPROVE_BOUNDED_REFERENCE_ADDITION",
+  "proposal_sha256": "06d85a7a407cabe5f4a3173234dded83d23355411530d0f987752f57430a10b9",
+  "patch_sha256": "5aef93c1f994f4eb6eaf97bcff4889ad82d4dfae7ea10fa88c3df424d31138f3",
+  "manifest_sha256": "7af9ff3c490943257b62936dbbb173b0989294387bc7d170e31551aec640b0a6",
+  "target_registry_sha256": "7a67302dc2e9183844899d5caf616e877c94534fc13ceb1c7ada7026c6c84b98",
+  "checks": {
+    "errors": [],
+    "manifest_files_verified": 85,
+    "sources_verified": 38,
+    "quote_occurrences_checked": 298,
+    "new_leaves": 26,
+    "base_leaves": 211,
+    "current_leaves": 273,
+    "rebased_leaves": 299,
+    "current_registry_sha256": "7a67302dc2e9183844899d5caf616e877c94534fc13ceb1c7ada7026c6c84b98",
+    "patch_operations": 191,
+    "no_prior_value_changed": true
+  },
+  "semantic_checks": [
+    "11 SDK unsupported feature lists and all81 entries match exact captured heading/list associations; unsupported negatives not inferred positive support. Existing SDK distribution rows unchanged; capabilities appended only.",
+    "Workshop reused capture compressed bytes match retained F08 out-of-scope original; retrieval path retained and current path corrected. 37 other captures retained true UTC timestamps.",
+    "Function runtime states two permission modes and enrollment availability; service-user permissions are caller independent.",
+    "Native Leptos SSR requirement retained despite React vendor examples/static-only hosting.",
+    "Public upload tokens require separate revocation; app navigation is not authorization; widget event coalescing is not durable command outcome.",
+    "All26 leaves remain planned, not_bound, command null; graph/source/leaf uniqueness pass; exact composition211+34+28+26=299."
+  ],
+  "remaining_limits": [
+    "Mutable vendor documents are target-date NewYork snapshots, not authenticated historical vendor releases.",
+    "Exhaustive widget/plugin/library coverage and remaining families remain discovery blockers.",
+    "No database, browser, runtime, production or implementation tests executed by this review."
+  ],
+  "supersedes_findings": [
+    "Original workshop-overview receipt pointed to moved retrieval location without custody explanation.",
+    "Original function-mode summary was ambiguous about two permission alternatives."
+  ]
+}

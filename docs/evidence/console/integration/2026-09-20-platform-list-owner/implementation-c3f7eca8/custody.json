@@ -1,0 +1,221 @@
+{
+  "purpose": "Immutable bounded source/review/runtime evidence; not lane acceptance or release qualification",
+  "implementation_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "admitted_base_sha": "26d786487c294dd88ada16f5372b03fb5787f00f",
+  "artifacts": [
+    {
+      "original": "/private/tmp/console-platform-list-rust-independent-review-20260920-round1.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-rust-independent-review-20260920-round1.json",
+      "sha256": "deb2d1620a02d62212b8ed8bcbd58062356693089819989f0c37c16fdce2ac9b"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-rust-independent-review-20260920-round2.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-rust-independent-review-20260920-round2.json",
+      "sha256": "dfd0c51cec09d12479a245f2f6edb8ff2c7c7baa65c303749a97ea1baad8bc54"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-extension-round2-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-extension-round2-root-review-20260920.json",
+      "sha256": "965caed6d409b55e04b0b88fa438b862df32eddfff8d094c0ad8996101d33811"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-extension-round2-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-extension-round2-security-review-20260920.json",
+      "sha256": "316a610ffae830f99c4f39e9e4036cc11890b4598e78f75be91f5579d2bd1e3b"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-driver-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-driver-round1-security-review-20260920.json",
+      "sha256": "9af156043aa978bacc4d9f8f16561a82cac0237864dbbe50831048373709e8aa"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-driver-round2-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-driver-round2-root-review-20260920.json",
+      "sha256": "8e2e2f833bc2a7c9bfcfa16854f8787a40f25d874b9a4c395729153a29d49c13"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-driver-round2-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-driver-round2-security-review-20260920.json",
+      "sha256": "87fad0f8167fa8157b6cda7aacb845a5ef74f22e6cf55fbd9ab1f34f9c0e1031"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-driver-round3-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-driver-round3-root-review-20260920.json",
+      "sha256": "da32f9392ca5f8ab88e2c28285bd17739aa180a955d82a66b437e5adae2a4b3c"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-driver-round3-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-driver-round3-security-review-20260920.json",
+      "sha256": "314df1b3dacd94af243c2fc9b1094d175c685b24cbe432484f2a7fa025587e8d"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-captures-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-captures-root-review-20260920.json",
+      "sha256": "afb5821c7af9cd8715c82ad7d8dba5231ead7d93663ee65b82d893ad112b0114"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-round3-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-round3-security-review-20260920.json",
+      "sha256": "0bb017ceb30a8fffedcf9140f1fbc6f41ec7c3d095d3a5d50dcbee60158dd69d"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-pinned-generator-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-pinned-generator-security-review-20260920.json",
+      "sha256": "113655e3fbb2e27e642d65492d82213b0195a14d91efe025f819ed06f088e415"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-histories-round2-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-histories-round2-root-review-20260920.json",
+      "sha256": "4ce65c80b0cb52ba2d5ffa81d787dfce372b128dfc3ed57ba7565304570a1d6f"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-histories-round2-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-histories-round2-security-review-20260920.json",
+      "sha256": "899b2a6d9075e86e5e90a7c7fa656e42be78205af66ec060e9a6aaaf9b35a5af"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-credential-tests-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-credential-tests-round1-security-review-20260920.json",
+      "sha256": "1c3e419b12d901291d74e09992935098eea37e28b57da4f27ecea1015176677e"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-credential-tests-round2-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-credential-tests-round2-root-review-20260920.json",
+      "sha256": "ed38fb5d080b68662291b8a43ef7c5be48bf88060073c9808a29ddabc61576fa"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-credential-tests-round2-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-credential-tests-round2-security-review-20260920.json",
+      "sha256": "dc4eb47e06f20c9dd234ae7f6c241bce4841c79da0aa1c1183523138aa6598f5"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-policy-tests-round3-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-finite-platform-policy-tests-round3-root-review-20260920.json",
+      "sha256": "081d31c0cf14b9f5ca7ad09dc235dc0132b85dfbabd294f2b2613c16794a329a"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-policy-tests-round3-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-finite-platform-policy-tests-round3-security-review-20260920.json",
+      "sha256": "0f0910fdcb767386aec0e4f901517b954484a26075d6448bb2edf1353e3809c1"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-auth-rest-enum-scope-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-auth-rest-enum-scope-security-review-20260920.json",
+      "sha256": "994fc686a2be60114f88db0d9be83575c4287bbdf0b895d6d628894e95467897"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-buck-resource-scope-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-buck-resource-scope-security-review-20260920.json",
+      "sha256": "4efea12cef86716e6d85bcc17514a3f774ad0d7c8649ac6f4ad70705cefb0aec"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-suite15-c3f7eca8-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-suite15-c3f7eca8-security-review-20260920.json",
+      "sha256": "0fae48bc4c305aa8b8756db69d96ca8b6ac0fd4719899912eb1b5add4d4bfac0"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-lane-scope5-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-lane-scope5-20260920.json",
+      "sha256": "4f048b3cfc1b5bc04266a4767a8204078898ac4ebbc041203b1b807b42db3fdd"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-c3f7eca8-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-c3f7eca8-20260920.log",
+      "sha256": "08950b9cbcebf4679ffc1f7d1c4a6aae3b1032ee7ec303997386d6d3f3316012"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-suite-c3f7eca8-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-suite-c3f7eca8-20260920.log",
+      "sha256": "d7449d7442686b8d505c237f7cc0fdb7bd5a146e492ad55a06d81768687ac10a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-red-26d78648-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-red-26d78648-20260920.log",
+      "sha256": "c0da0f0442646457be4ca584553efa80bb572e4e825acc742b74600d68f8c0f9"
+    },
+    {
+      "original": "/private/tmp/console-platform-policy14-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-policy14-20260920.log",
+      "sha256": "1a1d6d7b7022979d2afd09ac15d44550bd8cbdbd944f0f5902af64b748f55cd7"
+    },
+    {
+      "original": "/private/tmp/console-platform-policy14-clippy-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-policy14-clippy-20260920.log",
+      "sha256": "6c57da6239ecbc7c01632a0830cc18f59cd17f26e449361450c0430e0dbb6bb0"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-buck-generator-clean-c3f7eca8-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-buck-generator-clean-c3f7eca8-20260920.log",
+      "sha256": "8c30c6dcba79ebe63894d01054c8aaf5e267ba0c1f155185af1ce165bd64bff2"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-layer-boundary2-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-layer-boundary2-20260920.log",
+      "sha256": "dcb5b855368dd49a87d4b6551cafa33369f37a07e0f2b493deb0bd5a0382b189"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-map-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-map-20260920.json",
+      "sha256": "2d3156e9805758077e609e5eb296814318b1b60c712f31b9cfff830ab19c4446"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-supplemental-map-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-supplemental-map-20260920.json",
+      "sha256": "fc623b9e2d2e8b10b653f2ac3db97acec4744fb2494ee2ee3459095d259823b1"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-capture-driver-20260920-round3/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-source-capture-driver-20260920-round3-manifest.json",
+      "sha256": "5ddacd584438203dbfd17ce601d4f8fe9ad30aca0f5034f6d239d8d179e1322e"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-histories-20260920-round2/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-owner-histories-20260920-round2-manifest.json",
+      "sha256": "9682b1602ee9f3132224d09442a6b84e7dfcc375b3b76bb68593da729e286e94"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-credential-tests-20260920-round2/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-platform-list-credential-tests-20260920-round2-manifest.json",
+      "sha256": "21d8e0b36b2bafc9715f3d62d95769b944a9c15257801f92005693cb9c7cd62a"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-policy-tests-20260920-round3/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/console-finite-platform-policy-tests-20260920-round3-manifest.json",
+      "sha256": "38b42bdfc53cba55d83bfbd507b0606049659bd63708da971da7579a281f18f4"
+    }
+  ],
+  "runtime": {
+    "owner": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 412
+    },
+    "suite": {
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 398
+    },
+    "policy_focused": {
+      "passed": 14,
+      "failed": 0,
+      "filtered": 96
+    },
+    "buck_generator": {
+      "passed": 59
+    },
+    "layer_boundary": {
+      "crates": 176,
+      "violations": 0
+    }
+  },
+  "remaining": [
+    "Supplemental retained lock, expiry, and ambiguous COMMIT histories",
+    "Custody transition, ACL, corruption, populated preservation and rollback runtime",
+    "Exact final candidate review",
+    "Other Platform owners, workers, raw metadata SQL grants and bound issuance",
+    "Full milestones0\u201310 acceptance and production qualification"
+  ],
+  "raw_private_capture_rows_archived": false
+}

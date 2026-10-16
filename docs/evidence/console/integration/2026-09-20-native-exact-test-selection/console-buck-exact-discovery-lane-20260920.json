@@ -1,0 +1,35 @@
+[
+  {
+    "lane": "buck-exact-test-discovery",
+    "base": "90257f0a32941309ea154926fbae8bd3f31ca49d",
+    "owner": "/root",
+    "allow": [
+      "tools/buck/run_test_with_postgres_env.sh"
+    ],
+    "probe": "bash tools/buck/run_test_with_postgres_env.test.sh",
+    "immutable_target": "An exact native test selection discovers exactly one named test before execution; missing or malformed discovery fails without leaking credentials.",
+    "mechanical_guide": "Extend existing exact-test branch only with installed libtest --list --exact check. Preserve all environment-file parsing and ordinary execution. No new framework, flags that force ignored tests, or credential argv.",
+    "reviewer": "/root/integration_security",
+    "approved_test_packet": "/private/tmp/console-native-browser-producer-tests-20260920-round3",
+    "pre_mortem": [
+      "nonexistent exact leaf exits0",
+      "discovery stderr leaks test credentials",
+      "discovery alters argument order or child exitcode"
+    ],
+    "detection": [
+      "approved9discovery regression scenarios and all preexisting transport assertions",
+      "native positive and nonexistent-leaf negative control"
+    ],
+    "blast_radius": "Buck test exact selection only; product process and serving credentials unchanged",
+    "rollback": "Revert only wrapper guard change; retain tests and records",
+    "stop_conditions": [
+      "failing preexisting tests",
+      "credential output",
+      "unknown libtest listing shape"
+    ],
+    "remaining_holds": [
+      "browser target/producer integration",
+      "Company enrollment and five-area MVP"
+    ]
+  }
+]

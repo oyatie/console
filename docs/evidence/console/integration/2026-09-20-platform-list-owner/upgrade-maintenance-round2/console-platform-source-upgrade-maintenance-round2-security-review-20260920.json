@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-source-only-bounded-fixture-maintenance",
+  "packet_manifest_sha256": "8afc567be61749af6e231855774af63b33fe1a69adf4111cb79794cc62086122",
+  "base": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "before_sha256": "ed9707e35b506da18cdd4620036d5ed58f6ed7560c322709fa28709c0b3d0f6d",
+  "candidate_sha256": "da47a22d48b670545104b4148d3804d837868cabe795516ddeac3a260d03aba3",
+  "checks": [
+    "Exact current HEAD, preimage, candidate and manifest independently verified.",
+    "Dedicated disposable PgConnection verifies console_buck_admin identity and 60s statement/5s lock timeout; no pooled session settings leak.",
+    "Server-quoted VACUUM ANALYZE covers public r/p/m census, verifies unchanged OID census and every public index parent before snapshots.",
+    "Fixture maintenance runs outside transactions; existing SHARE phase locks acquired before exact baseline snapshots.",
+    "All metadata fields, exact equality oracles, historical SQL, serializers, fingerprints and production behavior retained; only three additional diagnostic rustfmt wraps."
+  ],
+  "limits": [
+    "Physical statistics maintenance is a stabilization hypothesis requiring focused and retained-suite runtime.",
+    "SHARE locks protect only their transaction; no cross-commit exclusion claimed.",
+    "Per-statement bounds do not imply a global test deadline.",
+    "Source approval only; no workflow, full transition, production or release acceptance."
+  ],
+  "runtime_tests_executed": 0
+}

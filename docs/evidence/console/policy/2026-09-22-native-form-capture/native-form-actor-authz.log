@@ -1,0 +1,173 @@
+[2026-09-22T00:56:04.687-04:00] Build ID: f5f9b646-721a-4eaf-84ba-0a851f1183d8
+[2026-09-22T00:56:04.688-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:56:11.788-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 529 other actions
+[2026-09-22T00:56:18.889-04:00] Waiting on Test console-platform-authz-unit --  [local_execute]
+[2026-09-22T00:56:19.848-04:00] ✓ Pass: root//backend/crates/platform/authz:console-platform-authz-unit (3.7s)
+[2026-09-22T00:56:19.848-04:00] ---- STDOUT ----
+[2026-09-22T00:56:19.848-04:00]
+[2026-09-22T00:56:19.848-04:00] running 155 tests
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::submit_requires_valid_and_review_blocks_self ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::schema_splice_anchor_is_exact ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::unknown_action_is_invalid ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::non_whitelisted_attr_is_invalid ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::undeclared_object_property_is_still_rejected ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::owner_permit_generates_and_validates ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::declared_property_type_mismatch_fails_cedar_validation ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::authorize_denies_by_omission_with_no_policies ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::invalid_policy_fails_strict_validation_and_is_not_activated ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::declared_object_property_authors_and_strict_validates ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::simulate_reports_determining_policy_and_no_errors ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::matrix_generated_role_manage_policy_is_single_super_admin_rule ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::map::tests::canonical_map_entries_are_legacy_only_with_no_bundle_and_derived_ids ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::map::tests::canonical_map_expands_only_feature_backed_actions_and_scopes_out_the_rest ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::evaluate_allows_super_admin_and_denies_others ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::map::tests::cedar_requiring_mode_fails_closed_without_per_org_bundle ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::map::tests::canonical_map_json_uses_snake_case_canonical_action_ids ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::map::tests::unknown_action_id_fails_closed ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::map::tests::unknown_mode_and_empty_resource_type_fail_closed ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::cedar_only_lets_cedar_decide_and_a_cedar_error_denies ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::compare_lets_cedar_decide ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::every_cedar_mode_denies_a_stale_identity ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::every_cedar_mode_denies_an_invalid_enrollment_map ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::every_cedar_mode_denies_an_rls_mismatch ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::every_cedar_mode_denies_an_unavailable_bundle ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::legacy_only_is_the_only_mode_exempt_from_the_fail_closed_guards ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::legacy_only_lets_legacy_decide_and_cedar_can_neither_grant_nor_veto ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::shadow_lets_legacy_enforce_and_the_cedar_policy_outcome_cannot_grant ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::mode_contract::shadow_lets_no_cedar_shape_grant_and_credits_every_allow_to_legacy ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::forbid_is_and_not_and_can_never_be_out_permitted ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::invalid_schema_is_not_activated ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::ge_requires_numeric_and_casts_on_instance ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::membership_lowers_to_any_over_a_bound_array ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::no_permit_denies_by_omission ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::owner_scoping_lowers_subject_attr_to_a_bound_literal ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::empty_field_permission_is_not_a_field_wildcard ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::projected_target_maps_field_to_a_gate_checked_column ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::unconditional_forbid_collapses_whole_filter_to_false ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::unsafe_attributes_column_denies_all ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::residual::tests::untranslatable_term_collapses_whole_filter_never_drops ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::checked_bootstrap_material_rejects_wrong_auth_transaction_and_provenance_correlations ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::invalid_context_or_unknown_action_cannot_become_allow ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::exact_joint_field_set_does_not_union_independent_permits ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::legacy_feature_bundle_still_compiles_unchanged_beside_native_schema ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::matrix_generated_bundle_compiles_and_passes_strict_validation ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::exact_identity_permit_denies_other_account_company_type_action_and_field ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::object_policy_hides_cross_principal_row ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::forbid_always_wins_over_permit ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::bundle_digest_is_deterministic_across_compiles ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::per_feature_bundle_keys_differ_across_features ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::tests::per_feature_bundle_matches_the_legacy_matrix ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::malformed_schema_policy_and_warning_only_bundle_are_refused_by_existing_owner ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::authoring::tests::resource_type_accepts_dotted_stable_keys_and_still_refuses_everything_else ... ok
+[2026-09-22T00:56:19.848-04:00] test cedar_pbac::engine::native_company_contract_probe::exact_five_action_schema_and_templates_compile_strictly_at_existing_owner ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::installation_permission_does_not_supply_a_payroll_assignment ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::payroll_uses_latest_independent_binding_clock_after_acquisition ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_cancellation_during_a_finish_releases_without_b_or_response ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::production_payroll_sdk_requires_all18_fields_and_finite_non_delegable_source ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::native_authorizer_failure_never_releases_allow_or_panics ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::frozen_business_resource_bytes_and_strict_compilation ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_final_denial_withholds_provisional_terminal ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::production_payroll_interval_is_inclusive_start_exclusive_end ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_form_is_authorized_and_exact_proof_withheld_until_finish ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::production_bootstrap_denies_wrong_company_group_recipient_and_manifest ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::checked_current_projection_rejects_invalid_revision_and_correlated_material ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::actual_cedar_panic_does_not_turn_into_allow_or_successful_projection ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::checked_initial_projection_rejects_invalid_revision_and_correlated_material ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::current_projection_preserves_actual_epoch_receipt_and_initial_graph ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::checked_current_projection_requires_closed_maps_canonical_scalars_and_bounded_json ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::read_usecases::company_context_candidates_validate_bounds_without_inventing_generation_provenance ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::current_projection_rejects_invalid_epoch_receipt_pairs_without_widening_initial ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::production_native_bootstrap_uses_sdk_for_operator_and_successor_without_birth_equality ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_impossible_acceptance_not_visible_is_unavailable_and_never_starts_b ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_foreign_source_company_fails_before_any_scope_operation ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_grant_uses_original_recipient_and_actual_cedar_denies_mismatch ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::checked_initial_projection_requires_closed_maps_canonical_scalars_and_bounded_json ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_submit_confirms_a_before_b_with_exact_original_input ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_replayed_final_a_skips_b_and_preserves_terminal ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::literal_bootstrap_denies_revoked_designation_inactive_resources_and_wrong_deployment ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::actual_cedar_initial_use_and_denials_reach_sdk_boundary ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::read_usecases::wrong_company_material_never_reaches_policy_and_absence_requires_fresh_finish ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_linked_sdk_exact_sources_and_compiled_identity ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_unknown_b_returns_unknown_and_recovery_reuses_selector_only ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::read_usecases::discovery_restarts_after_generation_conflict_once_and_discards_old_labels ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_oracle_rosters_and_every_role_subset_are_complete ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_bound_precision_and_historical_signed_time_compatibility ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_form_finish_failure_withholds_view_and_exact_proof ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_raw_schema_and_closed_source_controls ... ok
+[2026-09-22T00:56:19.848-04:00] test resource_branch::tests::a_resource_branch_carries_the_branch_and_tenant_it_was_read_from ... ok
+[2026-09-22T00:56:19.848-04:00] test resource_branch::tests::every_resource_kind_reads_exactly_one_resource_side_table_by_org_and_id ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::a_grant_with_no_recorded_interval_is_always_effective ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::a_half_null_interval_does_not_deserialize_into_an_always_effective_grant ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::an_absent_bound_is_a_refusal_not_a_default ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::an_empty_assignment_set_is_not_an_overlap ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::an_empty_interval_is_rejected_on_the_wire_too ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::an_empty_or_inverted_interval_is_rejected ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::an_inverted_interval_is_rejected_on_the_wire_too ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::an_open_ended_interval_closes_only_its_lower_end ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::every_constructible_validity_round_trips_through_serde ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::intervals_sharing_a_single_instant_for_one_role_are_rejected ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::overlap_detection_does_not_depend_on_input_order ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::the_same_interval_on_two_roles_is_not_an_overlap ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::touching_half_open_intervals_for_one_role_do_not_overlap ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::two_interval_less_rows_for_one_role_are_rejected ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::two_open_ended_intervals_for_one_role_are_rejected ... ok
+[2026-09-22T00:56:19.848-04:00] test temporal::tests::valid_from_is_inside_the_interval_and_valid_to_is_outside ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::a_dated_grant_is_effective_from_valid_from_inclusive_to_valid_to_exclusive ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::a_resource_branch_read_under_another_tenant_is_denied_however_wide_the_scope ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::an_ambiguous_assignment_set_refuses_to_produce_grants ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::an_effective_dated_grant_is_invisible_to_authorize_org_wide ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::an_effective_dated_grant_is_invisible_to_the_time_blind_entry_points ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::an_expired_grant_is_unreachable_from_the_time_blind_grant_list ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::an_interval_less_grant_decides_identically_on_every_entry_point ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::attendance_management_features_are_admin_and_super_admin_only ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::authorize_still_denies_a_resource_branch_outside_scope ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_agrees_with_authorize_on_every_in_scope_branch ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_allows_grant_covering_principal_scope ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_denies_empty_branch_scope_regardless_of_role ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_denies_grant_narrower_than_principal_scope ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_denies_partial_grant_for_all_scoped_principal ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_honors_request_only_permission_level ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::read_usecases::workspace_and_policy_reads_use_exact_fields_and_complete_retained_scope ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_preserves_builtin_admin_on_completion_review ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_replaces_an_order_dependent_grant_verdict_with_a_deny ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::custom_role_runtime_feature_allowed_blocks_only_the_safety_set ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::effective_scope_branch_claim_intersects_live_memberships ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::effective_scope_branch_claim_narrows_live_all ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::effective_scope_fails_closed_on_org_mismatch ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::effective_scope_preserves_legacy_org_live_scope ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::effective_scope_rejects_group_on_ordinary_tenant_routes ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::effective_scope_sub_org_levels_without_projection_fail_closed ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::migrated_sites_keep_todays_admin_verdict ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::capability_is_stricter_or_equal_for_every_principal_shape ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::one_assignment_is_one_entry_however_many_permissions_it_carries ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::service_authorization_requires_exact_feature_and_branch ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::some_is_branch_authorization_for_every_principal_shape ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::the_branch_arm_honors_both_interval_ends_too ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::the_grant_set_resolves_at_decision_time_not_once_per_principal ... ok
+[2026-09-22T00:56:19.848-04:00] test tests::none_is_branchless_capability_authorization_for_every_principal_shape ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_failed_or_unknown_a_never_starts_b ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_status_is_read_only_for_missing_pending_expired_and_final ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::read_usecases::discovery_omits_healthy_absence_or_denial_but_never_returns_faulted_partial_results ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_invalid_historical_material_never_upgrades ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::workflow::workflow_denied_or_unavailable_policy_never_reads_or_mutates ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_same_strict_compiler_rejects_errors_and_warning_only_policy ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_private_eligibility_is_distinct_from_public_upgrade ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_additional_family_binding_lifetime_and_source_faults ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::native_business_tests::literal_collection_requires_exact18field_set_and_denies_unsupported_actions ... ok
+[2026-09-22T00:56:19.848-04:00] test company_policy::tests::read_usecases::pending_finish_failures_discard_all_authorized_view_types ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_corrupted_compiled_identity_refuses_before_sdk_for_every_action ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_frozen_representable_material_faults_fail_before_sdk ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_all_typed_session_callsite_rows_repeat_eight_role_controls ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_real_sdk_faults_and_panic_never_allow_or_upgrade ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_operation_shapes_refuse_before_sdk_and_preserve_valid_contexts ... ok
+[2026-09-22T00:56:19.848-04:00] test platform_policy::tests::finite_platform_all_1024_frozen_role_feature_session_cells ... ok
+[2026-09-22T00:56:19.848-04:00]
+[2026-09-22T00:56:19.848-04:00] test result: ok. 155 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.30s
+[2026-09-22T00:56:19.848-04:00]
+[2026-09-22T00:56:19.848-04:00]
+[2026-09-22T00:56:19.848-04:00] ---- STDERR ----
+[2026-09-22T00:56:19.848-04:00]
+[2026-09-22T00:56:19.854-04:00] Cache hits: 0%
+[2026-09-22T00:56:19.854-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-22T00:56:19.854-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

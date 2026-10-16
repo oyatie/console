@@ -1,0 +1,122 @@
+thread 'account_storage::all_46_enrolled_actor_references_use_exact_account_or_company_actor_keys' (64694593) panicked at backend/app/backend/app/tests/auth_rest/account_storage.rs:149:5:
+ACTOR_CATALOG_MISMATCH:
+workflow_runs.initiated_by: missing validated non-destructive company_actors key
+workflow_runs.initiated_by: legacy users FK still couples attribution to employer identity
+workflow_waiting_tasks.assignee_user_id: missing validated non-destructive company_actors key
+workflow_waiting_tasks.assignee_user_id: legacy users FK still couples attribution to employer identity
+workflow_waiting_tasks.claimed_by: missing validated non-destructive company_actors key
+workflow_waiting_tasks.claimed_by: legacy users FK still couples attribution to employer identity
+workflow_waiting_tasks.completed_by: missing validated non-destructive company_actors key
+workflow_waiting_tasks.completed_by: legacy users FK still couples attribution to employer identity
+gov_approval_requests.requested_by: missing validated non-destructive company_actors key
+gov_approval_requests.requested_by: legacy users FK still couples attribution to employer identity
+gov_approvals.requested_by: missing validated non-destructive company_actors key
+gov_approvals.requested_by: legacy users FK still couples attribution to employer identity
+gov_approvals.approver_id: missing validated non-destructive company_actors key
+gov_approvals.approver_id: legacy users FK still couples attribution to employer identity
+gov_approval_consumptions.consumed_by: missing validated non-destructive company_actors key
+gov_approval_consumptions.consumed_by: legacy users FK still couples attribution to employer identity
+ont_action_command_receipts.actor_id: missing validated non-destructive company_actors key
+ont_action_command_receipts.actor_id: legacy users FK still couples attribution to employer identity
+employee_contract_wages.created_by: missing validated non-destructive company_actors key
+employee_contract_wages.created_by: legacy users FK still couples attribution to employer identity
+payroll_draft_runs.created_by: missing validated non-destructive accounts key
+payroll_draft_runs.created_by: legacy users FK still couples attribution to employer identity
+payroll_draft_runs.approved_by: missing validated non-destructive accounts key
+payroll_draft_runs.approved_by: legacy users FK still couples attribution to employer identity
+payroll_draft_runs.submitted_by: missing validated non-destructive accounts key
+payroll_draft_runs.submitted_by: legacy users FK still couples attribution to employer identity
+payroll_draft_runs.decided_by: missing validated non-destructive accounts key
+payroll_draft_runs.decided_by: legacy users FK still couples attribution to employer identity
+payroll_run_exceptions.resolved_by: missing validated non-destructive accounts key
+payroll_run_exceptions.resolved_by: legacy users FK still couples attribution to employer identity
+policy_roles.created_by: missing validated non-destructive accounts key
+policy_roles.created_by: legacy users FK still couples attribution to employer identity
+policy_roles.updated_by: missing validated non-destructive accounts key
+policy_roles.updated_by: legacy users FK still couples attribution to employer identity
+user_role_assignments.user_id: missing validated non-destructive company_actors key
+user_role_assignments.user_id: legacy users FK still couples attribution to employer identity
+user_role_assignments.assigned_by: missing validated non-destructive accounts key
+user_role_assignments.assigned_by: legacy users FK still couples attribution to employer identity
+policy_assignment_preview_receipts.actor_id: missing validated non-destructive company_actors key
+policy_assignment_preview_receipts.actor_id: legacy users FK still couples attribution to employer identity
+policy_assignment_preview_receipts.user_id: missing validated non-destructive company_actors key
+policy_assignment_preview_receipts.user_id: legacy users FK still couples attribution to employer identity
+subject_authz_versions.user_id: missing validated non-destructive company_actors key
+subject_authz_versions.user_id: legacy users FK still couples attribution to employer identity
+leave_requests.requester_user_id: missing validated non-destructive company_actors key
+leave_requests.requester_user_id: legacy users FK still couples attribution to employer identity
+leave_requests.decided_by: missing validated non-destructive company_actors key
+leave_requests.decided_by: legacy users FK still couples attribution to employer identity
+leave_charge_resolutions.resolved_by: missing validated non-destructive company_actors key
+leave_charge_resolutions.resolved_by: legacy users FK still couples attribution to employer identity
+leave_balance_import_receipts.actor: missing validated non-destructive company_actors key
+leave_balance_import_receipts.actor: legacy users FK still couples attribution to employer identity
+employee_attendance_records.actor_user_id: missing validated non-destructive company_actors key
+employee_attendance_records.actor_user_id: legacy users FK still couples attribution to employer identity
+attendance_exceptions.created_by: missing validated non-destructive company_actors key
+attendance_exceptions.created_by: legacy users FK still couples attribution to employer identity
+attendance_exception_resolutions.actor_user_id: missing validated non-destructive company_actors key
+attendance_exception_resolutions.actor_user_id: legacy users FK still couples attribution to employer identity
+attendance_substitutions.created_by: missing validated non-destructive company_actors key
+attendance_substitutions.created_by: legacy users FK still couples attribution to employer identity
+attendance_month_closes.attested_by: missing validated non-destructive company_actors key
+attendance_month_closes.attested_by: legacy users FK still couples attribution to employer identity
+attendance_close_amendments.actor_user_id: missing validated non-destructive company_actors key
+attendance_close_amendments.actor_user_id: legacy users FK still couples attribution to employer identity
+attendance_week52_acknowledgements.acknowledged_by_user_id: missing validated non-destructive company_actors key
+attendance_week52_acknowledgements.acknowledged_by_user_id: legacy users FK still couples attribution to employer identity
+workflow_definitions.created_by: missing validated non-destructive accounts key
+workflow_definitions.created_by: legacy users FK still couples attribution to employer identity
+workflow_definitions.updated_by: missing validated non-destructive accounts key
+workflow_definitions.updated_by: legacy users FK still couples attribution to employer identity
+workflow_definition_versions.created_by: missing validated non-destructive accounts key
+workflow_definition_versions.created_by: legacy users FK still couples attribution to employer identity
+person_revisions.actor_id: missing validated non-destructive company_actors key
+person_revisions.actor_id: legacy users FK still couples attribution to employer identity
+person_source_bindings.actor_id: missing validated non-destructive company_actors key
+employment_revisions.actor_id: missing validated non-destructive company_actors key
+employment_revisions.actor_id: legacy users FK still couples attribution to employer identity
+employment_source_bindings.actor_id: missing validated non-destructive company_actors key
+employment_source_bindings.actor_id: legacy users FK still couples attribution to employer identity
+failures:
+    account_browser::audit_account_transition::adversarial::audit_only_relation_lock_causes_nowait_refusal_and_clean_retry
+    account_browser::audit_account_transition::adversarial::null_actor_writer_has_observed_users_blocker_and_bounded_lock_timeout
+    account_browser::audit_account_transition::business_session_transition::initialized_observer_audit228_session_upgrade_preserves_receipts_and_replays
+    account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back
+    account_browser::audit_account_transition::business_session_transition::populated_audit228_session_upgrade_preserves_history_and_replays
+    account_browser::audit_account_transition::populated_prior228_observer_upgrade_preserves_rows_and_replays
+    account_browser::audit_account_transition::populated_prior228_upgrade_preserves_native_legacy_designation_and_replay
+    account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects
+    account_browser::deployment_operator_designation::distinct_accounts_contend_at_one_actual_designation_slot
+    account_browser::deployment_operator_designation::mandatory_receipt_failure_rolls_back_then_same_command_retries
+    account_browser::deployment_operator_designation::null_malformed_inputs_and_revocation_bounds_have_no_partial_effect
+    account_browser::deployment_operator_designation::ordinary_login_roles_cannot_designate_revoke_or_read_authority
+    account_browser::deployment_operator_designation::receipt_checks_refuse_malformed_copies_without_creating_authority
+    account_browser::deployment_operator_designation::receipt_history_and_original_head_binding_are_immutable
+    account_browser::deployment_operator_designation::revocation_tombstone_survives_old_replay_and_cas_conflicts
+    account_browser::deployment_operator_designation::same_command_wait_timeout_then_exact_retry_preserves_one_receipt
+    account_browser::deployment_operator_designation::security_invalidation_serializes_and_historical_replay_does_not_reactivate
+    account_browser::deployment_operator_designation::startup_effective_privileges::effective_oracles_detect_public_inheritance_without_direct_startup_grants
+    account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_executes_only_exact_designation_owners_in_protected_routines
+    account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_has_no_effective_protected_table_or_column_privileges
+    account_browser::deployment_operator_designation::unknown_pending_stale_target_and_wrong_deployment_refuse_without_effect
+    account_browser::logout_transition_audit_permission_failure_rolls_back_revocation
+    account_browser::native_entry_public_root_exposes_discoverable_routes
+    account_browser::native_login_historical_consent_requires_exact_kind_and_content_set
+    account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state
+    account_custody_startup::custody_worker_readyz_detects_column_grant_drift
+    account_custody_startup::custody_worker_readyz_detects_owner_drift
+    account_custody_temporary::temporary_create_is_session_local_but_persistent_grants_still_close_readiness
+    account_fence_active_rejects_legacy_sessions
+    account_fence_outstanding_employer_otp_cannot_create_a_session
+    account_fence_pending_enrollment_rejects_legacy_sessions
+    account_fence_projection::account_fence_projection_missing_auth_grantee_refuses_wrong_execute_acl
+    account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false
+    account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins
+    account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change
+    account_fence_transport::session_reader_contract::auth_only_outage_preserves_pure_rejections_and_refuses_readers
+    account_fence_transport::session_reader_contract::missing_projection_refuses_all_reader_boundaries_and_recovers
+    account_fence_transport::session_reader_contract::null_projection_refuses_all_reader_boundaries_and_recovers
+    account_storage::all_46_enrolled_actor_references_use_exact_account_or_company_actor_keys
+test result: FAILED. 286 passed; 39 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11120.98s

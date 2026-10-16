@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_ONE_LITERAL_CLASSIFIER_EXECUTION_CONTEXT_SUCCESSOR",
+  "packet": "/private/tmp/console-company-intake-profile-jit-tests-20260920-round1",
+  "manifest_sha256": "8f4a6de42b3c642a41c5271142e3d249f9ef2883003216c18e51f32f8e3dffa4",
+  "candidate_sha256": "85f3027ed4af8e9c55513b4259233aa6c5f4dc6654a42c1a90ddcfb6c70f540c",
+  "checks": [
+    "Every packet hash and current source preimage matched. New test source equals old bytes after exactly one addition of ; SET jit=off in profiles connection-settings literal. All10existing local leaves and signed include/6leaves, classifiers, timeouts and assertions unchanged.",
+    "Production backend/app/src/account_custody_session.sql independently read: LOCAL search_path,3second timeout, LOCAL jit=off. Existing test-support finalizer transactions also use LOCAL jit=off.",
+    "Actual retained container setting readback inspected; current inherited JIT configuration differs helper omission.",
+    "The helper already sets connection-scope search_path/10second statement_timeout/1second lock_timeout on checked-out admin connection; additional connection-scope JIT setting follows same existing model. No serving profile/SQL/body/reseal change."
+  ],
+  "environment_readback": {
+    "path": "/private/tmp/console-company-signed-custody-settings-20260920.log",
+    "sha256": "d317a8e8fbf11460cac15fbbd3dd971e638293c930ea2da3f37b30d15d54ca5a"
+  },
+  "findings": [],
+  "limits": [
+    "Source/context approval only. Initial actual57014failure remains retained; mismatch observed, causation is hypothesis until successor runtime/plan evidence.",
+    "Do not raise deadlines, suppress failed classifiers, relabel original failure pass or count zero owner execution as qualified.",
+    "All existing original lane/privateAuth/HTTP/release HOLDs remain."
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

@@ -26,6 +26,17 @@ file_name = "BUCK"
 buckfile_imports = """
 load("@prelude//rust:cargo_package.bzl", "cargo")
 load("@prelude//rust:cargo_buildscript.bzl", "buildscript_run")
+
+# Source-only exports for hydration integrity; dependency rules are unchanged.
+[
+    export_file(
+        name = "hydration-" + source,
+        src = source,
+        mode = "reference",
+        visibility = ["PUBLIC"],
+    )
+    for source in ["reindeer.toml", "fixups"]
+]
 """
 rust_library = "cargo.rust_library"
 rust_binary = "cargo.rust_binary"

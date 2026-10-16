@@ -1,0 +1,18 @@
+
+running 1 test
+test account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability ... FAILED
+
+failures:
+
+---- account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability stdout ----
+
+thread 'account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability' (65195390) panicked at app/tests/auth_rest/native_company_eligibility.rs:55:9:
+NATIVE_COMPANY_ELIGIBILITY_OWNER: exact single read capability/signature/owner/ACL required
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 365 filtered out; finished in 4.26s
+

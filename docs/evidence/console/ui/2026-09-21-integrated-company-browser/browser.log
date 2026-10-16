@@ -1,0 +1,46 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T23:14:23.632-04:00] Build ID: 400ef3c2-d8bb-4b38-9b39-c5afebbf1a8a
+[2026-09-21T23:14:23.633-04:00] File changed (since mergebase): root//backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm.pending
+[2026-09-21T23:14:23.633-04:00] Directory changed (since mergebase): root//backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm.pending
+[2026-09-21T23:14:23.633-04:00] File changed (since mergebase): root//backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm
+[2026-09-21T23:14:23.633-04:00] 9 additional file change events (since mergebase)
+[2026-09-21T23:14:23.633-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T23:14:29.715-04:00] 2026-09-22T03:14:29.486940Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://release-assets.githubusercontent.com/github-production-release-asset/162334160/a0c495dc-2474-4ae3-bb0e-70526d359f46?<public-signed-query-omitted> after 5 seconds.
+[2026-09-21T23:14:36.977-04:00] 2026-09-22T03:14:36.811631Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://release-assets.githubusercontent.com/github-production-release-asset/114685405/3ca5b3fa-c8fe-49f1-9ecc-32ede93f4848?<public-signed-query-omitted> after 5 seconds.
+[2026-09-21T23:14:42.643-04:00] 2026-09-22T03:14:41.021302Z  WARN buck2_http::retries: Retrying a HTTP error after 4 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://release-assets.githubusercontent.com/github-production-release-asset/162334160/a0c495dc-2474-4ae3-bb0e-70526d359f46?<public-signed-query-omitted> after 7 seconds.
+[2026-09-21T23:14:50.233-04:00] Waiting on root//backend/crates/erp/domain:console-erp-domain (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 267 other actions
+[2026-09-21T23:14:57.434-04:00] Waiting on root//backend/crates/identity/rest:console-identity-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T23:15:04.434-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T23:15:11.533-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T23:15:18.534-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T23:15:25.534-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T23:15:26.614-04:00] Cache hits: 0%
+[2026-09-21T23:15:26.614-04:00] Commands: 13 (cached: 0, remote: 0, local: 13)
+[2026-09-21T23:15:26.614-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T23:15:26.637-04:00] Build ID: ad147795-73e0-462c-8d3f-6d3f44bfef04
+[2026-09-21T23:15:26.637-04:00] File changed (since mergebase): root//tools/buck/__pycache__/test_gen_first_party.cpython-314.pyc.4418055632
+[2026-09-21T23:15:26.637-04:00] Directory changed (since mergebase): root//tools/buck/__pycache__/test_gen_first_party.cpython-314.pyc.4418055632
+[2026-09-21T23:15:26.637-04:00] File changed (since mergebase): root//tools/buck/__pycache__/test_gen_first_party.cpython-314.pyc
+[2026-09-21T23:15:26.637-04:00] 307 additional file change events (since mergebase)
+[2026-09-21T23:15:26.637-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T23:15:33.637-04:00] Waiting on root//third-party/rust:primeorder-0.13.6.crate (prelude//platforms:default#39893c7e49283da4) -- action (write primeorder-0.13.6.crate_unpack.sh), and 746 other actions
+[2026-09-21T23:15:40.837-04:00] Waiting on root//third-party/rust:unicode-properties-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 743 other actions
+[2026-09-21T23:15:44.651-04:00] 2026-09-22T03:15:44.475574Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-wasm32-unknown-unknown.tar.xz after 5 seconds.
+[2026-09-21T23:15:52.637-04:00] Waiting on root//third-party/rust:stop-token-0.7 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 179 other actions
+[2026-09-21T23:15:59.737-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T23:16:06.737-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T23:16:08.872-04:00] ✓ Pass: root//tools/buck:app-auth-rest-browser-pg (12.9s)
+[2026-09-21T23:16:08.872-04:00] ---- STDOUT ----
+[2026-09-21T23:16:08.872-04:00]
+[2026-09-21T23:16:08.872-04:00] running 1 test
+[2026-09-21T23:16:08.872-04:00] test account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace ... ok
+[2026-09-21T23:16:08.872-04:00]
+[2026-09-21T23:16:08.872-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 522 filtered out; finished in 10.42s
+[2026-09-21T23:16:08.872-04:00]
+[2026-09-21T23:16:08.872-04:00]
+[2026-09-21T23:16:08.872-04:00] ---- STDERR ----
+[2026-09-21T23:16:08.872-04:00]
+[2026-09-21T23:16:08.885-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

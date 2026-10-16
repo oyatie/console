@@ -65,7 +65,12 @@ fn bearer(keys: &Keys, user: UserId, org: OrgId, role: &str) -> String {
     .unwrap()
 }
 
-fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+async fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let verifier = JwtVerifier::from_es256_public_pem(
         JwtSettings {
             issuer: ISSUER.to_owned(),
@@ -77,7 +82,10 @@ fn app(pool: PgPool, keys: &Keys) -> axum::Router {
     .unwrap();
     router(FinancialRestState::new(
         PgFinancialStore::new(pool),
-        Some(verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database.clone(),
+        )),
     ))
 }
 
@@ -167,8 +175,9 @@ async fn seed_request(
     .unwrap();
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn purchase_request_queue_is_mounted_authorized_strict_and_rls_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org_a = OrgId::knl();
     seed_org(&pool, *org_a.as_uuid(), "a").await;
@@ -206,7 +215,7 @@ async fn purchase_request_queue_is_mounted_authorized_strict_and_rls_scoped(pool
     )
     .await;
 
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let admin_a_token = bearer(&keys, admin_a, org_a, "SUPER_ADMIN");
     let member_a_token = bearer(&keys, member_a, org_a, "MEMBER");
     let admin_b_token = bearer(&keys, admin_b, OrgId::from_uuid(ORG_B), "SUPER_ADMIN");

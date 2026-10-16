@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_CURRENT_TWOFILE_DIFF_AND_BOUNDED_EXISTING_UPDATE_COMMAND",
+  "base": "ac7a847f",
+  "current_sha256": {
+    ".github/workflows/ci.yml": "502fa77a7dece59ff9739a2b8d47a20b0c378bb0f089fcde4efee671c3a1e149",
+    "docs/program/executed-tests-baseline.json": "2283e841557cc0fcafaad9f8f835eb142714ac9852f0da9ba8dfe663c3893e22"
+  },
+  "mechanical_preservation": "Removing exact3line SDK invocation/status returns byte-exact old workflow; baseline retains all old keys/values and adds solely SDK2.",
+  "evidence": "Inspected actual root15/15green log; independently ran existing countDeclaredTestAttributes on exact current sources.",
+  "approved_command": "node scripts/check-executed-tests.mjs --update",
+  "allowed_additional_diff": {
+    "backend/app/tests/health_readiness.rs": [
+      15,
+      16
+    ],
+    "backend/crates/payroll/ui/src/lib.rs": [
+      8,
+      13
+    ]
+  },
+  "constraints": [
+    "Every old entry/value retained except these two increases; SDK2 retained. No reductions, dark-set changes, metadata changes, source-gate changes or other added sources.",
+    "Existing resolver/darkset must succeed before update. Root runs command and returns exact generated diff for final independent review.",
+    "Counts are static declarations, not runtime evidence; hydration diagnostic remains separate."
+  ],
+  "repository_writes_by_reviewer": 0,
+  "cargo_by_reviewer": 0
+}

@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_EXACT_GENERATED_BASELINE_AND_ONE_DIGEST_SUCCESSOR",
+  "base": "ac7a847f",
+  "baseline_sha256": "1fb13b7a2b11f3e0c5e77d34cba0b3826fa6e0dc301622b99cb2de85ca0d6856",
+  "baseline_delta_only": {
+    "health_readiness": [
+      15,
+      16
+    ],
+    "payroll_ui": [
+      8,
+      13
+    ],
+    "cedar_sdk_identity": [
+      null,
+      2
+    ]
+  },
+  "proof_digest": {
+    "path": "scripts/check-ci-preflight.mjs",
+    "old": "29894eedd1232da8ba65da33448275d4be9f084c4f8fed4909ebfdb9d9d44936",
+    "new": "05c010b1d9222223cc355f245e3e52f0653c1c1343ecaef37be9727845d20a91",
+    "preimage_sha256": "386a6d743a681e67dd4180067d663b4e20a86c181cfff98342bdc2ce4a03fdf0",
+    "candidate_sha256": "a5046b487e50f3324b112f750e48583652ff1ee15c0679bd8e5a23bcfd1be449",
+    "method": "js-yaml exact parsed Domain crate unit tests run string, SHA256; old digest independently reproduced; current workflow differs solely accepted3line SDK invocation/check_status"
+  },
+  "root_actual_red_log": "/private/tmp/console-cedar-ci-preflight-owner-red-20260920.log",
+  "root_actual_red_inspected": {
+    "tests": 1,
+    "passed": 0,
+    "failed": 1,
+    "sole_failure": "domain-unit proof run step2 exact command digest mismatch"
+  },
+  "limits": [
+    "Approve only one existing digest literal replacement. Preserve every guard, source ownership and corruption test.",
+    "Root retains exact clean owner RED/admission then same leaf GREEN and broader existing preflight regression requirements.",
+    "Static gains are not runtime acceptance; no actions or production exposure claimed."
+  ],
+  "reviewer_repo_writes": 0
+}

@@ -1,0 +1,110 @@
+{
+  "kind": "INDEPENDENT_DURABLE_BROWSER_COPY_REVIEW",
+  "reviewer": "/root/integration_tests",
+  "candidate": "79d04ffbdb5c1a43a299b420101f0897d794d3ea",
+  "receipt_sha256": "1d02faa8129bf0d47f63fd46f175ca6df46caf9f736b7534ef09c32861933b4d",
+  "copy_count": 14,
+  "all_match": true,
+  "checks": [
+    {
+      "name": "01-public.png",
+      "source_sha256": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023",
+      "copy_sha256": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023",
+      "receipt_sha256": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023",
+      "match": true
+    },
+    {
+      "name": "02-terms.png",
+      "source_sha256": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e",
+      "copy_sha256": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e",
+      "receipt_sha256": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e",
+      "match": true
+    },
+    {
+      "name": "03-account-enrolled.png",
+      "source_sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+      "copy_sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+      "receipt_sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+      "match": true
+    },
+    {
+      "name": "04-sign-in.png",
+      "source_sha256": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e",
+      "copy_sha256": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e",
+      "receipt_sha256": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e",
+      "match": true
+    },
+    {
+      "name": "05-account-returned.png",
+      "source_sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+      "copy_sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+      "receipt_sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+      "match": true
+    },
+    {
+      "name": "owner-receipt.json",
+      "source_sha256": "36c0d944feac2fcb2368d036e9a72f2899e7cb131d25c3ef02cd277543970bf6",
+      "copy_sha256": "36c0d944feac2fcb2368d036e9a72f2899e7cb131d25c3ef02cd277543970bf6",
+      "receipt_sha256": "36c0d944feac2fcb2368d036e9a72f2899e7cb131d25c3ef02cd277543970bf6",
+      "match": true
+    },
+    {
+      "name": "result.json",
+      "source_sha256": "1ca1793ac43754d6a65d95d763d6d4674a74eddba36ee424bea09ea8e87a79fc",
+      "copy_sha256": "1ca1793ac43754d6a65d95d763d6d4674a74eddba36ee424bea09ea8e87a79fc",
+      "receipt_sha256": "1ca1793ac43754d6a65d95d763d6d4674a74eddba36ee424bea09ea8e87a79fc",
+      "match": true
+    },
+    {
+      "name": "run.log",
+      "source_sha256": "77e5fb39dc23017f911db1daea8e0095aa8b0d64ddbddd01896cd13818cef8c7",
+      "copy_sha256": "77e5fb39dc23017f911db1daea8e0095aa8b0d64ddbddd01896cd13818cef8c7",
+      "receipt_sha256": "77e5fb39dc23017f911db1daea8e0095aa8b0d64ddbddd01896cd13818cef8c7",
+      "match": true
+    },
+    {
+      "name": "stage-receipt.json",
+      "source_sha256": "9c03d4a48448e638e87f065428fbc38468d94a8c4c3ac47afc7634c4cd3b5671",
+      "copy_sha256": "9c03d4a48448e638e87f065428fbc38468d94a8c4c3ac47afc7634c4cd3b5671",
+      "receipt_sha256": "9c03d4a48448e638e87f065428fbc38468d94a8c4c3ac47afc7634c4cd3b5671",
+      "match": true
+    },
+    {
+      "name": "buck2-bounded.txt",
+      "source_sha256": "2e57fe9d4012eabf3c1d442195a083253772db8332b7ae79e1f898c651ef461e",
+      "copy_sha256": "2e57fe9d4012eabf3c1d442195a083253772db8332b7ae79e1f898c651ef461e",
+      "receipt_sha256": "2e57fe9d4012eabf3c1d442195a083253772db8332b7ae79e1f898c651ef461e",
+      "match": true
+    },
+    {
+      "name": "RUN-round2.sh.txt",
+      "source_sha256": "ef1f8f398f07fa481928c1d4b1cadae9b8e9b2399da6b2405750d54a5abb3458",
+      "copy_sha256": "ef1f8f398f07fa481928c1d4b1cadae9b8e9b2399da6b2405750d54a5abb3458",
+      "receipt_sha256": "ef1f8f398f07fa481928c1d4b1cadae9b8e9b2399da6b2405750d54a5abb3458",
+      "match": true
+    },
+    {
+      "name": "PREREQUISITES.json",
+      "source_sha256": "16ef2903286a6cfd2724f31153e8180fd2670f9c169b3b03dd50019fcb433fde",
+      "copy_sha256": "16ef2903286a6cfd2724f31153e8180fd2670f9c169b3b03dd50019fcb433fde",
+      "receipt_sha256": "16ef2903286a6cfd2724f31153e8180fd2670f9c169b3b03dd50019fcb433fde",
+      "match": true
+    },
+    {
+      "name": "manifest-round2.json",
+      "source_sha256": "98ace24d8479fd4e5ac62a212f904519b733d6827a0a3534267d4645b11e138f",
+      "copy_sha256": "98ace24d8479fd4e5ac62a212f904519b733d6827a0a3534267d4645b11e138f",
+      "receipt_sha256": "98ace24d8479fd4e5ac62a212f904519b733d6827a0a3534267d4645b11e138f",
+      "match": true
+    },
+    {
+      "name": "sandbox-prerequisite-failure.log",
+      "source_sha256": "e7b533ab83470090fe7802c1ee1ce5cc6a0c1697ee832dd98ee7135ecedfe8fb",
+      "copy_sha256": "e7b533ab83470090fe7802c1ee1ce5cc6a0c1697ee832dd98ee7135ecedfe8fb",
+      "receipt_sha256": "e7b533ab83470090fe7802c1ee1ce5cc6a0c1697ee832dd98ee7135ecedfe8fb",
+      "match": true
+    }
+  ],
+  "review_conclusion": "Receipt is consistent with inspected run.log, result.json, owner-receipt.json, and all five actual screenshots. Account leaf only; limitations retained.",
+  "visual_review_sha256": "ae4a580a8e09bde97684f98b812cd601c48f45657f185b1d1512afc6d1ed3522"
+}

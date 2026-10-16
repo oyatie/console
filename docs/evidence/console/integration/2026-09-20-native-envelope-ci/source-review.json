@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_EXACT_FIVEFILE_SOURCE_CANDIDATE_FOR_COMMIT_AND_REMAINING_CHECKS",
+  "base": "97ce38b9864b0b4577c5f81ec8b8957d5b099c5d",
+  "files_sha256": {
+    ".github/workflows/ci.yml": "3fde3529edf7c59c6f3bd489e68907a54dc78250d658c152a5ce75957d301cb8",
+    "tools/buck/gen_first_party.py": "b00841d4ff38e55c42e8c4356cafb193b838b645cb1e19e09f0dd019977b7ef4",
+    "backend/crates/platform/request-context/BUCK": "13a2176b4324c67e6c04a136908eb77778a1e1afe2b391b2dcf0b500fb6c0532",
+    "scripts/check-ci-preflight.mjs": "ed3eba62be47f84997806b9997044ff4c9939c93700536dba4b3da57427761e0",
+    "docs/program/executed-tests-baseline.json": "f1d6e688ecddc628fa4e4ba8c2680994031faf50265e1c215f4a5b65746aee18"
+  },
+  "checks": [
+    "Removed sole3line target/status restores byte-exact oldCI. Current actual executable extraction finds full unfiltered locked target immediately followed by status collector.",
+    "Generator metadata-only exact none integration insertion; removal restores byte-exact generator.",
+    "Generated BUCK preserves entire oldfile as prefix; AST exact single integration target/source/crate/labels/env/deps checked; ownlibrary plus unchanged existingunit dependency union, noDB label.",
+    "js-yaml parsed actual domain run SHA matches soleupdatedpreflightliteral4b465de72a80f0cc1a7d3135ace4c0e979e9a46d2d4e806ff4c3ed0666eb8324; oldliteralrestoration returns exactchecker.",
+    "Baseline retains all existingkeys/values except reviewed requestcontext whole-source30\u219231 and newstandalone3.",
+    "Inspectedroot actualmissingCIRED/admission and ownerGREEN logs; generatedmissingmetadataRED logged1error."
+  ],
+  "findings": [],
+  "remaining_root_checks": [
+    "Commit exactcandidate; unchangedgenerator59regressions and wholeverify as assigned.",
+    "Reuse actual3test runtime evidence only if valid exactHTML413 sourcecandidate; staticgraphGREEN is notruntime/exposure."
+  ],
+  "reviewer_repo_writes": 0,
+  "reviewer_cargo_db_browser": 0
+}

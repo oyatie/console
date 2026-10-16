@@ -1,0 +1,107 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_PLATFORM_DIRECT_PRODUCER_AND_SELECTED_NATIVE_VERIFICATION",
+  "head": "de05a945d7041c2004938e0273ab4da2a5c9ad99",
+  "production_files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "dirty_diff": {
+    "files": 3,
+    "insertions": 57,
+    "deletions": 7,
+    "matches_prior_approved_production_bytes": true
+  },
+  "evidence": {
+    "/private/tmp/console-platform-direct-producer-final-integration-tests-review-20260920.json": "57e6043fbb597817416cc41e69beba54e9a874eddbb1ba9535f2de19ba4ff6f5",
+    "/private/tmp/console-platform-direct-native-binary-final-20260920.json": "7d05deffa2c9113698f706b8aee6b3b86f1e05e00ac34a5d7b96029fed3d0038"
+  },
+  "binary": {
+    "head": "de05a945d7041c2004938e0273ab4da2a5c9ad99",
+    "path": "/private/tmp/console-client-release-20260919/buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+    "sha256": "75f330d0f8c67bd483e3203464ebf6b580b5ecf665ff9528068c8ba6926ac830",
+    "bytes": 402342024,
+    "discovered": 507,
+    "listing_path": "/private/tmp/console-platform-direct-native-discovery-final-20260920.log",
+    "listing_sha256": "44a0212339a9e5ce2105c28f481d18e992e231272dbb2ee46ff181a475b97694",
+    "production_files": {
+      "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+      "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+      "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+    }
+  },
+  "independent_checks": [
+    "Inspected final entire three-file dirty diff; all three SHA-256 values exactly match previously reviewed immutable implementation. No additional dirty paths.",
+    "Verified all 12 integration-review evidence hashes and all 16 matrix invocation log hashes, exact leaf presence, source binding and recorded summaries.",
+    "Read unit/JWT and feature-variant native summaries: 13+29 unit/JWT passes and 7+1+7+4 variant passes, zero ignored or failures in those invocations.",
+    "First 13-invocation HTTP matrix retains 11 passes and two wrong-logout-status failures. Exact committed successor changes only two 200 expectations to unchanged owner204. Both complete affected leaves and original named producer probe rerun and pass. Thirteen distinct selected HTTP leaves have accepted GREEN; full507case suite was not executed.",
+    "Final binary size402342024 and SHA-256 independently verified, listing hash verified and actual listing says507tests. This identifies the recaptured local artifact and does not claim hermetic build attestation."
+  ],
+  "security_conclusions": [
+    "Auth creates or rotates real refresh family before signing inside retained existing transaction; issuer receives exactly that owner-returned family, validates nonnil identity/scope/expiry/platform/direct shape, and encodes existing strict v1 binding.",
+    "Existing ordinary Company/group-role and other issuer APIs remain unbound. Historical command/claim codec is not rewritten.",
+    "Self-passkey reader removes only blanket platform refusal; current subject/family/protocol/revocation locks and pre/post database-clock checks remain. Historical unbound expiry semantics preserved.",
+    "Actual encoder-failure histories demonstrate attempted family insertion and complete rollback with exact original assertion/refresh retry. Read-after-revoke and sibling/historical controls now pass without skipped effects.",
+    "Independent semantic successor approvals preserved for LEGACY_COMPANY protocol oracle, typed-UUID SQLx safety assertion and204logoutstatus. Earlier wrong expectations and failed runs remain evidence."
+  ],
+  "findings": [],
+  "counts": {
+    "unit_target": {
+      "executed": 13,
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0
+    },
+    "jwt_es256_target": {
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "ignored": 0
+    },
+    "first_postgres_matrix": {
+      "invocations": 13,
+      "executed": 13,
+      "passed": 11,
+      "failed": 2,
+      "ignored": 0,
+      "filtered_per_invocation": 506
+    },
+    "successor_postgres_matrix": {
+      "invocations": 3,
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_per_invocation": 506
+    },
+    "selected_distinct_postgres_leaves": {
+      "selected": 13,
+      "with_accepted_green": 13,
+      "unresolved_failures": 0
+    },
+    "variant_targets": {
+      "targets": 4,
+      "executed_per_target": {
+        "auth-rest-dev-auth-inline-postgres": 7,
+        "platform-auth-rest-dev-auth-absence-pg": 1,
+        "auth-rest-dev-auth-session-postgres": 7,
+        "auth-rest-dev-auth-group-admin-postgres": 4
+      },
+      "passed_total": 19,
+      "failed": 0,
+      "ignored": 0
+    },
+    "owner_reds": {
+      "executed": 2,
+      "failed_at_expected_owner_boundary": 2
+    },
+    "reviewer_runtime_executions": 0
+  },
+  "limits": [
+    "Approval closes only bounded direct-platform producer dependency and selected verification, not Company workflow, browser, MVP, milestones or release.",
+    "Binding is family correlation, not passkey assurance or universal endpoint revocation. Existing legacy mutation-boundary current-family enforcement remains HOLD.",
+    "No production exposure or payment execution authority. Final commit/custody packaging remains parent-owned.",
+    "Reviewer executed no product tests, builds, SQL, browser or repository writes; read-only source/Git/hash/log inspection and private receipt only."
+  ]
+}

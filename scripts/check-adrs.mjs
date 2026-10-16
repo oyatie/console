@@ -2,7 +2,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ADR_ID_PATTERN = /^ADR-\d{4}$/;
@@ -148,6 +148,13 @@ function validateRetiredAdrIdentities(root, decisionsDirectory, failures) {
   ]);
   for (const absolutePath of repositoryFiles(root)) {
     if (!existsSync(absolutePath) || checkerPaths.has(absolutePath)) {
+      continue;
+    }
+    // Raw evidence preserves historical output, including intentionally invalid references.
+    if (
+      extname(absolutePath) === ".log" &&
+      isWithinDirectory(join(root, "docs", "evidence"), absolutePath)
+    ) {
       continue;
     }
     const display = displayPath(root, absolutePath);

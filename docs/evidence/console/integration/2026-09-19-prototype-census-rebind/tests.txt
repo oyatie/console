@@ -1,0 +1,20 @@
+▶ prototype-chain lookup census
+  ✔ classifies literal keys as out of class (0.38225ms)
+  ✔ reports optional-computed and undefined-compare on untrusted keys (RED control) (23.132083ms)
+  ✔ reports identifier in-operator and ignores for-in (16.353958ms)
+  ✔ ignores literal optional keys and match?.[1] numerics (15.070042ms)
+  ✔ passes when every finding is named in the residual register (15.725916ms)
+  ✔ fails closed on stale residuals and on examined-zero (32.129042ms)
+  ✔ fails closed when a listed subject path is missing on disk (unread ≠ scanned) (13.838791ms)
+  ✔ CLI exits non-zero on unknown findings (39.033167ms)
+  ✔ live repo subjects exceed the scanned floor (4.267167ms)
+  ✔ live repo census is green against the committed residual register (76.70675ms)
+✔ prototype-chain lookup census (237.271875ms)
+ℹ tests 10
+ℹ suites 1
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 290.414625

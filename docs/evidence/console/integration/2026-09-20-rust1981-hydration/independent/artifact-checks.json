@@ -1,0 +1,744 @@
+{
+  "head": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "base_sha": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "checks": [
+    {
+      "name": "only admitted three artifacts changed",
+      "pass": true,
+      "detail": [
+        "backend/crates/payroll/ui/bundle.lock.json",
+        "backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+        "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm"
+      ]
+    },
+    {
+      "name": "unchanged reviewed input rust-toolchain.toml",
+      "pass": true
+    },
+    {
+      "name": "unchanged reviewed input backend/Cargo.toml",
+      "pass": true
+    },
+    {
+      "name": "unchanged reviewed input backend/Cargo.lock",
+      "pass": true
+    },
+    {
+      "name": "unchanged reviewed input backend/crates/payroll/ui/Cargo.toml",
+      "pass": true
+    },
+    {
+      "name": "unchanged reviewed input tools/ui/build-payroll-wasm.sh",
+      "pass": true
+    },
+    {
+      "name": "unchanged reviewed input scripts/check-wasm-bundle-drift.mjs",
+      "pass": true
+    },
+    {
+      "name": "unchanged reviewed input scripts/check-wasm-bundle-drift.test.mjs",
+      "pass": true
+    },
+    {
+      "name": "unchanged immediate prebuild input backend/Cargo.lock",
+      "pass": true
+    },
+    {
+      "name": "unchanged immediate prebuild input backend/Cargo.toml",
+      "pass": true
+    },
+    {
+      "name": "unchanged immediate prebuild input tools/ui/build-payroll-wasm.sh",
+      "pass": true
+    },
+    {
+      "name": "unchanged immediate prebuild input backend/crates/payroll/ui/src/native_account.rs",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/Cargo.toml",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/src/island_script.js",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/src/lib.rs",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/src/native_account.css",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/src/native_account.js",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/src/native_account.rs",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash tools/ui/build-payroll-wasm.sh",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm",
+      "pass": true
+    },
+    {
+      "name": "recorded input/output hash backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+      "pass": true
+    },
+    {
+      "name": "actual binary validates as WASM",
+      "pass": true
+    },
+    {
+      "name": "every JS wasm reference resolves",
+      "pass": true,
+      "detail": {
+        "references": 28,
+        "missing": []
+      }
+    },
+    {
+      "name": "every WASM import is implemented by generated JS",
+      "pass": true,
+      "detail": {
+        "imports": 67,
+        "missing": []
+      }
+    },
+    {
+      "name": "one real island export with JS wrapper",
+      "pass": true
+    },
+    {
+      "name": "hydrate and bindgen start exports",
+      "pass": true
+    },
+    {
+      "name": "manifest retains pinned compiler/bindgen",
+      "pass": true
+    }
+  ],
+  "changed": [
+    "backend/crates/payroll/ui/bundle.lock.json",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm"
+  ],
+  "preserved": {
+    "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
+    "backend/Cargo.toml": "4d566b31cb64b02dd8107d92e4926291e9afdf9d20bcf2cd53abee80f12dc064",
+    "backend/Cargo.lock": "3616dadd89892ac18c9d7abcb2a8daa71c47a292e204c1cdd6306a16f1f0a3a5",
+    "backend/crates/payroll/ui/Cargo.toml": "1d70d2049d05b82bd5bdbc2b17dd0a99c2990ca5339379d916ea1d6ad1e3dbee",
+    "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad",
+    "scripts/check-wasm-bundle-drift.mjs": "38e8ce1443a473b7fbc8c42351bec996ff280c76a59e3b7425711c9f7c97340b",
+    "scripts/check-wasm-bundle-drift.test.mjs": "73efb16b77231bbd31563f07412cef6fa88d2fc36437df782458ce28ef69b58f"
+  },
+  "manifest": {
+    "_comment": "Regenerate with: bash tools/ui/build-payroll-wasm.sh (it writes this file). Checked by scripts/check-wasm-bundle-drift.mjs.",
+    "toolchain_channel": "1.98.1",
+    "wasm_bindgen": "0.2.123",
+    "wasm_bindgen_cli": "0.2.123",
+    "inputs": {
+      "backend/crates/payroll/ui/Cargo.toml": "1d70d2049d05b82bd5bdbc2b17dd0a99c2990ca5339379d916ea1d6ad1e3dbee",
+      "backend/crates/payroll/ui/src/island_script.js": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d",
+      "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+      "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+      "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad"
+    },
+    "outputs": {
+      "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "c3d9d2342a2f4d44f16382a8b76c2bd08d7dbd30dd0c29232d7a91a6dc820a06",
+      "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "98950409e6b616abab0ea90f074115bab26870c6e9a0bd54a8d80a48dddde43d"
+    }
+  },
+  "wasm_bytes": 376337,
+  "js_bytes": 30820,
+  "imports": [
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_length_fb04d16d7bdf6d4c",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_get_unchecked_46e778e3cec74b5e",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_get_4b90d6d8c5deb5d5",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_deleteProperty_ef6b042838fc4d3e",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_call_ec09a4cf93377d3a",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_instanceof_Window_9e0fe7d3d1ff4342",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_removeAttribute_243127a32c2eb7c3",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_setAttribute_68c00da2a51113e3",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_instanceof_Element_382d9e5ede9b6c45",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_target_170ff333c25d067d",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_cancelBubble_10939a44e7c93e4b",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_composedPath_48cd3446f876ea4c",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_addEventListener_767c2a31836a5d6b",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_removeEventListener_50cdd1c1ebf3473c",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_dataset_fd440f87e1435223",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_instanceof_Text_5d3cde018a1c9770",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_view_15fa5865c6b336e3",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_respond_3cdb4cf32683fd79",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_close_4857e22d08b71356",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_value_7cba69015031eeff",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_enqueue_bbeb09ba0b140f76",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_instanceof_HtmlSelectElement_59255eea1e977271",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_get_0771a4d319916f20",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_instanceof_Comment_132fdc19d16a7d76",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_byobRequest_cc72d210de793e64",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_close_388d99468213b286",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_parentNode_f7ec4f9a8f8c6c09",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_host_4f612f9d52d2de48",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_firstChild_16777f39cae0c847",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_nextSibling_d05be8079bf0cdf5",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_instanceof_ShadowRoot_aa5d77e910e8127c",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor___INCOMPLETE_CHUNKS_46409da7a233da3e",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor___SERIALIZED_ERRORS_130cc13aada7ac2e",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor___RESOLVED_RESOURCES_a347a159d3ca05fb",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_resolve_0183de2e8c6b1d54",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_then_3ea18602c6a5123b",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_isArray_139f48e3c057ede8",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_new_5fae30e6b23db8df",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_length_68a9d5278d084f4f",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_set_86698c227e5b9dad",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_byteLength_96807b1d9ab24a4c",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_byteOffset_a9c7002428843c41",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_new_with_byte_offset_and_length_9e1e664fe1a5d385",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_buffer_8524b3453cde4918",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor_GLOBAL_THIS_95ca6460658b5d13",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor_SELF_4c95f759a91e9aae",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor_GLOBAL_60a4124bab7dcc9a",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_static_accessor_WINDOW_44b435597f9e9ee7",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_queueMicrotask_477a5533c7100338",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_queueMicrotask_4698f900840e3286",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_get_52a8a619f7b88df6",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_set_a6ba3ac0e634b822",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_number_get_588ed6b97f0d7e14",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_throw_bbadd78c1bac3a77",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_is_null_ced4761460071341",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_is_falsy_b42b20cdf083ea22",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_string_get_fa2687d531ed17a5",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_is_function_147961669f068cd4",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_is_undefined_4410e3c20a99fa97",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg__wbg_cb_unref_c2301a3c9b78104b",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg___wbindgen_debug_string_56c147eb1a51f0c4",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbg_new_typed_90c3f6c29ba36d19",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbindgen_init_externref_table",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbindgen_cast_0000000000000001",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbindgen_cast_0000000000000002",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbindgen_cast_0000000000000003",
+      "kind": "function"
+    },
+    {
+      "module": "./console_payroll_ui_bg.js",
+      "name": "__wbindgen_cast_0000000000000004",
+      "kind": "function"
+    }
+  ],
+  "exports": [
+    {
+      "name": "memory",
+      "kind": "memory"
+    },
+    {
+      "name": "AuthorizedRuns_177efa8e22da84d9",
+      "kind": "function"
+    },
+    {
+      "name": "hydrate",
+      "kind": "function"
+    },
+    {
+      "name": "_WASM_SPLIT_MARKER_5d19b9759010d080version",
+      "kind": "global"
+    },
+    {
+      "name": "__wbg_intounderlyingsource_free",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingsource_cancel",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingsource_pull",
+      "kind": "function"
+    },
+    {
+      "name": "__wbg_intounderlyingbytesource_free",
+      "kind": "function"
+    },
+    {
+      "name": "__wbg_intounderlyingsink_free",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingbytesource_autoAllocateChunkSize",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingbytesource_cancel",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingbytesource_pull",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingbytesource_start",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingbytesource_type",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingsink_abort",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingsink_close",
+      "kind": "function"
+    },
+    {
+      "name": "intounderlyingsink_write",
+      "kind": "function"
+    },
+    {
+      "name": "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___wasm_bindgen_70f82d8581126154___JsValue__core_ed718c3d60ebd546___result__Result_____wasm_bindgen_70f82d8581126154___JsError___true_",
+      "kind": "function"
+    },
+    {
+      "name": "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___js_sys_5ac190146f55a4f___Function_fn_wasm_bindgen_70f82d8581126154___JsValue_____wasm_bindgen_70f82d8581126154___sys__Undefined___js_sys_5ac190146f55a4f___Function_fn_wasm_bindgen_70f82d8581126154___JsValue_____wasm_bindgen_70f82d8581126154___sys__Undefined_______true_",
+      "kind": "function"
+    },
+    {
+      "name": "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___wasm_bindgen_70f82d8581126154___JsValue______true_",
+      "kind": "function"
+    },
+    {
+      "name": "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___wasm_bindgen_70f82d8581126154___JsValue______true__2",
+      "kind": "function"
+    },
+    {
+      "name": "__wbindgen_malloc",
+      "kind": "function"
+    },
+    {
+      "name": "__wbindgen_realloc",
+      "kind": "function"
+    },
+    {
+      "name": "__wbindgen_exn_store",
+      "kind": "function"
+    },
+    {
+      "name": "__externref_table_alloc",
+      "kind": "function"
+    },
+    {
+      "name": "__wbindgen_externrefs",
+      "kind": "table"
+    },
+    {
+      "name": "__wbindgen_destroy_closure",
+      "kind": "function"
+    },
+    {
+      "name": "__externref_table_dealloc",
+      "kind": "function"
+    },
+    {
+      "name": "__wbindgen_start",
+      "kind": "function"
+    }
+  ],
+  "js_wasm_references": [
+    "AuthorizedRuns_177efa8e22da84d9",
+    "__wbg_intounderlyingbytesource_free",
+    "intounderlyingbytesource_autoAllocateChunkSize",
+    "intounderlyingbytesource_cancel",
+    "intounderlyingbytesource_pull",
+    "intounderlyingbytesource_start",
+    "intounderlyingbytesource_type",
+    "__wbg_intounderlyingsink_free",
+    "intounderlyingsink_abort",
+    "intounderlyingsink_close",
+    "intounderlyingsink_write",
+    "__wbg_intounderlyingsource_free",
+    "intounderlyingsource_cancel",
+    "intounderlyingsource_pull",
+    "hydrate",
+    "__wbindgen_malloc",
+    "__wbindgen_realloc",
+    "__wbindgen_externrefs",
+    "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___wasm_bindgen_70f82d8581126154___JsValue______true_",
+    "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___wasm_bindgen_70f82d8581126154___JsValue______true__2",
+    "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___wasm_bindgen_70f82d8581126154___JsValue__core_ed718c3d60ebd546___result__Result_____wasm_bindgen_70f82d8581126154___JsError___true_",
+    "wasm_bindgen_70f82d8581126154___convert__closures_____invoke___js_sys_5ac190146f55a4f___Function_fn_wasm_bindgen_70f82d8581126154___JsValue_____wasm_bindgen_70f82d8581126154___sys__Undefined___js_sys_5ac190146f55a4f___Function_fn_wasm_bindgen_70f82d8581126154___JsValue_____wasm_bindgen_70f82d8581126154___sys__Undefined_______true_",
+    "__externref_table_alloc",
+    "__wbindgen_destroy_closure",
+    "memory",
+    "__wbindgen_exn_store",
+    "__externref_table_dealloc",
+    "__wbindgen_start"
+  ],
+  "js_import_names": [
+    "__wbg___wbindgen_debug_string_56c147eb1a51f0c4",
+    "__wbg___wbindgen_is_falsy_b42b20cdf083ea22",
+    "__wbg___wbindgen_is_function_147961669f068cd4",
+    "__wbg___wbindgen_is_null_ced4761460071341",
+    "__wbg___wbindgen_is_undefined_4410e3c20a99fa97",
+    "__wbg___wbindgen_number_get_588ed6b97f0d7e14",
+    "__wbg___wbindgen_string_get_fa2687d531ed17a5",
+    "__wbg___wbindgen_throw_bbadd78c1bac3a77",
+    "__wbg__wbg_cb_unref_c2301a3c9b78104b",
+    "__wbg_addEventListener_767c2a31836a5d6b",
+    "__wbg_buffer_8524b3453cde4918",
+    "__wbg_byobRequest_cc72d210de793e64",
+    "__wbg_byteLength_96807b1d9ab24a4c",
+    "__wbg_byteOffset_a9c7002428843c41",
+    "__wbg_call_ec09a4cf93377d3a",
+    "__wbg_cancelBubble_10939a44e7c93e4b",
+    "__wbg_close_388d99468213b286",
+    "__wbg_close_4857e22d08b71356",
+    "__wbg_composedPath_48cd3446f876ea4c",
+    "__wbg_dataset_fd440f87e1435223",
+    "__wbg_deleteProperty_ef6b042838fc4d3e",
+    "__wbg_enqueue_bbeb09ba0b140f76",
+    "__wbg_firstChild_16777f39cae0c847",
+    "__wbg_get_0771a4d319916f20",
+    "__wbg_get_4b90d6d8c5deb5d5",
+    "__wbg_get_52a8a619f7b88df6",
+    "__wbg_get_unchecked_46e778e3cec74b5e",
+    "__wbg_host_4f612f9d52d2de48",
+    "__wbg_instanceof_Comment_132fdc19d16a7d76",
+    "__wbg_instanceof_Element_382d9e5ede9b6c45",
+    "__wbg_instanceof_HtmlSelectElement_59255eea1e977271",
+    "__wbg_instanceof_ShadowRoot_aa5d77e910e8127c",
+    "__wbg_instanceof_Text_5d3cde018a1c9770",
+    "__wbg_instanceof_Window_9e0fe7d3d1ff4342",
+    "__wbg_isArray_139f48e3c057ede8",
+    "__wbg_length_68a9d5278d084f4f",
+    "__wbg_length_fb04d16d7bdf6d4c",
+    "__wbg_new_5fae30e6b23db8df",
+    "__wbg_new_typed_90c3f6c29ba36d19",
+    "__wbg_new_with_byte_offset_and_length_9e1e664fe1a5d385",
+    "__wbg_nextSibling_d05be8079bf0cdf5",
+    "__wbg_parentNode_f7ec4f9a8f8c6c09",
+    "__wbg_queueMicrotask_4698f900840e3286",
+    "__wbg_queueMicrotask_477a5533c7100338",
+    "__wbg_removeAttribute_243127a32c2eb7c3",
+    "__wbg_removeEventListener_50cdd1c1ebf3473c",
+    "__wbg_resolve_0183de2e8c6b1d54",
+    "__wbg_respond_3cdb4cf32683fd79",
+    "__wbg_setAttribute_68c00da2a51113e3",
+    "__wbg_set_86698c227e5b9dad",
+    "__wbg_set_a6ba3ac0e634b822",
+    "__wbg_static_accessor_GLOBAL_60a4124bab7dcc9a",
+    "__wbg_static_accessor_GLOBAL_THIS_95ca6460658b5d13",
+    "__wbg_static_accessor_SELF_4c95f759a91e9aae",
+    "__wbg_static_accessor_WINDOW_44b435597f9e9ee7",
+    "__wbg_static_accessor___INCOMPLETE_CHUNKS_46409da7a233da3e",
+    "__wbg_static_accessor___RESOLVED_RESOURCES_a347a159d3ca05fb",
+    "__wbg_static_accessor___SERIALIZED_ERRORS_130cc13aada7ac2e",
+    "__wbg_target_170ff333c25d067d",
+    "__wbg_then_3ea18602c6a5123b",
+    "__wbg_value_7cba69015031eeff",
+    "__wbg_view_15fa5865c6b336e3",
+    "__wbindgen_cast_0000000000000001",
+    "__wbindgen_cast_0000000000000002",
+    "__wbindgen_cast_0000000000000003",
+    "__wbindgen_cast_0000000000000004",
+    "__wbindgen_init_externref_table"
+  ],
+  "custom_sections": {
+    "producers": [
+      {
+        "bytes": 102,
+        "sha256": "287556b90fd43550e1f4d16ddc1f124ca749104d9cdd02e04ad8b031d8cf4afa",
+        "text": "\u0002\blanguage\u0001\u0004Rust\u0000\fprocessed-by\u0003\u0005rustc\u001d1.98.1 (48a229cea 2026-09-01)\u0006walrus\u00060.26.4\fwasm-bindgen\u00070.2.123"
+      }
+    ],
+    "target_features": [
+      {
+        "bytes": 132,
+        "sha256": "783646a16805fd83627fe8340bd90aeec200923b28796758916e185e77670cef",
+        "text": "\b+\u000bbulk-memory+\u000fbulk-memory-opt+\u0016call-indirect-overlong+\nmultivalue+\u000fmutable-globals+\u0013nontrapping-fptoint+\u000freference-types+\bsign-ext"
+      }
+    ],
+    "name": [
+      {
+        "bytes": 146302,
+        "sha256": "29c81515b32080e1988c618bdddce7f29390570c29400a1918235c86733f03a3"
+      }
+    ]
+  },
+  "runtime": "WebAssembly validation/module decoding only; no WASM instance, browser or app execution",
+  "limitations": [
+    "Manifest intentionally omits workspace Cargo.lock/Cargo.toml; this review separately checks their unchanged hashes.",
+    "Actual runtime authorized hydration and status-filter behavior still require parent browser proof.",
+    "Source/binary matching does not prove all output behavior or production qualification."
+  ]
+}

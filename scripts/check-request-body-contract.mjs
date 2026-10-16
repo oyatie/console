@@ -4,6 +4,7 @@
 // operation, binding metadata, and reason byte-for-byte.
 
 import { readFileSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import {
   basename,
   dirname,
@@ -92,8 +93,8 @@ const INERT_MODULE_ATTRIBUTES = new Set([
 const CONST_PATH = /pub const ([A-Z0-9_]+): &str =\s*"([^"]+)"/g;
 const ROUTE = /\.route\(\s*([A-Z0-9_]+)\s*,([\s\S]*?)\)\s*,?\s*\)/g;
 const LITERAL_ROUTE = /\.route\(\s*"([^"]+)"\s*,([\s\S]*?)\)\s*,?\s*\)/g;
-const METHOD = /\b(get|post|put|patch|delete)\(\s*([a-z0-9_]+)/g;
-const HANDLER = /async fn ([a-z0-9_]+)\s*\(([\s\S]*?)\)\s*->/g;
+const METHOD = /\b(get|post|put|patch|delete)\(\s*((?:[a-z0-9_]+::)*[a-z0-9_]+)/g;
+const FUNCTION = /((?:#\[[^\]]*\]\s*)*)(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+([A-Za-z_][A-Za-z0-9_]*)[^;{}]*\{/g;
 const JSON_BODY = /Json\(\s*\w+\s*\)\s*:\s*Json<\s*((?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*)\s*>/;
 const ITEM = /((?:#\[[^\]]*\]\s*)*)(?:pub(?:\([^)]*\))?\s+)?(struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*<[^>{;]*>)?\s*\{/g;
 const USE = /\b(?:pub(?:\([^)]*\))?\s+)?use\s+([\s\S]*?);/g;
@@ -791,6 +792,7 @@ function parseEnum(attributes, body) {
 function parseItems(source, file, absoluteFile, backendRoot, identity) {
   const structs = [];
   const enums = [];
+  const functions = [];
   const prelude = rustFilePrelude(source);
   const projected = scanRustSyntax(prelude.maskedSource, { projectCode: true });
   if (!projected.valid) {
@@ -827,6 +829,7 @@ function parseItems(source, file, absoluteFile, backendRoot, identity) {
         modulePath: scope.modulePath,
         imports: scope.imports,
         crateQualifier: identity.crateQualifier,
+        graphRoot: identity.graphRoot,
         conditional: scope.conditional || /#\s*\[\s*cfg(?:_attr)?\s*\(/.test(attributes),
         name: match[3],
       };
@@ -842,9 +845,34 @@ function parseItems(source, file, absoluteFile, backendRoot, identity) {
         enums.push({ ...common, ...parseEnum(attributes, body) });
       }
     }
+    for (const match of scope.surface.matchAll(FUNCTION)) {
+      const start = scope.start + match.index;
+      const opening = start + match[0].length - 1;
+      const group = scanRustSyntax(source, { start: opening, rootDelimiter: "{" });
+      if (!group.valid || group.closing > scope.end) {
+        throw new Error(`cannot scan Rust function ${file}::${match[2]}`);
+      }
+      const attributes = source.slice(start, start + match[1].length);
+      const head = source.slice(start + match[1].length, opening);
+      const signature = head.match(/\bfn\s+[A-Za-z_][A-Za-z0-9_]*(?:<[^(){};]*>)?\s*(\([\s\S]*)/);
+      functions.push({
+        file, graphRoot: identity.graphRoot, modulePath: scope.modulePath,
+        imports: scope.imports, crateQualifier: identity.crateQualifier,
+        conditional: scope.conditional || /#\s*\[\s*cfg(?:_attr)?\s*\(/.test(attributes),
+        name: match[2], attributes,
+        signature: signature ? projected.projection.slice(
+          start + match[1].length + head.length - signature[1].length, opening,
+        ) : "",
+        generic: new RegExp(`\\bfn\\s+${match[2]}\\s*<`).test(head),
+        declaration: `${source.slice(start, group.closing + 1).trim()}\n`,
+        body: projected.projection.slice(opening + 1, group.closing),
+        authoredBody: source.slice(opening + 1, group.closing),
+        scopeSurface: scope.surface,
+      });
+    }
   }
   const rootImports = scopes.find((scope) => sameModule(scope.modulePath, identity.modulePath))?.imports ?? [];
-  return { structs, enums, rootImports, outlined };
+  return { structs, enums, functions, scopes, rootImports, outlined };
 }
 
 function rustCrateRoot(file) {
@@ -966,71 +994,376 @@ function collectRustSourceIdentities(repoRoot) {
   return results;
 }
 
+const NATIVE_JSON_READER_SHA256 = "540b5ef8da8dbf25e1359fe3e9110d0e63cf38c774833e4c267c33a744060f77";
+const COMPANY_ROUTER_SHA256 = "ac9a02b071ede11b8e20590df2901f283248256741f926db9f6e9e57b97ecd52";
+const COMPANY_CODEC_SHA256 = "0d31297b18e0b41803e129dbeb2f52ff9b493dea538fce1c7b3234f12f484683";
+const COMPANY_RAW_BODIES = new Map([
+  ["POST /api/v2/companies/enroll", {
+    handler: "enroll",
+    handlerSha256: "99a98e977389a7cc537e7952a5cb607df49a988e9a1ba035b047f36199e02d2e",
+    owner: "enroll_company",
+    ownerSha256: "58c49169a4cc392aae241e394957891c94f2af584a8f2f4229d11c91a70de59d",
+  }],
+  ["POST /api/v2/companies/enrollments/{command_id}/cancel", {
+    handler: "cancel",
+    handlerSha256: "ef453fadb00e640bff5701df3402a4a0a652f66a80f019bfa43270f6a61fc6d0",
+    owner: "cancel_company_enrollment",
+    ownerSha256: "51df65815fadd0e02ab2477e09e782499ff31b3d3762485f3624fcc73593dfcb",
+  }],
+]);
+
+function sha256(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function maskGroup(source, start) {
+  const group = scanRustSyntax(source, { start, rootDelimiter: source[start] });
+  if (!group.valid) throw new Error(`cannot scan Rust function group: ${group.error}`);
+  return { end: group.closing + 1, blank: " ".repeat(group.closing + 1 - start) };
+}
+
+function functionCode(body, topLevel = false) {
+  let code = body;
+  // Function-local items are not mounted handlers or executed parser calls.
+  for (const match of [...code.matchAll(FUNCTION)].reverse()) {
+    const opening = match.index + match[0].length - 1;
+    const group = maskGroup(code, opening);
+    code = code.slice(0, match.index) + " ".repeat(group.end - match.index) + code.slice(group.end);
+  }
+  for (let index = 0; index < code.length; index += 1) {
+    const macro = code[index] === "!" ? code.slice(index).match(/^!\s*([({[])/) : null;
+    const opening = macro ? index + macro[0].length - 1 : index;
+    if (!macro && (!topLevel || code[index] !== "{")) continue;
+    const group = maskGroup(code, opening);
+    code = code.slice(0, opening) + group.blank + code.slice(group.end);
+    index = group.end - 1;
+  }
+  return code;
+}
+
+function nativeJsonReader(functions, scopes, handler) {
+  if (handler.file !== "backend/crates/platform/auth-rest/src/account_browser.rs"
+      || !sameModule(handler.modulePath, ["account_browser"])) return false;
+  const readers = functions.filter((item) => item.graphRoot === handler.graphRoot
+    && item.crateQualifier === handler.crateQualifier
+    && sameModule(item.modulePath, handler.modulePath) && item.name === "read_json");
+  if (readers.length !== 1 || readers[0].conditional) return false;
+  const reader = readers[0];
+  if (sha256(reader.declaration) !== NATIVE_JSON_READER_SHA256) return false;
+  // Root extern-crate aliases also populate the descendant's extern prelude.
+  if (scopes.some((scope) => scope.graphRoot === handler.graphRoot
+      && scope.modulePath.every((name, index) => handler.modulePath[index] === name)
+      && /\bextern\s+crate\b/.test(scope.surface))) return false;
+  const imports = { Body: ["axum", "body", "Body"], to_bytes: ["axum", "body", "to_bytes"], de: ["serde", "de"] };
+  for (const [name, path] of Object.entries(imports)) {
+    const bindings = reader.imports.filter((binding) => binding.name === name);
+    if (bindings.length !== 1 || !sameModule(bindings[0].path, path)) return false;
+  }
+  // Unknown glob/conditional bindings or local namespace replacement invalidate
+  // the reviewed helper even if its function body itself has not changed.
+  if (/\buse\b[^;]*\*/.test(reader.scopeSurface)
+      || /\bextern\s+crate\b/.test(reader.scopeSurface)
+      || /!\s*[({[]/.test(reader.scopeSurface)
+      || /#\s*\[\s*\]\s*(?:pub(?:\([^)]*\))?\s+)?use\b/.test(reader.scopeSurface)
+      || reader.imports.some((binding) => ["axum", "serde", "serde_json", "read_json", "START_BODY_LIMIT", "FINISH_BODY_LIMIT"].includes(binding.name))
+      || /\b(?:mod|struct|enum|type|trait|union|const|static|fn)\s+(?:axum|serde|serde_json|Body|to_bytes|de)\b/.test(reader.scopeSurface)) return false;
+  for (const [name, value] of [["START_BODY_LIMIT", "4 * 1024"], ["FINISH_BODY_LIMIT", "64 * 1024"]]) {
+    const declarations = [...reader.scopeSurface.matchAll(new RegExp(
+      `((?:#\\s*\\[[^\\]]*\\]\\s*)*)(?:pub(?:\\s*\\([^)]*\\))?\\s+)?const\\s+${name}\\s*:\\s*([^;]+);`, "g",
+    ))];
+    if (declarations.length !== 1 || declarations[0][1].trim()
+        || declarations[0][2].trim() !== `usize = ${value}`) return false;
+  }
+  return true;
+}
+
+function qualifiedHandlerShadowed(owner, handler) {
+  if (!handler.includes("::")) return false;
+  if (owner.generic) return true;
+  // Local item bindings have whole-function scope, even when written after the
+  // route. Do not resolve through module imports when a local namespace can win.
+  if (/\buse\b|\bextern\s+crate\b|\b[A-Za-z_][A-Za-z0-9_]*\s*!/.test(owner.body)) return true;
+  const name = handler.split("::")[0];
+  return new RegExp(`\\b(?:fn|type|struct|enum|union|mod|const|static|trait)\\s+(?:r#)?${name}\\b`).test(owner.body);
+}
+
+function nativeBodyType(functions, scopes, handler) {
+  if (handler.conditional || handler.generic || handler.attributes.trim()
+      || !nativeJsonReader(functions, scopes, handler)) return null;
+  const bodyParameters = [...handler.signature.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*:\s*Body\b/g)];
+  if (bodyParameters.length !== 1) return null;
+  const bodyName = bodyParameters[0][1];
+  if (/\bread_json\s*:/.test(handler.signature)
+      || new RegExp(`\\bmut\\s+${bodyName}\\s*:`).test(handler.signature)) return null;
+  const topLevel = functionCode(handler.body, true);
+  // functionCode blanks macro arguments, not the invocation name and '!'. A
+  // same-scope macro may emit bindings even after the read. Nested-block macros
+  // cannot inject outer bindings; the supported read must itself be top-level.
+  if (/\b[A-Za-z_][A-Za-z0-9_]*\s*!/.test(topLevel)) return null;
+  if ([...topLevel.matchAll(/\bread_json\s*\(/g)].length !== 1) return null;
+  const reads = [...topLevel.matchAll(/\blet\s+(?:[A-Za-z_][A-Za-z0-9_]*|_)\s*:\s*((?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*)\s*=\s*read_json\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*,\s*(START_BODY_LIMIT|FINISH_BODY_LIMIT)\s*\)\s*\.await\s*\?\s*;/g)];
+  if (reads.length !== 1 || reads[0][2] !== bodyName) return null;
+  const read = reads[0];
+  const protectedNames = new Set([bodyName, "read_json", read[1].split("::")[0], read[3]]);
+  if (/\buse\b|#\s*\[/.test(handler.body)) return null;
+  // Rust function-scope items are visible before their textual declaration.
+  for (const match of handler.body.matchAll(/\b(?:fn|type|struct|enum|union|mod|const|static)\s+([A-Za-z_][A-Za-z0-9_]*)/g)) {
+    if (protectedNames.has(match[1])) return null;
+  }
+  for (const match of topLevel.slice(0, read.index).matchAll(/\blet\s+([^=;]+)=/g)) {
+    if ([...match[1].matchAll(/[A-Za-z_][A-Za-z0-9_]*/g)].some((word) => protectedNames.has(word[0]))) return null;
+  }
+  return read[1];
+}
+
+function canonicalSource(sourceIdentities, repoRoot, {
+  file, crateQualifier: qualifier, modulePath, graphRoot,
+}) {
+  const matches = sourceIdentities.filter(({ identity }) => (
+    identity.file === file
+    && identity.crateQualifier === qualifier
+    && sameModule(identity.modulePath, modulePath)
+    && relative(repoRoot, identity.graphRoot) === graphRoot
+  ));
+  if (matches.length !== 1 || matches[0].identity.conditional
+      || matches[0].identity.pathRemapped) return null;
+  return matches[0];
+}
+
+function exactImport(imports, name, path) {
+  const matches = imports.filter((binding) => binding.name === name);
+  return matches.length === 1 && sameModule(matches[0].path, path);
+}
+
+function safeNamespaceSurface(surface, protectedNames = []) {
+  if (/\buse\b[^;]*\*/.test(surface)
+      || /\bextern\s+crate\b/.test(surface)
+      || /!\s*[({[]/.test(surface)
+      || /#\s*\[[^\]]*\]\s*(?:pub(?:\([^)]*\))?\s+)?use\b/.test(surface)) return false;
+  return !protectedNames.some((name) => new RegExp(
+    `\\b(?:mod|struct|enum|type|trait|union|const|static|fn)\\s+(?:r#)?${name}\\b`,
+  ).test(surface));
+}
+
+function companyRawRouteIdentity(route) {
+  const operation = route.path ? `${route.method.toUpperCase()} ${route.path}` : null;
+  const descriptor = COMPANY_RAW_BODIES.get(operation);
+  if (!descriptor || route.handler !== descriptor.handler
+      || route.file !== "backend/crates/identity/rest/src/company.rs"
+      || route.crateQualifier !== "console_identity_rest"
+      || !sameModule(route.modulePath, ["company"])
+      || route.routeOwner?.name !== "router") return null;
+  return { descriptor, operation };
+}
+
+function companyRawRoute(route, sourceIdentities, repoRoot) {
+  const known = companyRawRouteIdentity(route);
+  if (!known || route.routeOwner.conditional
+      || sha256(route.routeOwner.declaration) !== COMPANY_ROUTER_SHA256) return null;
+
+  const rest = canonicalSource(sourceIdentities, repoRoot, {
+    file: "backend/crates/identity/rest/src/company.rs",
+    crateQualifier: "console_identity_rest",
+    modulePath: ["company"],
+    graphRoot: "backend/crates/identity/rest/src/lib.rs",
+  });
+  const restRoot = canonicalSource(sourceIdentities, repoRoot, {
+    file: "backend/crates/identity/rest/src/lib.rs",
+    crateQualifier: "console_identity_rest",
+    modulePath: [],
+    graphRoot: "backend/crates/identity/rest/src/lib.rs",
+  });
+  const routers = rest?.items.functions.filter((candidate) => (
+    candidate.name === "router"
+    && candidate.file === rest.identity.file
+    && candidate.graphRoot === rest.identity.graphRoot
+    && candidate.crateQualifier === rest.identity.crateQualifier
+    && sameModule(candidate.modulePath, rest.identity.modulePath)
+  )) ?? [];
+  const declared = route.handlerDeclaration;
+  if (!rest || !restRoot || routers.length !== 1 || routers[0] !== route.routeOwner || !declared
+      || declared.file !== rest.identity.file
+      || declared.graphRoot !== rest.identity.graphRoot
+      || declared.crateQualifier !== rest.identity.crateQualifier
+      || !sameModule(declared.modulePath, rest.identity.modulePath)) return null;
+
+  return { ...known, rest, restRoot };
+}
+
+function companyRawBody(route, sourceIdentities, repoRoot) {
+  const raw = companyRawRoute(route, sourceIdentities, repoRoot);
+  const handler = route.bodyContext;
+  if (!raw || !handler || handler.conditional
+      || sha256(handler.declaration) !== raw.descriptor.handlerSha256) return null;
+
+  const restRootScope = raw.restRoot.items.scopes.find((scope) => sameModule(scope.modulePath, []));
+  if (!restRootScope || !safeNamespaceSurface(restRootScope.surface)
+      || restRootScope.imports.some((binding) => (
+        binding.name === "axum" || binding.name === "console_identity_application"
+      ))
+      || !safeNamespaceSurface(handler.scopeSurface, [
+        "axum", "console_identity_application", "to_bytes", "CompanyEnrollmentV1",
+        "enroll_company", "cancel_company_enrollment",
+      ])
+      || handler.imports.some((binding) => (
+        binding.name === "axum" || binding.name === "console_identity_application"
+      ))) return null;
+  const imports = {
+    to_bytes: ["axum", "body", "to_bytes"],
+    CompanyEnrollmentV1: ["console_identity_application", "CompanyEnrollmentV1"],
+    enroll_company: ["console_identity_application", "company_enrollment", "enroll_company"],
+    cancel_company_enrollment: [
+      "console_identity_application", "company_enrollment", "cancel_company_enrollment",
+    ],
+  };
+  if (!Object.entries(imports).every(([name, path]) => exactImport(handler.imports, name, path))) {
+    return null;
+  }
+
+  const applicationRoot = canonicalSource(sourceIdentities, repoRoot, {
+    file: "backend/crates/identity/application/src/lib.rs",
+    crateQualifier: "console_identity_application",
+    modulePath: [],
+    graphRoot: "backend/crates/identity/application/src/lib.rs",
+  });
+  const ownerSource = canonicalSource(sourceIdentities, repoRoot, {
+    file: "backend/crates/identity/application/src/company_enrollment.rs",
+    crateQualifier: "console_identity_application",
+    modulePath: ["company_enrollment"],
+    graphRoot: "backend/crates/identity/application/src/lib.rs",
+  });
+  const owner = ownerSource?.items.functions.filter(
+    (candidate) => candidate.name === raw.descriptor.owner,
+  ) ?? [];
+  const applicationScope = applicationRoot?.items.scopes.find(
+    (scope) => sameModule(scope.modulePath, []),
+  );
+  const ownerScope = ownerSource?.items.scopes.find(
+    (scope) => sameModule(scope.modulePath, ["company_enrollment"]),
+  );
+  if (!applicationRoot || !ownerSource || owner.length !== 1 || owner[0].conditional
+      || sha256(owner[0].declaration) !== raw.descriptor.ownerSha256
+      || !applicationScope || !safeNamespaceSurface(applicationScope.surface, ["uuid", "Uuid"])
+      || applicationScope.imports.some((binding) => binding.name === "uuid")
+      || !ownerScope || !safeNamespaceSurface(ownerScope.surface, ["uuid", "Uuid"])
+      || owner[0].imports.some((binding) => binding.name === "uuid")
+      || !exactImport(owner[0].imports, "Uuid", ["uuid", "Uuid"])) return null;
+
+  if (raw.descriptor.handler === "enroll") {
+    const codec = canonicalSource(sourceIdentities, repoRoot, {
+      file: "backend/crates/identity/application/src/company.rs",
+      crateQualifier: "console_identity_application",
+      modulePath: ["company"],
+      graphRoot: "backend/crates/identity/application/src/lib.rs",
+    });
+    if (!codec || sha256(codec.source) !== COMPANY_CODEC_SHA256
+        || !exactImport(
+          applicationRoot.items.rootImports,
+          "CompanyEnrollmentV1",
+          ["company", "CompanyEnrollmentV1"],
+        )
+        || !ownerScope || !safeNamespaceSurface(ownerScope.surface, ["CompanyEnrollmentV1"])
+        || !exactImport(owner[0].imports, "CompanyEnrollmentV1", ["crate", "CompanyEnrollmentV1"])) {
+      return null;
+    }
+  }
+  return raw.descriptor.handler;
+}
+
 function collectSources(repoRoot) {
   const consts = new Map();
   const structs = [];
   const enums = [];
-  const handlers = new Map();
+  const functions = [];
+  const scopes = [];
   const rawRoutes = [];
   const sourceIdentities = collectRustSourceIdentities(repoRoot);
 
   for (const { identity, source, items } of sourceIdentities) {
     const { file } = identity;
     const identityKey = sourceIdentityKey(identity);
-    for (const match of source.matchAll(CONST_PATH)) {
-      const candidates = consts.get(match[1]) ?? [];
-      candidates.push({ file, identityKey, path: match[2] });
-      consts.set(match[1], candidates);
+    scopes.push(...items.scopes.map((scope) => ({
+      ...scope,
+      file,
+      crateQualifier: identity.crateQualifier,
+      graphRoot: identity.graphRoot,
+    })));
+    for (const scope of items.scopes) {
+      for (const match of source.matchAll(CONST_PATH)) {
+        const offset = match.index - scope.start;
+        if (offset < 0 || scope.surface.slice(offset, offset + 9) !== "pub const") continue;
+        const candidates = consts.get(match[1]) ?? [];
+        candidates.push({ file, identityKey, path: match[2] });
+        consts.set(match[1], candidates);
+      }
     }
     structs.push(...items.structs);
     enums.push(...items.enums);
-    for (const match of source.matchAll(HANDLER)) {
-      handlers.set(`${identityKey}::${match[1]}`, match[2].match(JSON_BODY)?.[1] ?? null);
-    }
-    for (const match of source.matchAll(ROUTE)) {
-      for (const method of match[2].matchAll(METHOD)) {
-        rawRoutes.push({
-          file,
-          identityKey,
-          modulePath: identity.modulePath,
-          crateQualifier: identity.crateQualifier,
-          imports: items.rootImports,
-          constName: match[1],
-          literalPath: null,
-          method: method[1],
-          handler: method[2],
-        });
+    functions.push(...items.functions);
+    for (const owner of items.functions) {
+      const code = functionCode(owner.body);
+      for (const match of owner.authoredBody.matchAll(LITERAL_ROUTE)) {
+        if (code.slice(match.index, match.index + 7) !== ".route(") continue;
+        const argumentOffset = match.index + match[0].indexOf(match[2]);
+        const argumentsCode = code.slice(argumentOffset, argumentOffset + match[2].length);
+        for (const method of argumentsCode.matchAll(METHOD)) {
+          rawRoutes.push({
+            file, identityKey, graphRoot: identity.graphRoot,
+            modulePath: owner.modulePath, crateQualifier: identity.crateQualifier,
+            imports: owner.imports, conditional: owner.conditional,
+            routeOwner: owner,
+            handlerShadowed: qualifiedHandlerShadowed(owner, method[2]),
+            literalPath: match[1], constName: null, method: method[1], handler: method[2],
+          });
+        }
       }
-    }
-    for (const match of source.matchAll(LITERAL_ROUTE)) {
-      for (const method of match[2].matchAll(METHOD)) {
-        rawRoutes.push({
-          file,
-          identityKey,
-          modulePath: identity.modulePath,
-          crateQualifier: identity.crateQualifier,
-          imports: items.rootImports,
-          constName: null,
-          literalPath: match[1],
-          method: method[1],
-          handler: method[2],
-        });
+      for (const match of code.matchAll(ROUTE)) {
+        for (const method of match[2].matchAll(METHOD)) {
+          rawRoutes.push({
+            file, identityKey, graphRoot: identity.graphRoot,
+            modulePath: owner.modulePath, crateQualifier: identity.crateQualifier,
+            imports: owner.imports, conditional: owner.conditional,
+            routeOwner: owner,
+            handlerShadowed: qualifiedHandlerShadowed(owner, method[2]),
+            constName: match[1], method: method[1], handler: method[2],
+          });
+        }
       }
     }
   }
 
   const routes = rawRoutes.map((route) => {
-    let path = route.literalPath;
-    if (path == null) {
-      const candidates = consts.get(route.constName) ?? [];
-      const local = candidates.filter((candidate) => candidate.identityKey === route.identityKey);
-      path = local.length === 1 ? local[0].path : candidates.length === 1 ? candidates[0].path : null;
-    }
-    return {
+    const candidates = consts.get(route.constName) ?? [];
+    const local = candidates.filter((candidate) => candidate.identityKey === route.identityKey);
+    const path = route.literalPath ?? (local.length === 1 ? local[0].path : candidates.length === 1 ? candidates[0].path : null);
+    const namespace = functions.filter((item) => item.graphRoot === route.graphRoot);
+    const handler = route.conditional || route.handlerShadowed
+      ? null : resolveNamed(namespace, route, namedType(route.handler), true).value;
+    // A conditional declaration still contributes a missing-contract census
+    // entry, never a resolved comparison. Do not silently drop dev-only routes.
+    const declaration = route.handlerShadowed ? null : handler ?? resolveNamed(
+      namespace.map((item) => ({ ...item, conditional: false })), route, namedType(route.handler), true,
+    ).value;
+    const direct = handler && !handler.generic ? handler.signature.match(JSON_BODY)?.[1] ?? null : null;
+    const raw = handler && !direct ? nativeBodyType(functions, scopes, handler) : null;
+    const resolvedRoute = {
       ...route,
       path,
-      bodyType: handlers.get(`${route.identityKey}::${route.handler}`) ?? null,
+      bodyType: direct ?? raw,
+      handlerDeclaration: declaration,
+      declaredBodyType: declaration && !declaration.generic
+        ? declaration.signature.match(JSON_BODY)?.[1] ?? null : null,
+      bodyContext: handler,
+      strictBodyContext: raw !== null || route.handler.includes("::"),
     };
+    resolvedRoute.companyRawKnown = companyRawRouteIdentity(resolvedRoute) !== null;
+    resolvedRoute.companyRawCandidate = companyRawRoute(
+      resolvedRoute,
+      sourceIdentities,
+      repoRoot,
+    ) !== null;
+    resolvedRoute.companyRawBody = companyRawBody(resolvedRoute, sourceIdentities, repoRoot);
+    return resolvedRoute;
   });
   return { structs, enums, routes };
 }
@@ -1087,7 +1420,7 @@ function localModulePath(contextPath, path) {
   return [...base, ...remaining];
 }
 
-function resolvePath(items, context, path) {
+function resolvePath(items, context, path, strict = false) {
   const name = path.at(-1);
   const prefix = path.slice(0, -1);
   if (!name) return { value: null, status: "missing" };
@@ -1096,6 +1429,7 @@ function resolvePath(items, context, path) {
   const relativePath = localModulePath(context.modulePath, prefix);
   const local = relativePath === null ? [] : items.filter((candidate) => (
     candidate.crateQualifier === context.crateQualifier
+    && (!strict || candidate.graphRoot === context.graphRoot)
     && candidate.name === name
     && sameModule(candidate.modulePath, relativePath)
   ));
@@ -1111,7 +1445,7 @@ function resolvePath(items, context, path) {
     : [];
   if (qualified.length > 0) return decideResolution(qualified);
 
-  if (prefix.length > 0) return { value: null, status: "missing" };
+  if (prefix.length > 0 || strict) return { value: null, status: "missing" };
 
   return decideResolution(items.filter((candidate) => (
     (
@@ -1122,18 +1456,19 @@ function resolvePath(items, context, path) {
   )));
 }
 
-function resolveNamed(items, context, named) {
+function resolveNamed(items, context, named, strict = false) {
   if (named.pieces.length > 1) {
     const aliases = context.imports.filter((binding) => binding.name === named.pieces[0]);
     if (aliases.length > 1) return { value: null, status: "ambiguous" };
     if (aliases.length === 1) {
-      return resolvePath(items, context, [...aliases[0].path, ...named.pieces.slice(1)]);
+      return resolvePath(items, context, [...aliases[0].path, ...named.pieces.slice(1)], strict);
     }
-    return resolvePath(items, context, named.pieces);
+    return resolvePath(items, context, named.pieces, strict);
   }
 
   const local = items.filter((candidate) => (
     candidate.crateQualifier === context.crateQualifier
+    && (!strict || candidate.graphRoot === context.graphRoot)
     && candidate.name === named.name
     && sameModule(candidate.modulePath, context.modulePath)
   ));
@@ -1141,7 +1476,8 @@ function resolveNamed(items, context, named) {
   if (local.length > 0 && imports.length > 0) return { value: null, status: "ambiguous" };
   if (local.length > 0) return decideResolution(local);
   if (imports.length > 1) return { value: null, status: "ambiguous" };
-  if (imports.length === 1) return resolvePath(items, context, imports[0].path);
+  if (imports.length === 1) return resolvePath(items, context, imports[0].path, strict);
+  if (strict) return { value: null, status: "missing" };
 
   return decideResolution(items.filter((candidate) => (
     (
@@ -1178,7 +1514,7 @@ function requestBodySchema(document, path, method) {
   if (own(schema, "oneOf") || own(schema, "allOf") || own(schema, "anyOf")) {
     return { reason: "openapi_schema_composition_unsupported" };
   }
-  return { schema };
+  return { schema, rawSchema: raw };
 }
 
 export function jsonRequestSchema(document, path, method) {
@@ -1389,6 +1725,77 @@ function compareBody({ operation, schema, struct, findings }) {
   return true;
 }
 
+const COMPANY_UUID_PATTERN = "^(?!00000000-0000-0000-0000-000000000000$)"
+  + "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+const COMPANY_SLUG_PATTERN = "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?![\\s\\S])";
+
+function exactStringSet(value, expected) {
+  return Array.isArray(value)
+    && value.length === expected.length
+    && new Set(value).size === value.length
+    && [...value].sort(compareText).every((item, index) => item === [...expected].sort(compareText)[index]);
+}
+
+const COMPANY_SCHEMA_ANNOTATIONS = new Set(["description", "examples", "title"]);
+
+function schemaFields(schema, expected, supported = []) {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) return false;
+  const fields = new Set([...Object.keys(expected), ...supported, ...COMPANY_SCHEMA_ANNOTATIONS]);
+  return Object.entries(expected).every(([key, value]) => own(schema, key) === value)
+    && Object.keys(schema).every((key) => fields.has(key));
+}
+
+function compareCompanyRawBody({ document, path, method, operation, kind, schema, rawSchema, findings }) {
+  const requestBody = own(own(own(document, "paths"), path), method)?.requestBody;
+  const properties = own(schema, "properties");
+  const rawReference = own(rawSchema, "$ref");
+  let matches = requestBody && typeof requestBody === "object"
+    && (typeof rawReference !== "string" || schemaFields(rawSchema, { $ref: rawReference }))
+    && own(schema, "type") === "object"
+    && own(schema, "additionalProperties") === false;
+
+  if (kind === "enroll") {
+    const names = ["command_id", "group_id", "slug", "name", "administrative_account_id"];
+    matches = matches
+      && own(requestBody, "required") === true
+      && schemaFields(schema, { type: "object", additionalProperties: false }, ["properties", "required"])
+      && properties && typeof properties === "object" && !Array.isArray(properties)
+      && exactStringSet(Object.keys(properties), names)
+      && exactStringSet(own(schema, "required"), names)
+      && schemaFields(own(properties, "command_id"), {
+        type: "string", format: "uuid", minLength: 36, maxLength: 36,
+        pattern: COMPANY_UUID_PATTERN,
+      })
+      && schemaFields(own(properties, "group_id"), { type: "null" })
+      && schemaFields(own(properties, "slug"), {
+        type: "string", minLength: 1, maxLength: 63, pattern: COMPANY_SLUG_PATTERN,
+      })
+      && schemaFields(own(properties, "name"), {
+        type: "string", minLength: 1, maxLength: 256,
+      })
+      && schemaFields(own(properties, "administrative_account_id"), {
+        type: "string", format: "uuid", minLength: 36, maxLength: 36,
+        pattern: COMPANY_UUID_PATTERN,
+      });
+  } else {
+    const required = own(schema, "required");
+    matches = matches
+      && own(requestBody, "required") === false
+      && own(schema, "maxProperties") === 0
+      && schemaFields(schema, {
+        type: "object", additionalProperties: false, maxProperties: 0,
+      }, ["properties", "required"])
+      && (properties === undefined
+        || (properties && typeof properties === "object" && Object.keys(properties).length === 0))
+      && (required === undefined || (Array.isArray(required) && required.length === 0));
+  }
+
+  if (!matches) findings.push({
+    operation,
+    message: `Company ${kind} request schema disagrees with its reviewed raw-byte source binding`,
+  });
+}
+
 function compareEnums({ document, operation, schema, struct, enums, findings, enumUndecidable }) {
   const properties = own(schema, "properties");
   if (!properties || typeof properties !== "object") return { candidates: 0, resolved: 0, ids: [] };
@@ -1475,10 +1882,12 @@ export function evaluateRequestBodyContract({ repoRoot }) {
   const routeIndex = new Map();
   for (const route of routes) {
     if (!route.path) continue;
+    const operation = `${route.method.toUpperCase()} ${route.path}`;
+    if (COMPANY_RAW_BODIES.has(operation) && !route.companyRawKnown) continue;
     const key = operationKey(route.method, route.path);
     if (!key) continue;
     const candidates = routeIndex.get(key) ?? [];
-    if (!candidates.some((candidate) => (
+    if (route.companyRawKnown || !candidates.some((candidate) => (
       candidate.identityKey === route.identityKey && candidate.handler === route.handler
     ))) {
       candidates.push(route);
@@ -1508,6 +1917,28 @@ export function evaluateRequestBodyContract({ repoRoot }) {
       bodyUndecidable.push(bodyEntry(candidate.operation, null, "route_parser_unresolved"));
       continue;
     }
+    if (route.companyRawCandidate) {
+      if (!route.companyRawBody) {
+        bodyUndecidable.push(bodyEntry(candidate.operation, route, "no_direct_json_binding"));
+        continue;
+      }
+      if (schemaResult.reason) {
+        bodyUndecidable.push(bodyEntry(candidate.operation, route, schemaResult.reason));
+        continue;
+      }
+      resolvedOperations.add(candidate.operation);
+      compareCompanyRawBody({
+        document,
+        path: candidate.path,
+        method: candidate.method,
+        operation: candidate.operation,
+        kind: route.companyRawBody,
+        schema: schemaResult.schema,
+        rawSchema: schemaResult.rawSchema,
+        findings,
+      });
+      continue;
+    }
     if (!route.bodyType) {
       bodyUndecidable.push(bodyEntry(candidate.operation, route, "no_direct_json_binding"));
       continue;
@@ -1518,12 +1949,12 @@ export function evaluateRequestBodyContract({ repoRoot }) {
     }
     const bodyNamed = namedType(route.bodyType);
     const structResolution = bodyNamed
-      ? resolveNamed(structs, {
+      ? resolveNamed(structs, route.bodyContext ?? {
         file: route.file,
         modulePath: route.modulePath,
         crateQualifier: route.crateQualifier,
         imports: route.imports,
-      }, bodyNamed)
+      }, bodyNamed, route.strictBodyContext)
       : { value: null, status: "missing" };
     const struct = structResolution.value;
     if (!struct || !struct.denyUnknown || !compareBody({
@@ -1551,8 +1982,10 @@ export function evaluateRequestBodyContract({ repoRoot }) {
   }
 
   const routeOnly = new Map();
-  for (const route of routes) {
-    if (!route.path || !route.bodyType) continue;
+  for (const candidate of routes) {
+    if (!candidate.path
+        || !(candidate.bodyType ?? candidate.declaredBodyType ?? candidate.companyRawKnown)) continue;
+    const route = candidate.bodyType ? candidate : { ...candidate, bodyType: candidate.declaredBodyType };
     const key = operationKey(route.method, route.path);
     if (!key || specKeys.has(key)) continue;
     const operation = `${route.method.toUpperCase()} ${route.path}`;

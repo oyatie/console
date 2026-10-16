@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_implementation_source_review",
+  "candidate_manifest": "/private/tmp/console-ui-integration-source-review-20260921/manifest.json",
+  "candidate_manifest_sha256": "e148cba0763004274352ee56637b9133ae9db55fd4db894b352e2cb8371098df",
+  "candidate_head": "52792982d4373304b51bfb8b5bb8df8f27bcd1d2",
+  "verdict": "APPROVED bounded shared and People source implementation; assembled native and actual browser acceptance pending",
+  "findings": [],
+  "evidence": [
+    "Exact copied lib.rs and people.rs hashes verified against manifest. Review scope excludes old Org/Payroll bodies still present in this pre-integration snapshot; their separate admitted replacement is independently approved.",
+    "Shared navigation derives only from existing offered sections; focus denial returns original empty shell before composing sibling navigation. No unimplemented destinations, client authority inputs, new requests or business controls introduced.",
+    "Named Korean main-page subject, one h1, keyboard skip link to focusable main, aria-current only for active offered destination and labels for major navigation are present. Decorative marks are aria-hidden.",
+    "People joins use actual person_id identity from authorized projections, never display names. Missing People projection emits no person href or denied count; offered Company-unrelated identifiers remain plain source identifiers. Person/Employment empty, omitted and failure states are handled independently with local recovery.",
+    "Person/Employment inspectors are native details/summary, visible missing-value labels and raw contract attributes are retained, and actual source API links remain available. Static collections introduce no hydration/script dependency.",
+    "Responsive source uses minmax(0,1fr), min-width:0, wrapping, flat data layouts and single-column breakpoints. At320px the sidebar becomes normal document flow, guide becomes block and definition-value tracks can shrink. Focus outlines and44px navigation/recovery targets are explicit. These source properties are not browser measurement.",
+    "All Org/Payroll announced module classes have matching shared CSS rules. Selector additions do not introduce hidden records or secondary run filters; [hidden] remains display:none!important.",
+    "AuthorizedRuns source compared byte-for-byte with exact approved base1a647146 and is unchanged. Existing JS/WASM source custody must still be rebuilt rather than resealed."
+  ],
+  "checks_executed": [
+    "Manifest SHA256 verification for2source files",
+    "Byte-for-byte AuthorizedRuns comparison with1a647146 base"
+  ],
+  "native_tests_executed_by_reviewer": 0,
+  "browser_sessions_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Full integrated native28 leaves after Org/Payroll cherry-pick and shared CSS integration",
+    "Actual product browser evidence for native details fragment reveal, keyboard/focus, Korean IME,320px/200percent zoom and long values; check681–1150px sidebar/content widths as well as endpoints",
+    "Independent visual critique against actual prototype references using genuine UI-created data and restricted policy",
+    "Authentic source-bundle build and custody evidence",
+    "Complete business workflows and full first-client-release qualification"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_EXACT_HANDLER_TYPE_FIXTURE_CORRECTION",
+  "manifest_sha256": "32a5d269aca0ce48185c4d97f4c7f9ae08472c258c07491720275dd0dbbf050d",
+  "reason": "Named async handler provides concrete IntoResponse output type; retains unconditional panic if oversized body reaches handler. All acceptance assertions remain exact. Existing E0277 was prerequisite failure, not owner RED."
+}

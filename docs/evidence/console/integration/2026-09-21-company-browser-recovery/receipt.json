@@ -1,0 +1,86 @@
+{
+  "base_sha": "85fe5377e721ba38e35098a27191069bac07b355",
+  "owner": "/root",
+  "reviewer": "/root/company_scope_review",
+  "status": "Company creation browser leaf and four owner recovery regressions passed; local unpublished prerequisite, not MVP acceptance",
+  "browser": {
+    "invocation": "bash /private/tmp/console-company-canonical-integration-20260921/round12/run-browser-node-path.sh",
+    "target": "//tools/buck:app-auth-rest-browser-pg",
+    "passed": 1,
+    "failed": 0,
+    "filtered": 522,
+    "seconds": 23.95,
+    "source_snapshot": "browser-source-snapshot.json",
+    "checkpoints": [
+      "ENROLLED",
+      "COMPANY_COMMITTED",
+      "COMPANY_REOPENED"
+    ]
+  },
+  "recovery": {
+    "invocation": "bash /private/tmp/console-company-recovery-fixture-20260921/run.sh",
+    "target": "//tools/buck:app-auth-rest-pg",
+    "exact_tests": [
+      "selected_administrator_receives_only_company_ceiling_without_operator_inheritance",
+      "failed_actor_admission_rolls_back_topology_and_same_command_retries_once",
+      "company_input_is_closed_bounded_preserved_and_html_escaped",
+      "concurrent_same_command_commits_once_and_foreign_account_cannot_reopen"
+    ],
+    "each": {
+      "passed": 1,
+      "failed": 0,
+      "filtered": 516
+    },
+    "seconds": [
+      8.73,
+      10.08,
+      13.11,
+      12.71
+    ],
+    "source_snapshot": "recovery-source-snapshot.json"
+  },
+  "supporting": {
+    "generator_check": "python3 ops/generate-account-custody.py --check: exit0",
+    "generator_test": "python3 -m unittest ops/test_company_enrollment_input_generator.py:1passed",
+    "browser_oracles": "node --test tools/browser/company-preview.test.cjs:3passed",
+    "format": "rustfmt --check --edition2024 --config skip_children=true on5changed product Rust files:exit0",
+    "diff": "git diff --check:exit0"
+  },
+  "remaining_holds": [
+    "Integration with newer native hydration and shared theme",
+    "Browser cancellation, expiry, lost response, and revocation histories",
+    "Full policy installation/grant/revoke and Payroll connection",
+    "All five MVP business workflows and production visual/accessibility qualification",
+    "Full release inventory, security findings, operational qualification, and separate exposure decision"
+  ],
+  "artifacts": {
+    "01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "04-company-created.png": "ff5ae6c543e1c00b3deb2444523525ded641b0d7ccea46ba180672bd5c86aa47",
+    "05-company-workspace.png": "4fd13b412d72ed2e7a52ccd94e619ddcf1463c27719e34184ddbc22e1f30fcf0",
+    "browser-owner-receipt.json": "d7425ba4ec86c8e063d78cccd2f0d159d900903c5e720b3cad60d20dbc540872",
+    "browser-result.json": "055b8bac1b8c483787b24fa2961770c2f4370855215bce8d8062e55c4fb25856",
+    "browser-review.txt": "79aefe6ddbef4e3418aaf67f3672159b55480c453878ec7034af4d0c536bd7ee",
+    "browser-source-snapshot.json": "878b49368b8477669fa1b38c18201c974221d33181e5e065502d2d562f1f02cd",
+    "browser.log": "5b77935db52d3bf276eb5ba85ba78a3691859b04cf3cb33560be82ccb923741b",
+    "company_input_is_closed_bounded_preserved_and_html_escaped.log": "5c027ac99a6fc71734b88924c609fcc10b7a1a6cec0f98fa5d7f44a5f23ad1e8",
+    "concurrent_same_command_commits_once_and_foreign_account_cannot_reopen.log": "a3f4c3f91b9c0ca6153d5ad2e0a3737daa9534434acb027425dfd6adc3a70ca9",
+    "failed_actor_admission_rolls_back_topology_and_same_command_retries_once.log": "510cb5e76d5b12a5924ff48dcae4e49b46d6da7b502201d7ba062d442ddc2c25",
+    "fixture-successor.json": "684d9192a3aa3403fb81e53a34769681f7d18d36c58dc2aeda60354d21541316",
+    "recovery-source-snapshot.json": "d4fef5ad748c25c5222bc47d3bc1c5f987180357fb6f3f6028fa58a51c7d4230",
+    "selected_administrator_receives_only_company_ceiling_without_operator_inheritance.log": "527aaf25aac108b00d00a2cfdf265d3e30fbffcce4374001e22ab169caa925f7",
+    "fixture-successor.patch.log.gz": "e55221aa2755dbf5009723d62771c85e497c34d9347a7a12d6020e948cb430c8",
+    "format-successor.json": "29e93a89ba8ebe46e84b72a2e493fd57df8ec754ae05086437ef3449e2a8594f"
+  },
+  "fixture_diff_archive": {
+    "file": "fixture-successor.patch.log.gz",
+    "decompressed_sha256": "a7c2b46fe338684c7fb8e23bca40d0ac58dd7fa3873369f2b3c2408667606641",
+    "reason": "Lossless raw diff archive; preserve context whitespace without introducing source whitespace findings"
+  },
+  "format_successor": {
+    "manifest": "format-successor.json",
+    "change": "rustfmt normalization of two Rust files after runtime probes; SQL/string literals and behavior preserved; minimal root edition2024 config repairs existing hook",
+    "check": "exact staged Rust pre-commit formatting command passed; no hook bypass"
+  }
+}

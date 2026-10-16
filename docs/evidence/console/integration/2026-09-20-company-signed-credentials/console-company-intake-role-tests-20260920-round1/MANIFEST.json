@@ -1,0 +1,15 @@
+{
+  "author": "/root/integration_tests",
+  "status": "PROPOSED_TEST_SOURCE_REQUIRES_INDEPENDENT_REVIEW",
+  "base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "source_preimage_sha256": "edf78dca4fd37d54a43c7308255d2897fc1a7edba075d59852de93c40aedef76",
+  "new_tests": 2,
+  "unchanged_prior_tests": 6,
+  "actual_tests_executed": 0,
+  "repository_writes": 0,
+  "files": {
+    "addition.rs": "bdfc42469f98e5388ac638cffc3678754590c2154681dd2583e9f163f8ea9bbd",
+    "native_company_intake_owner.rs": "4bf5d79297b087b801c848c03b44589f785ec70173c29713f4491d16b86f8280",
+    "CONTRACT.md": "ffbc2f2d30f109ff931fe9b3afdb0d3a97594c0f22e010d2df128a7bbca47daa"
+  }
+}

@@ -1,0 +1,29 @@
+[2026-09-21T21:21:25.674-04:00] Build ID: fc672b31-791b-40b3-b6de-47fa990099c4
+[2026-09-21T21:21:25.674-04:00] File changed (since mergebase): root//tools/browser/account.test.cjs
+[2026-09-21T21:21:25.674-04:00] File changed (since mergebase): root//tools/browser/account.cjs
+[2026-09-21T21:21:25.674-04:00] File changed (since mergebase): root//tools/browser/prepare_native_browser.sh
+[2026-09-21T21:21:25.674-04:00] 402 additional file change events (since mergebase)
+[2026-09-21T21:21:25.674-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T21:21:28.453-04:00] Action failed: root//backend/crates/payroll/ui:console-payroll-ui-source-snapshot (toolchains//:wasm32-platform#47b899467996b656) (hydration_snapshot)
+[2026-09-21T21:21:28.453-04:00] Local command returned non-zero exit code 1
+[2026-09-21T21:21:28.453-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/15e8f5d758fb9ab6/hydration_snapshot' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/root/47b899467996b656/tools/ui/__hydration-wasm_bundle.py__/hydration-wasm_bundle.py snapshot --inputs buck-out/v2/art/root/47b899467996b656/backend/crates/payroll/ui/__console-payroll-ui-source-snapshot__/inputs.json --out-dir buck-out/v2/art/root/47b899467996b656/backend/crates/payroll/ui/__console-payroll-ui-source-snapshot__/snapshot
+[2026-09-21T21:21:28.453-04:00] Stdout: <empty>
+[2026-09-21T21:21:28.453-04:00] Stderr:
+hydration dependency metadata is stale; regenerate with tools/buck/gen_hydrate.py
+
+[2026-09-21T21:21:28.457-04:00] Cache hits: 0%
+[2026-09-21T21:21:28.457-04:00] Commands: 85 (cached: 0, remote: 0, local: 85)
+[2026-09-21T21:21:28.457-04:00] Network: Up: 0B  Down: 23MiB
+[2026-09-21T21:21:28.457-04:00]
+[2026-09-21T21:21:28.457-04:00] BUILD ERRORS (1)
+[2026-09-21T21:21:28.457-04:00] The following actions failed during the execution of this command:
+[2026-09-21T21:21:28.457-04:00] Action failed: root//backend/crates/payroll/ui:console-payroll-ui-source-snapshot (toolchains//:wasm32-platform#47b899467996b656) (hydration_snapshot)
+[2026-09-21T21:21:28.457-04:00] Local command returned non-zero exit code 1
+[2026-09-21T21:21:28.457-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/15e8f5d758fb9ab6/hydration_snapshot' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/root/47b899467996b656/tools/ui/__hydration-wasm_bundle.py__/hydration-wasm_bundle.py snapshot --inputs buck-out/v2/art/root/47b899467996b656/backend/crates/payroll/ui/__console-payroll-ui-source-snapshot__/inputs.json --out-dir buck-out/v2/art/root/47b899467996b656/backend/crates/payroll/ui/__console-payroll-ui-source-snapshot__/snapshot
+[2026-09-21T21:21:28.457-04:00] Stdout: <empty>
+[2026-09-21T21:21:28.457-04:00] Stderr:
+hydration dependency metadata is stale; regenerate with tools/buck/gen_hydrate.py
+
+[2026-09-21T21:21:28.457-04:00]
+BUILD FAILED
+Failed to build 'root//backend/crates/payroll/ui:console-payroll-ui-source-snapshot (toolchains//:wasm32-platform#47b899467996b656)'

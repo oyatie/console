@@ -10,7 +10,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use console_kernel_core::{BranchId, ErrorKind, KernelError, RegionId, TraceContext, UserId};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, Feature, Principal, authorize, authorize_capability, authorize_org_wide,
 };
@@ -52,21 +52,24 @@ const OPS_TOP_MECHANICS: u32 = 10;
 #[derive(Debug, Clone)]
 pub struct KpiRestState {
     repository: PgKpiRepository,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl KpiRestState {
     #[must_use]
-    pub fn new(repository: PgKpiRepository, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(
+        repository: PgKpiRepository,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
         Self {
             repository,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
 
 pub fn router(state: KpiRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.repository.pool().clone();
     let router = Router::new()
         .route(KPI_PATH, get(get_kpis))
@@ -111,6 +114,7 @@ struct ErrorPayload {
 struct RestError {
     status: StatusCode,
     kind: ErrorKind,
+    code_override: Option<&'static str>,
     message: String,
 }
 
@@ -119,6 +123,7 @@ impl RestError {
         Self {
             status: StatusCode::BAD_REQUEST,
             kind: ErrorKind::Validation,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -127,6 +132,7 @@ impl RestError {
         Self {
             status: StatusCode::UNAUTHORIZED,
             kind: ErrorKind::Forbidden,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -135,6 +141,7 @@ impl RestError {
         Self {
             status: StatusCode::SERVICE_UNAVAILABLE,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -143,6 +150,7 @@ impl RestError {
         Self {
             status: StatusCode::INTERNAL_SERVER_ERROR,
             kind: ErrorKind::Internal,
+            code_override: None,
             message: message.into(),
         }
     }
@@ -151,6 +159,7 @@ impl RestError {
         Self {
             status: status_for_error_kind(error.kind),
             kind: error.kind,
+            code_override: None,
             message: error.message,
         }
     }
@@ -172,6 +181,9 @@ impl RestError {
     }
 
     fn code(&self) -> &'static str {
+        if let Some(code) = self.code_override {
+            return code;
+        }
         match self.kind {
             ErrorKind::Validation => "validation",
             ErrorKind::NotFound => "not_found",
@@ -485,7 +497,7 @@ async fn principal_from_headers(
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
     let verifier = state
-        .jwt_verifier
+        .session_verification
         .as_ref()
         .ok_or_else(|| RestError::unavailable("JWT verification is not configured for KPI API"))?;
     console_platform_request_context::resolve_principal(verifier, state.repository.pool(), headers)
@@ -497,6 +509,17 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError {
+                status,
+                code_override: Some(code),
+                ..RestError::unavailable(message)
+            }
+        }
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for KPI API")
         }
@@ -518,7 +541,8 @@ fn rest_error_from_request_context(
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        console_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken
+        | console_platform_request_context::RequestContextError::LegacySessionRejected => {
             RestError::unauthorized("invalid bearer token")
         }
         console_platform_request_context::RequestContextError::InvalidClaim(message) => {

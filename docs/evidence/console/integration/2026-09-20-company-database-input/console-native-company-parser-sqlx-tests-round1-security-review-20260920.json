@@ -1,0 +1,105 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXECUTABLE_TEST_SOURCE_AND_RESOURCE_CANDIDATE_NO_IMPLEMENTATION",
+  "packet": "/private/tmp/console-native-company-parser-sqlx-tests-20260920-round1",
+  "manifest_sha256": "4bfd3dd57dca0ad8ab7cbadacfe24ae7aa055173f2cf3f42a9a8e32f9712c381",
+  "reviewed_members": {
+    "GUIDE.md": {
+      "sha256": "afbd1eb99e6b3ee45f2dd7f64e82aca76813eaaaf4298b8b8b7d22b8885a2a27",
+      "bytes": 8264
+    },
+    "company-enrollment-input-boundary.sql": {
+      "sha256": "3404dd5a604e91029f21250be9f1324575942e7ec122237eb6b8652708965c67",
+      "bytes": 47734
+    },
+    "company-enrollment-input-golden.sql": {
+      "sha256": "2a6d065d71d580aa6113dd7332d02574c1bc2f588a079bf4d963a9d7f96d83d5",
+      "bytes": 6561
+    },
+    "company-enrollment-input-malformed.sql": {
+      "sha256": "4a2d570e0f7eaca200bfdbc0bd54b86bc6b0b0a61c7891eaf03c4cca8fdd5d27",
+      "bytes": 7622
+    },
+    "existing-generated-output-sha256.json": {
+      "sha256": "caaa39298469dab799abd2166d0b54aa0ba7fe3026345c89416b14317bc34002",
+      "bytes": 701
+    },
+    "gen_first_party.py.after": {
+      "sha256": "60675731ee7dd1b5d38f0517fb3888ce85d4a327208af40edfaab40c8edbe4a5",
+      "bytes": 88280
+    },
+    "gen_first_party.py.before": {
+      "sha256": "279e0c12e989371a44f4137005367b9306a0966334a8ef2980675a14cc9f9f02",
+      "bytes": 87991
+    },
+    "native_company_input_parser.rs": {
+      "sha256": "492552cd86725cd32d7789ed571e5cc41341457d92daa673505c0b2c2873abce",
+      "bytes": 7010
+    },
+    "ops.BUCK.after": {
+      "sha256": "2701da35995228d4f590a7f008fa9935e7760dc18c7ce148537368f9ec80c73f",
+      "bytes": 630
+    },
+    "ops.BUCK.before": {
+      "sha256": "a5d126542516bf2918f0b2689c844a9211c1c851669a117800325e14b97c80a3",
+      "bytes": 452
+    },
+    "sql-adaptation.json": {
+      "sha256": "4fb33cdd562d5f69773fdb58931d36b160a0c8306d413c8bb59201780c39fe09",
+      "bytes": 885
+    },
+    "test_company_enrollment_input_generator.py": {
+      "sha256": "8d506011077396a050c6a6405b12143d6e04b00bc5a15a8a8d2aea11fbe08988",
+      "bytes": 2098
+    },
+    "test_gen_first_party.py.after": {
+      "sha256": "cb60f924252560cd6d827e0f99218ccf75ae0f45bc7ac12e50be3f6ec1f923a3",
+      "bytes": 70608
+    },
+    "test_gen_first_party.py.before": {
+      "sha256": "b0e7acf0cefd413b7fc3d06e00f524cd973238d9d1054496e1ffc0a4e8444f06",
+      "bytes": 69856
+    }
+  },
+  "preimages": "All8source preimages match current repository; six prior generated outputs match independent fixed hashes.",
+  "reviewed": [
+    "Uses actual designated fixture with WebAuthn Account/session/designation/current finalizers; existing all_rows complete base-table oracle before/after",
+    "Both unchanged serving classifier SQL positive before helper; both must become profile_mismatch after exact generated private installation and remain mismatched afterward",
+    "Explicit admin bootstrap identity checked; all six serving attempts use real restricted credentials, not SET ROLE; only42501 counts as denial",
+    "Exact helper metadata includes onebytea/eighttypedoutputs, no overloads/defaults, IMMUTABLE INVOKER nonSTRICT nonleakproof PLPGSQL, fixed search_path and exact private owner EXECUTE ACL",
+    "Three SQL adaptations remove only client psql directives; goldenadds rejected_count552 assertion. All original server-side oracle bytes otherwise unchanged",
+    "557golden/prefix/suffix/null+24malformed+129boundary=710calls:34valid/676invalid. Expected counts emitted only after awaited raw SQL oracle success",
+    "Buck resource source delta adds exactly three fixtures and one authoritative helper; oldresource entries preserved. One generator resource test additive; all oldtests retained",
+    "Generator preservation test fixes all six old outputs by independent hashes/on-disk bytes and permits exactly one new UNINSTALLED path; purehelper not wired into old outputs",
+    "No parser body/stub, runtime serving grant, altered custody fingerprint, receipt schema dependency or fake business success supplied"
+  ],
+  "required_next": [
+    "Root integrate exact test/include/resource source and generator test in admitted Company owner lane",
+    "Implement single pure SQL parser via existing company_enrollment_input_sql owner, generate outputs serialized",
+    "Verify native discovery/execution1leaf,710calls,6actual42501denials, positive and mismatched classifier outcomes, unchanged six old outputs and all_rows",
+    "Actual implementation review before acceptance; no missingresource/compilefailure/zeroexecutedtests treated as valid runtime evidence"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "pre_mortem": "Partial decoder installation must not accidentally qualify current serving profile or hide missing fixtures behind generic errors.",
+  "blast_radius": "One disposable SQLx database, one additional uninstalled generated helper output and test resources.",
+  "rollback": "Dispose database; no product state exposed. Preserve original migrations/commands/fingerprints.",
+  "stop_conditions": [
+    "Any old generated output drift",
+    "Classifier accepted after partial installation",
+    "Non42501 claimed as login denial",
+    "Wrong parsercounts or durable rowchanges"
+  ],
+  "limits": [
+    "No runtime test or SQL executed by reviewer",
+    "No schema/prepare/effect/Company/browser/release acceptance",
+    "Future deliberate serving-profile integration requires separately reviewed full successor"
+  ],
+  "findings": []
+}

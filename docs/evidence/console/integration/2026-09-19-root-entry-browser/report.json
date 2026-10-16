@@ -1,0 +1,1186 @@
+{
+  "kind": "private-loopback-public-entry-browser-smoke",
+  "started_at": "2026-09-20T03:46:45.554Z",
+  "checks": [
+    {
+      "name": "own server ready",
+      "pass": true
+    },
+    {
+      "name": "own listener only loopback",
+      "pass": true
+    },
+    {
+      "name": "desktop root status200",
+      "pass": true
+    },
+    {
+      "name": "root privacy and frame envelope",
+      "pass": true,
+      "detail": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      }
+    },
+    {
+      "name": "desktop-root: no horizontal document overflow",
+      "pass": true,
+      "detail": {
+        "scrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "clientWidth": 1440
+      }
+    },
+    {
+      "name": "desktop-root: Korean SSR landmark and no forms/islands",
+      "pass": true
+    },
+    {
+      "name": "desktop-root: CSS stylesheet applied",
+      "pass": true,
+      "detail": {
+        "fontFamily": "Inter, \"Noto Sans KR\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "20px"
+      }
+    },
+    {
+      "name": "login/register destinations visible",
+      "pass": true
+    },
+    {
+      "name": "keyboard skip link first and visible",
+      "pass": true,
+      "detail": {
+        "text": "본문 바로가기",
+        "href": "#main-content",
+        "outline": "solid",
+        "rect": {
+          "x": 16,
+          "y": 10,
+          "width": 119.234375,
+          "height": 45.59375,
+          "top": 10,
+          "right": 135.234375,
+          "bottom": 55.59375,
+          "left": 16
+        }
+      }
+    },
+    {
+      "name": "skip link moves focus to main",
+      "pass": true
+    },
+    {
+      "name": "keyboard register action receives focus",
+      "pass": true,
+      "detail": {
+        "text": "계정 만들기",
+        "href": "/account/register",
+        "outline": "solid"
+      }
+    },
+    {
+      "name": "unrelated cookie root still Public",
+      "pass": true
+    },
+    {
+      "name": "login link reaches actual unavailable document",
+      "pass": true
+    },
+    {
+      "name": "register link reaches actual unavailable document",
+      "pass": true
+    },
+    {
+      "name": "mobile-320: root200",
+      "pass": true
+    },
+    {
+      "name": "mobile-320: no horizontal document overflow",
+      "pass": true,
+      "detail": {
+        "scrollWidth": 320,
+        "bodyScrollWidth": 320,
+        "clientWidth": 320
+      }
+    },
+    {
+      "name": "mobile-320: Korean SSR landmark and no forms/islands",
+      "pass": true
+    },
+    {
+      "name": "mobile-320: CSS stylesheet applied",
+      "pass": true,
+      "detail": {
+        "fontFamily": "Inter, \"Noto Sans KR\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "14px"
+      }
+    },
+    {
+      "name": "mobile-320: both actions visible",
+      "pass": true
+    },
+    {
+      "name": "desktop-200pct-approximation: root200",
+      "pass": true
+    },
+    {
+      "name": "desktop-200pct-approximation: no horizontal document overflow",
+      "pass": true,
+      "detail": {
+        "scrollWidth": 720,
+        "bodyScrollWidth": 720,
+        "clientWidth": 720
+      }
+    },
+    {
+      "name": "desktop-200pct-approximation: Korean SSR landmark and no forms/islands",
+      "pass": true
+    },
+    {
+      "name": "desktop-200pct-approximation: CSS stylesheet applied",
+      "pass": true,
+      "detail": {
+        "fontFamily": "Inter, \"Noto Sans KR\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "20px"
+      }
+    },
+    {
+      "name": "desktop-200pct-approximation: both actions visible",
+      "pass": true
+    },
+    {
+      "name": "native-account.css: actual asset loads and equals source",
+      "pass": true,
+      "detail": {
+        "requests": 8,
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "name": "native-account.js: actual asset loads and equals source",
+      "pass": true,
+      "detail": {
+        "requests": 8,
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "name": "account links return expected503",
+      "pass": true
+    },
+    {
+      "name": "no incidental mutation requests",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no incidental API or island resources",
+      "pass": true,
+      "detail": [
+        "/",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/account",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/account/register",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/",
+        "/assets/native-account.css",
+        "/assets/native-account.js",
+        "/",
+        "/assets/native-account.css",
+        "/assets/native-account.js"
+      ]
+    },
+    {
+      "name": "no external requests",
+      "pass": true
+    },
+    {
+      "name": "no page JS exceptions",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no console errors on public entry",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "destination console errors only expected503 resource reports",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "account-unavailable",
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "location": {
+            "url": "http://127.0.0.1:49986/account",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        },
+        {
+          "phase": "register-unavailable",
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "location": {
+            "url": "http://127.0.0.1:49986/account/register",
+            "line": 0,
+            "column": 0,
+            "lineNumber": 0,
+            "columnNumber": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "no failed browser requests",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "own server stopped",
+      "pass": true
+    },
+    {
+      "name": "binary and source bytes stable during smoke",
+      "pass": true
+    }
+  ],
+  "requests": [
+    {
+      "phase": "desktop-root",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/",
+      "resource_type": "document"
+    },
+    {
+      "phase": "desktop-root",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "desktop-root",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "keyboard",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/",
+      "resource_type": "document"
+    },
+    {
+      "phase": "keyboard",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "keyboard",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "unrelated-cookie-root",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/",
+      "resource_type": "document"
+    },
+    {
+      "phase": "unrelated-cookie-root",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "unrelated-cookie-root",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "account-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/account",
+      "resource_type": "document"
+    },
+    {
+      "phase": "account-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "account-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "register-root-return",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/",
+      "resource_type": "document"
+    },
+    {
+      "phase": "register-root-return",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "register-root-return",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "register-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/account/register",
+      "resource_type": "document"
+    },
+    {
+      "phase": "register-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "register-unavailable",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "mobile-320",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/",
+      "resource_type": "document"
+    },
+    {
+      "phase": "mobile-320",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "mobile-320",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    },
+    {
+      "phase": "desktop-200pct-approximation",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/",
+      "resource_type": "document"
+    },
+    {
+      "phase": "desktop-200pct-approximation",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "resource_type": "stylesheet"
+    },
+    {
+      "phase": "desktop-200pct-approximation",
+      "method": "GET",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "resource_type": "script"
+    }
+  ],
+  "responses": [
+    {
+      "phase": "desktop-root",
+      "url": "http://127.0.0.1:49986/",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "body_bytes": 1172
+    },
+    {
+      "phase": "desktop-root",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "desktop-root",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "keyboard",
+      "url": "http://127.0.0.1:49986/",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "body_bytes": 1172
+    },
+    {
+      "phase": "keyboard",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "keyboard",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:46 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "unrelated-cookie-root",
+      "url": "http://127.0.0.1:49986/",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:47 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "body_bytes": 1172
+    },
+    {
+      "phase": "unrelated-cookie-root",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:47 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "unrelated-cookie-root",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:47 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "account-unavailable",
+      "url": "http://127.0.0.1:49986/account",
+      "status": 503,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1046",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:47 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "a28a53d035fe599c2526a0ad063a1ec5cdb220674c87ee7d5f1014755400a142",
+      "body_bytes": 1046
+    },
+    {
+      "phase": "account-unavailable",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:47 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "account-unavailable",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:47 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "register-root-return",
+      "url": "http://127.0.0.1:49986/",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:48 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "body_bytes": 1172
+    },
+    {
+      "phase": "register-root-return",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:48 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "register-root-return",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:48 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "register-unavailable",
+      "url": "http://127.0.0.1:49986/account/register",
+      "status": 503,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1046",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:49 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "a28a53d035fe599c2526a0ad063a1ec5cdb220674c87ee7d5f1014755400a142",
+      "body_bytes": 1046
+    },
+    {
+      "phase": "register-unavailable",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:49 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "register-unavailable",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:49 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "mobile-320",
+      "url": "http://127.0.0.1:49986/",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:49 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "body_bytes": 1172
+    },
+    {
+      "phase": "mobile-320",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:49 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "mobile-320",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:49 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    },
+    {
+      "phase": "desktop-200pct-approximation",
+      "url": "http://127.0.0.1:49986/",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1172",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:50 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "body_bytes": 1172
+    },
+    {
+      "phase": "desktop-200pct-approximation",
+      "url": "http://127.0.0.1:49986/assets/native-account.css",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:50 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "body_bytes": 4337
+    },
+    {
+      "phase": "desktop-200pct-approximation",
+      "url": "http://127.0.0.1:49986/assets/native-account.js",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 03:46:50 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "body_bytes": 12412
+    }
+  ],
+  "request_failures": [],
+  "console": [
+    {
+      "phase": "account-unavailable",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:49986/account",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "register-unavailable",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:49986/account/register",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "page_errors": [],
+  "screenshots": [
+    "desktop-root.png",
+    "desktop-keyboard-focus.png",
+    "account-unavailable.png",
+    "register-unavailable.png",
+    "mobile-320.png",
+    "desktop-200pct-approximation.png"
+  ],
+  "cases": [
+    {
+      "label": "desktop-root",
+      "state": {
+        "title": "Console · 업무의 연결",
+        "language": "ko",
+        "viewport": "width=device-width, initial-scale=1",
+        "innerWidth": 1440,
+        "innerHeight": 1000,
+        "devicePixelRatio": 1,
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "mainCount": 1,
+        "forms": 0,
+        "islands": 0,
+        "links": [
+          {
+            "text": "본문 바로가기",
+            "href": "#main-content",
+            "rect": {
+              "x": 16,
+              "y": -72.0687484741211,
+              "width": 119.234375,
+              "height": 45.59375
+            }
+          },
+          {
+            "text": "Console",
+            "href": "/",
+            "rect": {
+              "x": 188,
+              "y": 32,
+              "width": 104.59375,
+              "height": 40
+            }
+          },
+          {
+            "text": "로그인",
+            "href": "/account",
+            "rect": {
+              "x": 431,
+              "y": 403.78125,
+              "width": 83.53125,
+              "height": 46.390625
+            }
+          },
+          {
+            "text": "계정 만들기",
+            "href": "/account/register",
+            "rect": {
+              "x": 526.53125,
+              "y": 403.78125,
+              "width": 115.078125,
+              "height": 46.390625
+            }
+          }
+        ],
+        "styleSheets": [
+          {
+            "href": "http://127.0.0.1:49986/assets/native-account.css",
+            "rules": 54
+          }
+        ],
+        "card": {
+          "fontFamily": "Inter, \"Noto Sans KR\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "20px"
+        }
+      }
+    },
+    {
+      "label": "mobile-320",
+      "state": {
+        "title": "Console · 업무의 연결",
+        "language": "ko",
+        "viewport": "width=device-width, initial-scale=1",
+        "innerWidth": 320,
+        "innerHeight": 900,
+        "devicePixelRatio": 1,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "bodyScrollWidth": 320,
+        "mainCount": 1,
+        "forms": 0,
+        "islands": 0,
+        "links": [
+          {
+            "text": "본문 바로가기",
+            "href": "#main-content",
+            "rect": {
+              "x": 16,
+              "y": -72.0687484741211,
+              "width": 119.234375,
+              "height": 45.59375
+            }
+          },
+          {
+            "text": "Console",
+            "href": "/",
+            "rect": {
+              "x": 20,
+              "y": 22,
+              "width": 104.59375,
+              "height": 40
+            }
+          },
+          {
+            "text": "로그인",
+            "href": "/account",
+            "rect": {
+              "x": 37,
+              "y": 338.5625,
+              "width": 117,
+              "height": 46.390625
+            }
+          },
+          {
+            "text": "계정 만들기",
+            "href": "/account/register",
+            "rect": {
+              "x": 166,
+              "y": 338.5625,
+              "width": 117,
+              "height": 46.390625
+            }
+          }
+        ],
+        "styleSheets": [
+          {
+            "href": "http://127.0.0.1:49986/assets/native-account.css",
+            "rules": 54
+          }
+        ],
+        "card": {
+          "fontFamily": "Inter, \"Noto Sans KR\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "14px"
+        }
+      }
+    },
+    {
+      "label": "desktop-200pct-approximation",
+      "state": {
+        "title": "Console · 업무의 연결",
+        "language": "ko",
+        "viewport": "width=device-width, initial-scale=1",
+        "innerWidth": 720,
+        "innerHeight": 500,
+        "devicePixelRatio": 2,
+        "scrollWidth": 720,
+        "clientWidth": 720,
+        "bodyScrollWidth": 720,
+        "mainCount": 1,
+        "forms": 0,
+        "islands": 0,
+        "links": [
+          {
+            "text": "본문 바로가기",
+            "href": "#main-content",
+            "rect": {
+              "x": 16,
+              "y": -72.0687484741211,
+              "width": 119.234375,
+              "height": 45.59375
+            }
+          },
+          {
+            "text": "Console",
+            "href": "/",
+            "rect": {
+              "x": 28,
+              "y": 32,
+              "width": 104.59375,
+              "height": 40
+            }
+          },
+          {
+            "text": "로그인",
+            "href": "/account",
+            "rect": {
+              "x": 85,
+              "y": 403.78125,
+              "width": 83.53125,
+              "height": 46.390625
+            }
+          },
+          {
+            "text": "계정 만들기",
+            "href": "/account/register",
+            "rect": {
+              "x": 180.53125,
+              "y": 403.78125,
+              "width": 115.078125,
+              "height": 46.390625
+            }
+          }
+        ],
+        "styleSheets": [
+          {
+            "href": "http://127.0.0.1:49986/assets/native-account.css",
+            "rules": 54
+          }
+        ],
+        "card": {
+          "fontFamily": "Inter, \"Noto Sans KR\", system-ui, -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "20px"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Public entry smoke only; no database, no Account session/workflow acceptance.",
+    "Loopback HTTP is not production TLS/deployment qualification.",
+    "200% approximation uses 720x500 CSS viewport and deviceScaleFactor2 (1440x1000 output); it is not actual browser/OS zoom.",
+    "No screen reader, Korean IME, live authorization, workload, or independent visual acceptance is established by this run."
+  ],
+  "custody_before": {
+    "git_head": "17443500fb44a4026208cbe5c685dbfd2f55b348",
+    "git_status": "",
+    "source_hashes": {
+      "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+      "backend/crates/platform/auth-rest/src/account_browser.rs": "8064cddbe1ac460eafee62622d1dced93ca37d3b34b86cf8e1d52d8e30f8dea5",
+      "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+      "backend/crates/platform/auth-rest/src/lib.rs": "19dfec1914ec4f6977d403fa0316130522613f98fda6f19645175fac0130be14",
+      "backend/crates/payroll/ui/src/native_account.rs": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
+      "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984"
+    },
+    "binary_sha256": "7ab368b41b3f5340f211ce2bde52db8541dcb3abbf846991646fbf7d0652cbe6",
+    "binary_bytes": 337078304,
+    "binary_mtime": "2026-09-20T03:38:10.399Z"
+  },
+  "server": {
+    "binary": "/private/tmp/console-rust1981-owner-target/debug/console-app",
+    "base": "http://127.0.0.1:49986",
+    "argv": [],
+    "environment": {
+      "PATH": "/Users/jasonlee/.codex/packages/standalone/releases/0.155.1-aarch64-apple-darwin/codex-path:/opt/homebrew/opt/llvm/bin:/opt/homebrew/opt/lldb/bin:/opt/homebrew/opt/bison/bin:/Users/jasonlee/.cargo/bin:/Users/jasonlee/.bun/bin:/Users/jasonlee/.local/state/fnm_multishells/4649_1789849320183/bin:/opt/homebrew/opt/fnm/bin:/Users/jasonlee/.local/bin:/Users/jasonlee/.grok/bin:/usr/local/bin:/Users/jasonlee/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/opt/homebrew/bin:/Users/jasonlee/.codex/tmp/arg0/codex-arg0LbKcsW:/Users/jasonlee/.codex/packages/standalone/releases/0.155.1-aarch64-apple-darwin/codex-path:/Users/jasonlee/.unity/bin:/Users/jasonlee/.cargo/bin:/Users/jasonlee/.bun/bin:/Users/jasonlee/.local/state/fnm_multishells/42996_1789572996863/bin:/opt/homebrew/opt/fnm/bin:/Users/jasonlee/.local/bin:/Users/jasonlee/.grok/bin:/Users/jasonlee/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/opt/homebrew/sbin:/Applications/Ghostty.app/Contents/MacOS",
+      "CONSOLE_APP_ROLE": "api",
+      "CONSOLE_HTTP_ADDR": "127.0.0.1:49986",
+      "RUST_LOG": "warn"
+    },
+    "environment_note": "Explicit allowlist; no inherited database/auth/cloud/telemetry credentials.",
+    "pid": 69397,
+    "listeners": "COMMAND     PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nconsole-a 69397 jasonlee    9u  IPv4 0x2552e094740ea4bd      0t0  TCP 127.0.0.1:49986 (LISTEN)\n",
+    "exit_code": 0,
+    "signal_code": null,
+    "stopped": true
+  },
+  "browser": {
+    "version": "153.0.8010.12",
+    "playwright_version": "1.63.0",
+    "executable": "/private/tmp/console-preparation-browsers/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+    "executable_sha256": "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+  },
+  "keyboard": [
+    {
+      "step": "Tab1",
+      "text": "본문 바로가기",
+      "href": "#main-content",
+      "outline": "solid",
+      "rect": {
+        "x": 16,
+        "y": 10,
+        "width": 119.234375,
+        "height": 45.59375,
+        "top": 10,
+        "right": 135.234375,
+        "bottom": 55.59375,
+        "left": 16
+      }
+    },
+    {
+      "step": "fresh Tab1",
+      "text": "본문 바로가기",
+      "href": "#main-content",
+      "outline": "solid"
+    },
+    {
+      "step": "fresh Tab2",
+      "text": "Console",
+      "href": "/",
+      "outline": "solid"
+    },
+    {
+      "step": "fresh Tab3",
+      "text": "로그인",
+      "href": "/account",
+      "outline": "solid"
+    },
+    {
+      "step": "fresh Tab4",
+      "text": "계정 만들기",
+      "href": "/account/register",
+      "outline": "solid"
+    }
+  ],
+  "expected_destination_console_errors": [
+    {
+      "phase": "account-unavailable",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:49986/account",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "register-unavailable",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:49986/account/register",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "custody_after": {
+    "source_hashes": {
+      "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+      "backend/crates/platform/auth-rest/src/account_browser.rs": "8064cddbe1ac460eafee62622d1dced93ca37d3b34b86cf8e1d52d8e30f8dea5",
+      "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+      "backend/crates/platform/auth-rest/src/lib.rs": "19dfec1914ec4f6977d403fa0316130522613f98fda6f19645175fac0130be14",
+      "backend/crates/payroll/ui/src/native_account.rs": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
+      "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984"
+    },
+    "binary_sha256": "7ab368b41b3f5340f211ce2bde52db8541dcb3abbf846991646fbf7d0652cbe6",
+    "git_head": "17443500fb44a4026208cbe5c685dbfd2f55b348"
+  },
+  "finished_at": "2026-09-20T03:46:51.065Z",
+  "passed": 36,
+  "failed": 0
+}

@@ -1,0 +1,28 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-22T00:16:40.165-04:00] Build ID: beecd171-4639-4d5d-972d-d266a46ccbd2
+[2026-09-22T00:16:40.167-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:16:47.167-04:00] Waiting on root//third-party/rust:base64-0.21.7.crate (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 955 other actions
+[2026-09-22T00:16:55.365-04:00] Waiting on root//third-party/rust:base64-0.21.7.crate (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 1251 other actions
+[2026-09-22T00:17:03.067-04:00] Waiting on root//third-party/rust:regex-automata-0.4.18.crate (prelude//platforms:default#5732820ad45f622d) -- action (write regex-automata-0.4.18.crate_unpack.sh), and 312 other actions
+[2026-09-22T00:17:07.851-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-22T00:17:07.916-04:00] Build ID: 6995ae11-baf3-47d9-83e0-d1f74f5e4a89
+[2026-09-22T00:17:07.917-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:17:15.016-04:00] Waiting on root//third-party/rust:errno-0.3.14.crate (prelude//platforms:default#39893c7e49283da4) -- action (write errno-0.3.14.crate_unpack.sh), and 720 other actions
+[2026-09-22T00:17:22.116-04:00] Waiting on root//third-party/rust:rgb-0.8.53.crate (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 753 other actions
+[2026-09-22T00:17:29.716-04:00] Waiting on root//third-party/rust:ppv-lite86-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 402 other actions
+[2026-09-22T00:17:37.216-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-22T00:17:39.499-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (7.3s)
+[2026-09-22T00:17:39.499-04:00] ---- STDOUT ----
+[2026-09-22T00:17:39.499-04:00]
+[2026-09-22T00:17:39.499-04:00] running 1 test
+[2026-09-22T00:17:39.499-04:00] test account_browser::native_business_session::native_form_helpers_reject_expired_signed_proof_and_accept_current_control ... ok
+[2026-09-22T00:17:39.499-04:00]
+[2026-09-22T00:17:39.499-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 523 filtered out; finished in 7.25s
+[2026-09-22T00:17:39.499-04:00]
+[2026-09-22T00:17:39.499-04:00]
+[2026-09-22T00:17:39.499-04:00] ---- STDERR ----
+[2026-09-22T00:17:39.499-04:00]
+[2026-09-22T00:17:39.513-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

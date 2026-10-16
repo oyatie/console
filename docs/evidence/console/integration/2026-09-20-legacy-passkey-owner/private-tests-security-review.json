@@ -1,0 +1,42 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_PRIVATE_TUPLE_TIME_ERROR_TESTS_AND_MINIMAL_PRIVATE_SEAMS",
+  "manifest_sha256": "828cac45a2291e4348e7c7c97bb7a0e51f1da052fe1351004c901a7c9ed626f2",
+  "test_source_sha256": "5d13ee4a190161380c7af8b4f17af68db2c4f6dc835f30e1c5224fc82da86a85",
+  "contract_sha256": "acfd8746fb1226069dcd8cbf9be02369ce9289cd698f55be6c21495c96a8679a",
+  "design_manifest_sha256": "a6fa5d169a7e85568e84cdda37f5b977ba1b0aae1d628b6d825ac3386e5640fa",
+  "checks": [
+    "PrivateLegacySelfReadFamily decodes only actual exactfamilyrow fields; helperaccepts alreadyverifiedclaims only inside actualowner after approveddirectdispatch. No publicauthoritybuilder/serializer or authentication through testcaseclaims.",
+    "Full returnedfamilyid/user/home/protocol/revocation/native-onlynull checks isolated. ACCOUNT_V1 singlefield mutation catches protocol check even when realHTTPnativefixture differs in multiplefields.",
+    "Positive subsecondcreated_at with equalintegeriat floor then earlierwhole-secondnegative enforces approvedprecision without rejectingreal same-secondissuance.",
+    "Both strictdeadlines have before/equal/aftercontrols and each independently caps lifetime; boundfuture/order/unrepresentability and actualfamilyfuture cases refuse, serverTTLzero/negative/overflow unavailable.",
+    "Exact guardSQLSTATE/message originmatrix matches approvedoperation-local table. AuthError::Db wrapper and same-messagewrongtypes/codes stay unavailable; no broadSQLP0002/KernelError alias.",
+    "SyntheticStoredError onlytests puremapping of oneerrorvalue and doesnotreplaceSQLhelpers/authority/runtimecalls. RawJWTverification stays separateprovenanceboundary; unexpectedJWTerrorfromstorage maps503.",
+    "Current fixtureimports/types/SQLxDatabaseError shape alignexistingcrate APIs bysourceinspection; actualcompile remains rootresponsibility.",
+    "Alltests additive under cfg(test); retainedoriginal tests/schemas/helperbodies unaffected. PublicAPI/design unchanged, root actualmountedHTTPRED alreadyproven separately."
+  ],
+  "counts": {
+    "source_test_leaves": 8,
+    "author_compiled": 0,
+    "author_executed": 0,
+    "reviewer_compiled": 0,
+    "reviewer_executed": 0
+  },
+  "limits": [
+    "Pureconstructedclaims/tuplevalues prove deterministicchecks only, not signature, familyissuance,currentauthorization orPostgreSQLlocks.",
+    "Helpercalledonlyafterdirectbounddispatch; helpertestsdo not bythemselvesproveunsupportedkindrefusal/absencecompatibility atHTTPowner.",
+    "Rootmustintegrate reviewedprivatefile/include, compile/discover/run exact8and retainedlibrarychecks; anycompilefailure isprerequisite notnewadmissionRED."
+  ],
+  "remaining": [
+    "HTTProtation/reuse/identity/suspendedCompany/role/oldandunsupporteddispatch/nativefamilycontrols",
+    "Storage/missinghelperrecovery and strictliveDBclock expiry",
+    "Observedreader/revokerordering, finalexpiryafterprojectionwait, unrelatedCompanyprogress",
+    "Exact finalowningsource/currentruntimeacceptance and allotherreleaseowners/globalmint"
+  ],
+  "reviewer_actions": "Read-onlyprivatepacket/sourceinspection; privatereceiptonly, no repo/build/DBwrites.",
+  "lenses": [
+    "Zero trust: exacttupleanderrorprovenancewithoutsyntheticauthority.",
+    "Operability: currentdeadlineprecision and genuineunavailabilityclassification.",
+    "Blast radius: minimalprivateseamsandadditivetestfile, no sharedcontract/migrationchange."
+  ]
+}

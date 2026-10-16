@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "round": 1,
+  "verdict": "APPROVE_FOR_EXACT_TEST_AUTHORING",
+  "design_path": "/private/tmp/console-ledger-git-buffer-design.txt",
+  "design_sha256": "79f101ebeab1c54955d25c8bfb708f38315d330d8eccd1e9f09a395f3cdfe989",
+  "observed_head_sha": "3eb1342121b4d6cc5a98f0f1fcbdf0bc92bb3f8c",
+  "source_sha256": "9456d18f2e87bc50b8bd1bc0bff8c1edb51bfc55269ebb57f337c91bf8300d88",
+  "registry_current_bytes": 1477676,
+  "findings": [],
+  "reviewed_boundaries": [
+    "Shared private git() caller census: authority diff metadata, ledger path list and merge-marker bodies, candidate source readText, tracked regular-file ls-tree checks, receipt bodies/metadata and CLI registry/jurisdiction loading.",
+    "createConsoleCandidateSourceResolver still validates signed candidate and signed direct single-parent authority child, authority-only diff and every merge-marker body before returning resolver.",
+    "Fixed16MiB execFileSync maxBuffer changes capacity, not arguments, encoding, shell behavior, signature verification, repository path rules, tracked file modes, parser, digest or promotion state.",
+    "Synchronous overflow still throws; readText converts it to existing missing-source error and gitSucceeds returnsfalse, both failclosed. No truncation or prefix acceptance is proposed.",
+    "Authority-train and SSH policy helpers read small metadata or allowed-signers separately; no demonstrated need to change those limits."
+  ],
+  "exact_test_expectations": [
+    "Use real signed candidate/authority fixture with marker-free authority text above1MiB and assert resolver construction succeeds.",
+    "Assert large candidate readText output exact full bytes or digest plus length, including a unique tail after1MiB; reading only prefix is not positive control.",
+    "Place an asymmetric unresolved merge marker after1MiB in an authority document; assert specific merge-marker rejection, not any generic throw. Prefer all3 existing asymmetric marker variants.",
+    "Above16MiB actualGit blob must reject; assertion must establish no resolver/source output was returned. Keep checks at real exported boundary, not a mocked helper.",
+    "Retain existing regular/missing/symlink candidate source tests unchanged and verify their3ENOBUFS failures are resolved."
+  ],
+  "risks_and_limits": [
+    "16MiB is child-process output capacity per stream, not a16MiB total process-memory cap; buffer copies, decoded strings and split lines consume additional bounded-factor memory.",
+    "Signed high-cardinality file lists or receipts can still exceed16MiB and must continue rejecting; observed overflow is a measured replacement trigger for reviewed bounded streaming.",
+    "Approval covers exact design for test authoring only; exact test review,RED lane admission,implementation review andGREEN are still required."
+  ],
+  "repository_changes": false,
+  "runtime_tests_executed": 0
+}

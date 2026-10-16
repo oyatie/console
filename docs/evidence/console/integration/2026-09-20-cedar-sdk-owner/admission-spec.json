@@ -1,0 +1,28 @@
+[
+  {
+    "owner": "/root",
+    "base_sha": "079fae23e09fe047ff84903654074cd7fb865e79",
+    "immutable_target": "Current compiled Cedar bundle identifies the actual linked SDK; historical key bytes stay unchanged",
+    "allowed_paths": [
+      "backend/crates/platform/authz/src/cedar_pbac/engine.rs"
+    ],
+    "probe": "CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_sdk_identity -- --nocapture",
+    "mechanical_guide": "Correct public constant and its pin comment from4.11.2 to4.12.0 only; retain SDK-derived approved test oracle, all historical explicit keys and every compiler/evaluator boundary. Root exact test review /private/tmp/console-cedar-sdk-tests-root-review-20260920.json.",
+    "reviewer": "/root/integration_security",
+    "pre_mortem": "Relabel historical key or test against same stale constant; current evaluation matches wrong historical cache",
+    "blast_radius": "Current shared compiler SDK identity across existing roles/features/audit paths; no policy semantics or schema/SQL changes",
+    "detection": "Actual strict compile and actual evaluate/boundary two-test RED; historical key serialization preserved",
+    "rollback": "Restore complete prior qualified artifact and matching maps; never rewrite existing records",
+    "stop_conditions": [
+      "Nonidentity RED",
+      "Historical bytes changed",
+      "Dependency/lock/schema/policy change",
+      "Tests weakened"
+    ],
+    "remaining_holds": [
+      "Independent source review",
+      "Native Company policy and release qualification"
+    ],
+    "lane": "cedar-current-sdk-identity"
+  }
+]

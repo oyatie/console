@@ -1,0 +1,11 @@
+[2026-09-21T16:17:15.092-04:00] Build ID: 2804729b-a3c8-4fb7-a278-bdc1b084d382
+[2026-09-21T16:17:15.095-04:00] File changed: root//backend/ci/gates/writer-ownership/src/main.rs
+[2026-09-21T16:17:15.095-04:00] File changed: root//tools/buck/gen_first_party.py
+[2026-09-21T16:17:15.095-04:00] File changed: root//ops/BUCK
+[2026-09-21T16:17:15.095-04:00] 186 additional file change events
+[2026-09-21T16:17:16.023-04:00] Cache hits: 0%
+[2026-09-21T16:17:16.023-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T16:17:16.023-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+writer-ownership: scanned 357 production source files
+writer-ownership: OK — no new second writer, no stale ratchet entry, no unpermitted shared-table writer

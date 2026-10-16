@@ -1,0 +1,29 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Seven SQLx plus one pure Platform lock/failure test source leaves; runtime0",
+  "reviewer": "integration_security",
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "manifest_sha256": "280e8b08c6d8cf3b9d754d7c124106a5d1b308a35c5db83be3342f86d31df488",
+  "review_conclusions": [
+    "Canonical Auth logout/reuse transactions and observed owner PID blocking prove revoker-first ordering",
+    "Reader-first observes metadata wait plus exact-family FOR UPDATE and canonical subject guard wait; all handles cleaned",
+    "Signed expiry crosses real DB deadline during actual audit INSERT; all-state rollback then recovery",
+    "Current inactivity/fence and privileged missing-root data fixture retain exact catalog and restore full rows before recovery, even caught assertion failure",
+    "Combined oracle validates exact prescribed family/token changes, all untouched rows, historical audit bytes, exactly one canonical event and optional exact20field read event",
+    "Full immutable parent bytes retained; only child declaration added"
+  ],
+  "withdrawn_finding": "Initial3s timeout concern withdrawn after exact call-chain review: fixture calls app_state with default30s; separate timeout_state3s is not used by audit_expiry. No test change needed.",
+  "counts": {
+    "sqlx": 7,
+    "pure": 1,
+    "executed": 0
+  },
+  "remaining_holds": [
+    "Runtime prerequisites and all8test leaves",
+    "Family absolute expiry while waiting; unrelated-source progress",
+    "Unknown commit acknowledgement history separately proposed, not implemented",
+    "Full release qualification"
+  ],
+  "repository_writes": 0,
+  "database_executions": 0
+}

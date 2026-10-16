@@ -1,0 +1,21 @@
+{
+  "observed_head": "83f9b098bcf4f2c7274e0e0743a2326dcaa2c209",
+  "sources": {
+    "docs/program/console-capability-registry.json": "3afca46440aa9c9a5ee4315651f477d71c333fb304b946565ff79404b61a8f43",
+    "README.md": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+    "docs/current/ROADMAP.md": "f37adb9e9e487e19deb7753934a1f0fd7a0b4e9667f3db4ff136165e9434398c",
+    "docs/current/DELIVERY.md": "2a746d23c9ac7864013a8f3b3a33a37df2b667a00395776575031a107a45dc20",
+    "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz": "c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c",
+    "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.json": "c79e6a3577933461e3d081772aeacc4dd04efdbb3e452be8a944ab59034e6331",
+    "docs/evidence/console/research/2026-09-19-foundry-vulcan/manifest.json": "15a814af3e9e667581d81bdff1613ee48edbcb2c585b6292210a37d158464a0a",
+    "docs/evidence/console/research/2026-09-19-foundry-vulcan/independent-security-review.json": "be451cb3598231baa24e524825d9f9718aa650da8805f1686fcf5adeb5783e11"
+  },
+  "source_raw_sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+  "source_bytes": 1581721,
+  "source_metadata_custody_verified": true,
+  "registered_source_identity_verified": true,
+  "repository_mutations": false,
+  "new_network_retrievals": false,
+  "build_runtime_database_execution": false
+}

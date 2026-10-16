@@ -1,0 +1,12 @@
+✔ Quiver catalogue frozen proposal and both captured indexes retain reviewed custody (11.787959ms)
+✔ Quiver catalogue exact rows validate without mutation or promotion (95.674916ms)
+✔ Quiver catalogue fixture preserves every unrelated registry value (11.595ms)
+✔ Quiver catalogue accepts both distinct scatter labels sharing the original path (62.887583ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 245.124333

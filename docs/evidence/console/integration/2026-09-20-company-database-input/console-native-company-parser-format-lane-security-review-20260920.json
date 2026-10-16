@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_FORMAT_ONLY_SQLX_SUCCESSOR_AND_PARSER_LANE_PATH_EXPANSION",
+  "original": {
+    "path": "/private/tmp/console-native-company-parser-sqlx-tests-20260920-round1/native_company_input_parser.rs",
+    "sha256": "492552cd86725cd32d7789ed571e5cc41341457d92daa673505c0b2c2873abce"
+  },
+  "formatted": {
+    "path": "/private/tmp/console-native-company-parser-sqlx-formatted-20260920.rs",
+    "sha256": "c43e4281585e49c6c3a8891b45e001f62e7b995b2bdb16a906ec887290a498fc"
+  },
+  "lexical_comparison": "All tokens identical preserving raw SQL/string literals/comments, excluding whitespace and optional trailing commas before closing delimiters.",
+  "tokens": 827,
+  "lane": {
+    "path": "/private/tmp/console-native-company-enrollment-lane-parser-20260920.json",
+    "sha256": "35203d108c9fa158ff3062e098055130ef59e64ba1e000b5f7731bd1d3de516c",
+    "base": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+    "implementation_successor_base": "41133ad20342ee7a1361d52ccb8e247a8dcccef6",
+    "owner": "/root",
+    "review": "Same original actual authenticated Company HTTP404vs201 RED remains enclosing probe and immutable target. Added paths map exactly to reviewed pure parser generator/output/test/resource source and generated appBUCK; root remains sole serialized writer.",
+    "limits": [
+      "No schema/effect/serving-profile integration implied by these paths",
+      "All six prior generated outputs must remain byte-identical",
+      "One disposable SQLx database must reject partial helper as profile_mismatch",
+      "Original enclosing full enrollment lane remains open until original probe and full contract pass"
+    ]
+  },
+  "findings": [],
+  "reviewer_tests_formatters_builds_executed": 0
+}

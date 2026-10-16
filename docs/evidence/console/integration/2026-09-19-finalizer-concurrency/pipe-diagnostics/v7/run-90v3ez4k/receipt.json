@@ -1,0 +1,49 @@
+{
+  "argv_sha256": "eba460b4551ece7ccbfe6312cbe3e352efee65e75485e181d6be749055894896",
+  "expected_tests_per_phase": 15,
+  "phases": [
+    {
+      "name": "cold",
+      "accepted": false,
+      "returncode": 0,
+      "before": {
+        "credential_role_present": false,
+        "system_identifier": "7687439555793854507",
+        "database": "console_cargo_test_42547_contract",
+        "server_version_num": "180004",
+        "marked_admin": true
+      },
+      "log": "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/cold.log",
+      "started_utc": "2026-09-20T02:31:48.333442+00:00",
+      "elapsed_seconds": 27.778,
+      "summary": "     Summary [  25.899s] 15 tests run: 15 passed (1 leaky), 0 skipped",
+      "tests_run": 15,
+      "passed": 15,
+      "skipped": 0,
+      "leaky": 1,
+      "leak_annotations": 1
+    },
+    {
+      "name": "warm",
+      "accepted": false,
+      "returncode": 0,
+      "before": {
+        "credential_role_present": true,
+        "system_identifier": "7687439555793854507",
+        "database": "console_cargo_test_42547_contract",
+        "server_version_num": "180004",
+        "marked_admin": true
+      },
+      "log": "/private/tmp/console-finalizer-cohort-observer-v7/run-90v3ez4k/warm.log",
+      "started_utc": "2026-09-20T02:32:17.240857+00:00",
+      "elapsed_seconds": 26.267,
+      "summary": "     Summary [  24.350s] 15 tests run: 15 passed (1 leaky), 0 skipped",
+      "tests_run": 15,
+      "passed": 15,
+      "skipped": 0,
+      "leaky": 1,
+      "leak_annotations": 1
+    }
+  ],
+  "accepted": false
+}

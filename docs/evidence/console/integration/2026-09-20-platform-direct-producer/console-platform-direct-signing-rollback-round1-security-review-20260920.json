@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_ADDITIVE_TEST_SOURCE_PENDING_CONSTRUCTOR_AND_HTTP_VERIFICATION",
+  "manifest_sha256": "8d0f5f2e7e03d22394ecbc342b5f2eaba059ea227b16de31cc54a96124212f51",
+  "verified_packet_members": 2,
+  "verified_source_locks": 11,
+  "additional_dependency_hashes": {
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ecdsa-0.16.9/src/signing.rs": "11842af046b43fe53add72a7fdc78a9555a1dbc37fe6bb0d1139e8b25491538f",
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/elliptic-curve-0.13.8/src/secret_key.rs": "a08c354ea59da20e20628ce66da790822f3f90ee5820ab449ed64229d9270783"
+  },
+  "source_findings": [
+    "Literal base64 decodes to exact67byte DER: valid EC/P256 PKCS8 framing, ECPrivateKey version1 and32zero scalar bytes. This is an impossible public test credential.",
+    "Installed jsonwebtoken11rust_crypto parser only ASN.1-classifies EC envelope; issuer constructor stores key bytes. ES256 signer later uses P256 PKCS8 decode, whose SecretKey::from_bytes rejects zero and maps to InvalidEcdsaKey. Source supports constructor-OK/encoder-Err; no runtime execution claimed.",
+    "Real AuthRest/App constructor paths use existing PEM wrappers. Test explicitly demands constructor success, exact actual AuthError::Jwt InvalidEcdsaKey, then real AppState startup before installing observational trigger.",
+    "Login finish holds one Auth transaction through ceremony finish/family issue/signing/commit; failed-sign source requires one actual token-insert witness, complete unchanged public tables and retry of exact original assertion/ceremony. No outside login-finish rate-limit effect exists in current source.",
+    "Refresh rotates inside Auth transaction after one external rate-limit call; exact no-trusted-IP/device fixture yields only global refresh row. Oracle preserves every other table byte-exact, every old rate row and exact new four-field bounded-window attempts1 row; original refresh retries in same exact family.",
+    "Witness is AFTER INSERT, returns NEW and only increments nontransactional sequence; it alters no rows/guards/proofs. It distinguishes reaching insertion from parser/startup/authentication errors.",
+    "No old test removal or semantic weakening, production hook, new API/dependency, timestamp rewrite or successful authority seeding."
+  ],
+  "verification_requirements": [
+    "Root must execute constructor/encoder prerequisite and real mounted HTTP leaves through exact Buck artifact after active verifier; source analysis alone is not result evidence.",
+    "Do not bypass custody if extra observational trigger is refused; record exact prerequisite failure and review alternative observation.",
+    "Current sign-first source should fail the login witness assertion only after exact encoder response; failures before selected boundary do not qualify that rollback probe.",
+    "Retain source/artifact identity, exact discovered/executed counts and actual rollback/retry results."
+  ],
+  "limits": [
+    "This packet measures login and refresh failure rollback. Handoff success/duplicate behavior is in prior packet; it does not independently measure handoff signing-failure rollback.",
+    "Full Company enclosing-lane admission remains valid; this review adds no circular requirement that target effects pre-exist.",
+    "No producer/workflow/milestone/release acceptance from unexecuted proposed tests."
+  ],
+  "execution": "Read-only source/Git/dependency inspection, hashes and noncryptographic public DER framing check only. No builds/product tests/SQL/crypto execution."
+}

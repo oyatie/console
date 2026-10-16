@@ -1,0 +1,1 @@
+Showing commands from: tools/buck2 build -j2 //backend/crates/payroll/ui:console-payroll-ui-wasm-bundle --show-full-simple-output

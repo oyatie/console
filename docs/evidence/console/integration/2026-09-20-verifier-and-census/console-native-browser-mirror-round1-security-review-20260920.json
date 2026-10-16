@@ -1,0 +1,32 @@
+{
+  "reviewer": "integration_security",
+  "decision": "HOLD_LOCAL_SHELL_FAILURE_SEMANTICS",
+  "base": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+  "packet_hashes": {
+    "CONTRACT.md": "cf663da2fe30401006ef599a2c941eb709afe1dab22a7e2db2ab2b7cf36a719e",
+    "lane.json": "489e6bec2239fd154334d9b4d0aaef0ac4a6874f76d4966b764e7af1d7d806c3",
+    "red.log": "04bcd368e0734c8375e15023a5f8560e607aef836f2a5987236fb53fecba86f7",
+    "source-lock.json": "65216e69ae26d01fe8605a97d7dce7393ebdd36534b5095d0cf3555ecfef822e",
+    "test-addition.mjs": "74d3fbad12c10000e98df4be92d2ff8cf118c8a1c9de2cd34bc1cf3d82f8a6d7"
+  },
+  "source_hashes": {
+    "scripts/verify.mjs": "f13b7b4ed4f1fa9485a125f1b976741d9a83343db572ba0a142a2fe0945efa66",
+    "scripts/verify.test.mjs": "93a60f0459077245bd25cf434ac0d0588a2f2691299acc60bfebab83ee157dfe",
+    ".github/workflows/ci.yml": "58328feaf707cdd01a5295e2bc75dacec27c8753c9a86497bf728f984e316d84",
+    "tools/browser/prepare_native_browser.sh": "46e4c2210c73a4bc89f53292b8dd05bc5729a127b48df1208c86be762c0d8cde"
+  },
+  "accepted_in_principle": [
+    "Four native journeys belong to db tier without hiding them as ci-only.",
+    "Hosted bootstrap requires Linuxx86_64/RUNNER_TEMP/GITHUB_ENV and its ci-only classification with prepared-local-prerequisite explanation is accurate.",
+    "Existing clean-base RED shows15executed/11pass/4fail caused by five missing classifications; source locks match exact base.",
+    "New deep-equality db-tier assertions prohibit run overrides and ci-only hiding; existing completeness checks preserved."
+  ],
+  "blocking_finding": {
+    "location": "scripts/verify.mjs run() and .github/workflows/ci.yml native browser command blocks",
+    "problem": "Local runner invokes bash -o pipefail -c without errexit. Native CI steps run Buck commands before a final evidence-file loop. A failed Buck browser execution followed by a successful loop over existing retained files can make the local step return0, unlike CI bash error behavior. Classifying these new multiline steps as db therefore requires matching failure semantics, not only preserving text.",
+    "required_successor": "Add independently reviewed fail-fast shell behavior (e.g. bash -e -o pipefail -c matching CI) and regression showing a failed earlier command cannot reach successful trailing evidence checks. Refine the currently no-runner-change contract explicitly rather than silently integrating beyond it."
+  },
+  "tests_executed_by_reviewer": 0,
+  "repository_writes": 0,
+  "scope": "Source design/test review; no browser product acceptance or gate repair approval yet."
+}

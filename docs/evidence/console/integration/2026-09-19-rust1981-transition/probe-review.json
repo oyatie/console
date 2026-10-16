@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_CONFIGURATION_PROBE",
+  "design_sha256": "44f4508d196d520b6d31c1afb6cca925d95e4d042c711ed2c1e5cdab4ff1d3ba",
+  "probe_sha256": "62eb7e89920d4bacce86faed5d5cbfcf7db1fbd848e6ba0882954404be115013",
+  "candidate_pin_sha256": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
+  "candidate_generated_lock_sha256": "ec7f7c7b1a0ea4e3bd67cec7eb9fa70820e7b13eb41af75c605a006451b629d9",
+  "version_manifest_sha256": "a7c8774a5fd8441c997d94c029776cbc5eb111e9d72ab5d256fa69866644347e",
+  "source_preimages": {
+    "rust-toolchain.toml": "c0c15a86182f7cc8348ab8ab214722d4a43d915c1545b7cb0410a8b9f1c8ff81",
+    "toolchains/rust/lock.bzl": "6b7426ded245eb51ce5da05d89a13cadc86964123c8ba3ddc329baa428b07f66",
+    "scripts/lib/rust-pin.mjs": "60a2913be78a67d7cda813db2ce3f1a143e1a2b3d4c715690dfe8c6134fc3e7e",
+    "scripts/lock-rust-toolchain.mjs": "0fa93d675407b212243725891063a9140694c201c9d4f29df6202e8cc541c9a6",
+    "scripts/lock-rust-toolchain.test.mjs": "d81f411a1802fdc6f257ab839e6bb6824d5f628c13faffd73b481164d1f7ccad",
+    "scripts/check-toolchain-pin.mjs": "eefd13d947bc2f4d43e329160ffa4a216ef922a15b4a1542f4bafe8933172ec5",
+    "scripts/check-toolchain-pin.test.mjs": "d3351df41760cbf16129c8f8113d09c3df99b6d120c59b3eeb4ebbb13ce09868"
+  },
+  "independent_controls": {
+    "receipt_sha256": "04485873d8acb63e7392579832853f404470e13c3933803e3356de1e2472ef2d",
+    "executed": 5,
+    "positive": 1,
+    "intentionalnegative": 4,
+    "matched_expected": 5
+  },
+  "generation_verified": {
+    "existing_owner_exact_regeneration": true,
+    "independent_artifact_entries": 13,
+    "artifact_urls_hashes_match_installed_channel_manifest": 13,
+    "hosts": 3,
+    "wasm_std_included": true
+  },
+  "compatibility_logs_sha256": {
+    "/private/tmp/console-rust1981-app-compatibility.log": "ae57c8b1fc32c4edd8bd6c89431fc97c90269091b3590422321038d5c5b33f97",
+    "/private/tmp/console-rust1981-wasm-compatibility.log": "765500e529b6a229633fc979e828636da5d6e0ec2e1170c27727185e148d83f1"
+  },
+  "findings": [],
+  "conditions": [
+    "Commitexactprobeasrootownedtestcandidate; actualclean-treeprobe mustfail RELEASE_RUST_PIN beforefanoutadmission; temporaryreviewfixtureRED isnotadmission.",
+    "Applyonlyexactcanonicalpin+existinggeneratedlockafteradmission; rebasecustodyifpreimageschange.",
+    "SameprobeGREENplusunchangedpin/generatoradversarialsuites/gate andmanifestregenerationreadback.",
+    "Defaultrootinvocationwithout+versionmustreportrustc1.98.1 andpass appcheck; real unchangedAccountownerprobe plusSSR/WASMcompilerprovenance recorded.",
+    "Pinprobeonlyassertsrequiredconfiguration, whileexistinggate/regenerationverifyartifactcoverage/integrity; neitherstandaloneisfullqualification."
+  ],
+  "limits": [
+    "Noartifactarchivecontentsdownloadedbyreviewer; providedversionmanifestandinstalledchannelmetadata independentlycrosschecked, actualbuildfetchesstillverifylockedhashes.",
+    "App/WASMbuildlogsparentproduced; reviewercheckedcompletion, notre-executed. Runtimecount0forthosebuilds.",
+    "Containerbuilder/missingCOPY, deploymentLinux, wholeworkspace andcommittedbundle/browserinterop remainrequiredseparatelanes; no globaltoolchainchange orproductionexposureauthorized."
+  ]
+}

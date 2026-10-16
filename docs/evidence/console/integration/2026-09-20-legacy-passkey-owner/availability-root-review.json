@@ -1,0 +1,8 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE",
+  "manifest_sha256": "402cd0f30fcd49e9f456470db6df80fed96a4aa137e362636b66d16db0c61ae5",
+  "test_sha256": "cee2ec1ea3bb6ec9d7b4b5098d2f1e4c2034a79d2c7d769837f72586d491ba66",
+  "basis": "Actual configured AuthRestState with missing pool invokes real router, distinguishes invalid401/valid503 and preserves disabled-services prior503 literal; complete state/privacy/recovery assertions. Narrow no-pool crypto check only; no transport business authority.",
+  "executed": 0
+}

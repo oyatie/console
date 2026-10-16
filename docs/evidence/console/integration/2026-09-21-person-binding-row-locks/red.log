@@ -1,0 +1,43 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T06:16:36.927-04:00] Build ID: 4938800c-6128-478e-9c7a-e4b7fa34b5c5
+[2026-09-21T06:16:36.930-04:00] Directory changed (since mergebase): root//docs/evidence/console/integration/2026-09-21-payrun-native-wrapper
+[2026-09-21T06:16:36.930-04:00] File changed (since mergebase): root//docs/evidence/console/integration/2026-09-21-payrun-native-wrapper/test-packet-manifest.json
+[2026-09-21T06:16:36.930-04:00] File changed (since mergebase): root//docs/evidence/console/integration/2026-09-21-payrun-native-wrapper/test-adoption.txt
+[2026-09-21T06:16:36.930-04:00] 13 additional file change events (since mergebase)
+[2026-09-21T06:16:36.930-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:16:44.028-04:00] Waiting on root//third-party/rust:hashbrown-0.17 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 529 other actions
+[2026-09-21T06:16:50.444-04:00] Cache hits: 0%
+[2026-09-21T06:16:50.444-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T06:16:50.444-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T06:16:50.458-04:00] Build ID: f0dd1ff6-2bee-4c38-8603-183a7a98219f
+[2026-09-21T06:16:50.460-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:16:57.559-04:00] Waiting on root//third-party/rust:hashbrown-0.17 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 640 other actions
+[2026-09-21T06:17:03.976-04:00] ✗ Fail: root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg (1.3s)
+[2026-09-21T06:17:03.976-04:00] ---- STDOUT ----
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] running 1 test
+[2026-09-21T06:17:03.976-04:00] test actual_business_login_can_lock_person_bindings_without_mutating_them ... FAILED
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] failures:
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] ---- actual_business_login_can_lock_person_bindings_without_mutating_them stdout ----
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] thread 'actual_business_login_can_lock_person_bindings_without_mutating_them' (75366346) panicked at backend/crates/payroll/adapter-postgres/backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs:1586:33:
+[2026-09-21T06:17:03.976-04:00] PERSON_BINDING_ROW_LOCK_REQUIRED: actual Business login must acquire row locks: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table employee_person_bindings", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+[2026-09-21T06:17:03.976-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] failures:
+[2026-09-21T06:17:03.976-04:00]     actual_business_login_can_lock_person_bindings_without_mutating_them
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 17 filtered out; finished in 1.00s
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.976-04:00] ---- STDERR ----
+[2026-09-21T06:17:03.976-04:00]
+[2026-09-21T06:17:03.983-04:00] Network: Up: 0B  Down: 0B
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg

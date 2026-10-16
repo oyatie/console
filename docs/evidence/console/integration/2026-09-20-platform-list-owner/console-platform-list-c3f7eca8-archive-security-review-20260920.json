@@ -1,0 +1,17 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Bounded evidence archival custody only; not owner/release acceptance",
+  "reviewer": "integration_security",
+  "implementation_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "custody_path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/implementation-c3f7eca8/custody.json",
+  "custody_sha256": "86dc09409132af733e6f2d3f5994637af9e9851d7e0b43df72cb550f5916aa12",
+  "checks": [
+    "All36original and retained files regular non-symlinks, byte-identical, exact declared SHA256",
+    "All36destinations unique and inside single declared archive",
+    "Original role RED, failed machinery receipt and successor reviews retained",
+    "15suite/1owner counts match independently read completed logs",
+    "14policy/59Buck/176crates0violations match retained completed logs",
+    "Purpose and remaining records explicitly refuse lane/release qualification",
+    "No raw private capture rows copied; capture manifest/receipts preserve hashes without claiming public raw archive"
+  ]
+}

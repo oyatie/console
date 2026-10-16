@@ -1,0 +1,27 @@
+{
+  "status": "implemented_same_owner_probes_and_retained_transitions_green",
+  "base_sha": "755271767e3553b12fe822dac740fac0e376ae76",
+  "checks": {
+    "sqlx_owner": {
+      "executed": 1,
+      "passed": 1
+    },
+    "actual_tls_wrapper": {
+      "executed": 2,
+      "passed": 2
+    },
+    "retained_transitions": {
+      "executed": 10,
+      "passed": 10
+    }
+  },
+  "source_sha256": {
+    "ops/postgres-finalize-account-custody.sh": "013daaa72fb7df994d417421aa11f3879d1b968d98c8f7788dabf90e9259ec29",
+    "backend/app/tests/auth_rest/audit_account_transition.rs": "34e80b006c22ce00eb2c2d50f6365fa48384afadd3213416c5d271fbc3274c2e"
+  },
+  "holds": [
+    "Final independent runtime addendum pending",
+    "Full18.6operator suite and deployment/workloadqualification",
+    "Assembledrelease"
+  ]
+}

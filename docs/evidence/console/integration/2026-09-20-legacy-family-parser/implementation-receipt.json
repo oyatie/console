@@ -1,0 +1,27 @@
+{
+  "owner": "/root",
+  "base_sha": "916083083c226fc5d3fb0b6974fccb73386aa059",
+  "status": "parser_source_implemented_and_bounded_regressions_passed",
+  "proof": {
+    "same_admitted_probe": "7 passed; previous 1 passed 6 failed",
+    "retained": "47 unique passed: library3,ES25629,verifier14,well_known1; parser7 is subset",
+    "clippy": "auth --lib -D warnings passed"
+  },
+  "review": "source-review.json",
+  "conclusions": "Existing signed verification owner extended; no new dependency or mint cutover. Strict map decoder preserves duplicate members and distinguishes absence from null. Unknown view-as role vocabulary remains strict downstream owner.",
+  "remaining": [
+    "Independent-review-requested full positional-array and derived-contradiction test supplements",
+    "Test baseline gain not yet serialized",
+    "Every bound current-family/current-policy consumer and retained transaction guard",
+    "Complete release and production qualification"
+  ],
+  "artifacts": {
+    "lane.json": "45fc7ced279e22acfba782ecbb413f01957d7a322bfa7edbce6c7ed945b4a92f",
+    "admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "owner-red.log": "05f6f00b8053b686b7e49976a1e9fa42b772798b6c020a3307d41e0329d5c592",
+    "owner-green.log": "266f92e9654d0d29d9d40bc403992a5c5af757c2070ab06097497ed52ba14cd3",
+    "full-retained47.log": "f4582fec00d5be549d991a2bdc58f353fdfa88acc7cab60de77ce1c3b2ce51b9",
+    "clippy.log": "2bc683fb4e4f4f21ee9ee39e2b8ecce2efe20d3b1be57bda5316aa519ab3d30a",
+    "source-review.json": "4ac1232856f4f2c51c5f433b48c3fdbf40fbb6271aa2475111bb2a2eb6e6796d"
+  }
+}

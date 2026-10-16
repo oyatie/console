@@ -1,0 +1,38 @@
+{
+  "owner": "/root",
+  "base_sha": "03463f3c0fd0e08e9e9a7b50fc34058f7044d33f",
+  "immutable_target": "Current-session-owned Company setup eligibility projection and read-only Leptos entry using approved shared entry flow",
+  "allowed_paths": [
+    "backend/crates/platform/auth/src/account.rs",
+    "backend/crates/platform/auth-rest/src/account_entry.rs",
+    "backend/crates/platform/auth-rest/src/lib.rs",
+    "backend/app/src/lib.rs",
+    "backend/crates/payroll/ui/src/native_account.rs",
+    "backend/crates/platform/auth-rest/src/account_browser.rs"
+  ],
+  "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-company-entry-read-map-20260920.json --only app-auth-rest-pg --runner cargo",
+  "mechanical_guide": "Approved round2 design d60b812 and exact round3 testsbd15a346; reuse sameparser/sessionresolver, savepoint optionalerrors, escape AuthenticationInvalid, finaldatabaseclockafterlocks. Preview noform/submit until owningcommand.",
+  "reviewer": "/root/integration_security",
+  "pre_mortem": "Staleeligibility leaks afterexpiry; savepoint releaseslock; callback treats boolean aswriteauthority",
+  "blast_radius": "Read-only Account/CompanysetupSSR projection; noSQL/schema/businesswrites",
+  "detection": "Existingexpiry/revokeprobes+6newownerHTTP+actualEnter/noeffects browser",
+  "rollback": "Revert readprojection/UI only, no durablewrites; retain installed readSQLhelper",
+  "stop_conditions": [
+    "UnrelatedmissingprerequisiteasRED",
+    "Weakenedexistingtests",
+    "Any sourceoutsideallowedpaths",
+    "Newmutation or fakePOSTrefusal"
+  ],
+  "remaining_holds": [
+    "FullCompanyenrollment/Cedar/legacywriter guards",
+    "Browser/workflow integration acceptance",
+    "Full release"
+  ],
+  "scope_amendment": {
+    "reason": "Existing private child module requires intermediate safe re-exports; keep definitions at account_entry.rs owner rather than relocating into rootlib.",
+    "restriction": "account_browser.rs safe re-export list only",
+    "source_design": "Unchangedapprovedround2safe publicexport contract",
+    "next_admission": "Rebind exacttestcandidate after reviewed expiry oracle amendment and metadataonlycommit; same retaineddiscoveryprobe remains red."
+  },
+  "test_amendment": "Exact expiry oracle correction manifest409db7b6 independently approvedfc5fd188 preserves historicalinvalidSignIn behavior"
+}

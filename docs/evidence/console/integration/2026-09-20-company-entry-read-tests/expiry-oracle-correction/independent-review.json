@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_SEMANTIC_ORACLE_CORRECTION",
+  "manifest_sha256": "409db7b6e61d9096f856e66135591ca6c8e24b279387a96d992049349b3db080",
+  "candidate_sha256": "fb064988585257e12027783d48ba3c58b7ddd493d81722abac9ffb088daa25d5",
+  "basis": "Existing account_entry AuthenticationInvalid returns SignIn; App PublicRoot maps SignIn to Public but Registration maps to SignIn. Only expired registration expected destination was incorrect in reviewed round3.",
+  "preservation": [
+    "Witnessed real designation-head lock before expiry and elapsed expiry remain required.",
+    "Exact200private native response,noactive/logout/setup-link,full durable-state equality and originalvalid-cookie active positive remain.",
+    "Additional login/notregister assertions and freshanonymousregistration positive distinguish invalidaccess from missingaccess.",
+    "No production source change or test weakening; corrected oracle reflects preserved owner behavior."
+  ],
+  "checks": [
+    "Manifest/source diff reviewed and pinnedfullfile rustfmtcheck0.",
+    "Runtime0; actual source acceptance remains pending."
+  ],
+  "supersedes": "Only erroneous expired /account/register expectation in prior round3 receipt; reviewer acknowledges earlier miss."
+}

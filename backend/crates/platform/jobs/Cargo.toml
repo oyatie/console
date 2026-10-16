@@ -13,7 +13,8 @@ apalis-postgres = { workspace = true }
 apalis-sql = { workspace = true }
 apalis-sqlx = { package = "sqlx", version = "=0.8.6", default-features = false, features = [
     "postgres",
-    "runtime-tokio-rustls",
+    "runtime-tokio",
+    "tls-rustls-aws-lc-rs",
 ] }
 console-kernel-core = { workspace = true }
 serde = { workspace = true }

@@ -23,12 +23,18 @@ pub use view_as::{
 };
 
 use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, HeaderValue, Method, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, put};
 use axum::{Extension, Json, Router};
+use axum::{
+    body::Body,
+    extract::Request,
+    middleware::{self, Next},
+};
 use console_kernel_core::{OrgId, UserId};
-use console_platform_auth::{JwtIssuer, JwtVerifier};
+use console_platform_auth::{JwtIssuer, SessionVerification};
+use console_platform_authz::platform_policy::PlatformPolicy;
 use console_platform_authz::{PlatformFeature, PlatformPrincipal};
 use console_platform_provisioning::{
     GroupAccountOnboarding, GroupAccountSummary, GroupMemberSummary, GroupSummary,
@@ -37,6 +43,7 @@ use console_platform_provisioning::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use std::sync::Arc;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
@@ -173,7 +180,8 @@ pub struct PlatformRestState {
     /// Destructive tenant removal is executed only through this isolated
     /// capability pool; `pool` remains the general runtime/read path.
     force_remove_command_pool: Option<PgPool>,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
+    list_authority: Option<(time::Duration, Arc<PlatformPolicy>)>,
     /// Issuer used only by platform START paths that mint short-lived tenant
     /// context tokens (read-only view-as and writable tenant management).
     /// `None` disables those START endpoints (503), so token issuance is opt-in.
@@ -188,17 +196,29 @@ impl PlatformRestState {
     #[must_use]
     pub fn new(
         pool: PgPool,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
         provisioner: PlatformProvisioner,
     ) -> Self {
         Self {
             pool,
             force_remove_command_pool: None,
-            jwt_verifier,
+            session_verification,
+            list_authority: None,
             view_as_issuer: None,
             provisioner,
             tenant_config_seeder: None,
         }
+    }
+
+    /// Root-composed configuration and immutable policy, never caller authority.
+    #[must_use]
+    pub fn with_platform_list_authority(
+        mut self,
+        absolute_family_ttl: time::Duration,
+        policy: Arc<PlatformPolicy>,
+    ) -> Self {
+        self.list_authority = Some((absolute_family_ttl, policy));
+        self
     }
 
     /// Install the dedicated database identity allowed to execute the destructive
@@ -230,7 +250,7 @@ impl PlatformRestState {
 
 /// Build the `/api/platform/*` router behind the PLATFORM extractor.
 pub fn router(state: PlatformRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let router = Router::new()
         .route(PLATFORM_ORGS_PATH, get(list_orgs).post(create_org))
         .route(
@@ -259,7 +279,9 @@ pub fn router(state: PlatformRestState) -> Router {
     // PLATFORM extractor: resolves the PlatformPrincipal and REJECTS any tenant
     // token. Deliberately NOT the tenant org middleware â the platform tier is
     // not tenant-scoped, and each handler arms the TARGET org per action.
-    console_platform_request_context::with_platform_context(router, verifier)
+    with_platform_list_transport(console_platform_request_context::with_platform_context(
+        router, verifier,
+    ))
 }
 
 // ---------------------------------------------------------------------------
@@ -626,19 +648,21 @@ async fn create_org(
 /// GET /api/platform/orgs — list all tenants (cross-tenant, audited read).
 async fn list_orgs(
     State(state): State<PlatformRestState>,
-    Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
 ) -> Result<Response, PlatformError> {
-    principal
-        .authorize(PlatformFeature::TenantList)
-        .map_err(|_| PlatformError::forbidden("platform principal cannot list tenants"))?;
-
+    let access = platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
+    let (ttl, policy) = state
+        .list_authority
+        .as_ref()
+        .ok_or_else(platform_list_unavailable)?;
+    let verifier = state
+        .session_verification
+        .as_ref()
+        .map(SessionVerification::token_verifier)
+        .ok_or_else(platform_list_unavailable)?;
     let orgs = state
         .provisioner
-        .list_tenants(
-            &state.pool,
-            Some(principal.user_id),
-            OffsetDateTime::now_utc(),
-        )
+        .list_tenants(&state.pool, verifier, access, *ttl, policy)
         .await
         .map_err(PlatformError::from_provisioning)?;
 
@@ -651,19 +675,21 @@ async fn list_orgs(
 /// GET /api/platform/groups — list all top-level groups and their member org identities.
 async fn list_groups(
     State(state): State<PlatformRestState>,
-    Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
 ) -> Result<Response, PlatformError> {
-    principal
-        .authorize(PlatformFeature::GroupManage)
-        .map_err(|_| PlatformError::forbidden("platform principal cannot list groups"))?;
-
+    let access = platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
+    let (ttl, policy) = state
+        .list_authority
+        .as_ref()
+        .ok_or_else(platform_group_list_unavailable)?;
+    let verifier = state
+        .session_verification
+        .as_ref()
+        .map(SessionVerification::token_verifier)
+        .ok_or_else(platform_group_list_unavailable)?;
     let groups = state
         .provisioner
-        .list_groups(
-            &state.pool,
-            Some(principal.user_id),
-            OffsetDateTime::now_utc(),
-        )
+        .list_groups(&state.pool, verifier, access, *ttl, policy)
         .await
         .map_err(PlatformError::from_provisioning)?;
 
@@ -874,19 +900,22 @@ async fn remove_org_from_group(
 /// token is rejected with 403 by the platform extractor before this runs.
 async fn ops_dashboard(
     State(state): State<PlatformRestState>,
-    Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
 ) -> Result<Response, PlatformError> {
-    principal
-        .authorize(PlatformFeature::TenantHealthRead)
-        .map_err(|_| PlatformError::forbidden("platform principal cannot read tenant health"))?;
+    let access = platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
+    let (ttl, policy) = state
+        .list_authority
+        .as_ref()
+        .ok_or_else(platform_health_unavailable)?;
+    let verifier = state
+        .session_verification
+        .as_ref()
+        .map(SessionVerification::token_verifier)
+        .ok_or_else(platform_health_unavailable)?;
 
     let health = state
         .provisioner
-        .list_tenant_health(
-            &state.pool,
-            Some(principal.user_id),
-            OffsetDateTime::now_utc(),
-        )
+        .list_tenant_health(&state.pool, verifier, access, *ttl, policy)
         .await
         .map_err(PlatformError::from_provisioning)?;
 
@@ -943,9 +972,11 @@ async fn update_org(
 async fn delete_org(
     State(state): State<PlatformRestState>,
     Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
     Path(id): Path<Uuid>,
     Query(query): Query<DeleteOrgQuery>,
 ) -> Result<Response, PlatformError> {
+    platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
     // Same authz gate for BOTH paths: platform super-admin only. A tenant token is
     // already rejected (403) by the platform extractor before this handler runs.
     principal
@@ -1024,6 +1055,21 @@ impl PlatformError {
 
     fn from_provisioning(err: ProvisioningError) -> Self {
         match err {
+            ProvisioningError::PlatformListUnauthorized => platform_list_unauthorized(),
+            ProvisioningError::PlatformListForbidden => {
+                Self::forbidden("platform principal cannot list tenants")
+            }
+            ProvisioningError::PlatformListUnavailable => platform_list_unavailable(),
+            ProvisioningError::PlatformHealthUnauthorized => platform_list_unauthorized(),
+            ProvisioningError::PlatformHealthForbidden => {
+                Self::forbidden("platform principal cannot read tenant health")
+            }
+            ProvisioningError::PlatformHealthUnavailable => platform_health_unavailable(),
+            ProvisioningError::PlatformGroupListUnauthorized => platform_list_unauthorized(),
+            ProvisioningError::PlatformGroupListForbidden => {
+                Self::forbidden("platform principal cannot list groups")
+            }
+            ProvisioningError::PlatformGroupListUnavailable => platform_group_list_unavailable(),
             // Caller-facing input problems map to 422; everything else is logged
             // and collapsed to a generic 500 so no DB/constraint detail leaks.
             ProvisioningError::InvalidRoster(message) => Self::validation(message),
@@ -1074,4 +1120,95 @@ struct ErrorBody {
 struct ErrorPayload {
     code: &'static str,
     message: String,
+}
+
+fn platform_list_unauthorized() -> PlatformError {
+    PlatformError::new(
+        StatusCode::UNAUTHORIZED,
+        "unauthorized",
+        "invalid bearer token",
+    )
+}
+fn platform_list_unavailable() -> PlatformError {
+    PlatformError::new(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "service_unavailable",
+        "platform listing is unavailable",
+    )
+}
+
+fn platform_health_unavailable() -> PlatformError {
+    PlatformError::new(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "service_unavailable",
+        "platform health is unavailable",
+    )
+}
+
+fn platform_group_list_unavailable() -> PlatformError {
+    PlatformError::new(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "service_unavailable",
+        "platform group list is unavailable",
+    )
+}
+
+fn platform_list_bearer(headers: &HeaderMap) -> Option<&str> {
+    let mut values = headers.get_all(header::AUTHORIZATION).iter();
+    let value = values.next()?;
+    if values.next().is_some() {
+        return None;
+    }
+    let token = value.to_str().ok()?.strip_prefix("Bearer ")?;
+    if token.is_empty()
+        || !token.is_ascii()
+        || token
+            .bytes()
+            .any(|byte| byte.is_ascii_whitespace() || byte == b',')
+    {
+        return None;
+    }
+    Some(token)
+}
+
+/// Finite transport admission and privacy only. Applied again outside the App
+/// error envelope so timeout rewrites and HEAD never bypass final privacy.
+pub fn with_platform_list_transport(router: Router) -> Router {
+    router.layer(middleware::from_fn(platform_list_transport))
+}
+
+async fn platform_list_transport(request: Request, next: Next) -> Response {
+    let is_head = request.method() == Method::HEAD;
+    if !matches!(
+        request.uri().path(),
+        PLATFORM_ORGS_PATH | PLATFORM_OPS_PATH | PLATFORM_GROUPS_PATH
+    ) || !(request.method() == Method::GET || is_head)
+    {
+        return next.run(request).await;
+    }
+    let mut response = if platform_list_bearer(request.headers()).is_some() {
+        next.run(request).await
+    } else {
+        platform_list_unauthorized().into_response()
+    };
+    let headers = response.headers_mut();
+    headers.insert(
+        header::CACHE_CONTROL,
+        HeaderValue::from_static("no-store, private"),
+    );
+    if !headers.get_all(header::VARY).iter().any(|value| {
+        value.to_str().is_ok_and(|value| {
+            value
+                .split(',')
+                .any(|token| token.trim().eq_ignore_ascii_case("authorization"))
+        })
+    }) {
+        headers.append(header::VARY, HeaderValue::from_static("Authorization"));
+    }
+    headers.remove(header::ETAG);
+    headers.remove(header::LAST_MODIFIED);
+    if is_head {
+        *response.body_mut() = Body::empty();
+    }
+    response
 }

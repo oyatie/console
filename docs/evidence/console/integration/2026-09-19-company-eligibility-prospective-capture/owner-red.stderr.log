@@ -1,0 +1,11 @@
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.29s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-c9fa847480459fe5)
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`

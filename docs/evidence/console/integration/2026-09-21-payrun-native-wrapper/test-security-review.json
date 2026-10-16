@@ -1,0 +1,27 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_FOR_BOUNDED_TEST_ADOPTION",
+  "base": "41f785dee7d3fbad16bea428d72edd40a013566c",
+  "packet": "/private/tmp/console-payrun-wrapper-test-20260921",
+  "manifest_sha256": "f96b4b016b5377a7f75a83be8420db45c3f1c4735feefd6a522d15c38e4143ab",
+  "test_sha256": "d75745c870ac031d3bd9273eda917f9c5a8eda6471f0894d6459d4494640df79",
+  "facts": [
+    "All five manifest members and seven source locks match packet, exact Git base, and current tree.",
+    "Removing exactly the added test leaves the original AST unchanged; historical source retained.",
+    "Existing map declares exact wrapper and existing inner target; wrapper absent from actual tools/buck/BUCK.",
+    "Existing target parser rejects duplicate named targets. Added assertions require unique unchanged map entry and exact five-field standard sh_test, protected loader, one inner location/dependency, and PostgreSQL labels.",
+    "Existing loader uses protected env-file path rather than credential values across executor arguments; strict grammar and exact-test discovery are preserved."
+  ],
+  "authorized_next_steps": [
+    "Root adopts only additive test and executes specified missing-wrapper RED.",
+    "Root admits only standard wrapper repair after actual RED; same regression and full generator suite must pass, followed by actual native PostgreSQL suite with functioning prerequisites."
+  ],
+  "limits": [
+    "No reviewer builds, tests, SQL, browser or repository writes executed.",
+    "No approval of payroll correctness, Person-based approval independence, native Account bridge, Company acceptance, or full release.",
+    "Source drift or runner/map/CI changes require separate review."
+  ],
+  "remaining_holds": [
+    "Actual root RED/GREEN and native execution evidence pending."
+  ]
+}

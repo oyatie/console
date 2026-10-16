@@ -1,0 +1,31 @@
+[
+  {
+    "lane": "legacy-family-parser",
+    "owner": "/root",
+    "base_sha": "916083083c226fc5d3fb0b6974fccb73386aa059",
+    "immutable_target": "Expand existing legacy JWT reader with reviewed closed family binding; preserve historical absent claim and no bound minting",
+    "allowed_paths": [
+      "backend/crates/platform/auth/src/jwt.rs",
+      "backend/crates/platform/auth/src/lib.rs"
+    ],
+    "probe": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth --test jwt_verifier legacy_family_binding::",
+    "mechanical_guide": "Extend existing AccessClaims and shared signed verifier; serde closed nested struct and strict present option, validate kind/home/flags at owner; production issuer retains None. Approved tests immutable. No migration, dependencies or issuer cutover.",
+    "design_manifest": "6fae6fdf6987ac0ef694869324879922912577188dbb34a252c97f682e2a41e0",
+    "test_manifest": "96fae2f4182310a746ce88bb7eb5d5093225194c1477c2e2ce7a318deb8059d9",
+    "reviewer": "/root/integration_security",
+    "pre_mortem": "Flattening loses duplicate binding or optional null silently downgrades; derived flags widen context; old defaults change",
+    "blast_radius": "Shared legacy access verification, no mint or Account behavior change",
+    "detection": "Seven signed owner probes, retained verifier/ES256/protocol suites and independent source review",
+    "rollback": "Revert bounded reader change before mint cutover; preserve historical tokens and tests",
+    "stop_conditions": [
+      "Approved test weakening",
+      "New bound production issuance",
+      "Dependency direction or historical codec change"
+    ],
+    "remaining_holds": [
+      "Current-family consumers and effect guards",
+      "Bound mint cutover",
+      "All incomplete assembled release requirements"
+    ]
+  }
+]

@@ -102,7 +102,12 @@ fn bearer(keys: &Keys, user: UserId, org: OrgId, role: &str, branch: BranchId) -
     .unwrap()
 }
 
-fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+async fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let verifier = JwtVerifier::from_es256_public_pem(
         JwtSettings {
             issuer: ISSUER.to_owned(),
@@ -113,8 +118,14 @@ fn app(pool: PgPool, keys: &Keys) -> axum::Router {
     )
     .unwrap();
     router(
-        ProductionRestState::new(pool, Some(verifier))
-            .with_service_principal_hmac_key(Some(SERVICE_PRINCIPAL_HMAC_KEY)),
+        ProductionRestState::new(
+            pool,
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
+        )
+        .with_service_principal_hmac_key(Some(SERVICE_PRINCIPAL_HMAC_KEY)),
     )
 }
 
@@ -409,11 +420,12 @@ async fn release_body(pool: &PgPool, fixture: &Fixture, plan: &Value, key: &str)
     json!({"expected_version": 1, "approval_ref": approval, "idempotency_key": key})
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn planner_reviewer_operator_complete_a_durable_production_lifecycle(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let planner_token = bearer(
         &keys,
         fixture.planner,
@@ -489,11 +501,12 @@ async fn planner_reviewer_operator_complete_a_durable_production_lifecycle(pool:
     assert_eq!(operation["status"], "RECORDED");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn release_requires_the_bound_reviewer_and_consumes_the_approval_once(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let planner = bearer(
         &keys,
         fixture.planner,
@@ -556,11 +569,12 @@ async fn release_requires_the_bound_reviewer_and_consumes_the_approval_once(pool
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_rejects_a_reused_idempotency_key_with_a_different_request(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,
@@ -583,13 +597,14 @@ async fn create_rejects_a_reused_idempotency_key_with_a_different_request(pool: 
     assert_eq!(status, StatusCode::CONFLICT, "{conflict:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_rejects_a_demand_quantity_or_due_date_that_does_not_match_the_ingested_contract(
     pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,
@@ -611,11 +626,12 @@ async fn create_rejects_a_demand_quantity_or_due_date_that_does_not_match_the_in
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn drafts_do_not_consume_release_approval_before_review(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,
@@ -646,10 +662,11 @@ async fn drafts_do_not_consume_release_approval_before_review(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn concurrent_tenant_authorized_reservations_do_not_oversubscribe_material_or_capacity(
     pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
     let token = bearer(
@@ -683,7 +700,7 @@ async fn concurrent_tenant_authorized_reservations_do_not_oversubscribe_material
         .execute(&mut *capacity_lock)
         .await
         .unwrap();
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let first_service = service.clone();
     let first_token = token.clone();
     let first_request = tokio::spawn(async move {
@@ -755,11 +772,12 @@ async fn concurrent_tenant_authorized_reservations_do_not_oversubscribe_material
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn operation_record_rejects_a_terminal_operation_write(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let planner_token = bearer(
         &keys,
         fixture.planner,
@@ -818,11 +836,12 @@ async fn operation_record_rejects_a_terminal_operation_write(pool: PgPool) {
     assert_eq!(status, StatusCode::CONFLICT, "{conflict:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_cannot_read_another_tenants_production_plan_under_force_rls(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let planner_token = bearer(
         &keys,
         fixture.planner,
@@ -855,8 +874,9 @@ async fn tenant_cannot_read_another_tenants_production_plan_under_force_rls(pool
     assert_eq!(status, StatusCode::NOT_FOUND, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn production_reads_deny_roles_without_daily_plan_request_or_review(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
     let mechanic = seed_user(
@@ -867,7 +887,7 @@ async fn production_reads_deny_roles_without_daily_plan_request_or_review(pool: 
         "production-read-denied",
     )
     .await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(&keys, mechanic, fixture.org, "RECEPTIONIST", fixture.branch);
     let (status, body) = get(
         service.clone(),
@@ -889,11 +909,12 @@ async fn production_reads_deny_roles_without_daily_plan_request_or_review(pool: 
     assert_eq!(status, StatusCode::FORBIDDEN, "{body:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn runtime_routes_reject_caller_authored_demand_and_capacity_ingress(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,
@@ -919,11 +940,12 @@ async fn runtime_routes_reject_caller_authored_demand_and_capacity_ingress(pool:
     assert_eq!(status, StatusCode::NOT_FOUND, "{demand:?}");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn human_reviewer_cannot_assert_production_source_truth(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.reviewer,
@@ -964,11 +986,12 @@ async fn human_reviewer_cannot_assert_production_source_truth(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn source_system_lifecycle_uses_typed_credentials_and_generation_cas(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,
@@ -1148,11 +1171,12 @@ async fn source_system_lifecycle_uses_typed_credentials_and_generation_cas(pool:
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn source_system_lifecycle_rejects_same_branch_caller_without_role_manage(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let manager_token = bearer(
         &keys,
         fixture.planner,
@@ -1231,11 +1255,12 @@ async fn source_system_lifecycle_rejects_same_branch_caller_without_role_manage(
     assert_eq!(after_audit_rows, before_audit_rows);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn source_system_lifecycle_cannot_mutate_a_same_branch_other_feature_principal(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,
@@ -1309,11 +1334,12 @@ async fn source_system_lifecycle_cannot_mutate_a_same_branch_other_feature_princ
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn capacity_ingress_receipt_uses_the_persisted_natural_key_row(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_fixture(&pool).await;
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let token = bearer(
         &keys,
         fixture.planner,

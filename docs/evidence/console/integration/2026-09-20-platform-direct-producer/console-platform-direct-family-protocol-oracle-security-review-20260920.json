@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_ONE_SEMANTIC_ORACLE_CORRECTION",
+  "manifest_sha256": "81e0a50d4c0919041fa5277542e28eaef21b35fa22d65e510dc956938f143ece",
+  "successor_sha256": "1856feed1824d7e6ab534641491a73397dca19d973b478a1c1f8cf6f91327372",
+  "findings": [
+    "Correct expected actual credential-family protocol from mistaken LEGACY_USER identity discriminator to immutable LEGACY_COMPANY credential owner contract.",
+    "Existing Auth7DEFAULT/CHECK, default-preserving RefreshTokenStore insert, live self-reader validator and retained real-family fixture agree on LEGACY_COMPANY. No production/schema/history change permitted.",
+    "Dedicated assertion reports only bounded protocol field; all other query/correlation/nullability/time assertions and source bytes unchanged.",
+    "All4packet members/5source hashes verified. Earlier approvals of wrong literal are superseded explicitly, not silently rewritten."
+  ],
+  "requirements": [
+    "Preserve actual prior failure and rerun same complete native owner probe plus dependent cases after successor adoption.",
+    "Source correction is not runtime GREEN or producer/workflow acceptance."
+  ],
+  "execution": "Read-only source/hash review only; zero product tests/builds/SQL/runtime."
+}

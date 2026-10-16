@@ -1,0 +1,202 @@
+[
+  {
+    "name": "administration-overview.html.gz",
+    "bytes": 46659,
+    "sha256": "ed32f23c4198f1bb872be01f6d0e02fa57c1802c364c262da0b590f1a65d2037"
+  },
+  {
+    "name": "administration-overview.json",
+    "bytes": 4209,
+    "sha256": "02ddeb3e736461b7fa7b630c0ee520a55bf8a2fda09e6d461803a1be1aaea173"
+  },
+  {
+    "name": "authentication-overview.html.gz",
+    "bytes": 43817,
+    "sha256": "c9dad942cb9f4a444a2ae3fb7078d7491f86667b316cf1b4360230b55da305ac"
+  },
+  {
+    "name": "authentication-overview.json",
+    "bytes": 4209,
+    "sha256": "bd8efd1f62272ab3c20e91a3c03d17d83d9dc613ce555925767e255ec987022b"
+  },
+  {
+    "name": "authentication-scim-overview.html.gz",
+    "bytes": 44294,
+    "sha256": "a575048c8de640f36be65b3602cd558061c856f415f74a597bbf838c0f2b5cd8"
+  },
+  {
+    "name": "authentication-scim-overview.json",
+    "bytes": 4224,
+    "sha256": "e64fb6b7c9cdb9923cbda188a2d21daf8b9561347e71a30c4bb26c19c985e14d"
+  },
+  {
+    "name": "fetch.py",
+    "bytes": 1486,
+    "sha256": "8171547ed94836a899cc0dec08c91472b0c0c2fa72b52bdda2148281df5033b8"
+  },
+  {
+    "name": "foundry-devops-create-products.html.gz",
+    "bytes": 45251,
+    "sha256": "4af5aed8051bf51d485674f9c3a6f16040a76815f8038a8c7ca9007e276ff728"
+  },
+  {
+    "name": "foundry-devops-create-products.json",
+    "bytes": 4230,
+    "sha256": "8e2f4822e88c357eba774112f8bd56f37c59b820de2f3be6ec06d194e48e3711"
+  },
+  {
+    "name": "foundry-devops-export-import-products.html.gz",
+    "bytes": 37252,
+    "sha256": "4796beef90540fa167d19367c99851234eee7c6dbda0f4739baa78571b93321d"
+  },
+  {
+    "name": "foundry-devops-export-import-products.json",
+    "bytes": 4251,
+    "sha256": "739c68b265fedde6f19e4c9ad15c340989ecd320c51dfcb23de6471cea3b356f"
+  },
+  {
+    "name": "foundry-devops-supported-resources.html.gz",
+    "bytes": 36034,
+    "sha256": "ec42894db229533a858e5950c43fb649f3808e9f09bd545c94a918d1571e4659"
+  },
+  {
+    "name": "foundry-devops-supported-resources.json",
+    "bytes": 4242,
+    "sha256": "ff5d095d07e7abab0dcced712c9de45ab39db47942f78a5f7f87e319716c9f50"
+  },
+  {
+    "name": "integrate-models-experiments-overview.html.gz",
+    "bytes": 47709,
+    "sha256": "09849bac448360320616d0736da00ff5069e7c975b555d8c004b8ab1fdb679ad"
+  },
+  {
+    "name": "integrate-models-experiments-overview.json",
+    "bytes": 4251,
+    "sha256": "b95dedc4c2f520dbc745788c2ea798dbf00f1213e0af77a17756e31a3b1305ab"
+  },
+  {
+    "name": "manage-models-live-deployment-reference.html.gz",
+    "bytes": 47225,
+    "sha256": "81f0d1ef499a9f063155ab228af33ade161f2d9be7f438f7c4645aae33d5fc70"
+  },
+  {
+    "name": "manage-models-live-deployment-reference.json",
+    "bytes": 4257,
+    "sha256": "aa1d28b3e14c4a5c271d56dcb79e8016ef1f981fe08f4e8dcad000bf4e347d6b"
+  },
+  {
+    "name": "manage-models-model-inference-history.html.gz",
+    "bytes": 43213,
+    "sha256": "28151f9a22be25db378b430abdae6302320d2d165f6e2592e060001be96a58ec"
+  },
+  {
+    "name": "manage-models-model-inference-history.json",
+    "bytes": 4251,
+    "sha256": "4aec0866fcf770846b2fc7ddb615134ba048139bdd14cf32c8de46af458f7272"
+  },
+  {
+    "name": "marketplace-upgrades.html.gz",
+    "bytes": 38559,
+    "sha256": "9756d081f6784b74301c5a25c47544bbd825433be5d4937f14f93b6c1b0f566e"
+  },
+  {
+    "name": "marketplace-upgrades.json",
+    "bytes": 4199,
+    "sha256": "ec7756a7a7f48de4ececae388ccc7037e058de7847c216c4c5834747b5a40a89"
+  },
+  {
+    "name": "model-integration-marketplace-models.html.gz",
+    "bytes": 45126,
+    "sha256": "6570d41a220c526f4f9f5952bd636c1224efe0c3e4af241eb2c2eb7ed601c7ac"
+  },
+  {
+    "name": "model-integration-marketplace-models.json",
+    "bytes": 4248,
+    "sha256": "29912b1a0bd5df12e2b909dafe5663ccc2d738d39d9e60ee3ab66dc3a94f7585"
+  },
+  {
+    "name": "model-integration-objectives.html.gz",
+    "bytes": 44011,
+    "sha256": "4f4c4d5a45b4f33c3defe171e2b0f8bebbab05b9e4e216886b68c790ade7eec7"
+  },
+  {
+    "name": "model-integration-objectives.json",
+    "bytes": 4224,
+    "sha256": "c39b67997200c2bfdfc8aa56850f781dc0e23890f4211222063e728e6fa4c2f4"
+  },
+  {
+    "name": "model-studio-overview.html.gz",
+    "bytes": 41118,
+    "sha256": "a08a13941d1cceb07406b053cab7f2768ccca0da1b553b9e2f767ec73eba20f2"
+  },
+  {
+    "name": "model-studio-overview.json",
+    "bytes": 4203,
+    "sha256": "563e6ac5210326e82e2d7eddedef83f9e76830db5570b76db9bb496870dea455"
+  },
+  {
+    "name": "proposal.json",
+    "bytes": 153495,
+    "sha256": "c7082e92b5137d75803215fd01fece3dc870089ab5f6b73727d65a559f496bcf"
+  },
+  {
+    "name": "propose.py",
+    "bytes": 18993,
+    "sha256": "918f179d6b5a600a220da68dd3784216b399ba9c8ab184681fd5bd888540f355"
+  },
+  {
+    "name": "read.py",
+    "bytes": 786,
+    "sha256": "5d1ea4bf94bae39a0e550d860988e6bf3ec613fa5a0e02709f98a3ec95dd0f3c"
+  },
+  {
+    "name": "resource-management-budgets.html.gz",
+    "bytes": 46743,
+    "sha256": "27901c79d988d5c3098b48137cdcb9117b00becace44de9e076f60d32d24eacd"
+  },
+  {
+    "name": "resource-management-budgets.json",
+    "bytes": 4221,
+    "sha256": "58228631d418436e3b29590093a31d8419ed53c6c6e13a1d6e70c8d55d4b8005"
+  },
+  {
+    "name": "resource-management-overview.html.gz",
+    "bytes": 45340,
+    "sha256": "839dddf2b43010a8c87e01d9c0c59eff7a43dd131def81de2ec8684ccaa3439f"
+  },
+  {
+    "name": "resource-management-overview.json",
+    "bytes": 4224,
+    "sha256": "f5a79af036f537782353e5fb1e4acebeb591ce653fe372e5f7dc738290ca1f71"
+  },
+  {
+    "name": "resource-management-resource-queues.html.gz",
+    "bytes": 50472,
+    "sha256": "df587e3389b5686d6cb045c601a014612e94bfa3c2b5a639fa2e4e5cb80486bb"
+  },
+  {
+    "name": "resource-management-resource-queues.json",
+    "bytes": 4245,
+    "sha256": "a4fd91629be2c31ffad82a66a48f0990f0ef8fc6233e3bf6425c50a8cbce5272"
+  },
+  {
+    "name": "use-case-patterns-resource-allocation-optimization.html.gz",
+    "bytes": 48818,
+    "sha256": "1709c5440fda2e5bb213b81300e9a6b23169dd7c68c2b1ef47b05a197cca12d2"
+  },
+  {
+    "name": "use-case-patterns-resource-allocation-optimization.json",
+    "bytes": 4290,
+    "sha256": "72d6f3233dba4d0b48a49e34d62344aa56f0b01b6f43e6dd7bcccf19eb68a32e"
+  },
+  {
+    "name": "vertex-scenarios-overview.html.gz",
+    "bytes": 53303,
+    "sha256": "18c4dd676cf3a8abaed0ff8e226953b2fd5b03b56b771a1ca892d7470abb58e2"
+  },
+  {
+    "name": "vertex-scenarios-overview.json",
+    "bytes": 4215,
+    "sha256": "8d420f35f9b4efb50ee8b20c50a487fe17551fbf6fac1593d25212b085371c14"
+  }
+]

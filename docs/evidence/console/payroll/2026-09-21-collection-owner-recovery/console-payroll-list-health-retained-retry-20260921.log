@@ -1,0 +1,248 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T15:56:34.641-04:00] Build ID: e35363d3-1289-4760-881b-5582524ca70b
+[2026-09-21T15:56:41.742-04:00] Waiting on root//third-party/rust:_const_format_proc_macros-0.2 (prelude//platforms:default#11a256c53bf8083e) -- action (write MPPL/__const_format_proc_macros-link_linker_args.txt), and 763 other actions
+[2026-09-21T15:56:48.842-04:00] Waiting on root//third-party/rust:version_check-0.9 (prelude//platforms:default#5732820ad45f622d) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 510 other actions
+[2026-09-21T15:56:55.943-04:00] Waiting on root//backend/app:console-app-itest-health_readiness (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T15:57:03.043-04:00] Waiting on root//backend/app:console-app-itest-health_readiness (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T15:57:05.538-04:00] Cache hits: 0%
+[2026-09-21T15:57:05.538-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T15:57:05.538-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T15:57:05.557-04:00] Build ID: 31709700-1340-47c0-a2f3-8f6a985a1833
+[2026-09-21T15:57:05.557-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:57:12.657-04:00] Waiting on root//third-party/rust:fs_extra-1.3.0.crate (prelude//platforms:default#5732820ad45f622d) -- action (write fs_extra-1.3.0.crate_unpack.sh), and 436 other actions
+[2026-09-21T15:57:20.157-04:00] Waiting on root//third-party/rust:sqlx-0.9 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/sqlx-metadata-full-diag.args), and 5 other actions
+[2026-09-21T15:57:27.257-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:57:34.257-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:57:41.357-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:57:48.457-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:57:55.558-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:02.657-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:09.757-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:16.757-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:23.757-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:30.857-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:37.857-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T15:58:40.957-04:00] ✗ Fail: root//tools/buck:app-health-readiness-pg (1:18.9s)
+[2026-09-21T15:58:40.957-04:00] ---- STDOUT ----
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] running 16 tests
+[2026-09-21T15:58:40.957-04:00] test authorized::adr0042_ssr_session_cookie::adr0042_ssr_session_cookie_contract ... ignored, ADR-0042 proposed; SSR session cookie not implemented
+[2026-09-21T15:58:40.957-04:00] test authorized::adr0042_ssr_session_cookie::cookie_does_not_authorize_json_api ... ok
+[2026-09-21T15:58:40.957-04:00] test authorized::browser_navigation_reaches_no_authorized_screen_adr_0042 ... ok
+[2026-09-21T15:58:40.957-04:00] test authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty ... ok
+[2026-09-21T15:58:40.957-04:00] test authorized::proposed_ssr_session_cookie_does_not_authorize_html_get_yet ... ok
+[2026-09-21T15:58:40.957-04:00] test authorized::ui_persona_e2e ... FAILED
+[2026-09-21T15:58:40.957-04:00] test authorized::ui_shell_omits_runs_unless_payroll_run_read ... ok
+[2026-09-21T15:58:40.957-04:00] test authorized::ui_shipping_screens_deny_by_omission ... ok
+[2026-09-21T15:58:40.957-04:00] test healthz_reports_process_liveness_and_role ... ok
+[2026-09-21T15:58:40.957-04:00] test metrics_endpoint_exposes_the_slo_http_duration_histogram ... ok
+[2026-09-21T15:58:40.957-04:00] test proposed_ssr_session_cookie_is_not_minted_or_consumed_yet ... ok
+[2026-09-21T15:58:40.957-04:00] test readyz_is_ready_without_configured_dependencies ... ok
+[2026-09-21T15:58:40.957-04:00] test readyz_returns_503_when_configured_database_is_unreachable ... ok
+[2026-09-21T15:58:40.957-04:00] test ssr_shell_does_not_store_access_token_in_local_storage ... ok
+[2026-09-21T15:58:40.957-04:00] test ui_pkg_serves_committed_hydrate_assets ... ok
+[2026-09-21T15:58:40.957-04:00] test ui_shell_serves_empty_ssr_html ... ok
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] failures:
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] ---- authorized::ui_persona_e2e stdout ----
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] thread 'authorized::ui_persona_e2e' (79776694) panicked at backend/app/backend/app/tests/health_readiness.rs:1240:9:
+[2026-09-21T15:58:40.957-04:00] EXECUTIVE nav must expose authorized screens: <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>업무 공간 · Console</title><style>
+[2026-09-21T15:58:40.957-04:00] :root{color-scheme:light;--bg:#f5f5f2;--surface:#fff;--line:#e1e3df;--ink:#202923;
+[2026-09-21T15:58:40.957-04:00] --muted:#59645e;--accent:#815000;--accent-bg:#fff2cb;--chip:#edf1ed;--chip-ink:#405448;
+[2026-09-21T15:58:40.957-04:00] --flag:#fff0eb;--flag-ink:#963c23}
+[2026-09-21T15:58:40.957-04:00] *{box-sizing:border-box}
+[2026-09-21T15:58:40.957-04:00] [hidden]{display:none!important}
+[2026-09-21T15:58:40.957-04:00] body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+[2026-09-21T15:58:40.957-04:00] font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+[2026-09-21T15:58:40.957-04:00] a{color:var(--accent);text-underline-offset:3px}
+[2026-09-21T15:58:40.957-04:00] a:hover{text-decoration-thickness:2px}
+[2026-09-21T15:58:40.957-04:00] a,button,input,select,summary{touch-action:manipulation}
+[2026-09-21T15:58:40.957-04:00] :focus-visible{outline:3px solid #2364aa;outline-offset:4px}
+[2026-09-21T15:58:40.957-04:00] .workspace{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100dvh}
+[2026-09-21T15:58:40.957-04:00] .skip-link{position:fixed;left:16px;top:12px;z-index:20;padding:12px 18px;background:var(--ink);
+[2026-09-21T15:58:40.957-04:00] color:#fff;border-radius:8px;transform:translateY(-160%)}
+[2026-09-21T15:58:40.957-04:00] .skip-link:focus{transform:none}
+[2026-09-21T15:58:40.957-04:00] header.app{position:sticky;top:0;align-self:start;height:100dvh;padding:28px 16px;
+[2026-09-21T15:58:40.957-04:00] background:var(--surface);border-right:1px solid var(--line)}
+[2026-09-21T15:58:40.957-04:00] .brand{display:flex;align-items:center;gap:12px;padding:0 12px 30px;color:var(--ink);
+[2026-09-21T15:58:40.957-04:00] font-size:20px;font-weight:750;letter-spacing:-.04em;text-decoration:none}
+[2026-09-21T15:58:40.957-04:00] .brand-mark{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;
+[2026-09-21T15:58:40.957-04:00] background:#eeb94b;color:#302714;font-size:20px;font-weight:800}
+[2026-09-21T15:58:40.957-04:00] .nav-group{margin:12px 12px 8px;color:var(--muted);font-size:12px;font-weight:650;letter-spacing:.04em}
+[2026-09-21T15:58:40.957-04:00] header.app nav{display:flex;flex-direction:column;gap:4px}
+[2026-09-21T15:58:40.957-04:00] header.app nav a{display:flex;align-items:center;gap:12px;min-height:46px;padding:10px 12px;
+[2026-09-21T15:58:40.957-04:00] border-radius:8px;color:var(--muted);font-weight:550;text-decoration:none}
+[2026-09-21T15:58:40.957-04:00] header.app nav a:hover{background:var(--bg);color:var(--ink)}
+[2026-09-21T15:58:40.957-04:00] header.app nav a[aria-current]{background:var(--accent-bg);color:#62410b;font-weight:700}
+[2026-09-21T15:58:40.957-04:00] .nav-symbol{font-size:18px;width:22px;text-align:center}
+[2026-09-21T15:58:40.957-04:00] main{min-width:0;width:100%;max-width:1440px;padding:36px 40px 80px;margin:0 auto}
+[2026-09-21T15:58:40.957-04:00] .page-heading{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+[2026-09-21T15:58:40.957-04:00] .page-eyebrow{margin:0 0 6px;font-size:12px;font-weight:650;letter-spacing:.08em;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] h1{margin:0;font-size:28px;line-height:1.35;letter-spacing:-.04em;font-weight:700}
+[2026-09-21T15:58:40.957-04:00] .page-description{margin:10px 0 0;color:var(--muted);max-width:65ch;word-break:keep-all;overflow-wrap:anywhere}
+[2026-09-21T15:58:40.957-04:00] h2,h3,p,dd,a,summary{overflow-wrap:anywhere}
+[2026-09-21T15:58:40.957-04:00] .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 0 24px;min-width:0}
+[2026-09-21T15:58:40.957-04:00] .panel h2{margin:0;padding:18px 22px;font-size:17px;line-height:1.45;font-weight:650;border-bottom:1px solid var(--line)}
+[2026-09-21T15:58:40.957-04:00] .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}
+[2026-09-21T15:58:40.957-04:00] .fl{font-size:14px;font-weight:600;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] select,input,textarea,button{font:inherit}
+[2026-09-21T15:58:40.957-04:00] select{min-height:44px;padding:8px 12px;border:1px solid #9da89f;border-radius:8px;background:var(--surface);color:var(--ink);max-width:100%}
+[2026-09-21T15:58:40.957-04:00] .row{display:flex;align-items:baseline;gap:14px;padding:17px 22px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+[2026-09-21T15:58:40.957-04:00] .row:last-child{border-bottom:0}
+[2026-09-21T15:58:40.957-04:00] .row:hover{background:#fafbf8}
+[2026-09-21T15:58:40.957-04:00] .row .name{font-weight:600;min-width:0}
+[2026-09-21T15:58:40.957-04:00] .row .meta{flex:1 1 16ch;min-width:0;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+[2026-09-21T15:58:40.957-04:00] .row .rev{flex:none;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+[2026-09-21T15:58:40.957-04:00] .badge{flex:none;max-width:100%;margin-left:auto;padding:4px 10px;border-radius:6px;background:var(--chip);
+[2026-09-21T15:58:40.957-04:00] color:var(--chip-ink);font-size:12px;font-weight:650;overflow-wrap:anywhere}
+[2026-09-21T15:58:40.957-04:00] .badge[data-status*='BLOCK']{background:var(--flag);color:var(--flag-ink)}
+[2026-09-21T15:58:40.957-04:00] .state{margin:0;padding:32px 22px;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] .people-introduction{margin:0 0 20px}.people-introduction h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}
+[2026-09-21T15:58:40.957-04:00] .people-introduction p{margin:0;color:var(--muted);max-width:70ch}
+[2026-09-21T15:58:40.957-04:00] .people-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+[2026-09-21T15:58:40.957-04:00] .people-section h3{margin:0;padding:20px 22px 8px;font-size:17px;line-height:1.4}
+[2026-09-21T15:58:40.957-04:00] .people-count{margin:0;padding:0 22px 18px;color:var(--muted);font-size:13px}
+[2026-09-21T15:58:40.957-04:00] .person-inspector,.employment-inspector{min-width:0;border-top:1px solid var(--line);scroll-margin-top:24px}
+[2026-09-21T15:58:40.957-04:00] .person-summary,.employment-summary{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+[2026-09-21T15:58:40.957-04:00] min-height:76px;padding:16px 20px;cursor:pointer;list-style:none}
+[2026-09-21T15:58:40.957-04:00] .person-summary::-webkit-details-marker,.employment-summary::-webkit-details-marker{display:none}
+[2026-09-21T15:58:40.957-04:00] .person-summary:hover,.employment-summary:hover{background:#fafbf8}
+[2026-09-21T15:58:40.957-04:00] .person-summary::after,.employment-summary::after{content:'⌄';font-size:18px;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] .person-inspector[open] .person-summary::after,.employment-inspector[open] .employment-summary::after{content:'⌃'}
+[2026-09-21T15:58:40.957-04:00] .person-inspector[open],.employment-inspector[open]{background:#fcfdfb}
+[2026-09-21T15:58:40.957-04:00] .person-glyph{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--accent-bg);color:#75521b;font-size:16px;font-weight:650}
+[2026-09-21T15:58:40.957-04:00] .person-heading,.employment-heading{display:flex;flex:1 1 110px;min-width:0;flex-direction:column;gap:3px}
+[2026-09-21T15:58:40.957-04:00] .person-secondary,.employment-heading span{font-size:14px;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] .person-revision{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+[2026-09-21T15:58:40.957-04:00] .person-disclosure{font-size:12px;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] .person-detail,.employment-detail{padding:4px 22px 22px}
+[2026-09-21T15:58:40.957-04:00] .people-facts{display:grid;grid-template-columns:minmax(80px,.65fr) minmax(0,1.5fr);column-gap:16px;row-gap:12px;margin:12px 0 20px;font-size:14px}
+[2026-09-21T15:58:40.957-04:00] .people-facts dt{color:var(--muted)}.people-facts dd{margin:0;overflow-wrap:anywhere;min-width:0}
+[2026-09-21T15:58:40.957-04:00] .people-identity{font-variant-numeric:tabular-nums;font-size:13px}
+[2026-09-21T15:58:40.957-04:00] .person-relationships{margin:18px 0;padding-top:16px;border-top:1px solid var(--line)}
+[2026-09-21T15:58:40.957-04:00] .person-relationships h4{margin:0 0 8px;font-size:14px}.person-relationships ul{margin:0;padding-left:20px}
+[2026-09-21T15:58:40.957-04:00] .person-relationships li{padding:6px 0}
+[2026-09-21T15:58:40.957-04:00] .people-source,.people-retry{display:inline-block;padding:10px 0;min-height:44px;font-size:14px;font-weight:600}
+[2026-09-21T15:58:40.957-04:00] .people-retry{margin:0 22px 18px}
+[2026-09-21T15:58:40.957-04:00] @media(max-width:1150px){.people-layout{grid-template-columns:minmax(0,1fr);gap:0}}
+[2026-09-21T15:58:40.957-04:00] @media(max-width:680px){.person-summary,.employment-summary{padding:16px}.person-detail,.employment-detail{padding:0 16px 16px}
+[2026-09-21T15:58:40.957-04:00] .people-section h3{padding:18px 16px 8px}.people-count{padding:0 16px 16px}.people-facts{grid-template-columns:minmax(70px,.7fr) minmax(0,1.3fr);gap:10px}}
+[2026-09-21T15:58:40.957-04:00] .workflow-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+[2026-09-21T15:58:40.957-04:00] .workflow-main,.workflow-guide{min-width:0}.workflow-guide .panel{background:#fdfefa}
+[2026-09-21T15:58:40.957-04:00] .section-intro{margin:0;padding:18px 22px;color:var(--muted);font-size:14px}
+[2026-09-21T15:58:40.957-04:00] .record-list{margin:0;padding:0 22px 0 42px}
+[2026-09-21T15:58:40.957-04:00] .record-card{padding:20px 0;border-bottom:1px solid var(--line)}.record-card:last-child{border-bottom:0}
+[2026-09-21T15:58:40.957-04:00] .record-card::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+[2026-09-21T15:58:40.957-04:00] .record-title{margin:0 0 12px;font-size:16px;line-height:1.5}.record-title a{color:var(--ink)}
+[2026-09-21T15:58:40.957-04:00] .record-meta{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px 16px;margin:0;font-size:14px}
+[2026-09-21T15:58:40.957-04:00] .record-meta dt{color:var(--muted)}.record-meta dd{margin:0;min-width:0;overflow-wrap:anywhere}
+[2026-09-21T15:58:40.957-04:00] .record-id,.record-revision{font-variant-numeric:tabular-nums}
+[2026-09-21T15:58:40.957-04:00] .recovery-link{display:inline-block;min-height:44px;margin:0 22px 18px;padding:10px 0;font-weight:600;font-size:14px}
+[2026-09-21T15:58:40.957-04:00] .hierarchy-note{margin:8px 22px 0;font-size:16px}.record-card .hierarchy-note{margin:0 0 14px;font-size:14px;color:var(--muted)}
+[2026-09-21T15:58:40.957-04:00] .conflict-note{margin:0 0 12px;padding:8px 12px;border-left:3px solid #b4681d;background:var(--flag);color:var(--flag-ink);font-size:14px}
+[2026-09-21T15:58:40.957-04:00] .guidance-list{margin:0;padding:10px 22px 22px 42px;color:var(--muted);font-size:14px}.guidance-list li{padding:6px 0}
+[2026-09-21T15:58:40.957-04:00] .process-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px 28px;margin:0;padding:4px 22px 22px 42px;font-size:14px;font-weight:600}
+[2026-09-21T15:58:40.957-04:00] .process-guide li{padding:10px 8px}.process-guide li::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+[2026-09-21T15:58:40.957-04:00] .review-notice{margin:0 22px;padding:14px;border:1px solid #e5cc92;border-radius:8px;background:var(--accent-bg);color:#62410b;font-size:14px;font-weight:600}
+[2026-09-21T15:58:40.957-04:00] .person-detail,.employment-detail{scroll-margin-top:24px}
+[2026-09-21T15:58:40.957-04:00] @media(max-width:1150px){.workflow-layout{grid-template-columns:minmax(0,1fr);gap:0}.workflow-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 24px}}
+[2026-09-21T15:58:40.957-04:00] @media(max-width:680px){.section-intro{padding:16px}.record-list{padding:0 16px 0 36px}.record-meta{grid-template-columns:72px minmax(0,1fr);gap:8px 12px}
+[2026-09-21T15:58:40.957-04:00] .guidance-list{padding:8px 16px 20px 36px}.process-guide{padding:0 16px 20px 36px}.review-notice{margin:0 16px}.workflow-guide{display:block}}
+[2026-09-21T15:58:40.957-04:00] @media(min-width:1600px){main{padding-top:48px}}
+[2026-09-21T15:58:40.957-04:00] @media(max-width:1000px){.workspace{grid-template-columns:188px minmax(0,1fr)}main{padding:28px 24px 64px}}
+[2026-09-21T15:58:40.957-04:00] @media(max-width:680px){.workspace{display:block}header.app{position:static;height:auto;padding:16px;border-right:0;border-bottom:1px solid var(--line)}
+[2026-09-21T15:58:40.957-04:00] .brand{padding:0 4px 12px;font-size:18px}.brand-mark{width:28px;height:28px}.nav-group{margin:0 4px 6px}
+[2026-09-21T15:58:40.957-04:00] header.app nav{flex-direction:row;flex-wrap:wrap;gap:4px}header.app nav a{padding:8px 12px;min-height:44px}
+[2026-09-21T15:58:40.957-04:00] main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px}h1{font-size:25px}
+[2026-09-21T15:58:40.957-04:00] .panel h2{padding:16px}.toolbar{padding:12px 16px}.row{flex-wrap:wrap;gap:8px 12px;padding:16px}
+[2026-09-21T15:58:40.957-04:00] .row .meta{flex:1 0 100%;order:3}.badge{margin-left:0}.state{padding:24px 16px}}
+[2026-09-21T15:58:40.957-04:00] @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+[2026-09-21T15:58:40.957-04:00] </style><link rel="modulepreload" href="/pkg/console_payroll_ui.js"><link rel="preload" href="/pkg/console_payroll_ui_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous"><script type="module">((root, pkg_path, output_name, wasm_output_name) => {
+[2026-09-21T15:58:40.957-04:00] let MOST_RECENT_CHILDREN_CB = [];
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] function idle(c) {
+[2026-09-21T15:58:40.957-04:00] if ("requestIdleCallback" in window) {
+[2026-09-21T15:58:40.957-04:00] window.requestIdleCallback(c);
+[2026-09-21T15:58:40.957-04:00] } else {
+[2026-09-21T15:58:40.957-04:00] c();
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] async function hydrateIslands(rootNode, mod) {
+[2026-09-21T15:58:40.957-04:00] async function traverse(node) {
+[2026-09-21T15:58:40.957-04:00] if (node.nodeType === Node.ELEMENT_NODE) {
+[2026-09-21T15:58:40.957-04:00] const tag = node.tagName.toLowerCase();
+[2026-09-21T15:58:40.957-04:00] if(tag === 'leptos-island') {
+[2026-09-21T15:58:40.957-04:00] const children = [];
+[2026-09-21T15:58:40.957-04:00] const id = node.dataset.component || null;
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] await hydrateIsland(node, id, mod);
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] for(const child of node.children) {
+[2026-09-21T15:58:40.957-04:00] await traverse(child, children);
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] } else {
+[2026-09-21T15:58:40.957-04:00] if (tag === 'leptos-children') {
+[2026-09-21T15:58:40.957-04:00] MOST_RECENT_CHILDREN_CB.push(node.$$on_hydrate);
+[2026-09-21T15:58:40.957-04:00] for(const child of node.children) {
+[2026-09-21T15:58:40.957-04:00] await traverse(child);
+[2026-09-21T15:58:40.957-04:00] };
+[2026-09-21T15:58:40.957-04:00] // un-set the "most recent children"
+[2026-09-21T15:58:40.957-04:00] MOST_RECENT_CHILDREN_CB.pop();
+[2026-09-21T15:58:40.957-04:00] } else {
+[2026-09-21T15:58:40.957-04:00] for(const child of node.children) {
+[2026-09-21T15:58:40.957-04:00] await traverse(child);
+[2026-09-21T15:58:40.957-04:00] };
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] await traverse(rootNode);
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] async function hydrateIsland(el, id, mod) {
+[2026-09-21T15:58:40.957-04:00] const islandFn = mod[id];
+[2026-09-21T15:58:40.957-04:00] if (islandFn) {
+[2026-09-21T15:58:40.957-04:00] const children_cb = MOST_RECENT_CHILDREN_CB[MOST_RECENT_CHILDREN_CB.length-1];
+[2026-09-21T15:58:40.957-04:00] if (children_cb) {
+[2026-09-21T15:58:40.957-04:00] children_cb();
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] const res = islandFn(el);
+[2026-09-21T15:58:40.957-04:00] if (res && res.then) {
+[2026-09-21T15:58:40.957-04:00] await res;
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] } else {
+[2026-09-21T15:58:40.957-04:00] console.warn(`Could not find WASM function for the island ${id}.`);
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] }
+[2026-09-21T15:58:40.957-04:00] idle(() => {
+[2026-09-21T15:58:40.957-04:00] import(`${root}/${pkg_path}/${output_name}.js`)
+[2026-09-21T15:58:40.957-04:00] .then(mod => {
+[2026-09-21T15:58:40.957-04:00] mod.default({module_or_path: `${root}/${pkg_path}/${wasm_output_name}.wasm`}).then(() => {
+[2026-09-21T15:58:40.957-04:00] mod.hydrate();
+[2026-09-21T15:58:40.957-04:00] hydrateIslands(document.body, mod);
+[2026-09-21T15:58:40.957-04:00] });
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] window.__hydrateIsland = (el, id) => hydrateIsland(el, id, mod);
+[2026-09-21T15:58:40.957-04:00] })
+[2026-09-21T15:58:40.957-04:00] });
+[2026-09-21T15:58:40.957-04:00] })
+[2026-09-21T15:58:40.957-04:00] ("", "pkg", "console_payroll_ui", "console_payroll_ui_bg");</script></head><body class="workspace"><a class="skip-link" href="#main-content">본문으로 건너뛰기</a><header class="app"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">C</span>Console</a><p class="nav-group">사람과 조직</p><nav aria-label="주요 탐색"><a href="/hr"><span class="nav-symbol" aria-hidden="true">◎</span>사람과 고용</a><a href="/organization"><span class="nav-symbol" aria-hidden="true">⊞</span>조직</a><a href="/payroll"><span class="nav-symbol" aria-hidden="true">▤</span>급여</a></nav></header><main id="main-content" tabindex="-1"><div class="page-heading"><p class="page-eyebrow">CONSOLE WORKSPACE</p><h1>업무 공간</h1><p class="page-description">현재 접근할 수 있는 사람, 조직, 급여 기록을 확인하고 업무를 이어가세요.</p></div><div data-screen="organization" class="workflow-layout"><div class="workflow-main"><section aria-label="법인 목록" class="panel"><h2>법인</h2><ul class="record-list"><li data-org-id="00000000-0000-0000-0000-0000000000a1" data-legal-name="KNL" data-reg-no="" data-version="1" class="record-card"><h3 class="record-title"><a href="/api/v1/companies/00000000-0000-0000-0000-0000000000a1">KNL</a></h3><dl class="record-meta"><dt>등록번호</dt><dd>정보 없음</dd><dt>법인 식별자</dt><dd class="record-id">00000000-0000-0000-0000-0000000000a1</dd><dt>버전</dt><dd class="record-revision">v1</dd></dl></li><!></ul></section><section class="panel"><h2>조직 구조</h2><p class="section-intro">조직 이름과 상위 조직을 함께 확인하세요.</p><ol aria-label="조직 구조" class="record-list"><li data-org-unit-id="09ee244f-33f6-4d3b-87af-433170954f95" data-name="본사" data-parent-id="" data-version="1" class="record-card"><h3 class="record-title"><a href="/api/v1/org-units/09ee244f-33f6-4d3b-87af-433170954f95">본사</a></h3><!><p class="hierarchy-note">상위 조직 없음</p><dl class="record-meta"><dt>조직 식별자</dt><dd class="record-id">09ee244f-33f6-4d3b-87af-433170954f95</dd><dt>버전</dt><dd class="record-revision">v1</dd></dl></li><!></ol><!></section></div><aside class="workflow-guide" aria-label="조직 변경 안내"><section class="panel"><h2>조직 변경 시 확인할 사항</h2><p class="section-intro">변경을 검토할 때 다음 자료를 함께 확인하세요.</p><ul class="guidance-list"><li>현재 상위 조직과 변경할 상위 조직</li><li>변경 적용일과 해당 시점의 조직 버전</li><li>영향을 받는 고용과 배치</li><li>필요한 검토, 승인과 변경 이력</li></ul></section></aside></div><div data-screen="hr" class="people-workspace"><div class="people-introduction"><h2>사람과 고용</h2><p>현재 업무 범위에서 볼 수 있는 사람과 고용 기록입니다. 기록을 열어 연결 관계와 원본을 확인하세요.</p></div><div class="people-layout"><section data-section="people" data-state="rows" aria-label="사람 목록" class="panel people-section"><h3>사람</h3><p class="people-count">1개 기록 표시 중</p><div class="people-records"><details data-person-id="50494d2e-c8dd-496b-afeb-c013820174a6" data-display-name="홍길동" data-legal-name="홍길동" data-version="1" class="person-inspector"><summary class="person-summary"><span aria-hidden="true" class="person-glyph">홍</span><span class="person-heading"><strong>홍길동</strong><!></span><span class="person-revision">v1</span><span class="person-disclosure">기록 보기</span></summary><div id="person-50494d2e-c8dd-496b-afeb-c013820174a6" class="person-detail"><dl class="people-facts"><dt>표시 이름</dt><dd>홍길동</dd><dt>법적 이름</dt><dd>홍길동</dd><dt>기록 버전</dt><dd>1</dd><dt>기록 식별자</dt><dd class="people-identity">50494d2e-c8dd-496b-afeb-c013820174a6</dd></dl><div class="person-relationships"><h4>연결된 고용 기록</h4><ul><li><a href="#employment-6a9eccab-cf2c-4e40-ad96-32881742eeae">고용 기록 · <!>2027-01-15<!> · <!>v1</a></li><!></ul></div><a href="/api/v1/persons/50494d2e-c8dd-496b-afeb-c013820174a6" class="people-source">사람 원본 기록</a></div></details><!></div></section><section data-section="employments" data-state="rows" aria-label="고용 기록 목록" class="panel people-section"><h3>고용 기록</h3><p class="people-count">1개 기록 표시 중</p><div class="people-records"><details data-employment-id="6a9eccab-cf2c-4e40-ad96-32881742eeae" data-version="1" data-appointed-on="2027-01-15T08:00:00Z" data-person-id="50494d2e-c8dd-496b-afeb-c013820174a6" data-org-unit-id="09ee244f-33f6-4d3b-87af-433170954f95" data-job-position-id="" class="employment-inspector"><summary class="employment-summary"><span class="employment-heading"><strong>고용 기록</strong><span>2027-01-15</span></span><span class="person-revision">v1</span><span class="person-disclosure">기록 보기</span></summary><div id="employment-6a9eccab-cf2c-4e40-ad96-32881742eeae" class="employment-detail"><dl class="people-facts"><dt>사람</dt><dd><a href="#person-50494d2e-c8dd-496b-afeb-c013820174a6">홍길동</a></dd><dt>임명 시점</dt><dd>2027-01-15T08:00:00Z</dd><dt>조직 식별자</dt><dd class="people-identity">09ee244f-33f6-4d3b-87af-433170954f95</dd><dt>직무 식별자</dt><dd class="people-identity">정보 없음</dd><dt>기록 버전</dt><dd>1</dd><dt>기록 식별자</dt><dd class="people-identity">6a9eccab-cf2c-4e40-ad96-32881742eeae</dd></dl><a href="/api/v1/employments/6a9eccab-cf2c-4e40-ad96-32881742eeae" class="people-source">고용 원본 기록</a></div></details><!></div></section></div></div><div data-screen="payroll"><section class="panel" aria-label="급여 처리 안내"><h2>급여 처리 안내</h2><p class="section-intro">각 실행 기록에서 원천 자료와 검토 결과를 확인하세요.</p><ol class="process-guide" aria-label="급여 처리 순서"><li>원천 확인</li><li>계산</li><li>예외 검토</li><li>독립 검토</li><li>명세서·지급 지시</li><li>지급 대사</li></ol></section><div class="workflow-layout"><div class="workflow-main"><section aria-label="급여 실행 기록" class="panel"><h2>실행 기록</h2><leptos-island data-component="AuthorizedRuns_177efa8e22da84d9" data-props="{&quot;runs&quot;:[{&quot;id&quot;:&quot;9abd0ffb-896b-461e-b924-d46992a10923&quot;,&quot;period_start&quot;:&quot;2026-06-01&quot;,&quot;period_end&quot;:&quot;2026-06-30&quot;,&quot;source_label&quot;:&quot;workflow_runtime_m2:run:d4d384c5-237b-43c9-922f-47a64f08fd7c&quot;,&quot;status&quot;:&quot;BLOCKED_LEGAL_GATE&quot;,&quot;calculation_enabled&quot;:false,&quot;created_at&quot;:&quot;2026-09-21T19:58:23.910271Z&quot;,&quot;updated_at&quot;:&quot;2026-09-21T19:58:23.910271Z&quot;}]}"><div class="toolbar"><label class="fl" for="run-status">상태</label><select id="run-status" data-run-status-filter=""><option value="">전체</option><option value="BLOCKED_LEGAL_GATE">BLOCKED_LEGAL_GATE</option><!></select></div><a href="/api/v1/payroll/runs/9abd0ffb-896b-461e-b924-d46992a10923" class="row"><span data-run-id="9abd0ffb-896b-461e-b924-d46992a10923" data-period-start="2026-06-01" data-period-end="2026-06-30" data-source-label="workflow_runtime_m2:run:d4d384c5-237b-43c9-922f-47a64f08fd7c" data-status="BLOCKED_LEGAL_GATE" data-calculation-enabled="false" data-created-at="2026-09-21T19:58:23.910271Z" data-updated-at="2026-09-21T19:58:23.910271Z" class="name">2026-06-01–2026-06-30</span><span class="meta">workflow_runtime_m2:run:d4d384c5-237b-43c9-922f-47a64f08fd7c</span><span data-status="BLOCKED_LEGAL_GATE" class="badge">BLOCKED_LEGAL_GATE</span></a><!></leptos-island></section></div><aside class="workflow-guide" aria-label="급여 검토 안내"><section class="panel"><h2>검토 전 확인</h2><ul class="guidance-list"><li>검토할 기간, 원천과 버전이 같은지 확인하세요.</li><li>원천의 불일치와 예외를 확인하고 처리 근거를 남기세요.</li><li>작성자와 독립된 검토자의 검토 기록을 확인하세요.</li></ul><p class="review-notice">승인은 지급 완료를 의미하지 않습니다</p><p class="section-intro">지급 지시를 내보내거나 내려받은 뒤에도 외부 지급 결과와 정산 증빙을 대사해야 합니다.</p></section><section class="panel"><h2>검토 자료</h2><p class="section-intro">실행 기록을 열어 다음 근거를 확인하세요.</p><ul class="guidance-list"><li>대상 기간과 원천 기록</li><li>계산에 사용된 버전과 적용 근거</li><li>예외, 보정 사유와 관련 증빙</li><li>검토 이력과 검토한 결과의 버전</li></ul></section></aside></div></div></main></body></html>
+[2026-09-21T15:58:40.957-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] failures:
+[2026-09-21T15:58:40.957-04:00]     authorized::ui_persona_e2e
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] test result: FAILED. 14 passed; 1 failed; 1 ignored; 0 measured; 0 filtered out; finished in 77.05s
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.957-04:00] ---- STDERR ----
+[2026-09-21T15:58:40.957-04:00]
+[2026-09-21T15:58:40.975-04:00] Network: Up: 0B  Down: 0B
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//tools/buck:app-health-readiness-pg

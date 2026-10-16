@@ -1,0 +1,62 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/check-doc-links.mjs"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-0-20260920.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/console/generate-documentation-manifest.mjs",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-1-20260920.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/check-adrs.mjs"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-2-20260920.log"
+  },
+  {
+    "command": [
+      "npm",
+      "run",
+      "check:doc-citations"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-3-20260920.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/check-foundation-gates.mjs"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-4-20260920.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/check-ci-preflight.mjs"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-5-20260920.log"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-buck-native-authority-gate-6-20260920.log"
+  }
+]

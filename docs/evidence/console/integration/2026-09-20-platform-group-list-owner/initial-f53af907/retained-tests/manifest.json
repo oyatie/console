@@ -1,0 +1,19 @@
+{
+  "kind": "review-required-retained-group-fixture-and-transport-semantic-successor-round2",
+  "author": "/root",
+  "base_sha": "f53af9070693f7f41d3e23205de28e14f5ed0f71",
+  "design_manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "files_sha256": {
+    "README.txt": "f04e03259f45adb752c09ae4aa5037deee4b4374d7180e0ac706d3870c3fb8d3",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "6a350fce62bd7a6c6c7a0a2bfc2d08fd5069c63f2e7b9cde9be00dfb4cf4371a",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "222bbe594269500ad61e94cbf57b40b3029104f0f724f81e7136fd6ed3ab506b",
+    "candidate/backend/crates/platform/platform-rest/tests/platform_groups.rs": "c1f0973d67cfd35e1acf76eab2318a6ff83d42b41f409562ef465e66367f04e7",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "463b82646f4678eaea4ef014361636ec62009de4cb973ed22aee12817fc9f610",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "46baf534433dd37a5d9fc1919d0b87e5b1ce46e9a8be1b63cefa318d5cab0436",
+    "preimage/backend/crates/platform/platform-rest/tests/platform_groups.rs": "5c1ffb2ea98bf55161dfdfe0ec7511471dbefc588a81072d9bebc306f548ab13"
+  },
+  "runtime_executed": 0,
+  "independent_approval_pending": true,
+  "retained_crud_leaf_bytes_identical": true,
+  "predecessor_manifest_sha256": "123860d04687a10fc05e0bf511024560b2b1891117a9e540a0e2aba7369878b1"
+}

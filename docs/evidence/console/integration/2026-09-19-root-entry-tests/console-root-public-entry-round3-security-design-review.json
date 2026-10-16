@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:14:56.189719+00:00",
+  "candidate_manifest_sha256": "bf6dcece1d90f51676e00f4771744abccec1ce43a095f0eb62b80f75c88e2c51",
+  "incorporated_design_manifest_sha256": "b51847ae66168edc06b50d9b57000879e411ca2ffdd3ecbc0f5b627013c76cbb",
+  "fixture_review_sha256": "01ea8c2b79a4c4814ec3733bfc5f60b74ac3bf72b2ae70d503d268c6b434e0e2",
+  "source_bindings_verified": 9,
+  "repository_edits": 0,
+  "runtime_tests_executed": 0,
+  "kind": "independent-root-entry-identity-security-design-review",
+  "status": "APPROVE_EXACT_DESIGN_FOR_TEST_CANDIDATE_AUTHORING",
+  "conclusions": [
+    "Shared parser extraction retains Authorization-first error ordering for every existing caller and preserves original cookie grammar/limits/duplicates/names.",
+    "Root receives only non-authoritative presence/error projection; no token values or raw cookie parser enter App.",
+    "Only successful absence selects Public/legacy; true/error delegates original headers/method to existing owner, including configuration/document/ambiguity precedence.",
+    "Root never infers anonymous from failed resolution: only existing owner SignIn maps Public. Current session/account/family/expiry/context guards remain canonical.",
+    "Unrelated cookies do not establish authority or suppress entry; valid legacy Bearer+unrelated cookies retains exact current route.",
+    "Native+Bearer cannot fall back to legacy; native errors/unavailable cannot fall back to Public."
+  ],
+  "required_evidence": [
+    "Actual router mixedAuthorization+oversize/nativeDuplicate precedence compared with /account, including missing config and invalid metadata.",
+    "Current/expired/revoked native Account, contextUnavailable, all4cookieclasses, malformed names/values and parser limits.",
+    "Legacy Bearer with/without unrelated cookie exact authorized projection, no salary/island regression, /work preserved."
+  ],
+  "limits": [
+    "Exact source/test candidate not yet approved; no implementation admission or whole authentication security claim."
+  ]
+}

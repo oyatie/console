@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVE bounded retry design for exact test authoring, runtime browser semantics remain required",
+  "design_manifest_sha256": "5e83498ffc907e4c5294336a6e7215ba07dd6f05df885e16a6ff2872dac000fc",
+  "independence": "Root did not author design; canonical sourcewriter remainsroot",
+  "conclusions": [
+    "Single shared Unavailable anchor is correct responsiblelayer for allcurrent/future documentroutes",
+    "Emptyrelative URL uses nativebrowser behavior, adds no redirect input, authority, state ortypes",
+    "Literalhref checks and realdocumentGET/reply counts prevent sharedrenderer/location-only falsegreens",
+    "Allsameoriginquery/fragment cases require actualbrowser result before accepting one-line implementation",
+    "Currentdata/credential/metadata/privacy and originalRoute statuses unchanged; noDBbrowser navigation is explicitly separate from ownerrecoverySQLx"
+  ],
+  "scope": "Unavailable Retry only; HTML413 separate owningmiddleware contract",
+  "next": "Independent exact twoexistingtestfile additions and actualownerRED, followed by minimalUIimplementation"
+}

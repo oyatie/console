@@ -1,0 +1,16 @@
+type: object
+additionalProperties: false
+required:
+- csrf_proof
+- expires_at
+properties:
+  csrf_proof:
+    type: string
+    minLength: 1
+    maxLength: 4096
+    description: Opaque sensitive proof; bounded to 4096 bytes and verified by Auth against time and
+      live Account, family and security generation.
+  expires_at:
+    type: string
+    format: date-time
+    description: UTC RFC3339 timestamp.

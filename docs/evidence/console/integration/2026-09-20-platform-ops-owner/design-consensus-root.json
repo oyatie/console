@@ -1,0 +1,51 @@
+{
+  "reviewer": "root",
+  "verdict": "APPROVED_EXACT_DESIGN_FOR_REVIEWED_TEST_AUTHORING_ONLY",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "design_manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "design_sha256": "89674b71f2f62d8de43d8ca55c55d1ef598060a87d1b631445a40bd582b6a08f",
+  "review_rounds": 4,
+  "receipts": [
+    {
+      "path": "/private/tmp/console-platform-ops-design-round1-integration-tests-review-20260920.json",
+      "sha256": "95ac209b582dc59567f1fd1e57e7a6ebbedf11ca04aa4e85b248ea5d34147811"
+    },
+    {
+      "path": "/private/tmp/console-platform-ops-design-round2-integration-tests-review-20260920.json",
+      "sha256": "d6bd33bd544dfa5a1fc941e8164c6597a6392f84eaa107bb0a9165a25a60351a"
+    },
+    {
+      "path": "/private/tmp/console-platform-ops-design-round2-security-review-20260920.json",
+      "sha256": "11f6979ff132c2c532c892a53c17650bfd5dcf891a469a6d1344304f2992935d"
+    },
+    {
+      "path": "/private/tmp/console-platform-ops-design-round3-integration-tests-review-20260920.json",
+      "sha256": "3a5f9095a6025fa730f33b1d0bce559f9669711ad7e10af3e9d781c931d61712"
+    },
+    {
+      "path": "/private/tmp/console-platform-ops-design-round3-security-review-20260920.json",
+      "sha256": "337d386e9a80b25e71baacc06489bf88ce969f3df95b6cc3dc268d6cd1239f4f"
+    },
+    {
+      "path": "/private/tmp/console-platform-ops-design-fourth-final-integration-tests-review-20260920.json",
+      "sha256": "46de22353d6bfe83c47510b4bcdfc8bb13e3ba426fc328600c024a458401018b"
+    },
+    {
+      "path": "/private/tmp/console-platform-ops-design-round4-security-review-20260920.json",
+      "sha256": "823352f252e545547d880d15a5e199a89a1fbfc5ba3b1b8b0a6ec76565b695a2"
+    }
+  ],
+  "resolved_findings": [
+    "Explicit DB freshness/policy checks around both SQL projections, mapping and audit.",
+    "Exact finite error envelopes and handler/middleware precedence frozen.",
+    "Corrected unsupported startupTTL assertion to actual request-time refusal behavior."
+  ],
+  "mechanical_guide": "One root writer; no health implementation before reviewed tests, clean exact owner RED, fanout admission. Reuse current source/policy/frozenbridge. Ops tests must preserve list/migration code and independently reconstruct complete projection/audit/effects.",
+  "remaining": [
+    "List lane final runtime/regression acceptance",
+    "Exact ops test packet independent approval, positive prerequisites and real RED",
+    "Lane admission and bounded implementation",
+    "Raw SQL grants and all remaining release dependencies"
+  ],
+  "implementation_admitted": false
+}

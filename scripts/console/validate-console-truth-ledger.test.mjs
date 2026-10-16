@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import crypto from 'node:crypto';
+import { syncBuiltinESMExports } from 'node:module';
 import test from 'node:test';
 
 import { createConsoleBuckTargetResolver, createConsoleCandidateSourceResolver, promotionAuthorityDigests, validateConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
@@ -687,4 +689,1217 @@ test('Korea jurisdiction rows require exactly one canonical JUR-KR-001 row', () 
   assert.throws(() => validateConsoleTruthLedger(registry, empty, { expectedCandidateSha: CANDIDATE_SHA }), /jurisdiction target/);
   const duplicate = structuredClone(jurisdiction); duplicate.jurisdictions.push(structuredClone(duplicate.jurisdictions[0]));
   assert.throws(() => validateConsoleTruthLedger(registry, duplicate, { expectedCandidateSha: CANDIDATE_SHA }), /jurisdiction target/);
+});
+
+// Release structure is checked at the same exported boundary used by CLI/planner.
+const releaseLeaf = (value) => value.release_inventory.leaves[0];
+const releaseFreeze = (value) => value.release_inventory.reference_freeze;
+assert.ok(typeof registry.release_inventory.reference_freeze.sources[0].path === 'string');
+const releaseBinding = (value) => Object.values(releaseFreeze(value).source_bindings)[0][0];
+const releaseMalformed = [
+  ['missing section', (v) => { delete v.release_inventory; }],
+  ['empty section', (v) => { v.release_inventory = {}; }],
+  ['wrong version', (v) => { v.release_inventory.version = 2; }],
+  ['wrong authority', (v) => { v.release_inventory.authority[0] = 'README.md'; }],
+  ['wrong population', (v) => { v.release_inventory.population.companies = 7; }],
+  ['missing families', (v) => { v.release_inventory.families = []; }],
+  ['family exclusion overlap', (v) => { v.release_inventory.exclusions[0].id = v.release_inventory.families[0].id; }],
+  ['empty leaves', (v) => { v.release_inventory.leaves = []; }],
+  ['duplicate leaf', (v) => { v.release_inventory.leaves.push(structuredClone(releaseLeaf(v))); }],
+  ['unknown leaf family', (v) => { releaseLeaf(v).id = 'F99.unknown'; }],
+  ['optional required leaf', (v) => { releaseLeaf(v).required = false; }],
+  ['invalid milestone', (v) => { releaseLeaf(v).milestone = 11; }],
+  ['empty owner', (v) => { releaseLeaf(v).owner = ''; }],
+  ['empty journey', (v) => { releaseLeaf(v).journey = ''; }],
+  ['dangling dependency', (v) => { releaseLeaf(v).dependencies.push('F99.missing'); }],
+  ['self dependency', (v) => { releaseLeaf(v).dependencies.push(releaseLeaf(v).id); }],
+  ['dependency cycle', (v) => { const [a,b] = v.release_inventory.leaves; a.dependencies = [b.id]; b.dependencies = [a.id]; }],
+  ['duplicate dependency', (v) => { releaseLeaf(v).dependencies.push(releaseLeaf(v).dependencies[0]); }],
+  ['invented acceptance', (v) => { releaseLeaf(v).acceptance.status = 'accepted'; }],
+  ['unbound executable', (v) => { releaseLeaf(v).acceptance.command = 'true'; }],
+  ['missing blockers', (v) => { releaseLeaf(v).blockers = []; }],
+  ['missing state', (v) => { delete releaseLeaf(v).states.implemented; }],
+  ['string state', (v) => { releaseLeaf(v).states.implemented = 'false'; }],
+  ['extra state', (v) => { releaseLeaf(v).states.approved = true; }],
+  ['unplanned leaf', (v) => { releaseLeaf(v).states.planned = false; }],
+  ['missing evidence object', (v) => { releaseLeaf(v).evidence = null; }],
+  ['missing source bindings', (v) => { delete releaseFreeze(v).source_bindings; }],
+  ['duplicate source', (v) => { releaseFreeze(v).sources.push(structuredClone(releaseFreeze(v).sources[0])); }],
+  ['source path escape', (v) => { releaseFreeze(v).sources[0].path = '../outside.gz'; }],
+  ['source digest', (v) => { releaseFreeze(v).sources[0].sha256 = 'not-a-digest'; }],
+  ['source empty size', (v) => { releaseFreeze(v).sources[0].bytes = 0; }],
+  ['source retrieval date', (v) => { releaseFreeze(v).sources[0].retrieved_file_mtime_utc = 'not-a-date'; }],
+  ['unknown binding source', (v) => { releaseBinding(v).source_id = 'missing'; }],
+  ['unknown binding leaf', (v) => { releaseFreeze(v).source_bindings['F99.missing'] = [releaseBinding(v)]; }],
+  ['binding path mismatch', (v) => { releaseBinding(v).artifact_path = 'README.md'; }],
+  ['binding digest mismatch', (v) => { releaseBinding(v).artifact_uncompressed_sha256 = '0'.repeat(64); }],
+  ['binding contradictory digest', (v) => { releaseBinding(v).sha256 = '0'.repeat(64); }],
+  ['binding empty quotation', (v) => { releaseBinding(v).quote = ''; }],
+  ['missing support family', (v) => { delete v.release_inventory.support_matrices.connectors; }],
+  ['duplicate connector', (v) => { const m=v.release_inventory.support_matrices.connectors; m.entries.push(structuredClone(m.entries[0])); }],
+  ['unknown connector source', (v) => { v.release_inventory.support_matrices.connectors.catalog_source = 'missing'; }],
+  ['duplicate runtime', (v) => { const m=v.release_inventory.support_matrices.runtimes; m.entries.push(structuredClone(m.entries[0])); }],
+  ['duplicate SDK', (v) => { const m=v.release_inventory.support_matrices.sdks; m.entries.push(structuredClone(m.entries[0])); }],
+  ['unsupported Console support claim', (v) => { v.release_inventory.support_matrices.sdks.entries[0].console_acceptance = 'supported'; }],
+  ['model matrix binding mismatch', (v) => { v.release_inventory.support_matrices.models_administration[0].source_binding.sha256 = '0'.repeat(64); }],
+  ['qualification binding mismatch', (v) => { releaseFreeze(v).runtime_qualifications[0].artifact_path = 'README.md'; }],
+  ['complete freeze', (v) => { releaseFreeze(v).status = 'complete'; }],
+  ['wrong freeze date', (v) => { releaseFreeze(v).target_date = '2026-09-20'; }],
+];
+for (const stage of ['implemented', 'integration_accepted', 'production_qualified', 'released']) {
+  for (const decorated of [false,true]) {
+    releaseMalformed.push([`${stage} with ${decorated ? 'decorated' : 'empty'} evidence`, (v) => {
+      for (const key of Object.keys(releaseLeaf(v).states)) {
+        releaseLeaf(v).states[key] = true;
+        if (key === stage) break;
+      }
+      if (decorated) releaseLeaf(v).evidence[stage] = {
+        candidate_sha: CANDIDATE_SHA, verdict: 'approved', receipt_sha256: 'a'.repeat(64),
+        command: 'true', passed: 1, reviewer: 'independent',
+      };
+    }]);
+  }
+}
+for (const [name, mutate] of releaseMalformed) {
+  test(`release inventory refuses ${name}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value = structuredClone(registry);
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true);
+    mutate(value);
+    assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), /release inventory/i);
+    assert.equal(isValidatedConsoleTruthLedger(value), false);
+  });
+}
+
+test('release inventory preserves partial reference facts and unbound planned requirements', async () => {
+  const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+  const value = structuredClone(registry);
+  const before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.some((leaf) => !releaseFreeze(value).source_bindings[leaf.id]));
+  assert.ok(value.release_inventory.support_matrices.runtimes.entries.some((row) => row.reference_status === 'unsupported'));
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.acceptance.command === null && leaf.states.planned && !leaf.states.implemented));
+});
+
+for (const [name, options, diagnostic] of [
+  ['invalid candidate', { expectedCandidateSha: 'bad' }, /SHA/],
+  ['null options', null, /./],
+  ['stricter source resolver', { expectedCandidateSha: CANDIDATE_SHA, resolveSource: (p) => p !== registry.release_inventory.reference_freeze.sources[0].path }, /release inventory/i],
+]) {
+  test(`release inventory revokes prior validation after ${name}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value = structuredClone(registry);
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true);
+    assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, options), diagnostic);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, 'failed revalidation cannot preserve an older acceptance');
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true);
+  });
+}
+
+for (const mode of ['regular', 'missing', 'symlink']) {
+  test(`release inventory authenticates ${mode} candidate source paths`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const root = mkdtempSync(path.join(tmpdir(), 'console-release-source-'));
+    const run = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore','pipe','pipe'] }).trim();
+    try {
+      run(['init']); run(['config','user.name','Jason Lee']); run(['config','user.email','jason19931225@gmail.com']);
+      const signingKey = path.join(root, 'key');
+      execFileSync('ssh-keygen', ['-q','-t','ed25519','-N','','-f',signingKey]);
+      run(['config','gpg.format','ssh']); run(['config','user.signingkey',signingKey]);
+      const publicKey = readFileSync(`${signingKey}.pub`, 'utf8').trim().split(/\s+/).slice(0,2).join(' ');
+      const fingerprint = execFileSync('ssh-keygen',['-lf',`${signingKey}.pub`,'-E','sha256'],{encoding:'utf8'}).trim().split(/\s+/)[1];
+      const candidateSigningAuthority = { format:'ssh', principal:'jason19931225@gmail.com', fingerprint };
+      const write = (relative, body) => { const file=path.join(root,relative); mkdirSync(path.dirname(file),{recursive:true}); writeFileSync(file,body); };
+      write('.github/trust/console.allowed_signers', `jason19931225@gmail.com ${publicKey}\n`);
+      write('docs/program/console-program-ledger.md', 'candidate\n');
+      write('docs/program/console-capability-registry.json', JSON.stringify(registry)+'\n');
+      write('docs/program/console-jurisdiction-register.json', JSON.stringify(jurisdiction)+'\n');
+      const sourcePaths = new Set([
+        ...registry.capabilities.flatMap((cap) => cap.benchmark.comparator_sources.map((source) => source.source)),
+        ...registry.release_inventory.reference_freeze.sources.map((source) => source.path),
+      ]);
+      const selected = registry.release_inventory.reference_freeze.sources[0].path;
+      assert.ok(sourcePaths.has(selected));
+      for (const relative of sourcePaths) {
+        if (relative === selected && mode === 'missing') continue;
+        write(relative, 'fixture blob: tests tracked regular identity only, not snapshot byte custody\n');
+      }
+      if (mode === 'symlink') {
+        rmSync(path.join(root, selected));
+        symlinkSync(path.relative(path.dirname(path.join(root,selected)),path.join(root,'docs/program/console-program-ledger.md')),path.join(root,selected));
+      }
+      run(['add','.']); run(['commit','-S','-m','candidate source fixture']);
+      const candidateSha = run(['rev-parse','HEAD']);
+      write('docs/program/console-program-ledger.md', 'authority\n');
+      run(['add','docs/program/console-program-ledger.md']); run(['commit','-S','-m','authority fixture']);
+      const resolver = createConsoleCandidateSourceResolver(root,candidateSha,run(['rev-parse','HEAD']),{candidateSigningAuthority});
+      for (const source of registry.capabilities.flatMap((cap) => cap.benchmark.comparator_sources)) {
+        assert.equal(resolver.resolveSource(source.source)?.tracked_regular,true,'historical source prerequisite');
+      }
+      assert.equal(Boolean(resolver.resolveSource(selected)),mode === 'regular');
+      const value = structuredClone(registry);
+      const validate = () => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:candidateSha,resolveSource:resolver.resolveSource});
+      if (mode === 'regular') { assert.doesNotThrow(validate); assert.equal(isValidatedConsoleTruthLedger(value),true); }
+      else { assert.throws(validate,/release inventory/i); assert.equal(isValidatedConsoleTruthLedger(value),false); }
+    } finally { rmSync(root,{recursive:true,force:true}); }
+  });
+}
+
+const namedConnector = (v) => v.release_inventory.support_matrices.connectors.entries.find((row) => row.status.startsWith('Overview explicitly names '));
+const connectorName = (v) => namedConnector(v).status.match(/^Overview explicitly names (.+) under /)[1];
+const anyRuntimeBinding = (v) => Object.entries(releaseFreeze(v).source_bindings).find(([key]) => key.startsWith('runtime:'))[1];
+const supportMalformed = [
+  ['unknown connector binding', (v) => { releaseFreeze(v).source_bindings['connector:Missing'] = releaseFreeze(v).source_bindings[`connector:${connectorName(v)}`]; }],
+  ['unknown runtime binding', (v) => { releaseFreeze(v).source_bindings['runtime:Missing'] = anyRuntimeBinding(v); }],
+  ['unknown support namespace', (v) => { releaseFreeze(v).source_bindings['extension:Missing'] = anyRuntimeBinding(v); }],
+  ['missing named connector binding', (v) => { delete releaseFreeze(v).source_bindings[`connector:${connectorName(v)}`]; }],
+  ['duplicate named connector with different path', (v) => { const row=structuredClone(namedConnector(v)); row.reference_path='/docs/foundry/available-connectors/other/'; v.release_inventory.support_matrices.connectors.entries.push(row); }],
+  ['empty overview connector name', (v) => { namedConnector(v).status='Overview explicitly names  under Databases; individual support/modes/lifecycle not verified'; }],
+  ['empty overview connector category', (v) => { namedConnector(v).status=`Overview explicitly names ${connectorName(v)} under ; individual support/modes/lifecycle not verified`; }],
+  ['wrong overview qualifier', (v) => { namedConnector(v).status=`Overview explicitly names ${connectorName(v)} under Databases; verified`; }],
+  ['arbitrary connector status', (v) => { v.release_inventory.support_matrices.connectors.entries[0].status='supported'; }],
+];
+for (const [name, mutate] of supportMalformed) {
+  test(`release inventory refuses ${name}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value=structuredClone(registry);
+    validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA});
+    assert.equal(isValidatedConsoleTruthLedger(value),true);
+    mutate(value);
+    assert.throws(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}),/release inventory/i);
+    assert.equal(isValidatedConsoleTruthLedger(value),false);
+  });
+}
+
+for (const timestamp of ['2026-02-30T12:00:00Z','2026-02-29T12:00:00+09:00','2026-04-31T12:00:00.123456-04:00']) {
+  test(`release inventory refuses impossible retrieval date ${timestamp}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value=structuredClone(registry);
+    value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc=timestamp;
+    assert.throws(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}),/release inventory.*timestamp/i);
+    assert.equal(isValidatedConsoleTruthLedger(value),false);
+  });
+}
+test('release inventory preserves valid leap date offset and fractional retrieval timestamp', () => {
+  const value=structuredClone(registry);
+  const timestamp='2024-02-29T23:59:59.123456+05:45';
+  value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc=timestamp;
+  assert.doesNotThrow(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}));
+  assert.equal(value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc,timestamp);
+});
+
+function withSignedGitBufferFixture({ source, ledger = 'candidate ledger\n' }, check) {
+  const root = mkdtempSync(path.join(tmpdir(), 'console-git-buffer-'));
+  const run = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    run(['init']);
+    run(['config', 'user.name', 'Jason Lee']);
+    run(['config', 'user.email', 'jason19931225@gmail.com']);
+    // Keep this ephemeral fixture key in .git, outside every committed path.
+    const signingKey = path.join(root, '.git', 'fixture-signing-key');
+    execFileSync('ssh-keygen', ['-q', '-t', 'ed25519', '-N', '', '-f', signingKey]);
+    run(['config', 'gpg.format', 'ssh']);
+    run(['config', 'user.signingkey', signingKey]);
+    const publicKey = readFileSync(`${signingKey}.pub`, 'utf8').trim().split(/\s+/).slice(0, 2).join(' ');
+    const fingerprint = execFileSync('ssh-keygen', ['-lf', `${signingKey}.pub`, '-E', 'sha256'], { encoding: 'utf8' }).trim().split(/\s+/)[1];
+    const candidateSigningAuthority = { format: 'ssh', principal: 'jason19931225@gmail.com', fingerprint };
+    const write = (relative, content) => {
+      const absolute = path.join(root, relative);
+      mkdirSync(path.dirname(absolute), { recursive: true });
+      writeFileSync(absolute, content);
+    };
+    write('.github/trust/console.allowed_signers', `jason19931225@gmail.com ${publicKey}\n`);
+    write('docs/program/console-capability-registry.json', '{"fixture":true}\n');
+    write('docs/program/console-jurisdiction-register.json', '{"fixture":true}\n');
+    write('docs/program/console-program-ledger.md', 'candidate ledger\n');
+    write('candidate-source.txt', source);
+    run(['add', '--', '.github/trust/console.allowed_signers', 'docs/program', 'candidate-source.txt']);
+    run(['commit', '-S', '-m', 'candidate buffer fixture']);
+    const candidateSha = run(['rev-parse', 'HEAD']);
+    write('docs/program/console-program-ledger.md', `${ledger}authority child\n`);
+    run(['add', '--', 'docs/program/console-program-ledger.md']);
+    run(['commit', '-S', '-m', 'authority buffer fixture']);
+    const authorityTipSha = run(['rev-parse', 'HEAD']);
+    // Signature, parent and changed-path checks run inside the actual resolver.
+    check(() => createConsoleCandidateSourceResolver(root, candidateSha, authorityTipSha, { candidateSigningAuthority }));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+test('signed Git source reader preserves complete bytes beyond the former one MiB buffer', () => {
+  const ledger = 'reviewed ledger entry\n'.repeat(60000);
+  const source = 'candidate source line\n'.repeat(60000) + 'last source bytes: 한글 preserved\n';
+  assert.ok(Buffer.byteLength(ledger) > 1024 * 1024);
+  assert.ok(Buffer.byteLength(source) > 1024 * 1024);
+  withSignedGitBufferFixture({ source, ledger }, (resolve) => {
+    const resolver = resolve();
+    assert.equal(resolver.resolveSource('candidate-source.txt')?.tracked_regular, true);
+    const actual = resolver.readText('candidate-source.txt');
+    assert.equal(Buffer.byteLength(actual), Buffer.byteLength(source));
+    assert.deepEqual(Buffer.from(actual, 'utf8'), Buffer.from(source, 'utf8'));
+    assert.ok(actual.endsWith('last source bytes: 한글 preserved\n'));
+  });
+});
+
+test('signed Git authority reader rejects a merge marker beyond one MiB', () => {
+  const prefix = 'reviewed ledger entry\n'.repeat(60000);
+  const ledger = `${prefix}||||||| late unresolved ancestor\n`;
+  assert.ok(Buffer.byteLength(prefix) > 1024 * 1024);
+  withSignedGitBufferFixture({ source: 'source prerequisite\n', ledger }, (resolve) => {
+    // ENOBUFS is not this oracle: the actual late line must be inspected.
+    assert.throws(resolve, /console-program-ledger\.md:60001 carries an unresolved merge marker \(\|\|\|\|\|\|\|\)/);
+  });
+});
+
+test('signed Git source reader fails closed above the sixteen MiB bound', () => {
+  const source = 'x'.repeat(16 * 1024 * 1024 + 64) + '\nend beyond admitted bound\n';
+  assert.ok(Buffer.byteLength(source) > 16 * 1024 * 1024);
+  withSignedGitBufferFixture({ source }, (resolve) => {
+    const resolver = resolve();
+    assert.equal(resolver.resolveSource('candidate-source.txt')?.tracked_regular, true);
+    // The existing public boundary maps subprocess failure to missing source.
+    // Any returned prefix, even a nonempty one, fails this assertion.
+    assert.throws(() => resolver.readText('candidate-source.txt'), /candidate source is missing: candidate-source\.txt/);
+  });
+});
+
+// Frozen reference catalogue only; these tests do not qualify a formula runtime.
+import { gunzipSync } from 'node:zlib';
+import { isValidatedConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
+
+const FUSION_RUNTIME = 'Fusion formula functions';
+const FUSION_CATALOGUE_SHA256 = '520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee';
+const fusionRows = (value) => value.release_inventory.support_matrices.runtimes.entries;
+const fusionRuntime = (value) => fusionRows(value).find((row) => row.runtime === FUSION_RUNTIME);
+const fusionFunction = (value) => fusionRuntime(value).function_catalog[0];
+const fusionHash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+// Match the owner's existing canonical JSON without exporting a new production API.
+function fusionCanonical(value) {
+  const stable = (item) => Array.isArray(item) ? item.map(stable) : item && typeof item === 'object'
+    ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b, 'en')).map(([key, child]) => [key, stable(child)])) : item;
+  return JSON.stringify(stable(value));
+}
+
+function frozenFusionRow() {
+  const directory = path.join(repoRoot, 'docs/evidence/console/research/2026-09-19-foundry-sheets-documents');
+  const proposalBytes = readFileSync(path.join(directory, 'proposal.json'));
+  assert.equal(fusionHash(proposalBytes), '3c9c66bcb2026a5ef94a32d4a0a7672bf9bc9f794316be36ac5eb3461910029e', 'Fusion prerequisite: reviewed proposal custody');
+  const compressed = readFileSync(path.join(directory, 'fusion-function-library.html.gz'));
+  assert.equal(compressed.length, 100939, 'Fusion prerequisite: complete compressed source bytes');
+  assert.equal(fusionHash(compressed), '15c7e57dd486404d045b835d8fc1fc628ee8ce8b3243f93f6c9487d27815f830', 'Fusion prerequisite: compressed source custody');
+  const raw = gunzipSync(compressed);
+  assert.equal(raw.length, 857670, 'Fusion prerequisite: complete raw source bytes');
+  assert.equal(fusionHash(raw), '3dbab921a175d569ebbb25eb44dca91aee1cf56544baf604bb2190a58e70c926', 'Fusion prerequisite: raw source custody');
+  const reviewBytes = readFileSync(path.join(directory, 'independent-review.json'));
+  assert.equal(fusionHash(reviewBytes), '0c3c45ae0dbb1758c805ac412f7616bd0515e2f3fed883b802731d0e24f79689', 'Fusion prerequisite: retained independent heading review');
+  const review = JSON.parse(reviewBytes);
+  assert.equal(review.checks.exact_function_headings_verified, 202);
+  assert.equal(review.checks.ordered_headings_equal, true);
+  const function_catalog = JSON.parse(proposalBytes).function_catalog;
+  assert.equal(function_catalog.length, 202);
+  assert.equal(fusionHash(fusionCanonical(function_catalog)), FUSION_CATALOGUE_SHA256, 'Fusion prerequisite: ordered literal catalogue');
+  const count = (field) => function_catalog.reduce((counts, row) => { counts[row[field]] = (counts[row[field]] ?? 0) + 1; return counts; }, {});
+  assert.deepEqual(count('section'), { 'Core functions': 158, 'Action functions': 17, 'Validation functions': 6, 'Chart functions': 4, 'Time series functions': 17 });
+  assert.deepEqual(count('reference_lifecycle'), { 'documented without experimental/deprecated marker': 184, experimental: 15, deprecated: 3 });
+  assert.equal(new Set(function_catalog.map((row) => row.signature)).size, 202);
+  const source = releaseFreeze(registry).sources.find((row) => row.id === 'fusion-function-library');
+  assert.ok(source, 'Fusion prerequisite: retained source identity');
+  assert.equal(source.path, 'docs/evidence/console/research/2026-09-19-foundry-sheets-documents/fusion-function-library.html.gz');
+  assert.equal(source.bytes, raw.length);
+  assert.equal(source.sha256, fusionHash(raw));
+  assert.equal(source.compressed_sha256, fusionHash(compressed));
+  const leaves = new Set(registry.release_inventory.leaves.map((leaf) => leaf.id));
+  for (const row of function_catalog) {
+    assert.ok(leaves.has(row.required_leaf), `Fusion prerequisite: existing leaf ${row.required_leaf}`);
+    assert.ok(releaseFreeze(registry).source_bindings[row.required_leaf]?.some((binding) => fusionCanonical(binding) === fusionCanonical(row.source_binding)), `Fusion prerequisite: exact shared binding ${row.signature}`);
+  }
+  assert.deepEqual([...new Set(function_catalog.map((row) => row.required_leaf))].sort(), ['F09.formula-action-library', 'F09.formula-chart-library', 'F09.formula-core-library', 'F09.formula-timeseries-library', 'F09.formula-validation-library']);
+  return {
+    runtime: FUSION_RUNTIME,
+    reference_status: 'Frozen 202-entry reference catalogue; lifecycle labels preserved; Console execution unverified',
+    source: 'fusion-function-library',
+    console_acceptance: 'not established',
+    command: null,
+    function_catalog,
+    semantics_status: 'not_bound',
+    unqualified_semantics: {
+      runtime_and_library_versions: null, type_and_coercion: null, null_and_error: null,
+      optional_and_variadic_arguments: null, locale_timezone_precision: null, dependency_recalculation: null,
+      effects_authority_and_recovery: null, concurrency_reconnect: null, lifecycle_successor_equivalence: null,
+    },
+  };
+}
+
+function fusionFixture() {
+  const expected = frozenFusionRow();
+  const value = structuredClone(registry);
+  const existing = fusionRows(value).filter((row) => row.runtime === FUSION_RUNTIME);
+  if (existing.length === 0) fusionRows(value).push(expected);
+  else {
+    assert.equal(existing.length, 1, 'Fusion prerequisite: one integrated row');
+    assert.deepEqual(existing[0], expected, 'Fusion prerequisite: integrated row must equal reviewed data');
+  }
+  return value;
+}
+
+function assertFusionRejection(mutate, { label, invisible = false, diagnostic = /release inventory.*Fusion/i } = {}) {
+  const value = fusionFixture(), sameObject = value, before = structuredClone(value);
+  const acceptedBytes = fusionCanonical(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before, `${label}: positive validation is read-only`);
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: positive prerequisite`);
+  // Invisible mutations return the target object; inspect it before serialization can hide its key.
+  const injectedTarget = mutate(value);
+  if (invisible) {
+    assert.equal(Object.hasOwn(injectedTarget, 'extraFusionProperty'), true, `${label}: own injected key persists`);
+    assert.ok(Object.keys(injectedTarget).includes('extraFusionProperty'), `${label}: injected key is enumerable`);
+    assert.equal(fusionCanonical(value), acceptedBytes, `${label}: unchanged digest input`);
+    // The existing digest-only API may still attest here; exact-key validation revokes it below.
+  } else {
+    assert.notEqual(fusionCanonical(value), acceptedBytes, `${label}: mutation changes digest input`);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: changed content invalidates binding`);
+  }
+  assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), diagnostic, `${label}: actual owning validator rejects`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: failed revalidation revokes attestation`);
+  // Restore content, never replace or revalidate the outer object or touch private attestation state.
+  for (const key of Object.keys(value)) delete value[key];
+  Object.assign(value, structuredClone(before));
+  assert.strictEqual(value, sameObject);
+  assert.deepEqual(value, before, `${label}: exact restored shape including enumerable own keys`);
+  assert.equal(fusionCanonical(value), acceptedBytes, `${label}: original accepted bytes restored`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: restored bytes cannot resurrect revoked attestation`);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: only fresh validation restores attestation`);
+}
+
+test('Fusion catalogue frozen proposal and captured source retain reviewed custody', () => {
+  assert.equal(frozenFusionRow().function_catalog.length, 202);
+});
+
+test('Fusion catalogue exact reference row validates without mutation or promotion', () => {
+  const value = fusionFixture(), before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.states.planned && ['implemented', 'integration_accepted', 'production_qualified', 'released'].every((stage) => leaf.states[stage] === false)));
+  assert.equal(fusionRuntime(value).semantics_status, 'not_bound');
+  assert.ok(Object.values(fusionRuntime(value).unqualified_semantics).every((cell) => cell === null));
+});
+
+test('Fusion catalogue fixture preserves every unrelated registry value', () => {
+  const value = fusionFixture(), existing = fusionRows(registry).some((row) => row.runtime === FUSION_RUNTIME);
+  if (!existing) fusionRows(value).splice(fusionRows(value).findIndex((row) => row.runtime === FUSION_RUNTIME), 1);
+  assert.deepEqual(value, registry);
+  // Root separately compares the integrated registry to its exact preimage after removing the new row.
+});
+
+const fusionChangedSignature = (value) => { fusionFunction(value).signature = 'abs(value: number): incorrect'; };
+test('Fusion catalogue failed revalidation revokes attestation after same-object restoration', () => {
+  assertFusionRejection(fusionChangedSignature, { label: 'named signature restoration history' });
+});
+
+// Each group is one discoverable test; every variant establishes its own positive fixture/history.
+const fusionMalformed = [
+  ['N01', 'missing runtime row', [
+    (v) => { fusionRows(v).splice(fusionRows(v).findIndex((row) => row.runtime === FUSION_RUNTIME), 1); },
+  ]],
+  ['N02', 'duplicate runtime row', [
+    (v) => { fusionRows(v).push(structuredClone(fusionRuntime(v))); },
+  ]],
+  ['N03', 'renamed runtime identity', [
+    (v) => { fusionRuntime(v).runtime = 'Renamed Fusion formula functions'; },
+  ]],
+  ['N04', 'changed valid source', [
+    (v) => { fusionRuntime(v).source = releaseFreeze(v).sources.find((source) => source.id !== 'fusion-function-library').id; },
+  ]],
+  ['N05', 'nonconservative reference status', [
+    (v) => { fusionRuntime(v).reference_status = 'All formula semantics qualified'; },
+  ]],
+  ['N06', 'invented Console support or command', [
+    (v) => { fusionRuntime(v).console_acceptance = 'supported'; },
+    (v) => { fusionRuntime(v).command = 'true'; },
+  ], /release inventory: support cell claims unverified Console acceptance/],
+  ['N07', 'extra runtime state or receipt', [
+    (v) => { fusionRuntime(v).state = 'released'; },
+    (v) => { fusionRuntime(v).receipt = { verdict: 'approved' }; },
+  ]],
+  ['N08', 'missing or changed semantics status', [
+    (v) => { delete fusionRuntime(v).semantics_status; },
+    (v) => { fusionRuntime(v).semantics_status = 'qualified'; },
+  ]],
+  ['N09', 'removed extra or nonnull semantic dimension', [
+    (v) => { delete fusionRuntime(v).unqualified_semantics.type_and_coercion; },
+    (v) => { fusionRuntime(v).unqualified_semantics.extra = null; },
+    (v) => { fusionRuntime(v).unqualified_semantics.type_and_coercion = 'verified'; },
+  ]],
+  ['N10', 'empty or nonarray catalogue', [
+    (v) => { fusionRuntime(v).function_catalog = []; },
+    (v) => { fusionRuntime(v).function_catalog = {}; },
+  ]],
+  ['N11', 'omitted first middle or last catalogue entry', [
+    ...[0, 101, 201].map((index) => (v) => { fusionRuntime(v).function_catalog.splice(index, 1); }),
+  ]],
+  ['N12', 'added duplicate catalogue entry', [
+    (v) => { fusionRuntime(v).function_catalog.push(structuredClone(fusionFunction(v))); },
+  ]],
+  ['N13', 'same length duplicate replacement', [
+    (v) => { fusionRuntime(v).function_catalog[101] = structuredClone(fusionFunction(v)); },
+  ]],
+  ['N14', 'reordered catalogue', [
+    (v) => { fusionRuntime(v).function_catalog.reverse(); },
+  ]],
+  ['N15', 'changed signature', [
+    fusionChangedSignature,
+    (v) => { fusionFunction(v).signature = 42; },
+    (v) => { fusionFunction(v).signature += ' '; },
+  ]],
+  ['N16', 'removed experimental marker or classification', [
+    (v) => { const row = fusionRuntime(v).function_catalog.find((item) => item.reference_lifecycle === 'experimental'); row.signature = row.signature.replace(/\s*\[Experimental\]/i, ''); },
+    (v) => { fusionRuntime(v).function_catalog.find((row) => row.reference_lifecycle === 'experimental').reference_lifecycle = 'documented without experimental/deprecated marker'; },
+  ]],
+  ['N17', 'deprecated function relabelled', [
+    (v) => { fusionRuntime(v).function_catalog.find((row) => row.reference_lifecycle === 'deprecated').reference_lifecycle = 'documented without experimental/deprecated marker'; },
+  ]],
+  ['N18', 'changed section or existing required leaf', [
+    (v) => { fusionFunction(v).section = 'Action functions'; },
+    (v) => { fusionFunction(v).required_leaf = 'F09.formula-action-library'; },
+  ]],
+  ['N19', 'per function acceptance claim', [
+    (v) => { fusionFunction(v).console_acceptance = 'supported'; },
+  ]],
+  ['N20', 'extra or missing catalogue row key', [
+    (v) => { fusionFunction(v).extraFusionProperty = 'unreviewed'; },
+    (v) => { delete fusionFunction(v).section; },
+  ]],
+  ['N21', 'changed catalogue binding fields', [
+    (v) => { fusionFunction(v).source_binding.quote += ' altered'; },
+    (v) => { fusionFunction(v).source_binding.source_id = releaseFreeze(v).sources.find((source) => source.id !== 'fusion-function-library').id; },
+    (v) => { fusionFunction(v).source_binding.artifact_path = 'README.md'; },
+    (v) => { fusionFunction(v).source_binding.sha256 = '0'.repeat(64); },
+    (v) => { fusionFunction(v).source_binding.matching = 'unreviewed matching'; },
+    (v) => { fusionFunction(v).source_binding.scope = 'unrestricted claim'; },
+  ]],
+  ['N22', 'contradictory extra binding digest', [
+    (v) => { fusionFunction(v).source_binding.artifact_uncompressed_sha256 = '0'.repeat(64); },
+  ]],
+  ['N23', 'removed exact shared binding', [
+    (v) => { const row = fusionFunction(v), bindings = releaseFreeze(v).source_bindings[row.required_leaf]; const index = bindings.findIndex((binding) => fusionCanonical(binding) === fusionCanonical(row.source_binding)); assert.ok(index >= 0); bindings.splice(index, 1); },
+  ]],
+  ['N24', 'mutated shared quote', [
+    (v) => { const row = fusionFunction(v); releaseFreeze(v).source_bindings[row.required_leaf].find((binding) => fusionCanonical(binding) === fusionCanonical(row.source_binding)).quote += ' changed'; },
+  ]],
+  ['N25', 'caller supplied expected catalogue digest', [
+    (v) => { fusionChangedSignature(v); fusionRuntime(v).expected_catalogue_sha256 = fusionHash(fusionCanonical(fusionRuntime(v).function_catalog)); },
+  ]],
+  ['N26', 'extra binding own key', [
+    (v) => { fusionFunction(v).source_binding.extraFusionProperty = 'unreviewed'; },
+  ]],
+];
+for (const [id, name, mutations, diagnostic] of fusionMalformed) {
+  test(`Fusion catalogue rejects ${name}`, () => {
+    for (const [index, mutate] of mutations.entries()) assertFusionRejection(mutate, { label: `${id} variant ${index + 1}`, diagnostic });
+    if (id === 'N20' || id === 'N26') {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertFusionRejection((value) => {
+          const target = id === 'N20' ? fusionFunction(value) : fusionFunction(value).source_binding;
+          target.extraFusionProperty = extra;
+          return target;
+        }, { label: `${id} ${typeof extra} own key`, invisible: true });
+      }
+    }
+  });
+}
+
+// Exact enumerable keys, including swaps that preserve own-key count.
+test('Fusion catalogue rejects nonenumerable required key replaced by omitted extra', () => {
+  for (const extra of [undefined, () => 'unreviewed']) {
+    assertFusionRejection((value) => {
+      const target = fusionRuntime(value);
+      const count = Object.keys(target).length;
+      Object.defineProperty(target, 'command', { value: null, enumerable: false, configurable: true, writable: true });
+      target.extraFusionProperty = extra;
+      assert.equal(Object.hasOwn(target, 'command'), true);
+      assert.equal(Object.keys(target).includes('command'), false);
+      assert.equal(Object.hasOwn(target, 'extraFusionProperty'), true);
+      assert.equal(Object.keys(target).includes('extraFusionProperty'), true);
+      assert.equal(Object.keys(target).length, count, 'fault preserves enumerable key count');
+    }, { label: `required key replaced by ${typeof extra} extra` });
+  }
+});
+
+// Frozen Quiver index tuples only. Reuse the existing canonical JSON/hash helpers.
+const QUIVER_SPECS = [
+  {
+    runtime: 'Quiver time-series cards', source: 'quiver-cards-index-time-series',
+    leaf: 'F08.time-series-transform-library', count: 39,
+    catalogueSha: 'fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945',
+    compressedBytes: 54563, rawBytes: 455140,
+    compressedSha: '55804771bed958fa5f512ea4d58f4fe2d22934aa15b641af9b8faaf960d5ca25',
+    rawSha: '76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a',
+  },
+  {
+    runtime: 'Quiver chart cards', source: 'quiver-cards-index-charts',
+    leaf: 'F08.chart-library', count: 21,
+    catalogueSha: '3b34ea79d416110e8ddb259566a80cf53073747d4a3325a4ee938df1a714bc5a',
+    compressedBytes: 54057, rawBytes: 451643,
+    compressedSha: '70fedbe46c7104d5972c89d0ededd93d4eab12c8925e501487c5e5b3b47d5423',
+    rawSha: 'f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495',
+  },
+];
+const quiverRows = (value) => value.release_inventory.support_matrices.runtimes.entries;
+const quiverRuntime = (value, spec) => quiverRows(value).find((row) => row.runtime === spec.runtime);
+const quiverCard = (runtime) => runtime.analytical_card_catalog[0];
+const QUIVER_SCATTER_PATH = '/docs/foundry/quiver/card-scatter-plot-regression/';
+const QUIVER_SCATTER_LABELS = ['Scatter plot regression', 'Time series scatter plot'];
+
+function frozenQuiverRows() {
+  const relative = 'docs/evidence/console/research/2026-09-19-foundry-analysis';
+  const directory = path.join(repoRoot, relative);
+  const proposalBytes = readFileSync(path.join(directory, 'proposal.json'));
+  assert.equal(fusionHash(proposalBytes), 'b205746d1400a1bd9a663826545c7ec97bf4b09bacd5fb13893ab6e405776d59', 'Quiver prerequisite: reviewed proposal custody');
+  const reviewBytes = readFileSync(path.join(directory, 'independent-review.json'));
+  assert.equal(fusionHash(reviewBytes), '803eb52dcf238307b62b5ed0f8ad29558ab743a71c98170379bb2fb8426f6de2', 'Quiver prerequisite: retained independent tuple review');
+  const review = JSON.parse(reviewBytes);
+  assert.equal(review.checks.card_entries_verified, 60);
+  assert.equal(review.checks.card_entries_exact, true);
+  const original = JSON.parse(proposalBytes).analytical_card_catalog;
+  assert.equal(original.length, 60);
+  assert.equal(fusionHash(fusionCanonical(original)), '8a5a2f82f724e5d3d41b5f9a96e6d6ffe2746367c19aaf323ae286c84b4af82e', 'Quiver prerequisite: ordered 60 original tuples');
+  assert.equal(new Set(original.map((card) => fusionCanonical([card.category, card.operation, card.reference_path]))).size, 60);
+  const rows = QUIVER_SPECS.map((spec) => {
+    const compressed = readFileSync(path.join(directory, `${spec.source}.html.gz`));
+    assert.equal(compressed.length, spec.compressedBytes, 'Quiver prerequisite: complete compressed source');
+    assert.equal(fusionHash(compressed), spec.compressedSha, 'Quiver prerequisite: compressed source custody');
+    const raw = gunzipSync(compressed);
+    assert.equal(raw.length, spec.rawBytes, 'Quiver prerequisite: complete raw source');
+    assert.equal(fusionHash(raw), spec.rawSha, 'Quiver prerequisite: raw source custody');
+    const source = releaseFreeze(registry).sources.find((item) => item.id === spec.source);
+    assert.ok(source, `Quiver prerequisite: existing source ${spec.source}`);
+    assert.equal(source.path, `${relative}/${spec.source}.html.gz`);
+    assert.equal(source.bytes, spec.rawBytes);
+    assert.equal(source.sha256, spec.rawSha);
+    assert.equal(source.compressed_sha256, spec.compressedSha);
+    assert.ok(registry.release_inventory.leaves.some((leaf) => leaf.id === spec.leaf));
+    const analytical_card_catalog = original.filter((card) => card.category === spec.source);
+    assert.equal(analytical_card_catalog.length, spec.count);
+    assert.equal(fusionHash(fusionCanonical(analytical_card_catalog)), spec.catalogueSha);
+    for (const card of analytical_card_catalog) {
+      assert.equal(card.required_leaf, spec.leaf);
+      assert.equal(card.source_binding.source_id, spec.source);
+      assert.ok(releaseFreeze(registry).source_bindings[spec.leaf]?.some((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)), `Quiver prerequisite: exact shared binding ${card.operation}`);
+    }
+    return {
+      runtime: spec.runtime,
+      reference_status: `Frozen ${spec.count}-entry index catalogue; label/path tuples preserved; individual semantics and Console execution unverified`,
+      source: spec.source,
+      console_acceptance: 'not established', command: null, analytical_card_catalog,
+      semantics_status: 'not_bound',
+      unqualified_semantics: {
+        runtime_and_library_versions: null, input_types_and_nulls: null, numeric_and_time_semantics: null,
+        limits_and_performance: null, refresh_and_reproducibility: null, effects_authority_and_disclosure: null,
+        collaboration_and_recovery: null, lifecycle_and_successor_equivalence: null,
+      },
+    };
+  });
+  assert.deepEqual(rows.flatMap((row) => row.analytical_card_catalog), original, 'Quiver prerequisite: exact original order and values');
+  assert.deepEqual(original.filter((card) => card.reference_path === QUIVER_SCATTER_PATH).map((card) => card.operation), QUIVER_SCATTER_LABELS, 'Quiver prerequisite: retain both distinct same-path labels');
+  return rows;
+}
+
+function quiverFixture() {
+  const expected = frozenQuiverRows(), value = structuredClone(registry);
+  for (const row of expected) {
+    const existing = quiverRows(value).filter((item) => item.runtime === row.runtime);
+    if (existing.length === 0) quiverRows(value).push(row);
+    else {
+      assert.equal(existing.length, 1, 'Quiver prerequisite: one integrated row per identity');
+      assert.deepEqual(existing[0], row, 'Quiver prerequisite: integrated row equals reviewed data');
+    }
+  }
+  return value;
+}
+
+function assertQuiverRejection(spec, mutate, { label, invisible = false, keySwap = false, diagnostic = /release inventory.*Quiver/i } = {}) {
+  const value = quiverFixture(), sameObject = value, before = structuredClone(value);
+  const acceptedBytes = fusionCanonical(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before, `${label}: positive validation is read-only`);
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: actual owner positive prerequisite`);
+  const injected = mutate(value, quiverRuntime(value, spec));
+  if (invisible) {
+    assert.equal(Object.hasOwn(injected, 'extraQuiverProperty'), true, `${label}: own extra persists`);
+    assert.ok(Object.keys(injected).includes('extraQuiverProperty'), `${label}: extra enumerable`);
+    assert.equal(fusionCanonical(value), acceptedBytes, `${label}: invisible extra keeps canonical bytes`);
+    // Do not demand pre-revalidation false from the existing digest-only API.
+  } else {
+    assert.notEqual(fusionCanonical(value), acceptedBytes, `${label}: changed canonical bytes`);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: changed-content binding revoked`);
+  }
+  if (keySwap) {
+    const { target, key, count, original } = injected;
+    assert.equal(Object.hasOwn(target, key), true, `${label}: required key still own`);
+    assert.equal(target[key], original, `${label}: required value unchanged`);
+    assert.equal(Object.keys(target).includes(key), false, `${label}: required key no longer enumerable`);
+    assert.equal(Object.keys(target).length, count, `${label}: misleading enumerable count preserved`);
+    assert.equal(Object.hasOwn(target, 'extraQuiverProperty'), true);
+    assert.ok(Object.keys(target).includes('extraQuiverProperty'));
+  }
+  assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), diagnostic, `${label}: actual owning rejection`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: failed revalidation revokes attestation`);
+  for (const key of Object.keys(value)) delete value[key];
+  Object.assign(value, structuredClone(before));
+  assert.strictEqual(value, sameObject);
+  assert.deepEqual(value, before, `${label}: exact restored positive shape/keys`);
+  assert.equal(fusionCanonical(value), acceptedBytes, `${label}: original canonical bytes restored`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: same-object restoration cannot resurrect attestation`);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: only explicit successful validation restores attestation`);
+}
+
+test('Quiver catalogue frozen proposal and both captured indexes retain reviewed custody', () => {
+  assert.equal(frozenQuiverRows().flatMap((row) => row.analytical_card_catalog).length, 60);
+});
+
+test('Quiver catalogue exact rows validate without mutation or promotion', () => {
+  const value = quiverFixture(), before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.states.planned && ['implemented', 'integration_accepted', 'production_qualified', 'released'].every((stage) => leaf.states[stage] === false)));
+  for (const spec of QUIVER_SPECS) {
+    assert.equal(quiverRuntime(value, spec).semantics_status, 'not_bound');
+    assert.ok(Object.values(quiverRuntime(value, spec).unqualified_semantics).every((cell) => cell === null));
+  }
+});
+
+test('Quiver catalogue fixture preserves every unrelated registry value', () => {
+  const value = quiverFixture();
+  for (const spec of QUIVER_SPECS) {
+    if (!quiverRuntime(registry, spec)) quiverRows(value).splice(quiverRows(value).findIndex((row) => row.runtime === spec.runtime), 1);
+  }
+  assert.deepEqual(value, registry);
+  // Root additionally removes only the two integrated rows to compare against the exact preimage.
+});
+
+test('Quiver catalogue accepts both distinct scatter labels sharing the original path', () => {
+  const value = quiverFixture();
+  const cards = quiverRuntime(value, QUIVER_SPECS[1]).analytical_card_catalog;
+  assert.deepEqual(cards.filter((card) => card.reference_path === QUIVER_SCATTER_PATH).map((card) => card.operation), QUIVER_SCATTER_LABELS);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+});
+
+const quiverChangedOperation = (_value, row) => { quiverCard(row).operation += ' changed'; };
+test('Quiver catalogue failed revalidation revokes attestation after same-object restoration', () => {
+  for (const spec of QUIVER_SPECS) assertQuiverRejection(spec, quiverChangedOperation, { label: `${spec.runtime} named restore history` });
+});
+
+const quiverMalformed = [
+  ['N01', 'missing runtime rows', [
+    (v, row) => { quiverRows(v).splice(quiverRows(v).indexOf(row), 1); },
+    (v) => { v.release_inventory.support_matrices.runtimes.entries = quiverRows(v).filter((row) => !QUIVER_SPECS.some((spec) => row.runtime === spec.runtime)); },
+  ]],
+  ['N02', 'duplicate runtime identity', [
+    (v, row) => { quiverRows(v).push(structuredClone(row)); },
+  ]],
+  ['N03', 'renamed runtime identity', [
+    (_v, row) => { row.runtime += ' renamed'; },
+  ]],
+  ['N04', 'changed valid source', [
+    (_v, row) => { row.source = QUIVER_SPECS.find((spec) => spec.source !== row.source).source; },
+  ]],
+  ['N05', 'nonconservative reference status', [
+    (_v, row) => { row.reference_status = 'All analytical semantics qualified'; },
+  ]],
+  ['N06', 'invented support or command', [
+    (_v, row) => { row.console_acceptance = 'supported'; },
+    (_v, row) => { row.command = 'true'; },
+  ], /release inventory: support cell claims unverified Console acceptance/],
+  ['N07', 'extra runtime promotion keys', [
+    (_v, row) => { row.state = 'released'; },
+    (_v, row) => { row.receipt = { verdict: 'approved' }; },
+  ]],
+  ['N08', 'missing or changed semantics status', [
+    (_v, row) => { delete row.semantics_status; },
+    (_v, row) => { row.semantics_status = 'qualified'; },
+  ]],
+  ['N09', 'removed extra or nonnull semantic dimension', [
+    (_v, row) => { delete row.unqualified_semantics.input_types_and_nulls; },
+    (_v, row) => { row.unqualified_semantics.extra = null; },
+    (_v, row) => { row.unqualified_semantics.input_types_and_nulls = 'verified'; },
+  ]],
+  ['N10', 'empty or nonarray catalogue', [
+    (_v, row) => { row.analytical_card_catalog = []; },
+    (_v, row) => { row.analytical_card_catalog = {}; },
+  ]],
+  ['N11', 'omitted first middle or last card', [
+    ...['first', 'middle', 'last'].map((position) => (_v, row) => {
+      const cards = row.analytical_card_catalog;
+      cards.splice(position === 'first' ? 0 : position === 'last' ? cards.length - 1 : Math.floor(cards.length / 2), 1);
+    }),
+  ]],
+  ['N12', 'duplicate or same length replaced card', [
+    (_v, row) => { row.analytical_card_catalog.push(structuredClone(quiverCard(row))); },
+    (_v, row) => { row.analytical_card_catalog[1] = structuredClone(quiverCard(row)); },
+  ]],
+  ['N13', 'reordered cards', [
+    (_v, row) => { row.analytical_card_catalog.reverse(); },
+  ]],
+  ['N14', 'changed operation', [
+    quiverChangedOperation,
+    (_v, row) => { quiverCard(row).operation = 42; },
+    (_v, row) => { quiverCard(row).operation += ' '; },
+  ]],
+  ['N15', 'changed reference path', [
+    (_v, row) => { quiverCard(row).reference_path = '/docs/foundry/quiver/invented-card/'; },
+  ]],
+  ['N16', 'changed category', [
+    (_v, row) => { quiverCard(row).category = QUIVER_SPECS.find((spec) => spec.source !== row.source).source; },
+    (_v, row) => { quiverCard(row).category = 'invented-category'; },
+  ]],
+  ['N17', 'changed existing leaf', [
+    (_v, row) => { quiverCard(row).required_leaf = QUIVER_SPECS.find((spec) => spec.source !== row.source).leaf; },
+  ]],
+  ['N18', 'changed card scope', [
+    (_v, row) => { quiverCard(row).scope = 'Executable semantics and Console support established'; },
+  ]],
+  ['N19', 'extra or removed card key', [
+    (_v, row) => { delete quiverCard(row).operation; },
+    (_v, row) => { quiverCard(row).extraQuiverProperty = 'unreviewed'; },
+  ]],
+  ['N20', 'changed source binding fields', [
+    (_v, row) => { quiverCard(row).source_binding.source_id = QUIVER_SPECS.find((spec) => spec.source !== row.source).source; },
+    (_v, row) => { quiverCard(row).source_binding.artifact_path = 'README.md'; },
+    (_v, row) => { quiverCard(row).source_binding.sha256 = '0'.repeat(64); },
+    (_v, row) => { quiverCard(row).source_binding.quote += ' changed'; },
+    (_v, row) => { quiverCard(row).source_binding.matching = 'unreviewed matching'; },
+    (_v, row) => { quiverCard(row).source_binding.scope = 'unrestricted claim'; },
+  ]],
+  ['N21', 'extra or removed binding key', [
+    (_v, row) => { delete quiverCard(row).source_binding.quote; },
+    (_v, row) => { quiverCard(row).source_binding.extraQuiverProperty = 'unreviewed'; },
+    (_v, row) => { quiverCard(row).source_binding.artifact_uncompressed_sha256 = '0'.repeat(64); },
+  ]],
+  ['N22', 'removed exact shared binding', [
+    (v, row) => { const card = quiverCard(row), bindings = releaseFreeze(v).source_bindings[card.required_leaf]; const index = bindings.findIndex((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)); assert.ok(index >= 0); bindings.splice(index, 1); },
+  ]],
+  ['N23', 'changed shared quote', [
+    (v, row) => { const card = quiverCard(row); releaseFreeze(v).source_bindings[card.required_leaf].find((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)).quote += ' changed'; },
+  ]],
+  ['N24', 'deduplicated relabelled or rewritten scatter pair', [
+    ...QUIVER_SCATTER_LABELS.map((label) => (_v, row) => { const cards = row.analytical_card_catalog; cards.splice(cards.findIndex((card) => card.operation === label), 1); }),
+    (_v, row) => { row.analytical_card_catalog = row.analytical_card_catalog.filter((card) => card.reference_path !== QUIVER_SCATTER_PATH); },
+    (_v, row) => { row.analytical_card_catalog.find((card) => card.operation === QUIVER_SCATTER_LABELS[1]).operation = QUIVER_SCATTER_LABELS[0]; },
+    (_v, row) => { row.analytical_card_catalog.find((card) => card.operation === QUIVER_SCATTER_LABELS[1]).reference_path = '/docs/foundry/quiver/invented-unique-scatter/'; },
+  ]],
+  ['N25', 'caller supplied expected digest', [
+    (v, row) => { quiverChangedOperation(v, row); row.expected_catalogue_sha256 = fusionHash(fusionCanonical(row.analytical_card_catalog)); },
+  ]],
+];
+for (const [id, name, mutations, diagnostic] of quiverMalformed) {
+  test(`Quiver catalogue rejects ${name}`, () => {
+    for (const spec of id === 'N24' ? [QUIVER_SPECS[1]] : QUIVER_SPECS) {
+      for (const [index, mutate] of mutations.entries()) assertQuiverRejection(spec, mutate, { label: `${id} ${spec.runtime} variant ${index + 1}`, diagnostic });
+      if (id === 'N19' || id === 'N21') {
+        for (const extra of [undefined, () => 'unreviewed']) {
+          assertQuiverRejection(spec, (_v, row) => {
+            const target = id === 'N19' ? quiverCard(row) : quiverCard(row).source_binding;
+            target.extraQuiverProperty = extra;
+            return target;
+          }, { label: `${id} ${spec.runtime} ${typeof extra} own key`, invisible: true, diagnostic: /release inventory.*Quiver.*keys/i });
+        }
+      }
+    }
+  });
+}
+
+for (const [id, level, select, key] of [
+  ['N26', 'runtime', (row) => row, 'command'],
+  ['N27', 'semantics', (row) => row.unqualified_semantics, 'runtime_and_library_versions'],
+  ['N28', 'card', (row) => quiverCard(row), 'operation'],
+  ['N29', 'binding', (row) => quiverCard(row).source_binding, 'quote'],
+]) {
+  test(`Quiver catalogue rejects count preserving ${level} key substitution`, () => {
+    for (const spec of QUIVER_SPECS) {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertQuiverRejection(spec, (_v, row) => {
+          const target = select(row), count = Object.keys(target).length, original = target[key];
+          Object.defineProperty(target, key, { value: original, enumerable: false, writable: true, configurable: true });
+          target.extraQuiverProperty = extra;
+          return { target, key, count, original };
+        }, { label: `${id} ${spec.runtime} ${typeof extra} key swap`, keySwap: true, diagnostic: /release inventory.*Quiver.*keys/i });
+      }
+    }
+  });
+}
+
+// Retained vendor reference data only; reuse existing canonical/hash and Node helpers.
+const MEDIA_RUNTIME = 'Media operations and reference compute rates';
+const MEDIA_SOURCE = 'media-sets-advanced-formats-media-usage-limits';
+const MEDIA_UNIT = 'Foundry compute-seconds per GB processed';
+const MEDIA_SCOPE = 'Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority';
+const MEDIA_EXCLUDED_SCOPE = 'Excluded generative/model-specific operation; Intelligence roadmap authority required';
+const MEDIA_LEAVES = ['F04.media-capacity-recovery', 'F04.image-transform-library', 'F04.audio-transform-library', 'F04.video-transform-library', 'F04.document-transform-library', 'F04.spreadsheet-extraction', 'F12.inference'];
+const MEDIA_REPEATED_NAMES = {
+  'Extract text (OCR)': ['Images', 'Documents'], Chunk: ['Audio', 'Video'],
+  'Stream with HLS': ['Audio', 'Video'], Transcode: ['Audio', 'Video'],
+};
+const mediaRows = (value) => value.release_inventory.support_matrices.runtimes.entries;
+const mediaRuntime = (value) => mediaRows(value).find((row) => row.runtime === MEDIA_RUNTIME);
+const mediaCard = (row) => row.media_transform_catalog[0];
+const mediaExcluded = (row) => row.media_transform_catalog.find((card) => card.required_leaf === null);
+const mediaEmbedding = (row) => row.media_transform_catalog.find((card) => card.operation === 'Generate embedding');
+
+function frozenMediaRow() {
+  const relative = 'docs/evidence/console/research/2026-09-19-foundry-transforms';
+  const directory = path.join(repoRoot, relative);
+  const proposalBytes = readFileSync(path.join(directory, 'proposal.json'));
+  assert.equal(fusionHash(proposalBytes), '3d27a8cc372fba47d5f16b8d94415e82e26512742ece24d0d2f1b205e4c58d1d', 'Media prerequisite: reviewed proposal custody');
+  const reviewBytes = readFileSync(path.join(directory, 'independent-review.json'));
+  assert.equal(fusionHash(reviewBytes), '4fbeb6cd78ced4f729e6561b6cf322d543cc01867c43d0c5f5c8b5021ccf3284', 'Media prerequisite: independent original table review');
+  const review = JSON.parse(reviewBytes);
+  assert.equal(review.checks.media_rows_verified, 44);
+  assert.equal(review.checks.media_rows_exact, true);
+  const compressed = readFileSync(path.join(directory, `${MEDIA_SOURCE}.html.gz`));
+  assert.equal(compressed.length, 83929, 'Media prerequisite: complete compressed source');
+  assert.equal(fusionHash(compressed), '8eceaa3b77f2f1376c87ff6bafc26c521a5224b58748f5351c814bdc780ef4f4', 'Media prerequisite: compressed source custody');
+  const raw = gunzipSync(compressed);
+  assert.equal(raw.length, 761613, 'Media prerequisite: complete raw source');
+  assert.equal(fusionHash(raw), '816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460', 'Media prerequisite: raw source custody');
+  const source = releaseFreeze(registry).sources.find((item) => item.id === MEDIA_SOURCE);
+  assert.ok(source, 'Media prerequisite: retained source identity');
+  assert.equal(source.path, `${relative}/${MEDIA_SOURCE}.html.gz`);
+  assert.equal(source.bytes, raw.length);
+  assert.equal(source.sha256, fusionHash(raw));
+  assert.equal(source.compressed_sha256, fusionHash(compressed));
+  const media_transform_catalog = JSON.parse(proposalBytes).media_transform_catalog;
+  assert.equal(media_transform_catalog.length, 44);
+  assert.equal(fusionHash(fusionCanonical(media_transform_catalog)), '76e13ccb2918a75b6612415d891f68fd8695667f6e3539d68806281934b17504', 'Media prerequisite: exact ordered category/operation/rate tuples');
+  const count = (field) => media_transform_catalog.reduce((counts, card) => { counts[card[field]] = (counts[card[field]] ?? 0) + 1; return counts; }, {});
+  assert.deepEqual(count('category'), { All: 1, Images: 15, Audio: 6, Video: 7, Documents: 14, Spreadsheets: 1 });
+  assert.deepEqual(count('reference_compute_seconds_per_gb'), { 2: 1, 40: 9, 75: 20, 275: 14 });
+  assert.equal(new Set(media_transform_catalog.map((card) => fusionCanonical([card.category, card.operation]))).size, 44);
+  const required = media_transform_catalog.filter((card) => card.required_leaf !== null);
+  assert.equal(required.length, 43);
+  assert.deepEqual([...new Set(required.map((card) => card.required_leaf))].sort(), [...MEDIA_LEAVES].sort());
+  for (const card of media_transform_catalog) {
+    assert.equal(card.source_binding.source_id, MEDIA_SOURCE);
+    assert.equal(card.source_binding.artifact_path, source.path);
+    assert.equal(card.source_binding.sha256, source.sha256);
+    if (card.required_leaf !== null) {
+      assert.ok(registry.release_inventory.leaves.some((leaf) => leaf.id === card.required_leaf));
+      assert.equal(card.scope, MEDIA_SCOPE);
+      assert.ok(releaseFreeze(registry).source_bindings[card.required_leaf]?.some((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)), `Media prerequisite: exact shared binding ${card.category}/${card.operation}`);
+    }
+  }
+  const excluded = media_transform_catalog[42];
+  assert.deepEqual([excluded.category, excluded.operation, excluded.reference_compute_seconds_per_gb, excluded.required_leaf, excluded.scope], ['Documents', 'Extract text using VLM *', 275, null, MEDIA_EXCLUDED_SCOPE]);
+  assert.equal(media_transform_catalog[13].operation, 'Generate embedding');
+  assert.equal(media_transform_catalog[13].required_leaf, 'F12.inference');
+  assert.equal(media_transform_catalog[13].scope, MEDIA_SCOPE);
+  for (const [operation, categories] of Object.entries(MEDIA_REPEATED_NAMES)) {
+    assert.deepEqual(media_transform_catalog.filter((card) => card.operation === operation).map((card) => card.category), categories);
+  }
+  return {
+    runtime: MEDIA_RUNTIME,
+    reference_status: 'Frozen 44-row public operation/rate catalogue: 43 required references and 1 explicit Intelligence exclusion; vendor usage units are not Console price, latency or throughput; executable semantics unverified',
+    source: MEDIA_SOURCE, console_acceptance: 'not established', command: null,
+    media_transform_catalog, reference_rate_unit: MEDIA_UNIT, semantics_status: 'not_bound',
+    unqualified_semantics: {
+      operation_semantics: null, format_codec_and_version_support: null, runtime_and_model_versions: null,
+      limits_and_resource_accounting: null, authorization_and_source_restrictions: null,
+      output_publication_and_partial_failure: null, cancellation_and_recovery: null,
+      retention_and_deletion: null, lifecycle_and_successor_equivalence: null,
+    },
+  };
+}
+
+function mediaFixture() {
+  const expected = frozenMediaRow(), value = structuredClone(registry);
+  const existing = mediaRows(value).filter((row) => row.runtime === MEDIA_RUNTIME);
+  if (existing.length === 0) mediaRows(value).push(expected);
+  else {
+    assert.equal(existing.length, 1, 'Media prerequisite: one integrated row');
+    assert.deepEqual(existing[0], expected, 'Media prerequisite: integrated row equals reviewed data');
+  }
+  return value;
+}
+
+function assertMediaRejection(mutate, { label, invisible = false, keySwap = false, diagnostic = /release inventory.*Media/i } = {}) {
+  const value = mediaFixture(), sameObject = value, before = structuredClone(value);
+  const acceptedBytes = fusionCanonical(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before, `${label}: positive validation is read-only`);
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: actual owner positive prerequisite`);
+  const injected = mutate(value, mediaRuntime(value));
+  if (invisible) {
+    assert.equal(Object.hasOwn(injected, 'extraMediaProperty'), true, `${label}: own extra persists`);
+    assert.ok(Object.keys(injected).includes('extraMediaProperty'), `${label}: extra is enumerable`);
+    assert.equal(fusionCanonical(value), acceptedBytes, `${label}: canonical bytes unchanged`);
+    // Existing digest-only attestation need not become false before actual revalidation.
+  } else {
+    assert.notEqual(fusionCanonical(value), acceptedBytes, `${label}: mutation changes canonical bytes`);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: changed-content binding invalidated`);
+  }
+  if (keySwap) {
+    const { target, key, count, original } = injected;
+    assert.equal(Object.hasOwn(target, key), true);
+    assert.equal(target[key], original, `${label}: required value preserved`);
+    assert.equal(Object.keys(target).includes(key), false, `${label}: required key not enumerable`);
+    assert.equal(Object.keys(target).length, count, `${label}: deceptive key count unchanged`);
+    assert.equal(Object.hasOwn(target, 'extraMediaProperty'), true);
+    assert.ok(Object.keys(target).includes('extraMediaProperty'));
+  }
+  assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), diagnostic, `${label}: actual owning validator rejects`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: failed validation revokes attestation`);
+  for (const key of Object.keys(value)) delete value[key];
+  Object.assign(value, structuredClone(before));
+  assert.strictEqual(value, sameObject);
+  assert.deepEqual(value, before, `${label}: exact positive shape/keys restored`);
+  assert.equal(fusionCanonical(value), acceptedBytes, `${label}: accepted bytes restored`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: SAME-object restoration cannot revive attestation`);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: explicit successful validation restores attestation`);
+}
+
+test('Media catalogue frozen proposal and source retain exact reviewed custody', () => {
+  assert.equal(frozenMediaRow().media_transform_catalog.length, 44);
+});
+
+test('Media catalogue exact reference units remain unqualified without state promotion', () => {
+  const value = mediaFixture(), before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(mediaRuntime(value).reference_rate_unit, MEDIA_UNIT);
+  assert.equal(mediaRuntime(value).console_acceptance, 'not established');
+  assert.equal(mediaRuntime(value).command, null);
+  assert.equal(mediaRuntime(value).semantics_status, 'not_bound');
+  assert.equal(Object.keys(mediaRuntime(value).unqualified_semantics).length, 9);
+  assert.ok(Object.values(mediaRuntime(value).unqualified_semantics).every((cell) => cell === null));
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.states.planned && ['implemented', 'integration_accepted', 'production_qualified', 'released'].every((stage) => leaf.states[stage] === false)));
+});
+
+test('Media catalogue preserves sole VLM exclusion and unspecified embedding model scope', () => {
+  const value = mediaFixture(), row = mediaRuntime(value);
+  assert.equal(row.media_transform_catalog.filter((card) => card.required_leaf === null).length, 1);
+  assert.equal(mediaExcluded(row).operation, 'Extract text using VLM *');
+  assert.equal(mediaExcluded(row).scope, MEDIA_EXCLUDED_SCOPE);
+  assert.equal(mediaEmbedding(row).required_leaf, 'F12.inference');
+  assert.equal(mediaEmbedding(row).scope, MEDIA_SCOPE);
+  assert.equal(Object.hasOwn(releaseFreeze(value).source_bindings, 'null'), false);
+  assert.ok(!value.release_inventory.leaves.some((leaf) => leaf.id === null));
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, 'excluded row needs no invented shared binding or leaf');
+});
+
+test('Media catalogue preserves repeated operation names in distinct categories', () => {
+  const value = mediaFixture(), cards = mediaRuntime(value).media_transform_catalog;
+  for (const [operation, categories] of Object.entries(MEDIA_REPEATED_NAMES)) {
+    assert.deepEqual(cards.filter((card) => card.operation === operation).map((card) => card.category), categories);
+  }
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+});
+
+test('Media catalogue fixture preserves every unrelated registry value', () => {
+  const value = mediaFixture();
+  if (!mediaRuntime(registry)) mediaRows(value).splice(mediaRows(value).findIndex((row) => row.runtime === MEDIA_RUNTIME), 1);
+  assert.deepEqual(value, registry);
+  // Root separately removes only the new integrated row to compare its exact full preimage.
+});
+
+const mediaChangedRate = (_value, row) => { mediaCard(row).reference_compute_seconds_per_gb += 1; };
+test('Media catalogue failed revalidation revokes attestation after same-object restoration', () => {
+  assertMediaRejection(mediaChangedRate, { label: 'named reference-rate restoration history' });
+});
+
+const mediaMalformed = [
+  ['N01', 'missing runtime entry', [
+    (v, row) => { mediaRows(v).splice(mediaRows(v).indexOf(row), 1); },
+  ]],
+  ['N02', 'duplicate runtime identity', [
+    (v, row) => { mediaRows(v).push(structuredClone(row)); },
+  ]],
+  ['N03', 'renamed runtime identity', [
+    (_v, row) => { row.runtime += ' renamed'; },
+  ]],
+  ['N04', 'changed valid source', [
+    (v, row) => { row.source = releaseFreeze(v).sources.find((source) => source.id !== MEDIA_SOURCE).id; },
+  ]],
+  ['N05', 'unsupported reference claims', [
+    (_v, row) => { row.reference_status = 'Media operations fully supported at published Console pricing and latency'; },
+  ]],
+  ['N06', 'invented support or command', [
+    (_v, row) => { row.console_acceptance = 'supported'; },
+    (_v, row) => { row.command = 'true'; },
+  ], /release inventory: support cell claims unverified Console acceptance/],
+  ['N07', 'extra promotion price or performance fields', [
+    ...['state', 'receipt', 'price', 'latency', 'throughput'].map((key) => (_v, row) => { row[key] = 'established'; }),
+  ]],
+  ['N08', 'missing or changed semantics status', [
+    (_v, row) => { delete row.semantics_status; },
+    (_v, row) => { row.semantics_status = 'qualified'; },
+  ]],
+  ['N09', 'removed extra or nonnull semantic dimension', [
+    (_v, row) => { delete row.unqualified_semantics.operation_semantics; },
+    (_v, row) => { row.unqualified_semantics.extra = null; },
+    ...['operation_semantics', 'format_codec_and_version_support', 'runtime_and_model_versions', 'limits_and_resource_accounting', 'authorization_and_source_restrictions', 'output_publication_and_partial_failure', 'cancellation_and_recovery', 'retention_and_deletion', 'lifecycle_and_successor_equivalence'].map((key) => (_v, row) => { row.unqualified_semantics[key] = 'qualified'; }),
+  ]],
+  ['N10', 'changed reference rate units', [
+    (_v, row) => { delete row.reference_rate_unit; },
+    ...['USD per GB', 'Console wall-clock seconds per GB', 'Foundry compute-seconds per GiB processed'].map((unit) => (_v, row) => { row.reference_rate_unit = unit; }),
+  ]],
+  ['N11', 'empty or nonarray catalogue', [
+    (_v, row) => { row.media_transform_catalog = []; },
+    (_v, row) => { row.media_transform_catalog = {}; },
+  ]],
+  ['N12', 'omitted first middle last excluded or embedding row', [
+    ...[0, 22, 43, 42, 13].map((index) => (_v, row) => { row.media_transform_catalog.splice(index, 1); }),
+  ]],
+  ['N13', 'duplicate or same length replaced row', [
+    (_v, row) => { row.media_transform_catalog.push(structuredClone(mediaCard(row))); },
+    (_v, row) => { row.media_transform_catalog[1] = structuredClone(mediaCard(row)); },
+  ]],
+  ['N14', 'reordered catalogue', [
+    (_v, row) => { row.media_transform_catalog.reverse(); },
+  ]],
+  ['N15', 'changed operation or exclusion footnote', [
+    (_v, row) => { mediaCard(row).operation += ' altered'; },
+    (_v, row) => { mediaCard(row).operation = 42; },
+    (_v, row) => { mediaCard(row).operation += ' '; },
+    (_v, row) => { mediaExcluded(row).operation = 'Extract text using VLM'; },
+  ]],
+  ['N16', 'changed reference rate', [
+    mediaChangedRate,
+    (_v, row) => { mediaCard(row).reference_compute_seconds_per_gb = '2'; },
+    (_v, row) => { mediaCard(row).reference_compute_seconds_per_gb = null; },
+  ]],
+  ['N17', 'changed category', [
+    (_v, row) => { mediaCard(row).category = 'Images'; },
+  ]],
+  ['N18', 'changed existing required leaf', [
+    (_v, row) => { mediaCard(row).required_leaf = 'F04.image-transform-library'; },
+  ]],
+  ['N19', 'erased embedding caveat or promoted record scope', [
+    (_v, row) => { mediaEmbedding(row).scope = 'Embedding model family and AIP runtime authorized'; },
+    (_v, row) => { mediaCard(row).scope = 'Executable semantics and Console support established'; },
+  ]],
+  ['N20', 'extra or removed card key', [
+    (_v, row) => { delete mediaCard(row).operation; },
+    (_v, row) => { mediaCard(row).extraMediaProperty = 'unreviewed'; },
+  ]],
+  ['N21', 'changed source binding fields', [
+    (v, row) => { mediaCard(row).source_binding.source_id = releaseFreeze(v).sources.find((source) => source.id !== MEDIA_SOURCE).id; },
+    (_v, row) => { mediaCard(row).source_binding.artifact_path = 'README.md'; },
+    (_v, row) => { mediaCard(row).source_binding.sha256 = '0'.repeat(64); },
+    (_v, row) => { mediaCard(row).source_binding.quote += ' changed'; },
+    (_v, row) => { mediaCard(row).source_binding.matching = 'unreviewed matching'; },
+    (_v, row) => { mediaCard(row).source_binding.scope = 'unrestricted claim'; },
+  ]],
+  ['N22', 'extra or removed binding key', [
+    (_v, row) => { delete mediaCard(row).source_binding.quote; },
+    (_v, row) => { mediaCard(row).source_binding.extraMediaProperty = 'unreviewed'; },
+    (_v, row) => { mediaCard(row).source_binding.artifact_uncompressed_sha256 = '0'.repeat(64); },
+  ]],
+  ['N23', 'removed exact required shared binding', [
+    (v, row) => { const card = mediaCard(row), bindings = releaseFreeze(v).source_bindings[card.required_leaf]; const index = bindings.findIndex((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)); assert.ok(index >= 0); bindings.splice(index, 1); },
+  ]],
+  ['N24', 'changed required shared quote', [
+    (v, row) => { const card = mediaCard(row); releaseFreeze(v).source_bindings[card.required_leaf].find((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)).quote += ' changed'; },
+  ]],
+  ['N25', 'invented second excluded row', [
+    (_v, row) => { mediaCard(row).required_leaf = null; },
+    (_v, row) => { mediaCard(row).required_leaf = null; mediaCard(row).scope = MEDIA_EXCLUDED_SCOPE; },
+  ]],
+  ['N26', 'promoted or rewritten excluded VLM record', [
+    (_v, row) => { mediaExcluded(row).required_leaf = 'F12.inference'; },
+    (_v, row) => { mediaExcluded(row).scope = MEDIA_SCOPE; },
+    (_v, row) => { mediaExcluded(row).category = 'Images'; },
+    (_v, row) => { mediaExcluded(row).reference_compute_seconds_per_gb = 75; },
+    (_v, row) => { mediaExcluded(row).operation = 'Required text extraction'; },
+  ]],
+  ['N27', 'merged repeated operation names across categories', [
+    ...Object.keys(MEDIA_REPEATED_NAMES).map((name) => (_v, row) => {
+      const cards = row.media_transform_catalog;
+      const index = cards.findLastIndex((card) => card.operation === name);
+      assert.ok(index >= 0);
+      cards.splice(index, 1);
+    }),
+    (_v, row) => { row.media_transform_catalog.find((card) => card.operation === 'Extract text (OCR)' && card.category === 'Documents').category = 'Images'; },
+  ]],
+  ['N28', 'caller supplied expected digest', [
+    (v, row) => { mediaChangedRate(v, row); row.expected_catalogue_sha256 = fusionHash(fusionCanonical(row.media_transform_catalog)); },
+  ]],
+];
+for (const [id, name, mutations, diagnostic] of mediaMalformed) {
+  test(`Media catalogue rejects ${name}`, () => {
+    for (const [index, mutate] of mutations.entries()) assertMediaRejection(mutate, { label: `${id} variant ${index + 1}`, diagnostic });
+    if (id === 'N20' || id === 'N22') {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertMediaRejection((_v, row) => {
+          const target = id === 'N20' ? mediaCard(row) : mediaCard(row).source_binding;
+          target.extraMediaProperty = extra;
+          return target;
+        }, { label: `${id} ${typeof extra} own key`, invisible: true, diagnostic: /release inventory.*Media.*keys/i });
+      }
+    }
+  });
+}
+
+for (const [id, level, select, keys] of [
+  ['N29', 'runtime', (row) => row, ['command']],
+  ['N30', 'semantics', (row) => row.unqualified_semantics, ['operation_semantics']],
+  ['N31', 'card', (row) => mediaCard(row), ['operation', 'reference_compute_seconds_per_gb']],
+  ['N32', 'binding', (row) => mediaCard(row).source_binding, ['quote']],
+]) {
+  test(`Media catalogue rejects count preserving ${level} key substitution`, () => {
+    for (const key of keys) {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertMediaRejection((_v, row) => {
+          const target = select(row), count = Object.keys(target).length, original = target[key];
+          Object.defineProperty(target, key, { value: original, enumerable: false, writable: true, configurable: true });
+          target.extraMediaProperty = extra;
+          return { target, key, count, original };
+        }, { label: `${id} ${key} ${typeof extra} key substitution`, keySwap: true, diagnostic: /release inventory.*Media.*keys/i });
+      }
+    }
+  });
+}
+
+test('truth ledger canonical SHA256 work stays linear in catalogue bindings', (t) => {
+  const value = structuredClone(registry);
+  const catalogueRows = value.release_inventory.support_matrices.runtimes.entries.flatMap((row) =>
+    row.function_catalog ?? row.analytical_card_catalog ?? row.media_transform_catalog ?? []);
+  const leaves = new Set(catalogueRows.filter((row) => row.required_leaf !== null).map((row) => row.required_leaf));
+  const bindings = value.release_inventory.reference_freeze.source_bindings;
+  const sharedRows = [...leaves].reduce((count, leaf) => count + bindings[leaf].length, 0);
+  assert.ok(catalogueRows.length > 0 && sharedRows > 0, 'real current catalogue and shared-binding prerequisites');
+  // Include generous room for fixed catalogue pins, registry and jurisdiction digests.
+  const budget = 8 * (sharedRows + catalogueRows.length + value.capabilities.length + jurisdiction.controls.length + 1);
+  const actualCreateHash = crypto.createHash;
+  let sha256Work = 0;
+  try {
+    t.mock.method(crypto, 'createHash', function (...args) {
+      if (args[0] === 'sha256') sha256Work += 1;
+      return Reflect.apply(actualCreateHash, this, args);
+    });
+    syncBuiltinESMExports();
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true, 'actual owner successfully attests the fresh positive registry');
+    assert.ok(sha256Work > 0, 'counter must observe actual owner SHA256 work');
+    assert.ok(sha256Work <= budget,
+      `actual canonical SHA256 work ${sha256Work} exceeds linear budget ${budget} for ${sharedRows} shared bindings and ${catalogueRows.length} catalogue rows`);
+  } finally {
+    t.mock.restoreAll();
+    syncBuiltinESMExports();
+  }
 });

@@ -1,0 +1,25 @@
+# Current-source contract trace and read-only repair proposals
+
+## Public root: production response defect
+
+The exact old failure is Cache-Control absent at auth_rest.rs:4136; only this first reached assertion is an observed failure. Current app/src/lib.rs:3818 routes root to ui_shell, :3937 delegates to ui_screens, :3968 calls payroll/ui html_shell_with_screens; payroll/ui/src/lib.rs:734 returns bare Html. The unadorned response lacks the privacy/security envelope that native_entry_ui_cases.rs:114 requires. A second defect is evident statically: the anonymous/denied screen renders render_shell() (:694), and its retained unit oracle (:1193) forbids all slash-leading hrefs, so it cannot supply the root test's /account and /account/register actions. Those later assertions did not execute in the original failure.
+
+The already-present native_account::Page::Public (:47) supplies both exact Korean actions; native_account::document (:191) supplies no-store, no-cache, one closed frame-ancestors policy, Vary Cookie/Origin, nosniff, and no-referrer. Do not apply that document's strict script-src to shipping pages: ShippingShell includes an inline island bootstrap (:624). Narrow owner repair is root entry composition reusing Page::Public for credential-header-absent root only, retaining existing authenticated/credential-bearing shipping and protected-route behavior. The initial minimal proposal /private/tmp/console-root-public-entry-design-20260919/design.md is superseded by parent steering to reuse the native Account owner for cookie-bearing/no-Authorization root requests. Its unrelated-cookie blank-home limitation must be resolved, not accepted as final. The successor design remains subject to current RED/admission and focused review. The existing Account root assertion stays byte-identical; a retained no-database health_readiness fixture separately assumes the old empty-shell root and must undergo explicit semantic review rather than be silently weakened.
+
+## Session reader failures: imported oracle conflicts with retained JSON transport
+
+All three original failures reached account_fence_transport.rs:2180 and observed code service_unavailable while expecting unavailable. The imported helper at :2137 defaults to unavailable; :2181 also fixes the message to 'session verification unavailable'. Its comment and fallback branch still describe canonical middleware as plaintext. The current product authority PRODUCT.md:46 explicitly preserves JSON error envelopes (#991); git history identifies ad62b515a6def8903edd50223a6c14bd29ad9e13 as that retained integration. The Account integration 01e069883b998d9c430500c85a6d464c263d4ae3 inserted SessionVerificationUnavailable into that current JSON middleware. The old accepted Account-source oracle therefore needs integration-specific review; it is not authority to revert the current transport.
+
+Actual owner map (do not conflate these three transports):
+
+| Boundary | Current owner | HTTP 503 code | Fixed message |
+|---|---|---|---|
+| /api/v1/users/me; /api/platform/orgs | platform/request-context/src/lib.rs:681 | service_unavailable | session verification is unavailable |
+| /api/v1/auth/passkeys (either tier) | platform/auth-rest/src/lib.rs:797, ensure_subject | service_unavailable | session verification unavailable |
+| realtime handshake | platform/realtime/src/lib.rs:1336 | unavailable | session verification unavailable |
+
+The original assertion stops at the code; the current middleware message also differs by 'is' and would be the next mismatch if only code were reconciled. The current fault loop :2595-2611 distinguishes only passkeys, leaving the two middleware routes wrong. A safe reviewed oracle reconciliation would specify exact owner-specific JSON shapes, code and message rather than accepting either string/shape, and retain 401/403 precedence, no Set-Cookie, no token echo, no access/refresh-token fields, row/audit nonmutation, all injected faults, and full recovery. Any semantic test change requires explicit approved receipt and independent review. No test edit is included in this audit. Changing the global current middleware to plaintext or blindly renaming codes to satisfy an imported oracle would break retained contract authority.
+
+## Actor catalog: real remaining schema/ownership boundary
+
+The test at account_storage.rs:104-153 verifies a fingerprinted immutable 46-row inventory against actual pg_constraint. The original result has 40 distinct missing validated non-destructive Account/CompanyActor keys and 39 remaining users foreign keys across those columns (79 diagnostic lines). This is neither missing startup transport nor an error-text assertion. The owning transition must retain attribution and validate the current target keys on populated history. Historical migrations and CSV bytes cannot be rewritten; no broad import is proposed. Use the existing exact test as the boundary probe, then admit the appropriate owner/migration work with populated compatibility and rollback evidence.

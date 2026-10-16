@@ -1,0 +1,16 @@
+{
+  "head": "83898f6ea46353b992768c8f52b91b5a62e39a46",
+  "files": {
+    "WIRING.txt": "4cc680f3ef64e1cc2a1ec2ebf320d8cc4bf69ec8f3091139c6bfbd4426f4e4d6",
+    "company.rs": "0d31297b18e0b41803e129dbeb2f52ff9b493dea538fce1c7b3234f12f484683",
+    "company_enrollment.rs": "0ff2c7d2b4da90e6b73df25155604b10fe0adbfd68b11e1c2d2b20a73c6f715b",
+    "company_enrollment_adapter.rs": "86216797feabeace876f9078fdea60f5789b4a10a825d8ca6334ef3af1c1c1e5",
+    "company_enrollment_tests.rs": "7b8957c76a9233872da50284b07f4309267434214dea90bf0ea65eb851e1f484"
+  },
+  "tests_manifest": {
+    "path": "/private/tmp/console-company-intake-usecase-tests-20260920-round3/manifest.json",
+    "sha256": "785666be7ce545bb57a81386b67eaa1b246f1f00c5c7b0e3a87b6677850dd615"
+  },
+  "enclosing_lane": "/private/tmp/console-native-company-intake-usecases-enclosing-lane-20260920.json",
+  "scope": "Durable intake component only; no exposed enrollment route or birth success"
+}

@@ -1,0 +1,5 @@
+type: string
+enum:
+- security-key
+- client-device
+- hybrid

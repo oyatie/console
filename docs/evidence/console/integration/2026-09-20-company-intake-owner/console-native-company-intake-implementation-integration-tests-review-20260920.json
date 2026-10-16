@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_BOUNDED_PENDING_OWNER_SOURCE_RUNTIME_PENDING",
+  "base_head": "e61f6857a",
+  "generator_sha256": "419c30ed6f010e3a6b73424d57a8690f22eeee530f5a1f4649f451e567ee231c",
+  "generated_intake_sha256": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+  "approved_test_packet_manifest": "353a905291a6d4494c0c9876122816421e7b3af188ea805444353580f3f39df8",
+  "executed_tests": 0,
+  "repository_writes": false,
+  "checks": [
+    "Exactly4finite SQL entrypoints; no topology/effect/receipt stub or extra public helper.",
+    "Generator AST adds only company_enrollment_intake_sql and one generated_files entry; every other old function source and module AST unchanged.",
+    "All8frozen predecessor output hashes still match disk; historical finalizers/classifiers not resealed.",
+    "Material decodes exact namespace, selects original immutable recipient before sorted distinct Account EXCLUSIVE locks, then locks actual native family SHARE, checks Account state/generation/metadata, rereads recipient after waits and returns40001on changed lock plan. NULL recovery selects caller only.",
+    "New prepare validates null Group, current designation receipt/target via existing eligibility, active recipient/native birth via existing consent owner; capacity lock precedes command fence and exact counts16/256.",
+    "Existing exact pending/terminal replay bypasses new designation/capacity; changed digest conflicts. Current family/Account guards still reacquired independently.",
+    "Prepare writes one request and matching PREPARED event with identical authoritative time/account/command/session in same transaction.",
+    "Status/cancel independently reacquire recovery authority and command fence; absent returns0rows. Terminal payload hidden. Cancellation changes only state/time and appends exact terminal event; repetition creates no new event.",
+    "Shared generated expiry text changes elapsed PENDING toEXPIRED, clears payload, appends system-attributed event atomically. COMMITTED explicitly refuses unavailable pending future real effect owner.",
+    "Functions use fixed pg_catalog,pg_temp search path, explicit qualifications and1slock timeout; ACL generation revokes PUBLIC/named/remaining actual grantees then grants only Account owner and Business. No serving table grants added."
+  ],
+  "limitations": [
+    "Source approval covers pending-only SQL service-role boundary; identifiers are trusted service addressing, not browser authority.",
+    "No source-only assertion proves all6authored tests execute; root owns actual native results.",
+    "Absolute family TTL, signed access/CSRF/Origin and final proof rechecks must be enforced through yet-unimplemented genuine credential adapter before HTTP admission.",
+    "P4role/family negatives, exact fence/otherlock/deadline histories, deployment256cap, deterministic expiry/cleanup histories remain required.",
+    "Native request/event lifecycle guards/effect closure and COMMITTED reconciliation still require complete owner integration; no serving finalizer or production activation admitted."
+  ],
+  "risk_controls": {
+    "pre_mortem": "Replay selects attacker replacement recipient, stale lock plan adds earlier lock late, or prepare leaves request without event.",
+    "blast_radius": "UNINSTALLED private pending resource and its existing generator owner.",
+    "detection": "Reviewed owner-bound tests, exact histories, nontransactional failure witness; actual execution separately required.",
+    "rollback": "Discard disposable DB/revert prospective resource; never reseal or reinterpret accepted historical artifacts.",
+    "stop": "Source drift, historical digest change, fabricated successful effects, serving activation or remaining holds represented as complete."
+  }
+}

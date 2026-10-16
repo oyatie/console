@@ -1,0 +1,7 @@
+{
+  "backend/crates/payroll/ui/src/lib.rs": "79704a7437dff4722de1337fcae87724041fb95a99561e272deddbd08be78872",
+  "backend/crates/payroll/ui/src/native_account.css": "8c22211fbeed70b0b93af1c66d5294282a31b7adde77142d3cf3b55604418f26",
+  "backend/crates/payroll/ui/src/theme.css": "a2f352cc6798b7d217711e4556394026fe754b3ad595bcfcac73ce5f7b5bf2d7",
+  "backend/crates/payroll/ui/BUCK": "ca29db253f994862996c2a1affcc04336d512a9fcd7b90f64d8d360ff8893b7c",
+  "tools/buck/gen_first_party.py": "60cccc2242d7e1feb5f76db61ed18461a694098c1517baa795eb42209f7459d9"
+}

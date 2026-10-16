@@ -1,0 +1,64 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "scope": "final mechanical integrated source/projection review",
+  "decision": "approved source/projection integration only; required runtime gates remain root-owned and pending",
+  "base_sha": "77c29876731d8500ccaa20698b336f96fdfd9814",
+  "sealed_manifest_sha256": "73a89553c7867074dd88dd9bcf51c9330fe8a448468242186f2004d15184d733",
+  "exact_staged_allowlist": [
+    "docs/current/DELIVERY.md",
+    "docs/current/PRODUCT.md",
+    "docs/current/ROADMAP.md",
+    "docs/documentation-index.json",
+    "docs/documentation-manifest.seed.json"
+  ],
+  "unstaged_tracked_changes": 0,
+  "untracked_nonignored_paths": 0,
+  "authorities": [
+    {
+      "path": "docs/current/PRODUCT.md",
+      "sha256": "57e88283204471127306a9f3d20ac39baa58a066fda50be99a41275ed4d63472",
+      "old_blob_sha": "814dea528bc49be27029eef86afce34d123bf980",
+      "new_blob_sha": "6fde11781c0cfae8ac610df7c6d6b430ef0fcf84",
+      "working_index_packet_equal": true
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "sha256": "630047f5c57df9d1a46449080b3a853ebbdb3be44b5cfbb26dfb0f07118c9848",
+      "old_blob_sha": "7068a39f42b0d04481b928519285f510bbabd7ec",
+      "new_blob_sha": "acf0915cc75a3b16cc9d6d2ab33a607b8a02b900",
+      "working_index_packet_equal": true
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "sha256": "87e9e99708c2cdeda026d29a83b9c662c3377ef076a383fab6e33bc0874abf73",
+      "old_blob_sha": "0eabcc4e4a49adcbf0d58ed3f4ef14d7b59d4bc6",
+      "new_blob_sha": "b36b151f20b6c6c06eb445272b58a85130cc4a33",
+      "working_index_packet_equal": true
+    }
+  ],
+  "projections": [
+    {
+      "path": "docs/documentation-index.json",
+      "sha256": "fb317206da83c6cb1aad78f9256cc97e8d0be0f0d0ad6d6e8cbfdc6790702583",
+      "record_count": 474,
+      "only_changed_fields": "blob_sha in the three current authority records",
+      "byte_restoration_by_only_three_hash_replacements": true,
+      "all_classification_archive_custody_history_bytes_preserved": true
+    },
+    {
+      "path": "docs/documentation-manifest.seed.json",
+      "sha256": "695a446c36aba37f3fda98f72d7825a1aa2cd201c50f80bf209d3552ca3e73c8",
+      "record_count": 474,
+      "only_changed_fields": "blob_sha in the three current authority records",
+      "byte_restoration_by_only_three_hash_replacements": true,
+      "all_classification_archive_custody_history_bytes_preserved": true
+    }
+  ],
+  "findings": [],
+  "limits": [
+    "No generators, builds, tests, installations, network, CI edits or repository mutations performed by reviewer.",
+    "Root-reported native auth build and one decoder runtime pass are separate evidence and not expanded into native WASM/image/CI or full release completion.",
+    "Final gate and repository verification results must bind to the committed candidate."
+  ],
+  "executed_tests": 0
+}

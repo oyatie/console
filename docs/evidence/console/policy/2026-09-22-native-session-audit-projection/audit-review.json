@@ -1,0 +1,51 @@
+{
+  "decision": "APPROVE_SOURCE_IMPLEMENTATION_PENDING_ROOT_RUNTIME_VERIFICATION",
+  "reviewer": "/root/policy_browser_tests",
+  "base_head": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "candidate": "dirty successor; exact file hashes below, not HEAD alone",
+  "findings": [],
+  "checks": [
+    "AccountId comment/derives/definition/from_uuid/nil rejection/error text/as_uuid block copied byte-for-byte from Identity into Kernel; Identity reexports same type, no typed_id macro weakening.",
+    "AuditEvent defaults A=UserId; only struct changes are generic declaration and actor Option<A>. All field order, serde derives/defaults and remaining field bytes preserved.",
+    "Legacy new is defined solely on AuditEvent<UserId>; None inference remains concrete legacy UserId. Native new_account is distinct and always constructs Some(AccountId). Shared private initializer retains exact previous field defaults.",
+    "Every with_* builder body preserved byte-for-byte under impl<A>. No new actor enum/column/serialization protocol. Conditional serde bounds do not require AccountId serialization.",
+    "AuditActorId has private-module sealed supertrait; only UserId and AccountId implement it and both expose exactly their existing raw UUID. This vocabulary restriction is not treated as authorization.",
+    "SQL INSERT text,19-column roster,19-bind sequence,SQL NULL Option JSON handling,timestamp/context/classification bindings and execute/error code remain byte-identical. Exact SQL/execution block SHA256 2c1aa2e8a91521feb084d259422df3f3ebf0ccf16828b88acbf0d517cd71e5e4.",
+    "Existing with_audit/with_audits/default legacy helper interfaces remain unchanged; only private/public common insert accepts sealed typed actor.",
+    "Audit-chain source and finite legacy Auth audit writer byte-identical to clean browser admission4f50a432836dfc99998af93a822ff08591dcc72c. No historical audit serializer/hash/seal edits.",
+    "Four installed test files exactly match independently approved6-test packet. auth_rest.rs adds only include for typed audit test.",
+    "Generated backend/app/BUCK equals HEAD byte-for-byte after removing exact new quoted source mapping69times; no other generated behavior changed.",
+    "rustfmt --edition2024 --check succeeds for4 implementation files; no compilation or database session by reviewer."
+  ],
+  "runtime_evidence_observed": {
+    "prechange_log": "/private/tmp/console-policy-buck-prerequisite-20260922/legacy-audit-baseline.log",
+    "sha256": "e16e040285336a82693b826c028504fb1ceafb975e389d8bdb04e838a7dba20a",
+    "reported_kernel_tests": 45,
+    "passed": 45,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "new_exact_legacy_byte_tests": "both explicitly listed and passed in observed log",
+    "qualification": "Root-executed baseline only. This source review does not claim typed postchange kernel/identity/database tests have run."
+  },
+  "sha256": {
+    "backend/crates/kernel/core/src/ids.rs": "f01b6a5754686cde747a3a9673454966b9b2b19747a817240d339e4014c9fc89",
+    "backend/crates/kernel/core/src/audit.rs": "fd63ef68fbe30e21b2dbfb2573f06fb82c62d723579909bc71cf13a78c45fbd9",
+    "backend/crates/identity/domain/src/lib.rs": "c59a7a927c6edb5f3d5e97d727652bc161cde7cc193a1d6fc8d7b0f2850220db",
+    "backend/crates/platform/db/src/audit_tx.rs": "9d8b1400ae1fed161762968831d52daba956958c369db03a4a425624db826740",
+    "backend/crates/kernel/core/src/audit_legacy_wire_tests.rs": "ebf377818a036360e581b15856222108edb000f454c2de5d1302bdd0dc0629e2",
+    "backend/crates/kernel/core/src/audit_account_tests.rs": "58d92b28d134a59b212f2232ffe48ce96a2df1c146546973ca8fb8075f656079",
+    "backend/crates/identity/domain/src/account_id_compatibility_tests.rs": "b661f2a9ebb84a1bfd348143652dbd5d7a8e0daa69ee54c138c1a544957e675e",
+    "backend/app/tests/auth_rest/native_account_audit_typed_tests.rs": "aebdf6e2ea61d5d71f2eaebdc9d56ee5d87efbce3a45d85605212350a27eddf6",
+    "backend/app/tests/auth_rest.rs": "f5ff65a94808a70e240c47e1b34b2a96b316fdf743467081afdb5ad58f8e12ae",
+    "backend/app/BUCK": "97c5b21b574295fa1529140219e6129e9e15095e582ee215f1d5f77e5fd2c89e",
+    "backend/crates/platform/audit-chain/src/lib.rs": "e75654eb1816743541555a189ed763e3d37f46edf40b257b60a2394c26ece615",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "reviewed_patch_sha256": "0b6c5c67be3e88b66aefce128498fb549240e05a13f63924a48f11659403dd50",
+  "limits": [
+    "Root must execute admitted typed kernel/identity/common writer tests and applicable legacy consumers.",
+    "Whole native policy/browser authorization,Company effects and release qualification remain separate required work.",
+    "No product writes/builds/database/browser execution by reviewer."
+  ]
+}

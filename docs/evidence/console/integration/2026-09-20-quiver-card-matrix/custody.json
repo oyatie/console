@@ -1,0 +1,98 @@
+{
+  "console-quiver-card-matrix-design-consensus-root-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-consensus-root-20260920.json",
+    "sha256": "c6f7e6b9012e50dfd565568b0e00cecd6f5e2ef470fdbac89419164b12d8f2f3"
+  },
+  "console-quiver-card-matrix-design-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-round1-security-review-20260920.json",
+    "sha256": "e41af0baf63f9971b6856ad030fa00adacbec2b3f018690f6f7df7a81c06aa3e"
+  },
+  "console-quiver-card-matrix-design-round2-security-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-round2-security-review-20260920.json",
+    "sha256": "81b77f6f1cdcd970f48e03a394d1519c9b40229fcc7013868b3241a8fd753d5a"
+  },
+  "console-quiver-card-matrix-design-round3-security-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-round3-security-review-20260920.json",
+    "sha256": "a2e9e7d006e1cdc554d95a70af47c7340e38d58262a02847e5dc93061192fe53"
+  },
+  "console-quiver-card-matrix-design-round4-security-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-round4-security-review-20260920.json",
+    "sha256": "dd2c0da27681d4d74fcc4e926eb29047a506aff1bc8bbf6c1fa87fbc0b82b284"
+  },
+  "console-quiver-card-matrix-tests-round1-root-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-tests-round1-root-review-20260920.json",
+    "sha256": "159bde40408de7e9cb529c1a49d08b7a178852b175a1e7c7042c0525b199f6ca"
+  },
+  "console-quiver-card-matrix-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-tests-round1-security-review-20260920.json",
+    "sha256": "4bcbd7e389cfec914b14f1349997b90782da1eeeaa5d6b35657aa49f197089e0"
+  },
+  "console-quiver-card-matrix-source-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-source-round1-security-review-20260920.json",
+    "sha256": "1de5013bfd750a407f771e43f6f1c3b63e657cb04e6effa598fb02b611e54683"
+  },
+  "console-quiver-prerequisites-20260920.log": {
+    "source": "/private/tmp/console-quiver-prerequisites-20260920.log",
+    "sha256": "9949c7ebde2b997980f2142d232f36fcba6c96242e6943354edd6642304ead73"
+  },
+  "console-quiver-owner-red-20260920.log": {
+    "source": "/private/tmp/console-quiver-owner-red-20260920.log",
+    "sha256": "19a831a1cd0df6e144226fbd83b40ef41ec371f0ea6789373bf91c7d6726cc70"
+  },
+  "console-quiver-admission-20260920.log": {
+    "source": "/private/tmp/console-quiver-admission-20260920.log",
+    "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  },
+  "console-quiver-owner-green-20260920.log": {
+    "source": "/private/tmp/console-quiver-owner-green-20260920.log",
+    "sha256": "3af9ea49ac2ae139343570daecfc39e9b5d8d97df619cbd1d4d03ca6641b2831"
+  },
+  "console-quiver-full169-20260920.log": {
+    "source": "/private/tmp/console-quiver-full169-20260920.log",
+    "sha256": "b26637353120f62e7ae8a3e0bb0f23aa96a9fcd1bb712273e52761eaf46ea8ad"
+  },
+  "console-quiver-planner-20260920.log": {
+    "source": "/private/tmp/console-quiver-planner-20260920.log",
+    "sha256": "556cf317f8dd342d29556dfb946daefa55c8e7e7c0868a84c82c7188d6c6f173"
+  },
+  "console-quiver-lane-scope-20260920.json": {
+    "source": "/private/tmp/console-quiver-lane-scope-20260920.json",
+    "sha256": "3688d67cf4b30007d7c5c264a338e9437709602e18f96917a553be9e975055f1"
+  },
+  "design-manifest.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-20260920-round2/manifest.json",
+    "sha256": "3d4074e3ab3e7850e68dc7cfc127b220e708c851cdede4394ebe5a00faa342f0"
+  },
+  "design.txt": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-20260920-round2/design.md",
+    "sha256": "3b2b22fb135a54fc6b199cbab8a1160e2e0d81347f4d4b63e09d53b08ab00858"
+  },
+  "oracle-roster.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-20260920-round2/oracle-roster.json",
+    "sha256": "cfe9e3e6c0d6b33a6138c8ba2d3f36ceb2656c6dc52e42b9703db6cf73db6fa2"
+  },
+  "review-provenance.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-20260920-round2/review-provenance.json",
+    "sha256": "2684e2933690714687a74884e411b6ce9fd6763619aafd081af46a06c3c02197"
+  },
+  "source-custody.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-design-20260920-round2/source-custody.json",
+    "sha256": "c56b4a2fc3cd9a1f2d2d36ebf9a7a039c50b1deaefd75b617c48e8b72e8c335a"
+  },
+  "tests-manifest.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-tests-20260920-round1/manifest.json",
+    "sha256": "24c7073ab37ecf060609ac349a3650ab19678bdbb601ecc84fa058abc0e790d7"
+  },
+  "test-method.txt": {
+    "source": "/private/tmp/console-quiver-card-matrix-tests-20260920-round1/README.md",
+    "sha256": "d06277dc9af6237609c03d049748502cb2b53afb135a7185feb494d4a60af1a8"
+  },
+  "test-coverage.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-tests-20260920-round1/coverage.json",
+    "sha256": "03776afb2f159ef27e6168883d1026a85313795abfe032c176bd5a5782b55d0e"
+  },
+  "console-quiver-card-matrix-final-security-audit-20260920.json": {
+    "source": "/private/tmp/console-quiver-card-matrix-final-security-audit-20260920.json",
+    "sha256": "fcaa419e808d575952a5681320f72c87d04a7e7d0801fc76d63d4601e28c5785"
+  }
+}

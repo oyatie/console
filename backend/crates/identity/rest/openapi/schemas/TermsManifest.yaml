@@ -1,0 +1,46 @@
+type: object
+additionalProperties: false
+required:
+- format_version
+- fixture_only
+- items
+properties:
+  format_version:
+    type: integer
+    enum: [1]
+  fixture_only:
+    type: boolean
+    description: Whether the manifest identifies fixture-only content.
+  items:
+    type: array
+    minItems: 1
+    maxItems: 8
+    description: Required agreements with distinct terms_kind values. Every content digest identifies registered content.
+    items:
+      type: object
+      additionalProperties: false
+      required:
+      - terms_kind
+      - title
+      - locale
+      - content_sha256
+      - required
+      properties:
+        terms_kind:
+          type: string
+          pattern: '^[a-z][a-z0-9_.-]{0,63}$'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 128
+        locale:
+          type: string
+          minLength: 2
+          maxLength: 32
+        content_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: SHA-256 digest of the exact UTF-8 content bytes.
+        required:
+          type: boolean
+          enum: [true]

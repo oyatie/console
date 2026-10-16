@@ -1,0 +1,13 @@
+{
+  "base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "files": {
+    "backend/Cargo.lock": "2395fe296c6bb1529223a95c89ca660e546be8ff1ff6f04cf0c9b391a5e44f72",
+    "backend/app/BUCK": "5b2c471b641a3ddcd17d3496cd2468e1d9bfc83c307d8f3df2509eef684ed2cd",
+    "backend/app/Cargo.toml": "1f6f03fcd38373d322eb56918f09b338dc26ee6c8f78edfced396c6439cce039",
+    "ops/BUCK": "e3e22c78b92ddc4eb0690f00e61e7b0305aaf0b1f2b42ca6da34c94c87aa68b2",
+    "ops/generate-account-custody.py": "419c30ed6f010e3a6b73424d57a8690f22eeee530f5a1f4649f451e567ee231c",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+    "tools/buck/gen_first_party.py": "abca07c051a039a398a019ba931957f00e4847e7713acfda3d0f845022bc8a1b"
+  },
+  "tests_sha256": "edf78dca4fd37d54a43c7308255d2897fc1a7edba075d59852de93c40aedef76"
+}

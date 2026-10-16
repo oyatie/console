@@ -1,0 +1,25 @@
+    Blocking waiting for file lock on build directory
+   Compiling console-payroll-ui v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.03s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_payroll_ui-941fd558c1238788)
+
+running 8 tests
+test tests::empty_runs_match_unauthenticated_shell ... ok
+test tests::authorized_runs_island_owns_a_presentation_only_status_filter ... ok
+test tests::shipping_screens_empty_matches_unauthenticated_shell ... ok
+test tests::shipping_screens_focus_keeps_authorized_nav_and_omits_wasm_off_payroll ... ok
+test tests::authorized_runs_carry_contract_keys_and_omit_won ... ok
+test tests::shipping_screens_home_composes_authorized_sections_only ... ok
+test tests::shipping_screens_organization_is_ssr_contracts_and_omits_wasm ... ok
+test tests::shipping_screens_hr_is_ssr_contracts_and_omits_phone ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests console_payroll_ui
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

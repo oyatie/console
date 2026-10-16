@@ -1,0 +1,42 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "HOLD_PARSER_OFFSETS_APPROVE_MECHANICAL_BUCK_DELTA",
+  "base_head": "2f11f2f4fc7b29a0495bb9499ab8618a5b21ddc0",
+  "source_hashes": {
+    "ops/generate-account-custody.py": "015b14cfc1c0042e65a709813641f7b8cada72ce14593b0fc4c60e010cde7f20",
+    "ops/postgres-company-enrollment-input.sql": "39bcff328babf3150bb1ef9485d322782c333eccd107c558685fad69e12a55c1",
+    "backend/app/BUCK": "142e6b5937c00a6bb3ce870499391fa28f38d53c62e9e9a97db2d1330fb34541"
+  },
+  "finding": {
+    "id": "COMPANY-SQL-PARSER-VERSION-OFFSETS",
+    "severity": "blocking",
+    "fact": "Current comparison extracts27bytes but compares29byte prefix including u16version; no input can pass. Subsequent UUID/discriminator/cursor/bounds offsets likewise2bytes short.",
+    "required": "29byte prefix; Account SQLFROM30; commandFROM46; discriminator get_byte61; initialcursor62; Group SQLFROM63/cursor78; min88max421; preserve Rust/vectors/tests and failure evidence.",
+    "runtime_status": "Native build still running at review, no executed parserfailure claimed."
+  },
+  "buck_review": {
+    "sha256": "142e6b5937c00a6bb3ce870499391fa28f38d53c62e9e9a97db2d1330fb34541",
+    "mechanical_ast_preservation": true,
+    "changes_only": {
+      "new_rust_fixture_mapping": 67,
+      "new_golden_fixture": 1,
+      "new_malformed_fixture": 1,
+      "new_boundary_fixture": 1,
+      "external_new_helper_mapping": 1
+    },
+    "all_prior_rule_fields_and_resources_preserved": true
+  },
+  "other_source_review": [
+    "Bigint 4byte length decode then bounded1..63/256 and remainingbytes checks precede allocation",
+    "C-locale slug grammar and explicit Unicode controls/whitespace align Rust under qualified UTF8 database",
+    "Data exceptions map exact sanitized22023; no authority or table mutation in parser",
+    "Private Account owner, PUBLIC execute revoked; SQLx exactACL oracle must verify no other inherited/default grant",
+    "Separate UNINSTALLED output only, no finalizer hooks or historical output rewrites"
+  ],
+  "limits": [
+    "One blocking offset bug must be corrected and reviewed; no parseracceptance",
+    "Generator61suite staged-output assertion failure must rerun after reviewed outputstaged",
+    "Full Company lane remainsopen"
+  ],
+  "reviewer_tests_executed": 0
+}

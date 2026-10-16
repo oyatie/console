@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-Fusion-local-source-and-runtime",
+  "candidate_sha": "5cf1126f5a54ed3cafff69072290df174d2248b9",
+  "unchanged_boundary_reuse_at": "8bae9a50bb28d1d10ac783ed3927072a2239ac85",
+  "source_sha256": {
+    "docs/program/console-capability-registry.json": "d16cebf023d9ce19e473841815b068ce68c4a9a937eb9bbf32f78bd0724e717c",
+    "scripts/console/validate-console-truth-ledger.mjs": "863d4a24910d021127433b6c124fe0dd59699c4a5a2118dc0c9932d79826c75c",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "14e17a51766f6bbe4d946a054da6cf81b9a80f3a7ce1e8194bfbee34cbcf21e9"
+  },
+  "evidence_sha256": {
+    "console-fusion-owner-red-20260920.log": "22b76c0ae7ff2a396af52a4bb94c1a7a854b9f81b9c47b16c055185212900790",
+    "console-fusion-admission-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-fusion-owner-green-20260920.log": "d4d9c9ac72194632ecd92ea47ab033a78d3bff93bb169e445bb0872ffc4f766c",
+    "console-fusion-planner-20260920.log": "2d0e4f639e16db97332d4436b8934e435170aec3378d9151f77ea97e5b4b6246",
+    "console-fusion-final135-20260920.log": "747387212b2d4bf6b1addbc89925c23e99c9bc0fb50e881a5a15a4f5e32b2594",
+    "console-fusion-enumerable-tests-root-review-20260920.json": "90902367a17a6c45cd9fd0766eb679a8316632744c79e83c0eefc4e76b0aeb05"
+  },
+  "checks": [
+    "Exact committed three-file Fusion boundary equals current tracked8bae tree; later commit changes only unrelated Rust diagnostic. Root untracked evidence archive is in progress and not part of built candidate.",
+    "Registry89thruntime equals exact reviewed202row; removing it yields full original parsed registry including all401leaf states.",
+    "Full135 actual owner suite passes, zero failure/cancel/skip/todo,23138.147708ms.",
+    "Named signature owner RED fails missing expected rejection after positive prerequisite; admission recorded; same named probe GREEN.",
+    "Planner29/29 passes557.058833ms before exact-key membership correction; planner unchanged, final135 verifies correction at actual owning validator.",
+    "Enumerable-key test authored by security independently approved by root exact0b06manifest/14e17candidate; no selfapproval substituted.",
+    "All16 required lenses assessed below; no open bounded correctness/security finding."
+  ],
+  "findings": [],
+  "runtime_tests_executed_by_reviewer": 0,
+  "lens_audit": {
+    "Cartesian doubt": "135 actual tests distinguished from202 reference rows and51 internal negative histories; no runtime formula claim.",
+    "Essentialism / YAGNI": "One28-line branch in existing owner; fixed reference digest and no new API/framework.",
+    "Chesterton's Fence": "Existing tests, source capture, review receipts, authority digests and attestation lifecycle preserved.",
+    "Contrarian / outside-the-box": "Serialization-invisible own keys and enumerable count-preserving swap challenged ordinary digest assumptions.",
+    "Socratic": "Complete same-object restoration demonstrates revoked attestation rather than only content mismatch.",
+    "Pragmatism": "Actual exported owner and existing fixtures/CLI/planner reused.",
+    "Red Team": "Omission/duplicate/reorder/lifecycle/leaf/binding/acceptance/digest-override and hidden-key corruptions refused.",
+    "Systems Thinking": "Whole-registry source projection alters prospective digests; historical authority receipts are not rewritten.",
+    "Operability / Day-2": "Explicit rejection and deterministic fixed catalogue; no new source/network dependency at validation time.",
+    "Opportunity Cost": "Reuse reviewed frozen capture and unaffected planner proof; no formula runtime chosen here.",
+    "Blast-radius / cell-based": "One registry row and focused validator/test change; remove appended row exactly reconstructs preimage.",
+    "Constant-work / anti-fragility": "Fixed202 rows; bounded structural checks; no release load/performance qualification inferred.",
+    "Shared-nothing / eventual consistency": "No concurrent publication or state transition introduced; single serialized inventory writer.",
+    "FinOps / unit-cost": "Standard Node crypto/zlib only; no new dependency/service/runtime cost claim.",
+    "Telemetry-first": "Actual owner RED/admission/GREEN and full135 logs pinned; explicit finite diagnostics.",
+    "Zero-trust / defense-in-depth": "Fixed immutable catalogue digest plus exact own enumerable keysets and shared-binding membership; caller digest override refused."
+  },
+  "remaining_holds": [
+    "Root archive exact receipts/logs and preserve failed/superseded evidence; hosted protected-dev review/check/merge/readback remains separate.",
+    "Bounded reference-validation approval only, not exhaustive Foundry freeze, formula implementation, workflow acceptance or release state promotion.",
+    "Existing authority train still required; local source/runtime approval is not release/exposure authority.",
+    "Independent SQL transition refusal-snapshot failure remains unresolved and unrelated to this Fusion acceptance."
+  ]
+}

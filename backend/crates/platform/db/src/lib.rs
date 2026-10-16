@@ -26,6 +26,7 @@
 
 pub mod audit_tx;
 pub mod code_issuance;
+pub mod durability;
 pub mod error;
 pub mod governance_finding;
 pub mod lifecycle;
@@ -34,7 +35,7 @@ pub mod versioning;
 
 pub use audit_tx::{
     SubjectAuthzFreshness, insert_audit_event, read_subject_authz_freshness, with_audit,
-    with_audits, with_org_conn, with_org_rollback,
+    with_audits, with_org_conn, with_org_rollback, with_repeatable_read_audits,
 };
 pub use code_issuance::issue_code;
 pub use error::DbError;

@@ -659,7 +659,7 @@ pub struct SimulationOutcome {
     /// deny-by-omission, since no policy matched).
     pub determining_policies: Vec<String>,
     /// Cedar evaluation-error strings; a non-empty list is itself a fail-closed
-    /// signal (the decision is reported as it was computed, never widened).
+    /// signal: the effective decision is Deny even if a permit matched.
     pub errors: Vec<String>,
     pub reason: String,
 }
@@ -770,6 +770,14 @@ fn simulate_inner(policies: &[AuthoredPolicy], request: &SimRequest) -> Simulati
         .errors()
         .map(ToString::to_string)
         .collect::<Vec<_>>();
+    if !errors.is_empty() {
+        return SimulationOutcome {
+            effect: SimEffect::Deny,
+            reason: "deny: Cedar evaluation errors".to_owned(),
+            determining_policies,
+            errors,
+        };
+    }
     match response.decision() {
         Decision::Allow => SimulationOutcome {
             effect: SimEffect::Allow,

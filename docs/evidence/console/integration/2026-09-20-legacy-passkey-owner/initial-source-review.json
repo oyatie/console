@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "SOURCE_DIRECTION_APPROVED_WITH_MISSING_POOL_PRECEDENCE_HOLD",
+  "base_sha": "58a2ab041584ce652db70d4476468d06a61f2d61",
+  "source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "af1722074e362b58568233053eff3b8547655bbfe3611d2f31a463d12a90848a",
+    "backend/crates/platform/auth/src/lib.rs": "23cf57fa20090ed35c95f02410d911b78869dab6c1bb81677341b0e73e4050df",
+    "backend/crates/platform/auth-rest/src/lib.rs": "174c428ffc6b6effa51119034833851ba6eb018e184973c37a2b5f5df86e5a7d",
+    "backend/crates/platform/auth/src/legacy_self_read_tests.rs": "5d13ee4a190161380c7af8b4f17af68db2c4f6dc835f30e1c5224fc82da86a85"
+  },
+  "accepted": [
+    "Verifiedclaims localtoactualAuthowner fromrealJwtVerifier, no callerclaims/family authority.",
+    "Nonnilsubject/home, directtier/deriveddispatch and historicalabsence compatibility matchpurposecontract.",
+    "AdmittedAuthpool one READCOMMITTEDtransaction, existing Company/User/Accountguards then exactfamilyFORSHARE, fullprotocol/subject/home/nativeNULL tuple; no businessrawgrant or extra familyinference.",
+    "FreshDBclock afterguards/beforeprojection and afterprojection beforecommit; strictsigned/familydeadline/order/precision pluscheckedTTL.",
+    "Guarderror mapping operation-local exactcodes/messages/origins; query/decode/clock/commit errors503, knowninvalidsession401.",
+    "ThreefieldsummarymappedtoexistingRFC3339serializer; finalresultdecoratedwithlocalno-store/no-cache/nosniff and one Authorization,Cookie,OriginVary. GlobalRestError/sharedguard unchanged.",
+    "No SQL/migration/issuer/grant/command/custody sourcechange. Productionboundmint remainsNone."
+  ],
+  "finding": {
+    "id": "SELF-ABSENT-POOL-1",
+    "path": "backend/crates/platform/auth-rest/src/lib.rs::list_self_passkeys",
+    "problem": "servicesSome/verifieravailable but auth_databaseNone returns503before malformedtokenverification.",
+    "resolution": "Approvedfocusedtestpacket402cd... requires invalidcrypto401vsvalidcrypto503; missingpoolbranch may useexistingpureverifier only. KeepnormalSome path realownerverifiesonce, no duplicatedself-purpose/currentfamilybusinesscheck/publicAPIextension. Unconfiguredservices preservesexisting503literal.",
+    "test_review_sha256": "b29d5b168c85c4a8ffda2b99736a9c7a515aeae53757bae92efa00a7fd68345b"
+  },
+  "runtime_reviewed": {
+    "original_owner_red": "1executed0pass1fail379filtered9.87s;actual200expected401aftercompleteprerequisites",
+    "same_owner_green": "1executed1pass0fail379filtered9.15s",
+    "private_tuple_time_error": "8executed8pass0fail0ignored3filtered0.00s"
+  },
+  "runtime_logs_sha256": {
+    "console-legacy-passkey-owner-red-20260920.log": "2a9e561e969701b01dcd186f30365e194eaca201b85ac64b06ad7e30548e702d",
+    "console-legacy-passkey-owner-green-attempt-20260920.log": "45d87b25abdc3f1072463f193ba14ff02eefa0e9bced376d6c75d3c929d71d24",
+    "console-legacy-passkey-private8-20260920.log": "b494fa62ee6997834bb4039154bdbe43a1c93df4f218cc4c8171a51ad6ce3317"
+  },
+  "remaining": [
+    "Missingpool RED/fix/GREEN and exactupdatedsourcehashreview",
+    "MandatoryextendedHTTProtation/reuse/identity/dispatch/time/locks/recovery tests",
+    "No completeowner/globalmint/release acceptance"
+  ],
+  "reviewer_actions": "Read-onlysource/runtime-log inspection, private receipt only."
+}

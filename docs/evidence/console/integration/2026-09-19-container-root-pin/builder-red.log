@@ -1,0 +1,54 @@
+#0 building with "colima-console-release-20260919" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.61kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.4s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+#3 resolve docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32 done
+#3 sha256:48ca54f0226d3b90064659efd4391d107ad948df73aed877309530e6f3ef19df 13.01MB / 13.01MB 0.1s done
+#3 extracting sha256:48ca54f0226d3b90064659efd4391d107ad948df73aed877309530e6f3ef19df 0.1s done
+#3 DONE 0.2s
+
+#4 [internal] load metadata for docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#4 DONE 0.3s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 777B done
+#5 DONE 0.0s
+
+#6 [builder  1/13] FROM docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#6 resolve docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa done
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 7.34MB / 182.04MB 0.2s
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 0B / 203.19MB 0.2s
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 0B / 64.50MB 0.2s
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 3.15MB / 23.63MB 0.2s
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 7.34MB / 23.63MB 0.3s
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 17.83MB / 182.04MB 0.4s
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 10.49MB / 23.63MB 0.4s
+#6 ...
+
+#7 [internal] load build context
+#7 transferring context: 42.20MB 0.4s done
+#7 DONE 0.5s
+
+#8 [builder  3/13] COPY backend/rust-toolchain.toml ./rust-toolchain.toml
+#8 ERROR: failed to calculate checksum of ref bh8kdnlyxgd8ba0g7lbnnfpho::vwdtnpivax54n4lzyl6lmcc9u: "/backend/rust-toolchain.toml": not found
+
+#9 [builder  2/13] WORKDIR /workspace/backend
+#9 CANCELED
+------
+ > [builder  3/13] COPY backend/rust-toolchain.toml ./rust-toolchain.toml:
+------
+Dockerfile:15
+--------------------
+  13 |     
+  14 |     # rust-toolchain.toml pins rustc 1.96.0; resolve it before the build.
+  15 | >>> COPY backend/rust-toolchain.toml ./rust-toolchain.toml
+  16 |     
+  17 |     # Sources. The build context is the repo ROOT (see ops/compose.yml) so the
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref bh8kdnlyxgd8ba0g7lbnnfpho::vwdtnpivax54n4lzyl6lmcc9u: "/backend/rust-toolchain.toml": not found

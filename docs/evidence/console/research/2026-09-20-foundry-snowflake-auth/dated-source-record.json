@@ -1,0 +1,53 @@
+{
+  "source_binding": {
+    "source_id": "announcements-release-notes",
+    "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+    "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+    "compressed_sha256": "c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c",
+    "json_path": "/props/pageProps/releases/60/releaseNotes/4",
+    "record_id": "4f3c1dfa766233ff6d3a89cb838c44ce4ccf52cbbce64eb64f950b6f51232b38",
+    "vendor_asserted_date": "June 10, 2026",
+    "quote": "Data Connection now supports authenticating Snowflake connections using an external identity provider (such as Entra ID, Okta, or PingFederate) via the OAuth2 client credentials flow. Users can configure a token endpoint, client ID, client secret, OAuth scopes, and user claim to establish the connection. This authentication method provides an alternative for organizations that manage identity through external providers rather than direct Snowflake credentials.",
+    "matching": "exact JSON description string inside captured __NEXT_DATA__",
+    "reference_temporal_status": "post-cutoff capture of vendor-dated June10 assertion; exact September19 support unqualified",
+    "scope": "Connector authentication reference only; no mode/version compatibility or Console implementation/acceptance established."
+  },
+  "record": {
+    "id": "4f3c1dfa766233ff6d3a89cb838c44ce4ccf52cbbce64eb64f950b6f51232b38",
+    "type": "ENHANCEMENT",
+    "description": "Data Connection now supports authenticating Snowflake connections using an external identity provider (such as Entra ID, Okta, or PingFederate) via the OAuth2 client credentials flow. Users can configure a token endpoint, client ID, client secret, OAuth scopes, and user claim to establish the connection. This authentication method provides an alternative for organizations that manage identity through external providers rather than direct Snowflake credentials.",
+    "categoryTitle": "Data connectivity & integration",
+    "categoryId": "data-integration",
+    "applicationId": "data-connection",
+    "applicationTitle": "Data Connection",
+    "date": "June 10, 2026",
+    "title": "Snowflake connector now supports external IdP OAuth authentication",
+    "prominence": "Basic",
+    "releaseVersion": "@foundry/foundry-frontend@6.514.0",
+    "productId": "Foundry",
+    "frontendApplicationId": "data-ingestion-app",
+    "mediaFilenames": [],
+    "applications": [
+      {
+        "productId": "Foundry",
+        "categoryId": "data-integration",
+        "categoryTitle": "Data connectivity & integration",
+        "applicationId": "data-connection",
+        "applicationTitle": "Data Connection",
+        "frontendApplicationId": "data-ingestion-app",
+        "isKeyComponent": true
+      }
+    ],
+    "application": {
+      "id": "data-connection",
+      "title": "Data Connection"
+    },
+    "category": {
+      "id": "data-integration",
+      "title": "Data connectivity & integration"
+    },
+    "product": {
+      "id": "Foundry"
+    }
+  }
+}

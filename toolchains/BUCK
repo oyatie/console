@@ -1,9 +1,21 @@
 load("@prelude//tests:test_toolchain.bzl", "noop_test_toolchain")
-load("@prelude//toolchains:cxx.bzl", "system_cxx_toolchain")
+load("@prelude//toolchains:cxx.bzl", "cxx_tools_info_toolchain", "system_cxx_toolchain")
 load("@prelude//toolchains:genrule.bzl", "system_genrule_toolchain")
 load("@prelude//toolchains:python.bzl", "remote_python_toolchain", "system_python_wheel_toolchain")
 load("@prelude//toolchains:remote_test_execution.bzl", "remote_test_execution_toolchain")
 load("//rust:hermetic.bzl", "hermetic_rust_toolchain")
+load("//rust:wasm.bzl", "wasm_cxx_toolchain")
+
+config_setting(
+    name = "wasm32",
+    constraint_values = ["prelude//os/constraints:none", "prelude//cpu/constraints:wasm32"],
+)
+
+platform(
+    name = "wasm32-platform",
+    constraint_values = ["prelude//os/constraints:none", "prelude//cpu/constraints:wasm32"],
+    visibility = ["PUBLIC"],
+)
 
 config_setting(
     name = "linux-arm64",
@@ -21,13 +33,19 @@ config_setting(
 hermetic_rust_toolchain(
     name = "rust",
     default_edition = "2024",
-    rustc_flags = ["-Copt-level=0"],
+    rustc_flags = select({
+        ":wasm32": ["-Copt-level=3", "-Cpanic=abort"],
+        "DEFAULT": ["-Copt-level=0"],
+    }),
+    panic_runtime = select({":wasm32": "abort", "DEFAULT": "unwind"}),
     rustc_target_triple = select({
+        ":wasm32": "wasm32-unknown-unknown",
         ":linux-x86_64": "x86_64-unknown-linux-gnu",
         ":linux-arm64": "aarch64-unknown-linux-gnu",
         "prelude//os:macos": "aarch64-apple-darwin",
     }),
     sysroot = select({
+        ":wasm32": "//rust:hydrate-sysroot",
         ":linux-x86_64": "//rust:sysroot-x86_64-unknown-linux-gnu",
         ":linux-arm64": "//rust:sysroot-aarch64-unknown-linux-gnu",
         "prelude//os:macos": "//rust:sysroot-aarch64-apple-darwin",
@@ -38,12 +56,30 @@ hermetic_rust_toolchain(
 _extra_cxx_link_flags = read_root_config("cxx", "link_flags", "")
 
 system_cxx_toolchain(
-    name = "cxx",
+    name = "cxx-host",
     compiler = "/usr/bin/clang",
     cxx_compiler = "/usr/bin/clang++",
     archiver = "/usr/bin/ar",
     linker = "/usr/bin/clang",
     link_flags = _extra_cxx_link_flags.split(" ") if _extra_cxx_link_flags else [],
+    visibility = ["PUBLIC"],
+)
+
+cxx_tools_info_toolchain(
+    name = "cxx-wasm-base",
+    cxx_tools_info = "//rust:wasm-cxx-tools",
+    visibility = ["PUBLIC"],
+)
+
+wasm_cxx_toolchain(
+    name = "cxx-wasm",
+    base = ":cxx-wasm-base",
+    visibility = ["PUBLIC"],
+)
+
+toolchain_alias(
+    name = "cxx",
+    actual = select({":wasm32": ":cxx-wasm", "DEFAULT": ":cxx-host"}),
     visibility = ["PUBLIC"],
 )
 
@@ -71,3 +107,13 @@ noop_test_toolchain(
     name = "test",
     visibility = ["PUBLIC"],
 )
+
+# Source-only integrity inputs; no compiler or toolchain selection.
+[
+    export_file(
+        name = "hydration-" + source,
+        src = source,
+        visibility = ["PUBLIC"],
+    )
+    for source in ['BUCK']
+]

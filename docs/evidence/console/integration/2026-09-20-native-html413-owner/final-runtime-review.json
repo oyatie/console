@@ -1,0 +1,91 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_NATIVE_HTML413_PRIVACY_PRESERVATION",
+  "observed_head": "8a4b15965372773ddf77e5b7ba3d2082df0148da",
+  "source_review_sha256": "2ab199cce8189fa714392e8e48bd27eef82542a35921a99dbeb2616880976c75",
+  "current_reviewed_source_hashes_reverified": true,
+  "approved_test_correction_sha256": "0e26a2c85ac8c718046d4e472a4b44107d969ead0da5a440cbd7028b0bf16b6e",
+  "results": {
+    "mounted_owner": {
+      "discovered": 2,
+      "passed": 2,
+      "failed": 0,
+      "seconds": 12.08
+    },
+    "mapper_lib": {
+      "discovered": 31,
+      "passed": 31,
+      "failed": 0
+    },
+    "mapper_integration": {
+      "discovered": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    "retained_native_http": {
+      "executed": 7,
+      "passed": 7,
+      "failed": 0,
+      "case_group_seconds": [
+        62.52,
+        5.99
+      ]
+    },
+    "actual_browser": {
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "seconds": 8.51,
+      "version": "151.0.7922.34",
+      "document_statuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        413,
+        200
+      ],
+      "mutation_requests": 2,
+      "transmitted_cookie_bytes": 18861,
+      "oversize_fixture_cookies": 6,
+      "db_checkpoints": 2,
+      "cleanup_confirmed": true
+    }
+  },
+  "checks": [
+    "Actual trusted marked native413 retains privateHTML envelope; sharedmapper JSON/plain/unmarked/lookalike/bodylimit408/413/429 controls pass.",
+    "Actual current native parser precedence and Company entry disclosure/outage/expiry/reopening tests all pass with retained full owner assertions.",
+    "Browser witnesses real oversized outgoing Cookie, no credential echo or cookie replacement, native413 document, fixture-only cookie removal and200reopening. Exact7document and2registrationPOST history; unchanged full ownercheckpoint accepted.",
+    "Rehashed both production source files against approvedsource receipt and exact independent typed-handler fixture correction."
+  ],
+  "visual_review": {
+    "viewed": [
+      "05-native-cookie-413.png",
+      "06-native-cookie-recovered.png"
+    ],
+    "adopt": "Legible Korean refusal and intact native preview at320px, without protected form/data disclosure.",
+    "adapt": "Generic login guidance does not itself remove oversized unrelated cookies; tested recovery is fixture removal plus reload. Provide usable specific recovery guidance before full workflow acceptance. Preserve earlier Company field-spacing adaptation.",
+    "reject": "Do not count this formless preview or controlled recovery as complete Company enrollment/user recovery/release."
+  },
+  "preserved_failures": [
+    "Original actual lost-envelope ownerRED.",
+    "Integration E0277 inferred-never fixture compilation failure:0executed tests; exact named asyncfn correction independently approved.",
+    "Initial retained-run argument-order prerequisite failure:0tests; successful successor kept separately.",
+    "Prior HTML413 Vary oracle packet/HOLD and reviewed3-key successor remain immutable."
+  ],
+  "evidence_sha256": {
+    "/private/tmp/console-native-html413-browser-run-20260920/result.json": "1aabd096202679f90f1dbfef6fbd735e1c061f4f0c72600e64f139f0bcbb1ba1",
+    "/private/tmp/console-native-html413-browser-run-20260920/owner-receipt.json": "7f72d0de67c9406fe2ecf08774d775f80599799f0e78d427b7243b582b0efa6a",
+    "/private/tmp/console-native-html413-browser-run-20260920/05-native-cookie-413.png": "f1e2a6cf22e435d394faedee4b3d3a106a54904c36c64f604774988a1a027e49",
+    "/private/tmp/console-native-html413-browser-run-20260920/06-native-cookie-recovered.png": "db4aa3590c9eb591d7144cecd99b5438e9b8b1571ae92b89ce17cee47224806c",
+    "/private/tmp/console-native-html413-owner-green-20260920.log": "ee866b0bc34c3fe89d3dc3a0c1c145f6aa37e23f21bb008880dbc62972b0cdb7",
+    "/private/tmp/console-native-html413-mapper-green-20260920-round2.log": "3651407c57c0487fedc33e3dc6426707454649aa0ae285f978f4928dc0b3bbcc",
+    "/private/tmp/console-native-html413-retained-20260920-round2.log": "71eca35959f4558688144548ef8ce775d420773e7e7d89abede950e0f01b6cec",
+    "/private/tmp/console-native-html413-browser-run-20260920.log": "7ebb6ecbe5ebab3566d12081f63f515351b37b78a5317a0da6ab080cb3fb3c8d"
+  },
+  "limits": [
+    "Bounded responseprivacy repair only. No Company command/native payroll journey, physicaldevice/IME/screenreader/userstudy, productionTLS/HA or assembledrelease acceptance.",
+    "Parent requested clippy check still separately tracked; this receipt asserts reviewed runtime counts only."
+  ]
+}

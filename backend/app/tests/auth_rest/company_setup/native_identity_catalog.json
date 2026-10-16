@@ -1,0 +1,2060 @@
+{
+  "status": "PROPOSED_EXACT_BIRTH_IDENTITY_AND_MAPPING_CATALOG",
+  "new_identity_tables": [
+    "policy_role_revisions",
+    "policy_capability_clauses",
+    "policy_capability_clause_fields",
+    "policy_assignment_revisions",
+    "company_authority_heads"
+  ],
+  "new_ontology_mapping_tables": [
+    "native_company_catalog_installs",
+    "native_company_object_refs",
+    "native_company_action_refs",
+    "native_company_property_refs"
+  ],
+  "table_owners": {
+    "policy_role_revisions": "console_account_owner",
+    "policy_capability_clauses": "console_account_owner",
+    "policy_capability_clause_fields": "console_account_owner",
+    "policy_assignment_revisions": "console_account_owner",
+    "company_authority_heads": "console_account_owner",
+    "native_company_catalog_installs": "console_ontology_writer",
+    "native_company_object_refs": "console_ontology_writer",
+    "native_company_action_refs": "console_ontology_writer",
+    "native_company_property_refs": "console_ontology_writer",
+    "policy_roles": "console_app",
+    "user_role_assignments": "console_app"
+  },
+  "rls": {
+    "policy_role_revisions": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "policy_capability_clauses": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "policy_capability_clause_fields": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "policy_assignment_revisions": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "company_authority_heads": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "native_company_catalog_installs": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "native_company_object_refs": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "native_company_action_refs": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    },
+    "native_company_property_refs": {
+      "enabled": true,
+      "force": true,
+      "policy": "org_isolation",
+      "using_and_check": "org_id = NULLIF(current_setting('app.current_org',true),'')::uuid"
+    }
+  },
+  "no_serving_table_or_column_grants_on_new_tables": true,
+  "root_insert_columns": {
+    "policy_roles": [
+      "id",
+      "org_id",
+      "role_key",
+      "display_name",
+      "description",
+      "status",
+      "is_system",
+      "created_at",
+      "updated_at",
+      "subject_protocol",
+      "native_current_revision",
+      "created_by_account_id",
+      "updated_by_account_id",
+      "origin_account_id",
+      "origin_command_id",
+      "origin_receipt_id"
+    ],
+    "user_role_assignments": [
+      "id",
+      "org_id",
+      "role_id",
+      "created_at",
+      "subject_protocol",
+      "account_id",
+      "native_current_revision",
+      "assigned_by_account_id",
+      "origin_account_id",
+      "origin_command_id",
+      "origin_receipt_id"
+    ]
+  },
+  "root_account_owner_grants": {
+    "SELECT": "all existing root columns",
+    "INSERT": "exact above columns",
+    "UPDATE": [
+      "native_current_revision"
+    ],
+    "DELETE": false,
+    "TRUNCATE": false
+  },
+  "new_identity_owner_grants": {
+    "SELECT": true,
+    "INSERT": true,
+    "REFERENCES": true,
+    "UPDATE": "company_authority_heads(epoch) only, actual writes refused",
+    "DELETE": false,
+    "TRUNCATE": false
+  },
+  "triggers": [
+    {
+      "name": "policy_roles_native_guard_v1",
+      "table": "policy_roles",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "function": "identity_native_root_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_roles_native_birth_closure_v1",
+      "table": "policy_roles",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "user_role_assignments_native_guard_v1",
+      "table": "user_role_assignments",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "function": "identity_native_root_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "user_role_assignments_native_birth_closure_v1",
+      "table": "user_role_assignments",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_permissions_native_guard_v1",
+      "table": "policy_role_permissions",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "function": "identity_native_legacy_child_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_conditions_native_guard_v1",
+      "table": "policy_role_conditions",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "function": "identity_native_legacy_child_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_roles_native_truncate_v1",
+      "table": "policy_roles",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_truncate_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "user_role_assignments_native_truncate_v1",
+      "table": "user_role_assignments",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_truncate_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_permissions_native_truncate_v1",
+      "table": "policy_role_permissions",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_truncate_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_conditions_native_truncate_v1",
+      "table": "policy_role_conditions",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_truncate_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_revisions_birth_row_v1",
+      "table": "policy_role_revisions",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_revisions_immutable_v1",
+      "table": "policy_role_revisions",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_role_revisions_birth_closure_v1",
+      "table": "policy_role_revisions",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_capability_clauses_birth_row_v1",
+      "table": "policy_capability_clauses",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_capability_clauses_immutable_v1",
+      "table": "policy_capability_clauses",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_capability_clauses_birth_closure_v1",
+      "table": "policy_capability_clauses",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_capability_clause_fields_birth_row_v1",
+      "table": "policy_capability_clause_fields",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_capability_clause_fields_immutable_v1",
+      "table": "policy_capability_clause_fields",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_capability_clause_fields_birth_closure_v1",
+      "table": "policy_capability_clause_fields",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_assignment_revisions_birth_row_v1",
+      "table": "policy_assignment_revisions",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_assignment_revisions_immutable_v1",
+      "table": "policy_assignment_revisions",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "policy_assignment_revisions_birth_closure_v1",
+      "table": "policy_assignment_revisions",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "company_authority_heads_birth_row_v1",
+      "table": "company_authority_heads",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "company_authority_heads_immutable_v1",
+      "table": "company_authority_heads",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "identity_native_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "company_authority_heads_birth_closure_v1",
+      "table": "company_authority_heads",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "identity_native_birth_closure_v1",
+      "deferrable": true,
+      "initially_deferred": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_catalog_installs_birth_row_v1",
+      "table": "native_company_catalog_installs",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_catalog_installs_immutable_v1",
+      "table": "native_company_catalog_installs",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "native_company_catalog_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_catalog_installs_birth_closure_v1",
+      "table": "native_company_catalog_installs",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_closure_v1",
+      "deferrable": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "initially_deferred": true,
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_object_refs_birth_row_v1",
+      "table": "native_company_object_refs",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_object_refs_immutable_v1",
+      "table": "native_company_object_refs",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "native_company_catalog_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_object_refs_birth_closure_v1",
+      "table": "native_company_object_refs",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_closure_v1",
+      "deferrable": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "initially_deferred": true,
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_action_refs_birth_row_v1",
+      "table": "native_company_action_refs",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_action_refs_immutable_v1",
+      "table": "native_company_action_refs",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "native_company_catalog_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_action_refs_birth_closure_v1",
+      "table": "native_company_action_refs",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_closure_v1",
+      "deferrable": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "initially_deferred": true,
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_property_refs_birth_row_v1",
+      "table": "native_company_property_refs",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_row_guard_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_property_refs_immutable_v1",
+      "table": "native_company_property_refs",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "function": "native_company_catalog_immutable_v1",
+      "deferrable": false,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    },
+    {
+      "name": "native_company_property_refs_birth_closure_v1",
+      "table": "native_company_property_refs",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "function": "native_company_catalog_birth_closure_v1",
+      "deferrable": true,
+      "schema": "public",
+      "enabled": "ALWAYS",
+      "when": null,
+      "arguments": [],
+      "initially_deferred": true,
+      "function_schema": "public",
+      "update_columns": [],
+      "old_transition_table": null,
+      "new_transition_table": null,
+      "parent_trigger": false
+    }
+  ],
+  "trigger_function_definer": {
+    "identity_native_root_guard_v1": false,
+    "identity_native_legacy_child_guard_v1": false,
+    "identity_native_truncate_guard_v1": true,
+    "identity_native_birth_row_guard_v1": false,
+    "identity_native_immutable_v1": false,
+    "identity_native_birth_closure_v1": true,
+    "native_company_catalog_birth_row_guard_v1": false,
+    "native_company_catalog_immutable_v1": false,
+    "native_company_catalog_birth_closure_v1": true
+  },
+  "function_config": [
+    "search_path=pg_catalog, pg_temp",
+    "row_security=on"
+  ],
+  "trigger_function_execute_acl": {
+    "identity_native_root_guard_v1": [
+      "console_account_owner"
+    ],
+    "identity_native_legacy_child_guard_v1": [
+      "console_account_owner"
+    ],
+    "identity_native_truncate_guard_v1": [
+      "console_account_owner"
+    ],
+    "identity_native_birth_row_guard_v1": [
+      "console_account_owner"
+    ],
+    "identity_native_immutable_v1": [
+      "console_account_owner"
+    ],
+    "identity_native_birth_closure_v1": [
+      "console_account_owner"
+    ],
+    "native_company_catalog_birth_row_guard_v1": [
+      "console_ontology_writer"
+    ],
+    "native_company_catalog_immutable_v1": [
+      "console_ontology_writer"
+    ],
+    "native_company_catalog_birth_closure_v1": [
+      "console_account_owner"
+    ]
+  },
+  "additional_routines": [
+    {
+      "signature": "public.identity_native_any_origin_v1()",
+      "returns": "boolean",
+      "owner": "console_app",
+      "security_definer": true,
+      "execute": [
+        "console_app",
+        "console_account_owner"
+      ],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "signature": "public.identity_enroll_company_administration_v1(uuid,uuid)",
+      "returns": "TABLE(root_assignment_id uuid,root_revision bigint)",
+      "owner": "console_account_owner",
+      "security_definer": true,
+      "execute": [
+        "console_account_owner"
+      ],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "signature": "public.identity_company_projection_v1(uuid,uuid,uuid)",
+      "returns": "TABLE(company_epoch bigint,context_generation bigint,assignment_id uuid,assignment_revision bigint,role_id uuid,role_revision bigint,registered_clauses jsonb,company_name text,company_slug text)",
+      "owner": "console_account_owner",
+      "security_definer": true,
+      "execute": [
+        "console_account_owner",
+        "console_rt"
+      ],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "signature": "public.company_enrollment_binding_v1(uuid,uuid)",
+      "returns": "TABLE(account_id uuid,command_id uuid,effect_xid xid8,effect_backend_pid integer,org_id uuid,group_id uuid,receipt_id uuid,administrative_account_id uuid,designation_receipt_id uuid,input_digest bytea,started_at timestamptz,catalog_version text,manifest_digest bytea,request_state text,session_id uuid,company_name text,company_slug text)",
+      "owner": "console_account_owner",
+      "execute": [
+        "console_account_owner",
+        "console_app",
+        "console_ontology_writer"
+      ],
+      "security_definer": true,
+      "search_path": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "role": "private",
+      "public_execute": false,
+      "grant_option": false,
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    }
+  ],
+  "function_owners": {
+    "identity_native_root_guard_v1": "console_account_owner",
+    "identity_native_legacy_child_guard_v1": "console_account_owner",
+    "identity_native_truncate_guard_v1": "console_account_owner",
+    "identity_native_birth_row_guard_v1": "console_account_owner",
+    "identity_native_immutable_v1": "console_account_owner",
+    "identity_native_birth_closure_v1": "console_account_owner",
+    "native_company_catalog_birth_row_guard_v1": "console_ontology_writer",
+    "native_company_catalog_immutable_v1": "console_ontology_writer",
+    "native_company_catalog_birth_closure_v1": "console_account_owner"
+  },
+  "new_table_acl": {
+    "policy_role_revisions": {
+      "console_account_owner": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "policy_capability_clauses": {
+      "console_account_owner": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "policy_capability_clause_fields": {
+      "console_account_owner": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "policy_assignment_revisions": {
+      "console_account_owner": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "company_authority_heads": {
+      "console_account_owner": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "native_company_catalog_installs": {
+      "console_ontology_writer": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ],
+      "console_account_owner": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "native_company_object_refs": {
+      "console_ontology_writer": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ],
+      "console_account_owner": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "native_company_action_refs": {
+      "console_ontology_writer": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ],
+      "console_account_owner": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "native_company_property_refs": {
+      "console_ontology_writer": [
+        "INSERT",
+        "REFERENCES",
+        "SELECT"
+      ],
+      "console_account_owner": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    }
+  },
+  "new_column_acl": {
+    "company_authority_heads": {
+      "epoch": {
+        "console_account_owner": [
+          "UPDATE"
+        ]
+      }
+    }
+  },
+  "root_column_acl_additions": {
+    "policy_roles": {
+      "id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "org_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "role_key": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "display_name": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "description": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "status": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "is_system": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "created_at": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "updated_at": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "subject_protocol": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "native_current_revision": {
+        "console_account_owner": [
+          "INSERT",
+          "UPDATE"
+        ]
+      },
+      "created_by_account_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "updated_by_account_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "origin_account_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "origin_command_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "origin_receipt_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      }
+    },
+    "user_role_assignments": {
+      "id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "org_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "role_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "created_at": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "subject_protocol": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "account_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "native_current_revision": {
+        "console_account_owner": [
+          "INSERT",
+          "UPDATE"
+        ]
+      },
+      "assigned_by_account_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "origin_account_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "origin_command_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      },
+      "origin_receipt_id": {
+        "console_account_owner": [
+          "INSERT"
+        ]
+      }
+    }
+  },
+  "root_table_acl_additions": {
+    "policy_roles": {
+      "console_account_owner": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "user_role_assignments": {
+      "console_account_owner": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    }
+  },
+  "existing_acl_preservation": "All existing grants remain byte-equivalent except explicit reviewed additions above; pre/post catalog comparison is required. No privilege granted to serving roles by this resource.",
+  "reference_grants": {
+    "company_enrollment_receipts": {
+      "console_ontology_writer": [
+        "REFERENCES"
+      ]
+    },
+    "ont_builtin_catalog_installs": {
+      "console_ontology_writer": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "ont_object_types": {
+      "console_ontology_writer": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "ont_action_types": {
+      "console_ontology_writer": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    },
+    "ont_property_defs": {
+      "console_ontology_writer": [
+        "REFERENCES",
+        "SELECT"
+      ]
+    }
+  },
+  "closed_acl_rule": "No other explicit table/column/function grantee, including PUBLIC; owners retain ownership/DDL rights but executable DML privileges are the listed ACLs. Superuser/bootstrap is not a serving role. Reject indirect serving membership in these owner roles.",
+  "new_foreign_keys": [
+    {
+      "table": "native_company_catalog_installs",
+      "columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "target": "ont_builtin_catalog_installs",
+      "target_columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_catalog_installs",
+      "columns": [
+        "org_id",
+        "origin_account_id",
+        "origin_command_id",
+        "origin_receipt_id"
+      ],
+      "target": "company_enrollment_receipts",
+      "target_columns": [
+        "org_id",
+        "account_id",
+        "command_id",
+        "receipt_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_object_refs",
+      "columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "target": "native_company_catalog_installs",
+      "target_columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_object_refs",
+      "columns": [
+        "org_id",
+        "object_type_id",
+        "schema_revision"
+      ],
+      "target": "ont_object_types",
+      "target_columns": [
+        "org_id",
+        "id",
+        "schema_version"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_action_refs",
+      "columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "target": "native_company_catalog_installs",
+      "target_columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_action_refs",
+      "columns": [
+        "org_id",
+        "object_type_id",
+        "registration_revision",
+        "manifest_digest"
+      ],
+      "target": "native_company_object_refs",
+      "target_columns": [
+        "org_id",
+        "object_type_id",
+        "schema_revision",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_action_refs",
+      "columns": [
+        "org_id",
+        "object_type_id",
+        "action_type_id"
+      ],
+      "target": "ont_action_types",
+      "target_columns": [
+        "org_id",
+        "object_type_id",
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_property_refs",
+      "columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "target": "native_company_catalog_installs",
+      "target_columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_property_refs",
+      "columns": [
+        "org_id",
+        "object_type_id",
+        "schema_revision",
+        "manifest_digest"
+      ],
+      "target": "native_company_object_refs",
+      "target_columns": [
+        "org_id",
+        "object_type_id",
+        "schema_revision",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "native_company_property_refs",
+      "columns": [
+        "org_id",
+        "object_type_id",
+        "property_id"
+      ],
+      "target": "ont_property_defs",
+      "target_columns": [
+        "org_id",
+        "object_type_id",
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_roles",
+      "columns": [
+        "org_id",
+        "origin_account_id",
+        "origin_command_id",
+        "origin_receipt_id"
+      ],
+      "target": "company_enrollment_receipts",
+      "target_columns": [
+        "org_id",
+        "account_id",
+        "command_id",
+        "receipt_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_roles",
+      "columns": [
+        "created_by_account_id"
+      ],
+      "target": "accounts",
+      "target_columns": [
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_roles",
+      "columns": [
+        "updated_by_account_id"
+      ],
+      "target": "accounts",
+      "target_columns": [
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "user_role_assignments",
+      "columns": [
+        "org_id",
+        "account_id"
+      ],
+      "target": "company_actors",
+      "target_columns": [
+        "org_id",
+        "account_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "user_role_assignments",
+      "columns": [
+        "org_id",
+        "role_id",
+        "subject_protocol"
+      ],
+      "target": "policy_roles",
+      "target_columns": [
+        "org_id",
+        "id",
+        "subject_protocol"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "user_role_assignments",
+      "columns": [
+        "org_id",
+        "origin_account_id",
+        "origin_command_id",
+        "origin_receipt_id"
+      ],
+      "target": "company_enrollment_receipts",
+      "target_columns": [
+        "org_id",
+        "account_id",
+        "command_id",
+        "receipt_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "user_role_assignments",
+      "columns": [
+        "assigned_by_account_id"
+      ],
+      "target": "accounts",
+      "target_columns": [
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_role_revisions",
+      "columns": [
+        "org_id",
+        "role_id",
+        "subject_protocol"
+      ],
+      "target": "policy_roles",
+      "target_columns": [
+        "org_id",
+        "id",
+        "subject_protocol"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_role_revisions",
+      "columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "target": "native_company_catalog_installs",
+      "target_columns": [
+        "org_id",
+        "catalog_version",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_role_revisions",
+      "columns": [
+        "org_id",
+        "origin_account_id",
+        "origin_command_id",
+        "origin_receipt_id"
+      ],
+      "target": "company_enrollment_receipts",
+      "target_columns": [
+        "org_id",
+        "account_id",
+        "command_id",
+        "receipt_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_role_revisions",
+      "columns": [
+        "actor_account_id"
+      ],
+      "target": "accounts",
+      "target_columns": [
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_capability_clauses",
+      "columns": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "manifest_digest"
+      ],
+      "target": "policy_role_revisions",
+      "target_columns": [
+        "org_id",
+        "role_id",
+        "revision",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_capability_clauses",
+      "columns": [
+        "org_id",
+        "action_object_type_id",
+        "action_type_id",
+        "registration_revision",
+        "manifest_digest"
+      ],
+      "target": "native_company_action_refs",
+      "target_columns": [
+        "org_id",
+        "object_type_id",
+        "action_type_id",
+        "registration_revision",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_capability_clause_fields",
+      "columns": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "clause_index",
+        "object_type_id",
+        "manifest_digest"
+      ],
+      "target": "policy_capability_clauses",
+      "target_columns": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "clause_index",
+        "action_object_type_id",
+        "manifest_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_capability_clause_fields",
+      "columns": [
+        "org_id",
+        "object_type_id",
+        "property_id",
+        "schema_revision",
+        "manifest_digest",
+        "content_digest"
+      ],
+      "target": "native_company_property_refs",
+      "target_columns": [
+        "org_id",
+        "object_type_id",
+        "property_id",
+        "schema_revision",
+        "manifest_digest",
+        "content_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_assignment_revisions",
+      "columns": [
+        "org_id",
+        "assignment_id",
+        "subject_protocol"
+      ],
+      "target": "user_role_assignments",
+      "target_columns": [
+        "org_id",
+        "id",
+        "subject_protocol"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_assignment_revisions",
+      "columns": [
+        "org_id",
+        "account_id"
+      ],
+      "target": "company_actors",
+      "target_columns": [
+        "org_id",
+        "account_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_assignment_revisions",
+      "columns": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "ceiling_digest"
+      ],
+      "target": "policy_role_revisions",
+      "target_columns": [
+        "org_id",
+        "role_id",
+        "revision",
+        "clause_digest"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_assignment_revisions",
+      "columns": [
+        "org_id",
+        "origin_account_id",
+        "origin_command_id",
+        "origin_receipt_id"
+      ],
+      "target": "company_enrollment_receipts",
+      "target_columns": [
+        "org_id",
+        "account_id",
+        "command_id",
+        "receipt_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_assignment_revisions",
+      "columns": [
+        "actor_account_id"
+      ],
+      "target": "accounts",
+      "target_columns": [
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "policy_roles",
+      "columns": [
+        "org_id",
+        "id",
+        "native_current_revision"
+      ],
+      "target": "policy_role_revisions",
+      "target_columns": [
+        "org_id",
+        "role_id",
+        "revision"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "user_role_assignments",
+      "columns": [
+        "org_id",
+        "id",
+        "native_current_revision"
+      ],
+      "target": "policy_assignment_revisions",
+      "target_columns": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "company_enrollment_receipts",
+      "columns": [
+        "org_id",
+        "root_assignment_id",
+        "root_revision"
+      ],
+      "target": "policy_assignment_revisions",
+      "target_columns": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "company_authority_heads",
+      "columns": [
+        "org_id",
+        "origin_account_id",
+        "origin_command_id",
+        "origin_receipt_id"
+      ],
+      "target": "company_enrollment_receipts",
+      "target_columns": [
+        "org_id",
+        "account_id",
+        "command_id",
+        "receipt_id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": true,
+      "initially_deferred": true,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    },
+    {
+      "table": "company_authority_heads",
+      "columns": [
+        "org_id"
+      ],
+      "target": "organizations",
+      "target_columns": [
+        "id"
+      ],
+      "update": "r",
+      "delete": "r",
+      "deferrable": false,
+      "initially_deferred": false,
+      "validated": true,
+      "target_schema": "public",
+      "match": "s"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_BOUNDED_GUARD_CONTRACT_AND_TEST_SOURCE_RUNTIME_PENDING",
+  "manifest": "/private/tmp/console-company-intake-guards-20260920-round2/MANIFEST.json",
+  "manifest_sha256": "274c42ecf71fd2fed78015dac47e74093cb91625237d6cdf120bef1d7b0fce33",
+  "supersedes_review": "/private/tmp/console-company-intake-guards-round1-integration-tests-review-20260920.json",
+  "resolved_findings": {
+    "G1": "All seven exact guard names now censused regardless return type; metadata validates trigger return and zero args. Actual integer-to-boolean overload must be rejected and removed.",
+    "G2": "Trigger association now requires function namespace public; unique no-arg routine census establishes exact public function. Actual same-name foreign-schema reattachment corruption preserves other flags and must be rejected/restored.",
+    "G3": "Installer contract requires READ COMMITTED and fixed-order ACCESS EXCLUSIVE locks before fresh emptiness census through commit under1s lock timeout. Sixth test witnesses real uncommitted prepare blocking exact requests AccessExclusive waiter, commits real pair and requires nonempty refusal with no installed closure and exact appended pair."
+  },
+  "evidence": [
+    "Read entire round1 source/contract and full round2 delta. Six SQLx source leaves, four real catalog corruptions; zero reviewer runtime.",
+    "All initial behavior negatives retained: owner rewrites, deferred pair closure at SET CONSTRAINTS and real COMMIT, sequence-witnessed suppressed/modified events, nonempty refusal.",
+    "Fault DDL creates no successful business fixtures; pending/cancel use genuine owner and full exact history oracles.",
+    "Nine frozen predecessor hashes/catalog design preserved between packets."
+  ],
+  "remaining_holds": [
+    "Guard implementation and generator/Buck resource integration not yet provided; source approval is not lane/runtime acceptance.",
+    "Expiry-positive168h and cleanup have no admitted deterministic clock/deadline/retention owner.",
+    "Full effects/receipt closure, populated rollout, native HTTP/browser, signed adapter commit and serving profile activation remain separate."
+  ],
+  "new_sqlx_sources": 6,
+  "reviewer_executed_tests": 0,
+  "repository_writes": 0
+}

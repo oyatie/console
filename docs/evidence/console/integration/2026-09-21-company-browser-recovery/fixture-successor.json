@@ -1,0 +1,13 @@
+{
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "before": "8af311e0a82da9d23a43cd43770014205b7b8a12688a6335b92834e4b90b043f",
+  "after": "96d38d49502c18db5abcada365a6a81c9e7c5a1e286aa085ee75327184b819d0",
+  "tests": [
+    "selected_administrator_receives_only_company_ceiling_without_operator_inheritance",
+    "failed_actor_admission_rolls_back_topology_and_same_command_retries_once",
+    "company_input_is_closed_bounded_preserved_and_html_escaped",
+    "concurrent_same_command_commits_once_and_foreign_account_cannot_reopen"
+  ],
+  "reviewer": "/root/company_scope_review",
+  "scope": "four finalized prerequisite helper calls only; assertions unchanged"
+}

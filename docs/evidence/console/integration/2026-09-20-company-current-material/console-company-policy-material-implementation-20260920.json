@@ -1,0 +1,23 @@
+{
+  "base": "8cb1e65ee3a65bbddc48a5b8c9d1ad8b14848c3d",
+  "files": {
+    "backend/Cargo.lock": "4fd86cb29fe475b22b8dc996a9b0ffffe82bb82be65d094a50828c9c9a27bad8",
+    "backend/crates/identity/application/BUCK": "41424dc5e9d7ac3c4c126de87cc74e72ff54cc352e6b3d96ed0a7e22f6ac8ca1",
+    "backend/crates/identity/application/Cargo.toml": "d530e9947d8b730afcf322c146de06679e48b803bcb065420259595ae0924ed1",
+    "backend/crates/identity/application/src/company.rs": "58eb1cf312dc4718cd937658611315c86d88e1c2a8c7ec6828163a4d78e06abf",
+    "backend/crates/identity/application/src/lib.rs": "7977a34c814140d3d9355fb63c0b030a68b1247655c3595cc374044c9d2dda03",
+    "backend/crates/identity/domain/BUCK": "811296fabf5d85a895260cc39d9f5ffedd88259e47816e1443f299de0864a79e",
+    "backend/crates/identity/domain/Cargo.toml": "4bc10c6a04aad02684f2dfcee09a96ccbc9d37d6a6a06ba6b85ddf1f75eb8c31",
+    "backend/crates/identity/domain/src/lib.rs": "8237d71c6185756c89656000d63e681346d906bf7a2fdd252fc9cc0ca3c3b3e1",
+    "backend/crates/platform/authz/BUCK": "9b200e2a212172ba20a75ef950867fee826bdf8e9d14aef36b692f7574487447",
+    "backend/crates/platform/authz/Cargo.toml": "1333d04135bfcc0d1bd537ccb446af22e693ca7e12b6e7c7a1a38bbff81fb06f",
+    "backend/crates/platform/authz/src/lib.rs": "9e4e91d3fb0ac7bcb65c6b0695a5838182386dbc3859e91ba317f07726d096f9",
+    "tools/buck/gen_first_party.py": "db117212906ff4dfc3bb822c8a2dc7e771226e09fdcd936a1328acadde08b30a",
+    "backend/crates/identity/application/src/company_policy.rs": "ef5acf302f16745806be52858e867c0b489aff2956b296f1a65cf5e576b16f43",
+    "backend/crates/platform/authz/src/company_policy.rs": "faeb010d736e769f1728187b1647bd9cd94df7e5130e155f1e9517516d454b0b",
+    "backend/crates/platform/authz/src/company_policy/native-company-authorization.cedarschema": "1488315263f6c7edff128030fc603d4cf00db46e983eb5fbb62be6373c146158"
+  },
+  "scope": "Current Company checked material and actual Cedar adapter, inside enclosing Company enrollment lane; no store/schema/API/birth acceptance",
+  "lane": "/private/tmp/console-native-company-enclosing-lane-20260920.json",
+  "actual_red": "/private/tmp/console-native-company-enclosing-current-red-20260920.log"
+}

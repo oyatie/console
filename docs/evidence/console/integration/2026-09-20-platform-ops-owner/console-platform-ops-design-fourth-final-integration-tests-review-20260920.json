@@ -1,0 +1,32 @@
+{
+  "reviewer": "integration_tests",
+  "kind": "independent-platform-ops-design-fourth-final-review",
+  "manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "design_sha256": "89674b71f2f62d8de43d8ca55c55d1ef598060a87d1b631445a40bd582b6a08f",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "prior_review_sha256": "3a5f9095a6025fa730f33b1d0bce559f9669711ad7e10af3e9d781c931d61712",
+  "outcome": "EXACT_DESIGN_APPROVED_FOR_REVIEWED_TEST_AUTHORING_ONLY",
+  "material_findings": [],
+  "challenge_results": {
+    "fixture_realism": "Design requires genuine finalized App, actual Business/Auth logins, real OTP/passkey source, multiple Companies/Groups, active/inactive users, real work-order states and mixed telemetry. This is sufficient for test authoring; exact fixture bytes/oracles remain independently reviewable before admission.",
+    "independent_aggregates_order": "Raw persisted rows and fixed fixture arithmetic/order are explicitly independent of both challenged SQL functions. Fourteen health fields, six adoption fields, both orders, nulls and cycle behavior are frozen. No SQL helper call may serve as its own expected result.",
+    "known_host_clock_red_masking": "Design preserves strict DB-window checks while permitting independently reviewed assertion order: first establish nonempty real positive/recovery projection, then fail exact current-role403 expectation before any known old-host-clock audit-window failure. No tolerance/check deletion is approved.",
+    "two_query_interruption_expiry": "Five checks and one retained transaction close the previously ambiguous gap between health and adoption reads. Separate first/second query waits, DB-clock expiry and audit-wait rollback are mandatory actual-boundary evidence, not simulated policy DTO tests.",
+    "preserved_list_behavior": "Private two-operation discriminator and private finite failure type preserve the accepted List signature/error/audit/payload. Full existing list evidence must remain green; accepted list checks are not weakened to make health extraction pass.",
+    "cleanup": "Existing owned-handle bounded finish and dedicated observer clean_pids are appropriate reusable machinery. Positive acceptance must show no active or idle owned transaction, no dependent waiter and no detached relay/request task. Failure-path fixture restoration and handle cleanup must precede assertion rethrow.",
+    "evidence_corruption": "Positive plus missing/extra/reordered/wrong-field/cross-Company/history/audit corruption controls are required, including exact wire privacy and acknowledged-commit evidence. Counts or empty fixtures alone cannot establish behavior."
+  },
+  "requirements_for_next_exact_test_packet": [
+    "Make Company/Group identities and aggregate distributions asymmetric; include meaningful positive/negative work-order classes and telemetry cycles, null duration, error/performance data, independent p95 arithmetic, exact deterministic tie ordering and no sentinel output. Do not infer consecutive release-cycle retirement from the existing zero-legacy count.",
+    "Freeze top-level tenants envelope,14health/6adoption field census, all current caller-visible null/ordering semantics, exact20field audit and complete public-table/historical-audit bytes.",
+    "Bind mounted vs direct-owner source/error expectations separately, retaining actual configured TTL and exact raw header byte inventories.",
+    "For first-query expiry, a separately held second-projection lock can demonstrate the owner returns401 before entering adoption while that lock remains held. This is a concrete available oracle, not a required new production hook.",
+    "Observe actual role/query/PID blocker edges for each wait; polling sleeps are pacing only. Release locks and await/abort owned tasks before assertions; guard fault restoration against assertion panics.",
+    "Review every semantic test change independently. A missing schema, absent dependency or unrelated positive/audit prerequisite failure is not the designated PLATFORM_OPS_CURRENT_ROLE_REQUIRED RED.",
+    "After test approval, execute genuine clean-candidate owner RED before implementation admission. Existing list lane remains open until its own acceptance requirements close."
+  ],
+  "tests_executed": 0,
+  "implementation_admitted": false,
+  "repository_writes": false,
+  "release_or_production_approval": false
+}

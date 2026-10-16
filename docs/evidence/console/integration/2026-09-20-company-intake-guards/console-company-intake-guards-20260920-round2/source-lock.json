@@ -1,0 +1,9 @@
+{
+  "ops/postgres-company-enrollment-schema.sql": "7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb",
+  "ops/postgres-company-enrollment-input.sql": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290",
+  "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+  "ops/generate-account-custody.py": "419c30ed6f010e3a6b73424d57a8690f22eeee530f5a1f4649f451e567ee231c",
+  "backend/app/tests/auth_rest/native_company_intake_owner.rs": "85f3027ed4af8e9c55513b4259233aa6c5f4dc6654a42c1a90ddcfb6c70f540c",
+  "backend/app/tests/auth_rest/native_company_intake_schema.rs": "8a01f9b531ac33acc8ec57a45a4688a268ecf78667a7c529bf820bdb2259768e",
+  "backend/app/tests/auth_rest/native_company_setup.rs": "46d132ab76777cfdab8db769a2c0ce615ca965ffc59b159a402981d4b9b1072a"
+}

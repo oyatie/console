@@ -1,0 +1,16 @@
+{
+  "decision": "APPROVE_ONE_ADDITIVE_ISSUER_MISMATCH_TEST_SOURCE",
+  "reviewer": "/root/policy_browser_tests",
+  "manifest_sha256": "987cb5bfd3363cb322ed442afcaa6a213b15527cbf127e5942a61a40a0b3af56",
+  "source_sha256": "49b09eedbf92607635aed6054095dd81b8ad555c64d0bac76310f6fcc9853eef",
+  "checks": [
+    "All manifest/source/predecessor/patch hashes match. Exactly one insertion; all prior tests byte-preserved.",
+    "Wrong issuer built by native_form_issuer from alternate random real ES256 key; verifier remains original actual router key.",
+    "Actual current enrolled Account/read credentials resolve before issuance, so wrong-issuer failure must be AuthorityUnavailable, not invalid user input.",
+    "Failed issuance rolls back and full inventory matches; subsequent original issuer proof+recheck+commit provides live positive control with unchanged inventory."
+  ],
+  "limits": [
+    "0 build/runtime tests by reviewer. Does not simulate key rotation, signing outage or publication policy."
+  ],
+  "findings": []
+}

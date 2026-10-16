@@ -1,0 +1,147 @@
+{
+  "header": {
+    "command_line_args": [
+      "/private/tmp/console-client-release-20260919/tools/buck2",
+      "test",
+      "--local-only",
+      "//tools/buck:app-auth-rest-pg",
+      "--",
+      "--env",
+      "CONSOLE_BUCK_POSTGRES_ENV_FILE=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.NUC0SI",
+      "--env",
+      "RUST_TEST_THREADS=1",
+      "--timeout",
+      "21600"
+    ],
+    "expanded_command_line_args": [
+      "/private/tmp/console-client-release-20260919/tools/buck2",
+      "test",
+      "--local-only",
+      "//tools/buck:app-auth-rest-pg",
+      "--",
+      "--env",
+      "CONSOLE_BUCK_POSTGRES_ENV_FILE=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.NUC0SI",
+      "--env",
+      "RUST_TEST_THREADS=1",
+      "--timeout",
+      "21600"
+    ],
+    "working_dir": "/private/tmp/console-client-release-20260919",
+    "trace_id": "73046cd6-08ba-46d4-835f-c3f9d8bce692",
+    "start_time": [
+      1789860898,
+      875151000
+    ]
+  },
+  "revision_events": [
+    {
+      "timestamp": [
+        1789860898,
+        886103000
+      ],
+      "hg_revision": null,
+      "has_local_changes": null,
+      "command_error": null,
+      "git_revision": "01e069883b998d9c430500c85a6d464c263d4ae3"
+    },
+    {
+      "timestamp": [
+        1789860898,
+        932823000
+      ],
+      "hg_revision": null,
+      "has_local_changes": true,
+      "command_error": null,
+      "git_revision": null
+    }
+  ],
+  "executor": [
+    {
+      "argv": [
+        "/private/tmp/console-client-release-20260919/tools/buck/run_test_with_postgres_env.sh",
+        "/private/tmp/console-client-release-20260919/buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest"
+      ],
+      "env": [
+        {
+          "key": "CONSOLE_BUCK_POSTGRES_ENV_FILE",
+          "value": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.NUC0SI"
+        },
+        {
+          "key": "RUST_TEST_THREADS",
+          "value": "1"
+        },
+        {
+          "key": "BUCK2_DAEMON_UUID",
+          "value": "d98de1f6-df48-4859-a34b-c736d26a034e"
+        },
+        {
+          "key": "BUCK_BUILD_ID",
+          "value": "73046cd6-08ba-46d4-835f-c3f9d8bce692"
+        }
+      ],
+      "action_digest": "415239c71d81e0ae3463b1e3db56499626ecff65dc95b817af6c83878442f983:148"
+    }
+  ],
+  "test_result": {
+    "suite": {
+      "suite_name": "app-auth-rest-pg",
+      "test_names": [],
+      "target_label": {
+        "label": {
+          "package": "root//tools/buck",
+          "name": "app-auth-rest-pg"
+        },
+        "configuration": {
+          "full_name": "prelude//platforms:default#39893c7e49283da4"
+        },
+        "execution_configuration": null
+      }
+    },
+    "exit_code": 101,
+    "stdout_sha256": "7fdc3c7f2c89ab8ec928d7c01df9b7a5a296ebfee9e0d898548ea0218e3973fa",
+    "stderr": "",
+    "duration_us": 11121024707
+  },
+  "binary_actions": [
+    {
+      "key": {
+        "id": "0700000000000000",
+        "key": "_7",
+        "owner": {
+          "TargetLabel": {
+            "label": {
+              "package": "root//backend/app",
+              "name": "console-app-itest-auth_rest"
+            },
+            "configuration": {
+              "full_name": "prelude//platforms:default#39893c7e49283da4"
+            },
+            "execution_configuration": null
+          }
+        }
+      },
+      "kind": "Run",
+      "name": {
+        "category": "rustc",
+        "identifier": "link [pic]"
+      },
+      "outputs": [
+        {
+          "tiny_digest": "e3b0c442"
+        },
+        {
+          "tiny_digest": "3211d28d"
+        },
+        {
+          "tiny_digest": "105e71c7"
+        },
+        {
+          "tiny_digest": "e37c73d0"
+        }
+      ],
+      "commands": [],
+      "execution_kind": 10,
+      "output_size": 348630678
+    }
+  ]
+}

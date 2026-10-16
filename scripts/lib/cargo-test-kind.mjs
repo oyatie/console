@@ -10,3 +10,18 @@ export function cargoTestKind(kind) {
   if (kinds.some((entry) => LIB_KINDS.has(entry))) return "lib";
   return null;
 }
+
+// Match the generator's direct local-feature model; unsupported defaults fail closed.
+export function cargoDefaultFeatures(definitions, requested = []) {
+  if (!definitions || typeof definitions !== "object" || Array.isArray(definitions)) {
+    throw new Error("missing Cargo feature definitions");
+  }
+  const defaults = Object.hasOwn(definitions, "default") ? definitions.default : [];
+  if (!Array.isArray(defaults) || !Array.isArray(requested)
+    || [...defaults, ...requested].some(feature => typeof feature !== "string"
+      || !feature || feature === "default" || !Object.hasOwn(definitions, feature)
+      || !Array.isArray(definitions[feature]))) {
+    throw new Error("malformed defaults or unknown local Cargo feature");
+  }
+  return [...new Set([...defaults, ...requested])].sort();
+}

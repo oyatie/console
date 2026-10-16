@@ -1,0 +1,760 @@
+{
+  "kind": "ACTUAL_PSQL_CHILD_OPERATOR_CONFIGURATION_ONLY",
+  "image": "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56",
+  "discovered": 2,
+  "executed": 2,
+  "passed": 0,
+  "failed": 2,
+  "status": "FAIL",
+  "limits": [
+    "Wrong expected operator intentionally refuses before schema or installer work.",
+    "Not finalizer runtime/18.6 compatibility or release qualification."
+  ],
+  "custody_before": {
+    "head": "755271767e3553b12fe822dac740fac0e376ae76",
+    "files": {
+      "ops/account-custody-migrations.sha384": "736d28bc7b3b5cf15ca4c341fd3622dc76521db9dbf974b75cef7e73eb68fbf5",
+      "ops/postgres-finalize-account-credentials.sql": "f1925281a6e175214c5ff647419a3428fca9faae79f461a161a5938bf6b02253",
+      "ops/postgres-finalize-account-custody.integration.test.py": "3eeb60069079fcd0b282c52e55dd7bbd350ccc83c35e53670a14ec4bbc082494",
+      "ops/postgres-finalize-account-custody.sh": "1d08778a6cd56d5b1d718ba2ea8710524b3cc5bdcc187a785d8252021c6176b1",
+      "ops/postgres-finalize-account-custody.sql": "ce195636a182721c027c689a6a021de03eafa17ff30e59607257c963903afb9e",
+      "ops/postgres-install-durability-observer.sql": "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc",
+      "ops/postgres-reconcile-topology.sh": "aed4269f991123534bb347ae99fc660fa6517f9f9ec9cfeb626da5dc0a48bbb1",
+      "ops/postgres-verify-account-native.sql": "a498b59d41bc9c64b82a61a3deeb1f4652bf4441b81e17f538ccca6a04025151"
+    }
+  },
+  "error": "operator configuration cases failed; each exact failure is retained",
+  "location": "operator_jit_configuration_cases:849",
+  "cleanup_failed_containers": [],
+  "cases": [
+    {
+      "name": "operator_jit_default_child_settings",
+      "status": "FAIL",
+      "error": "actual psql child execution settings differ from fixed operator contract",
+      "location": "assert_operator_child_environment:403",
+      "commands": [
+        30,
+        38
+      ]
+    },
+    {
+      "name": "operator_jit_observer_child_settings",
+      "status": "FAIL",
+      "error": "actual psql child execution settings differ from fixed operator contract",
+      "location": "assert_operator_child_environment:403",
+      "commands": [
+        38,
+        46
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "docker",
+        "image",
+        "inspect",
+        "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56"
+      ],
+      "exit": 0,
+      "log": "001.log"
+    },
+    {
+      "argv": [
+        "openssl",
+        "req",
+        "-x509",
+        "-newkey",
+        "rsa:2048",
+        "-nodes",
+        "-days",
+        "2",
+        "-subj",
+        "/CN=Wrapper Test CA",
+        "-keyout",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/ca.key",
+        "-out",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/ca.crt"
+      ],
+      "exit": 0,
+      "log": "002.log"
+    },
+    {
+      "argv": [
+        "openssl",
+        "req",
+        "-newkey",
+        "rsa:2048",
+        "-nodes",
+        "-subj",
+        "/CN=localhost",
+        "-keyout",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.key",
+        "-out",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.csr"
+      ],
+      "exit": 0,
+      "log": "003.log"
+    },
+    {
+      "argv": [
+        "openssl",
+        "x509",
+        "-req",
+        "-in",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.csr",
+        "-CA",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/ca.crt",
+        "-CAkey",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/ca.key",
+        "-CAcreateserial",
+        "-days",
+        "2",
+        "-extfile",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.ext",
+        "-out",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.crt"
+      ],
+      "exit": 0,
+      "log": "004.log"
+    },
+    {
+      "argv": [
+        "openssl",
+        "req",
+        "-x509",
+        "-newkey",
+        "rsa:2048",
+        "-nodes",
+        "-days",
+        "2",
+        "-subj",
+        "/CN=Wrong Test CA",
+        "-keyout",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/wrong-ca.key",
+        "-out",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/wrong-ca.crt"
+      ],
+      "exit": 0,
+      "log": "005.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "run",
+        "-d",
+        "--rm",
+        "--name",
+        "console-wrapper-5b6bb1e6a2da",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/cluster.env",
+        "-p",
+        "127.0.0.1::5432",
+        "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56"
+      ],
+      "exit": 0,
+      "log": "006.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "sh",
+        "-c",
+        "test \"$(cat /proc/1/comm)\" = postgres && pg_isready -U wrapper_admin -d postgres"
+      ],
+      "exit": 1,
+      "log": "007.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "sh",
+        "-c",
+        "test \"$(cat /proc/1/comm)\" = postgres && pg_isready -U wrapper_admin -d postgres"
+      ],
+      "exit": 0,
+      "log": "008.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "mkdir",
+        "-p",
+        "/wrapper-tls",
+        "/wrapper-assets"
+      ],
+      "exit": 0,
+      "log": "009.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.key",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-tls/server.key"
+      ],
+      "exit": 0,
+      "log": "010.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/server.crt",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-tls/server.crt"
+      ],
+      "exit": 0,
+      "log": "011.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/ca.crt",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-tls/ca.crt"
+      ],
+      "exit": 0,
+      "log": "012.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/wrong-ca.crt",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-tls/wrong-ca.crt"
+      ],
+      "exit": 0,
+      "log": "013.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "chown",
+        "postgres:postgres",
+        "/wrapper-tls/server.key"
+      ],
+      "exit": 0,
+      "log": "014.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "chmod",
+        "600",
+        "/wrapper-tls/server.key"
+      ],
+      "exit": 0,
+      "log": "015.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "016.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "017.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "018.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "019.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/postgres-finalize-account-custody.sh",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-assets/postgres-finalize-account-custody.sh"
+      ],
+      "exit": 0,
+      "log": "020.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/postgres-finalize-account-custody.sql",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-assets/postgres-finalize-account-custody.sql"
+      ],
+      "exit": 0,
+      "log": "021.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/account-custody-migrations.sha384",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-assets/account-custody-migrations.sha384"
+      ],
+      "exit": 0,
+      "log": "022.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/postgres-finalize-account-credentials.sql",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-assets/postgres-finalize-account-credentials.sql"
+      ],
+      "exit": 0,
+      "log": "023.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/postgres-install-durability-observer.sql",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-assets/postgres-install-durability-observer.sql"
+      ],
+      "exit": 0,
+      "log": "024.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/postgres-verify-account-native.sql",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-assets/postgres-verify-account-native.sql"
+      ],
+      "exit": 0,
+      "log": "025.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/private/tmp/console-client-release-20260919/ops/postgres-reconcile-topology.sh",
+        "console-wrapper-5b6bb1e6a2da:/topology.sh"
+      ],
+      "exit": 0,
+      "log": "026.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/operator.password",
+        "console-wrapper-5b6bb1e6a2da:/operator.password"
+      ],
+      "exit": 0,
+      "log": "027.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "chmod",
+        "600",
+        "/operator.password"
+      ],
+      "exit": 0,
+      "log": "028.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "029.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "030.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "031.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "mkdir",
+        "-p",
+        "/wrapper-trace-31"
+      ],
+      "exit": 0,
+      "log": "032.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "sh",
+        "-c",
+        "command -v psql"
+      ],
+      "exit": 0,
+      "log": "033.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql-shim-31",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-trace-31/psql"
+      ],
+      "exit": 0,
+      "log": "034.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "chmod",
+        "500",
+        "/wrapper-trace-31/psql"
+      ],
+      "exit": 0,
+      "log": "035.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/wrapper.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "bash",
+        "/wrapper-assets/postgres-finalize-account-custody.sh"
+      ],
+      "exit": 3,
+      "log": "036.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "cat",
+        "/wrapper-trace-31/argv"
+      ],
+      "exit": 0,
+      "log": "037.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "cat",
+        "/wrapper-trace-31/environment"
+      ],
+      "exit": 0,
+      "log": "038.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "psql",
+        "-X",
+        "-w",
+        "-h",
+        "localhost",
+        "-U",
+        "wrapper_admin",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At",
+        "-F",
+        "|",
+        "--file",
+        "-"
+      ],
+      "exit": 0,
+      "log": "039.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "mkdir",
+        "-p",
+        "/wrapper-trace-39"
+      ],
+      "exit": 0,
+      "log": "040.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "sh",
+        "-c",
+        "command -v psql"
+      ],
+      "exit": 0,
+      "log": "041.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "cp",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/psql-shim-39",
+        "console-wrapper-5b6bb1e6a2da:/wrapper-trace-39/psql"
+      ],
+      "exit": 0,
+      "log": "042.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "chmod",
+        "500",
+        "/wrapper-trace-39/psql"
+      ],
+      "exit": 0,
+      "log": "043.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "--env-file",
+        "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-private-pjciq7ip/wrapper.env",
+        "console-wrapper-5b6bb1e6a2da",
+        "bash",
+        "/wrapper-assets/postgres-finalize-account-custody.sh",
+        "--with-durability-observer"
+      ],
+      "exit": 3,
+      "log": "044.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "cat",
+        "/wrapper-trace-39/argv"
+      ],
+      "exit": 0,
+      "log": "045.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "exec",
+        "console-wrapper-5b6bb1e6a2da",
+        "cat",
+        "/wrapper-trace-39/environment"
+      ],
+      "exit": 0,
+      "log": "046.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "rm",
+        "-f",
+        "console-wrapper-5b6bb1e6a2da"
+      ],
+      "exit": 0,
+      "log": "047.log"
+    },
+    {
+      "argv": [
+        "docker",
+        "container",
+        "inspect",
+        "console-wrapper-5b6bb1e6a2da"
+      ],
+      "exit": 1,
+      "log": "048.log"
+    }
+  ],
+  "actual_wrapper_invocations": 2
+}

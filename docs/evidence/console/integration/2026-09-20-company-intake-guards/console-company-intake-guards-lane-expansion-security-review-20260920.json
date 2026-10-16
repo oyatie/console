@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_TWO_PATH_PRIVATE_GUARD_EXPANSION_OF_EXISTING_ENROLLMENT_LANE",
+  "lane_preimage": "/private/tmp/console-native-company-enrollment-lane-signed-20260920.json",
+  "lane_preimage_sha256": "7d4aa825ee579683015407527903b1f01628d63439004b863c19caae6ad655d0",
+  "enclosing_lane": "native-company-enrollment",
+  "original_base": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+  "current_source_base": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+  "owner": "/root",
+  "added_paths": [
+    "ops/postgres-company-enrollment-guards.sql",
+    "backend/app/tests/auth_rest/native_company_intake_guards.rs"
+  ],
+  "reviews": [
+    {
+      "path": "/private/tmp/console-company-intake-guards-round2-security-review-20260920.json",
+      "sha256": "ec67d42d8b5bae05d6cde8fd14b903028a085cb645e07f1b6fd26390dbfd5f36"
+    },
+    {
+      "path": "/private/tmp/console-company-intake-guard-generator-tests-security-review-20260920.json",
+      "sha256": "d835e30a4f1c2fc72c6479e19eee170f3bf5362869aaf0add0a4b4b50bb05cd1"
+    }
+  ],
+  "scope": [
+    "Exactly approved round2 six routines/eight ALWAYS triggers and six SQLx sources; separate tenth UNINSTALLED output, all nine predecessor output hashes frozen.",
+    "Install only under explicit READCOMMITTED transaction, one-second bounded stable requests\u2192events\u2192receipts ACCESS EXCLUSIVE locks before fresh emptiness read; no populated retroactive rollout or serving profile activation.",
+    "Existing approved generator/tests/BUCK paths cover serialized resource/mapping work; no new lockfile/migration/contract-generation authority."
+  ],
+  "conditions": [
+    "Retain original immutable full enrollment target and identical admitted real authenticated HTTP404vs201 probe. Missing private resource/symbol is a prerequisite gap, not new lane admission.",
+    "Root remains sole repository/generated/runtime writer. Integrate exact independently reviewed/formatted guard test successor and commit before new guard implementation.",
+    "Actual SQL guard body/generated successor and runtime evidence still require independent review. Do not close lane on private subsets.",
+    "Append explicit guard limits/full release remainder to mechanical guide and current HOLDs; original codec-era scope text does not supersede subsequent bounded approvals or full user acceptance contract."
+  ],
+  "remaining_holds": [
+    "Complete Company business effects/catalog/policy/receipt/context/browser owner and original lane",
+    "Actual168hour expiry-positive clock/deadline mechanism, terminal payload cleanup, populated guard rollout",
+    "Remaining current credential/HTTP/security/recovery requirements and all milestones0\u201310 release qualification",
+    "Separate production exposure and direct payment execution authority"
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

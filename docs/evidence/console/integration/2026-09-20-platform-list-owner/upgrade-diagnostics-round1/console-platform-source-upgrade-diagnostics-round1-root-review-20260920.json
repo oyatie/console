@@ -1,0 +1,9 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVED_DIAGNOSTICS_ONLY",
+  "manifest_sha256": "37d7fb5dd60e3790e1bb63b06b10511e0538b252bdd1bc0d412cf452c2cdb192",
+  "security_sha256": "864f6da544d07b8d334b4db46c670e95a88197e11835f2f6692a5235be75fa6e",
+  "changes": "Four same exact equalities with cap32 path-only differences; no field removal or state mutation",
+  "prior_candidate": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "prior_candidate_tests": "original owner1/1 full30/30 focused5031/1; clippy passed; full52 still active with3observed failures"
+}

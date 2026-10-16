@@ -1,0 +1,30 @@
+{
+  "implementation_base": "cbf26079a60537852029342c1485316e990a7223",
+  "producer": "Buck2-native Rust test artifacts; no Cargo compile/test",
+  "commands": [
+    "env PATH=\"<pinned-dotslash>:$PATH\" tools/buck2 run -j1 -c root//project.ignore=.git,backend/target //backend/crates/platform/auth-rest:console-platform-auth-rest-unit -- --list company_credential_capture_tests",
+    "env PATH=\"<pinned-dotslash>:$PATH\" tools/buck2 run -j1 -c root//project.ignore=.git,backend/target //backend/crates/platform/auth-rest:console-platform-auth-rest-unit -- company_credential_capture_tests",
+    "env PATH=\"<pinned-dotslash>:$PATH\" tools/buck2 test -j1 -c root//project.ignore=.git,backend/target //backend/crates/platform/authz:console-platform-authz-unit"
+  ],
+  "capture": {
+    "discovered": 9,
+    "executed": 9,
+    "passed": 9,
+    "filtered_out": 6,
+    "new_tests": 5,
+    "database_access": false
+  },
+  "authz": {
+    "executed": 155,
+    "passed": 155,
+    "filtered_out": 0
+  },
+  "proof_limit": "Credential capture and application view assertions only, not current-session/SQL/browser workflow acceptance.",
+  "remaining": [
+    "Reviewed bounded URL-encoded body parser",
+    "Policy SQL custody integration",
+    "Retained PostgreSQL adapter",
+    "Real browser SSR form workflow",
+    "Five MVP workflows and full release"
+  ]
+}

@@ -1,0 +1,2 @@
+psql:/tmp/console-account-custody.7BwdFV1L/preflight.sql:9: ERROR:  account_custody.operator_identity_mismatch
+CONTEXT:  PL/pgSQL function inline_code_block line 1 at RAISE

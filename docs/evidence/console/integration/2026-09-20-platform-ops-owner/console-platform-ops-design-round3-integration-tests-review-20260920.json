@@ -1,0 +1,32 @@
+{
+  "reviewer": "integration_tests",
+  "kind": "independent-platform-ops-design-round3-review",
+  "manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "design_sha256": "89674b71f2f62d8de43d8ca55c55d1ef598060a87d1b631445a40bd582b6a08f",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "source_hashes_unchanged_from_verified_round2": true,
+  "outcome": "APPROVED_DESIGN_ROUND3",
+  "material_findings": [],
+  "resolved_findings": [
+    {
+      "id": "OPS-DESIGN-TTL-STARTUP",
+      "resolution": "Design now accurately states startup accepts zero/negative family TTL, accepted signed-source validation precedes request-time finite503, and startup positivity validation is separately scoped. No production config behavior is silently added."
+    }
+  ],
+  "independent_checks": [
+    "Exact signature remains original credential plus root-composed verifier/policy/TTL, with no actor/time overload.",
+    "Retained transaction/source covers both queries, mapping, audit and final commit; five fresh checks preserve the accepted source lifetime rules.",
+    "Direct TenantHealthRead/Operations/ReadProjection tuple and finite Auth/Cedar error mappings unchanged.",
+    "Explicit boundaries distinguish header-shape admission, missing dependency refusal, upstream middleware and actual owning transaction; no invented precedence bypass.",
+    "Independent data/audit/all-state oracles and role-specific RED remain required, with strict existing assertions preserved.",
+    "List semantics, raw SQL capability HOLD and open prior list lane remain preserved."
+  ],
+  "remaining_prerequisites": [
+    "Exact implementation/helper/error-message review and approved executable test packet.",
+    "Functioning actual dual-role/finalized App prerequisites and genuine owner RED on exact clean candidate before admission.",
+    "Required fourth design review and current list lane acceptance, as scheduled by root."
+  ],
+  "tests_executed": 0,
+  "implementation_admitted": false,
+  "repository_writes": false
+}

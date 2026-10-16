@@ -1,0 +1,37 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_PURE_POLICY_DESIGN_AND_EXACT_CALLSITE_DEPENDENCY_CENSUS_ONLY",
+  "manifest_sha256": "7823ee9032c28c0d54300c4e23bf3100bf42742eef69e4f3fcd9df9e40a60c42",
+  "design_sha256": "9e3e567056a5b4784ff20470bd8f5886b59f8c1305c412532745b80e5c56206d",
+  "caller_census_sha256": "4a2551e545559939c5337848b7fcbbd85c54ec3e5521b1f5d6133c2905adad96",
+  "prior_round3_security_receipt_sha256": "1b0560cff309de8ce322ee5f203138733ef36d74d0aee4e6ee4d1d16d01bb6a8",
+  "checks": [
+    "Exact Cedar/schema/truth-table bytes unchanged from independently approved round3, including private eligibility/composite classification and derived signed target/callsite closure.",
+    "Group(Uuid) reuses current identity rather than introducing nonexistent GroupId.",
+    "Independently searched all backend Rust PlatformPrincipal/PlatformFeature references and verified census1constructor+17authorize source lines. Every current ordinary/context feature caller has an eventual exact typed target/use/owner; no mounted PlatformAuditRead invented.",
+    "Actual GET /api/platform/orgs -> list_orgs -> PlatformProvisioner::list_tenants confirmed; owner materializes Company rows and appends platform.tenant.list audit in one current transaction. Genuine current/retained guard handoff is not implemented by current raw actor:Option<UserId> signature.",
+    "Candidate explicitly repudiates generic resolver TenantList/Companies/read substitution; authentication snapshot is not operation authorization, retained guard, or proof for unrelated callers.",
+    "Future actual Company collection test uses restricted logins, unchanged signed historical token with real current role demotion/restoration, nonempty projection, full retained rows and exact audit. Separate postmiddleware/observed-wait history requires approved actual guard seam before test authoring/admission.",
+    "Shared constructor/authorize and all17callers remain untouched pending coordinated conversion, including nonHTTP owner routes. Root-only composition and canonical owner boundaries retained.",
+    "Contradictory existing MEMBER mint-positive fixture is explicitly preserved pending separately reviewed semantic successor; no fixture-only privilege switch/delete/skip is licensed."
+  ],
+  "scope": "This accepts pure immutable policy design and exact current callsite/dependency map. It does not admit source implementation, new tests, principal conversion, live platform policy cutover or global mint. Root round4 rejection is retained; no shortcut restored.",
+  "remaining_holds": [
+    "Exact current credential/source/family retained-guard and list-owner handoff signature/SQL/ACL/lock contract",
+    "Independently reviewed executable owner tests and real prerequisite-ready RED",
+    "Actual strictSDK compile/evaluation, exact source/runtime tests and allcaller conversion",
+    "Derived/session/export/subscription/force/native policy and complete release qualification"
+  ],
+  "execution": {
+    "repository_writes": 0,
+    "builds": 0,
+    "database_operations": 0,
+    "cedar_compilations": 0,
+    "cedar_evaluations": 0
+  },
+  "lenses": [
+    "Systems Thinking: generic identity resolver cannot substitute one operation semantics for17different owners.",
+    "Zero trust: actual retained source authority belongs to list owner and cannot come from fabricated principal.",
+    "Blast radius: freeze pure design and census; preserve fixtures until exact owner conversion."
+  ]
+}

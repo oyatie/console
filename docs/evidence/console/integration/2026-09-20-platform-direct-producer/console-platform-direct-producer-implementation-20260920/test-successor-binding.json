@@ -1,0 +1,13 @@
+{
+  "approved_test_successor": "5e9522f8fc8bc77dd64369ab8122f9acb5e4d8ce",
+  "production_files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "implementation_review": "/private/tmp/console-platform-direct-producer-implementation-security-review-20260920.json",
+  "test_oracle_review": "/private/tmp/console-platform-direct-family-protocol-oracle-security-review-20260920.json",
+  "original_design_and_production_behavior_unchanged": true,
+  "test_correction": "Actual immutable credential protocol is LEGACY_COMPANY; original missing-binding RED is before this assertion and remains applicable",
+  "preserved_failure": "/private/tmp/console-platform-direct-producer-wrong-oracle-failure-20260920.log"
+}

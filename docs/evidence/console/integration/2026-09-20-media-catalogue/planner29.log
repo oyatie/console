@@ -1,0 +1,37 @@
+✔ only literal paths plus terminal subtree suffix are canonical ownership syntax (0.630958ms)
+✔ unsupported authority intersections fail closed (0.538334ms)
+✔ migration roots are excluded from leaves and serialised (5.969125ms)
+✔ per-lane resource declarations are mandatory while source admission creates no verification jobs (0.93375ms)
+✔ cold Rust capacity does not create expensive jobs from selected source writers (0.649ms)
+✔ same writer, worktree, or branch cannot be co-selected (0.235125ms)
+✔ completed source cannot bypass invalid roots or exact review receipts (0.24975ms)
+✔ completed source checks unowned private roots before its review shortcut (0.151666ms)
+✔ consolidation is blocked until exact independent review and valid consolidation identity (0.169375ms)
+✔ quality-weighted maximal independent set is deterministic (0.382125ms)
+✔ Buck isolation directories include a stable full-lane hash and reject caller-controlled traversal (0.1715ms)
+✔ review receipts fail closed unless an independent reviewer custody-binds the exact leaf result (0.781417ms)
+✔ review authority rejects duplicate IDs or fingerprints and incomplete exact identities (0.1005ms)
+✔ format-discriminated SSH authority requires the exact verified principal and SHA256 fingerprint (0.164459ms)
+✔ SSH verification fails closed for absent or non-Git status output (0.037625ms)
+✔ hermetic signed-candidate smoke ignores an unsigned synthetic HEAD and global config (133.741084ms)
+✔ real SSH-signed admission train excludes reviewed leaves and caps cold Buck jobs (347.607916ms)
+✔ immutable JSON rejects duplicate object keys before canonicalization (0.569625ms)
+✔ admission manifests are single-parent manifest-only commits with unique connected references (0.30575ms)
+✔ epoch admission closure rejects unreviewed, unrelated, and divergent-train commits (0.221667ms)
+✔ private lane roots that intersect protected authority are held instead of partially admitted (0.240375ms)
+✔ lane assignment roots must be covered by exactly one private capability root (0.13875ms)
+✔ completed and legacy lanes remain held before completion shortcuts (0.209916ms)
+✔ runtime-ineligible lanes are held before ranking so lower safe lanes fill capacity (0.2235ms)
+✔ source revision syntax requires a full immutable baseline SHA (0.198541ms)
+✔ source provenance admits only an existing immutable ancestor and non-conflicting ref (0.165458ms)
+✔ exact-SHA verification scheduling groups only compatible validated work and uses deterministic density (0.638042ms)
+✔ receipt-controlled grouping ignores caller-provided consolidated-tip hints (0.294333ms)
+✔ v2 truth ledger cannot bypass validated admission (0.207541ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 539.281916

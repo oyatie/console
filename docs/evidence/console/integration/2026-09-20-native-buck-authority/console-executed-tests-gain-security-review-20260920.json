@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact lexical test-attribute floor gain96 to110; no dark-set change",
+  "file": "docs/program/executed-tests-baseline.json",
+  "preimage_sha256": "572ae54711ad3829044ec450df5d70390e87cc6531dcaf17ae9f208f7db77aee",
+  "candidate_sha256": "367c11d56aefe71da5e760d4f25bffaf037f1153ca89d075f59622c0b7c67de2",
+  "checks": [
+    "JSON comparison and textual diff show only test_attribute_baseline[backend/crates/platform/authz/src/lib.rs]96\u2192110. All other values/formatting unchanged, including deferred storage suite, feature variants and dark baseline.",
+    "Current captured ratchet result reports110 lexical attributes for this source, no unresolved entries, same sole seaweedfs_worm dark binary. This is floor tightening to already existing coverage, not admitting a new dark suite.",
+    "Full verification actual Buck platform-authz-unit section includes native rustc link action,110 distinct named passed tests and final110passed/0failed/0ignored/0filtered. Separately repeated110 elsewhere is not double-counted here.",
+    "No test assertion/skip/gate/source changes approved; no browser variant or producer change included."
+  ],
+  "required_followup": [
+    "Root actual named clean RED and lane admission before baseline edit.",
+    "Unchanged executed-tests regression suite and live census must pass; preserve original full verify failure.",
+    "Candidate supports exact existing110test floor only, not browser feature reachability or full release."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "repository_mutations_by_reviewer": 0,
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Essentialism / YAGNI",
+    "Red Team"
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "static_only": true,
+  "old_discoverable_leaves_expected": 135,
+  "new_discoverable_leaves_expected": 34,
+  "new_count_derivation": {
+    "positive_controls": 4,
+    "named_same_object_history": 1,
+    "negative_groups": 29
+  },
+  "combined_discoverable_leaves_expected": 169,
+  "negative_groups": [
+    {
+      "group": "N01",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N02",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N03",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N04",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N05",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N06",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N07",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N08",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N09",
+      "variants_per_catalogue": 3,
+      "catalogues": 2,
+      "rejection_histories": 6
+    },
+    {
+      "group": "N10",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N11",
+      "variants_per_catalogue": 3,
+      "catalogues": 2,
+      "rejection_histories": 6
+    },
+    {
+      "group": "N12",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N13",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N14",
+      "variants_per_catalogue": 3,
+      "catalogues": 2,
+      "rejection_histories": 6
+    },
+    {
+      "group": "N15",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N16",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N17",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N18",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N19",
+      "variants_per_catalogue": 4,
+      "catalogues": 2,
+      "rejection_histories": 8
+    },
+    {
+      "group": "N20",
+      "variants_per_catalogue": 6,
+      "catalogues": 2,
+      "rejection_histories": 12
+    },
+    {
+      "group": "N21",
+      "variants_per_catalogue": 5,
+      "catalogues": 2,
+      "rejection_histories": 10
+    },
+    {
+      "group": "N22",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N23",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N24",
+      "variants_per_catalogue": 5,
+      "catalogues": 1,
+      "rejection_histories": 5
+    },
+    {
+      "group": "N25",
+      "variants_per_catalogue": 1,
+      "catalogues": 2,
+      "rejection_histories": 2
+    },
+    {
+      "group": "N26",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N27",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N28",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    },
+    {
+      "group": "N29",
+      "variants_per_catalogue": 2,
+      "catalogues": 2,
+      "rejection_histories": 4
+    }
+  ],
+  "total_rejection_histories_expected": 121,
+  "named_probe_expected": {
+    "matched_test_leaves": 1,
+    "rejection_histories": 6,
+    "catalogues": 2
+  },
+  "tests_executed": 0
+}

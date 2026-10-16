@@ -1,0 +1,28 @@
+{
+  "source_sha256": {
+    "backend/crates/platform/provisioning/src/lib.rs": "a0a25cbfadb9b472ae625f9d104b2a756de3814cb2b1d8a865dfc5267b5071c5",
+    "backend/crates/platform/platform-rest/src/view_as.rs": "3d3ea2738bf8aaf7410ad36216e5e5df83158bce27356552bc02a12a54903755",
+    "backend/app/src/workflow_schedules.rs": "263635f181faee3806ad901391ae7dc4d3ef87324cb43b905fd60dc1fb243635",
+    "backend/app/src/workflow_drain.rs": "0aee0799577d437dc4be81e9950f2a195a47ef15882f4b62404a7dfbc4ac266a",
+    "backend/crates/platform/audit-chain/src/lib.rs": "e75654eb1816743541555a189ed763e3d37f46edf40b257b60a2394c26ece615",
+    "backend/crates/facilities/rest/src/lib.rs": "bcd128b8b6529a6308d8819a2467537ac936d85560bc4eaf8769b1febcf1717a",
+    "backend/crates/platform/platform-rest/src/lib.rs": "ff28b45ada17f6fbd8e33ef4899fe779f71b215bcccb8c28cbecf9efa319a2ec",
+    "backend/crates/platform/request-context/src/lib.rs": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+    "backend/crates/platform/auth/src/legacy.rs": "af1722074e362b58568233053eff3b8547655bbfe3611d2f31a463d12a90848a",
+    "backend/crates/platform/auth/src/session.rs": "3c652d4e0fc6e8df05b02a54a06007718542c99075779280116f0a3afc6a212f",
+    "backend/crates/platform/auth/src/refresh.rs": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c",
+    "backend/crates/platform/provisioning/Cargo.toml": "1715ac28a0c61f9590f3ded717eea889209cfc9f125962dd130739099bf8491c",
+    "backend/crates/platform/auth/Cargo.toml": "1561e44f4b9e83fbab5d1d3ad6f5e2267ac7b4c4e1f1f885c8c40063cf6d9fb2",
+    "backend/crates/platform/authz/Cargo.toml": "434cdd4d202f1c859fe8bda3ba4040eb8594f7e9bedfb38d66811df6f61361f3",
+    "backend/crates/platform/db/migrations/0036_platform_onboarding.sql": "0db125de6f76569fe0c02b5c59bf163474947cc34cb7c657a07451c66f57680c",
+    "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql": "64c88d4901d34e304cf9387fda8137891a47917c6ff275683d16dd70bbd669c3",
+    "ops/generate-account-custody.py": "6aaf9b2edb40b1588ffa88ad956f5988b1224ff827bd39029fec6acb62970c94",
+    "ops/postgres-finalize-account-credentials.sql": "f1925281a6e175214c5ff647419a3428fca9faae79f461a161a5938bf6b02253",
+    "ops/postgres-finalize-account-custody.sql": "ce195636a182721c027c689a6a021de03eafa17ff30e59607257c963903afb9e",
+    "backend/app/src/lib.rs": "8eb0bdc5e895fb76f0d0dbe3ecc7987019cd3648da371128639a5588dcd04db1",
+    "backend/app/tests/auth_rest/startup_effective_privileges.rs": "56658432235bb160d5fc722ae02db9c484bdd6fb86c5c3440331411296726844"
+  },
+  "basis": "Read-only refreshed current source; root owns unrelated runtime and repository changes. Guard body unchanged, committed passkey primitive preserved.",
+  "approved_policy_manifest_sha256": "7823ee9032c28c0d54300c4e23bf3100bf42742eef69e4f3fcd9df9e40a60c42",
+  "observed_head": "49340a6d18551d58457ffd4acf96157e979dbb35"
+}

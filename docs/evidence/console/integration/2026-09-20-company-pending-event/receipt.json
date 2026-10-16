@@ -1,0 +1,35 @@
+{
+  "status": "APPROVED_COMPILED_ORACLE_NOT_WORKFLOW_ACCEPTANCE",
+  "test_commit": "552359398",
+  "source": "backend/app/tests/auth_rest/native_company_setup.rs",
+  "source_sha256": "28e62c9450c4dee05bbaccd61199aa2a49a8856d130ea5b3d68eb0b3648be5d1",
+  "command": "PATH=\"<pinned-dotslash>:$PATH\" tools/buck2 build //backend/app:console-app-itest-auth_rest",
+  "result": "BUILD SUCCEEDED",
+  "executed_tests": 0,
+  "members": [
+    {
+      "path": "console-native-company-pending-event-oracle-security-review-20260920.json",
+      "sha256": "47dc14377d0881bb4785bfb691812b5e5764798d3cfc138e599e276648756b3c",
+      "original_path": "/private/tmp/console-native-company-pending-event-oracle-security-review-20260920.json",
+      "original_sha256": "47dc14377d0881bb4785bfb691812b5e5764798d3cfc138e599e276648756b3c",
+      "original_bytes": 2893
+    },
+    {
+      "path": "console-company-pending-event-oracle-build-20260920.log.gz",
+      "sha256": "087f9d0df44206ee0ce05c3aa0d185b8454719437ec0b91e2cb62a7321b2420d",
+      "original_path": "/private/tmp/console-company-pending-event-oracle-build-20260920.log",
+      "original_sha256": "2fe43da3801d29e25247ed3ce9ce26c763b2b3c451604fc1885c39c654481874",
+      "original_bytes": 2087
+    },
+    {
+      "path": "approved-test-source.tar.gz",
+      "sha256": "6da60c173363174409f99dcbdd0bfe16d7c6f1ca942797bdd8394fa49918645b",
+      "original_directory": "/private/tmp/console-native-company-pending-event-oracle-20260920-round1"
+    }
+  ],
+  "remaining": [
+    "Actual Company owner must reach topology fault and preserve one PENDING request and attributed event",
+    "Same-command retry must create exactly one complete Company",
+    "Full MVP remains incomplete"
+  ]
+}

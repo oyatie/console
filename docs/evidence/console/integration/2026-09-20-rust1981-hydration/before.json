@@ -1,0 +1,22 @@
+{
+  "base_sha": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "files": {
+    "backend/Cargo.lock": "3616dadd89892ac18c9d7abcb2a8daa71c47a292e204c1cdd6306a16f1f0a3a5",
+    "backend/Cargo.toml": "4d566b31cb64b02dd8107d92e4926291e9afdf9d20bcf2cd53abee80f12dc064",
+    "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad",
+    "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+    "backend/crates/payroll/ui/bundle.lock.json": "b2e0df3266ff563c72be624d79571884c436a5f706243af02b1c889b06bc5b0e"
+  },
+  "review": "/private/tmp/console-rust1981-hydration-rebuild-review-20260920/review.json",
+  "owner": "/root",
+  "allowed_paths": [
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm",
+    "backend/crates/payroll/ui/bundle.lock.json"
+  ],
+  "stop": "Dependency/recipe/pin/lockfile drift;manualmanifestreseal;failedsourcecustody",
+  "rollback": "Restore prior3artifact bytes as coherentbundle;noapplication rollout",
+  "remaining_holds": [
+    "Actualhydrationbrowser and complete releasequalification remain required"
+  ]
+}

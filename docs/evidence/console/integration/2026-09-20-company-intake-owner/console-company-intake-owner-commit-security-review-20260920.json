@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_COMMIT_BINDING_OF_BOUNDED_PRIVATE_OWNER_EVIDENCE",
+  "commit": "b5364cb3e7b57be9c3a3bdee55047581598df597",
+  "runtime_receipt": "/private/tmp/console-company-intake-owner-runtime-security-review-20260920.json",
+  "runtime_receipt_sha256": "29f5a5558973e505dfc4a00ff23e4a52cadf703a63083de2c00bc4eafb0c7452",
+  "committed_source_hashes_match": true,
+  "native_test_binary": {
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+    "bytes": 397629064,
+    "sha256": "53415202748e607ab287881a552b2238e460af392a38d035d2a1be03d450e975"
+  },
+  "binary_hash_independently_read": true,
+  "discovery": {
+    "log": "/private/tmp/console-company-intake-native-discovery-20260920.log",
+    "sha256": "0e44af58bf3e8ba645b2f5f70a566e8555610fd8c44fa59372e9a725e05913ae",
+    "total": 484,
+    "intake_owner_leaves": [
+      "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_cancel_oracle_rejects_missing_and_rewritten_history: test",
+      "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_sql_cancel_survives_designation_revoke_and_never_reopens: test",
+      "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_sql_capacity_is_atomic_and_cancel_releases_one_slot: test",
+      "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_sql_conflict_namespace_and_foreign_recovery_preserve_history: test",
+      "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_sql_pending_history_and_event_fault_are_atomic: test",
+      "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_sql_same_command_waits_then_replays_one_durable_history: test"
+    ]
+  },
+  "executed_reviewed_leaves": 6,
+  "passed_reviewed_leaves": 6,
+  "limits": [
+    "Source/runtime prior receipt limits remain. Earlier empty artifact-manifest limitation resolved for this test binary only.",
+    "484is discovered roster, not all executed; six leaves actually executed and passed. No release app/SSR/WASM artifact or production qualification established.",
+    "Original enclosing Company owner lane/full milestones remain incomplete; no release/exposure/payment authority."
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

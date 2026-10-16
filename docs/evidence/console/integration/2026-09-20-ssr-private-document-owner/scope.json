@@ -1,0 +1,21 @@
+{
+  "source_base": "bf6af0149b30eea0a4ebad065801320bb52316e1",
+  "status": "owner_green_browser_verification_pending",
+  "owner_tests": {
+    "executed": 5,
+    "passed": 5
+  },
+  "all_ui_tests": {
+    "executed": 13,
+    "passed": 13
+  },
+  "source_hashes": {
+    "backend/crates/payroll/ui/src/lib.rs": "38a57c2f6b7200b453ba8f3bcc65519e2d6e56660028692b8000fc19778365e8",
+    "backend/crates/payroll/ui/src/native_account.rs": "2bf15ae2e0813583ee5636721305bacf3b33469c7b747162fdc78f6dec766ab1",
+    "backend/crates/payroll/ui/bundle.lock.json": "bb44b5f16cbb2fee48a34a85f91a90a7b2412c9ae7d057ca4feb9489c8dedd56"
+  },
+  "limits": [
+    "Actual hydration browser remains required",
+    "Full release incomplete"
+  ]
+}

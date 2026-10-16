@@ -21,7 +21,7 @@
 #
 # To bump: change `channel` here, nothing else. To roll back: revert that line.
 [toolchain]
-channel = "nightly-2026-09-10"
+channel = "1.98.1"
 components = ["rustfmt", "clippy"]
 # console-payroll-ui's hydration bundle is a wasm32 artifact built by
 # tools/ui/build-payroll-wasm.sh. Declared here so a fresh clone can run that

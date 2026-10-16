@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "approve exact producer and consumer boundary evidence",
+  "revision": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "files": {
+    "REVIEW.md": "bc06d252fb54c20649ed58455b1d4806ea71b3995be2ad11607a566e58ba7911",
+    "consumer-checks.json": "23a3d2355f6057af07ea8c3499692e536b42a06149243831178f754a32796b00",
+    "producer-checks.json": "18c3fb0de638f7b703aa631c6f083c51ca7145a37a2dab30cd26bc3136eddc04"
+  },
+  "producer_builds_reviewed": 1,
+  "consumer_build_commands_reviewed": 6,
+  "rust_tests_executed_by_this_evidence": 0,
+  "reviewer_builds": 0,
+  "product_writes": false,
+  "browser_acceptance": false,
+  "release_acceptance": false
+}

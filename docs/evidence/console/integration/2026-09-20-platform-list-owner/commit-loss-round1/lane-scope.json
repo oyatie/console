@@ -1,0 +1,77 @@
+[
+  {
+    "lane": "guarded-platform-company-list-owner",
+    "owner": "/root",
+    "base_sha": "26d786487c294dd88ada16f5372b03fb5787f00f",
+    "immutable_target": "GET/HEAD /api/platform/orgs through one retained source-authorized Business transaction and finite Cedar policy",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-list-owner-map-20260920.json --only platform-list-owner",
+    "allowed_paths": [
+      "backend/crates/platform/auth/src/legacy.rs",
+      "backend/crates/platform/auth/src/lib.rs",
+      "backend/crates/platform/authz/src/platform_policy.rs",
+      "backend/crates/platform/authz/src/lib.rs",
+      "backend/crates/platform/authz/src/cedar_pbac/engine.rs",
+      "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedar",
+      "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedarschema",
+      "backend/crates/platform/authz/src/platform_policy/tests.rs",
+      "backend/crates/platform/authz/src/platform_policy/truth-table.json",
+      "backend/crates/platform/authz/Cargo.toml",
+      "backend/crates/platform/authz/BUCK",
+      "backend/crates/platform/provisioning/src/lib.rs",
+      "backend/crates/platform/provisioning/Cargo.toml",
+      "backend/crates/platform/provisioning/BUCK",
+      "backend/crates/platform/platform-rest/src/lib.rs",
+      "backend/app/src/lib.rs",
+      "backend/app/BUCK",
+      "backend/Cargo.lock",
+      "ops/generate-account-custody.py",
+      "backend/app/src/account_custody_state.sql",
+      "ops/postgres-finalize-account-custody.sql",
+      "ops/postgres-verify-account-native.sql",
+      "backend/app/src/account_credential_custody_state.sql",
+      "ops/postgres-finalize-account-credentials.sql",
+      "backend/crates/platform/auth-rest/src/lib.rs",
+      "tools/buck/gen_first_party.py",
+      "backend/app/tests/auth_rest/legacy_platform_list_reads.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_histories.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+      "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs"
+    ],
+    "forbidden": [
+      "historical migrations/serializers/fingerprints/command bytes",
+      "global bound mint",
+      "other Platform operation conversions",
+      "worker/raw SQL grant cutover",
+      "original checkout",
+      "production exposure/direct payments"
+    ],
+    "design_manifest": "3f3b77eb13e194a11b451635226988912062c38b235341ca745d560b5ac877a7",
+    "initial_tests_manifest": "e2ab835274267eca68b6b3a20554d1b63e5add744e2a9a400778d22cf5bc5ee2",
+    "assertion_order_manifest": "471cc731881d3ffc6b88605e5e3cf7cfcd5cdfda798f04646c5609fd45d3d6f4",
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "mechanical_guide": "Auth verifies raw credential; narrow credential-owner SQL facts bridge retains Company/User/Account/family locks in caller Business transaction. Existing list coordinator evaluates actual TenantList/Companies/ReadProjection policy, retains exact collection and audit with freshDBclock after waits; root composes TTL/verifier/policy, final transport privacy covers outertimeout/HEAD. Prospective custody extends historical serializer without rewriting it; independently review source and captures before new pins.",
+    "pre_mortem": "stale snapshot or principal replaces actual current role; drifted SQL bridge expands privilege; final expiry precedes audit wait; old custody bytes resealed; outer timeout leaks cacheable response.",
+    "blast_radius": "one platform collection use case plus narrow additive security-object profile and pure policy dependency",
+    "detection": "same real mounted owner RED/GREEN; reviewed full-state metadata/audit oracles; strict SDK matrix; actualrole ACL/custody and observedlock/timeout/commit histories",
+    "rollback": "fence unqualified serving and retain additive historical-compatible data; use only artifact proven compatible with expanded security profile, no blind destructive inverse",
+    "stop_conditions": [
+      "RED is schema/compiler/prerequisite failure instead of actual current-role disclosure",
+      "source/privilege/profile delta exceeds reviewed design",
+      "missing independent capture/source approval",
+      "semantic test changes without receipt"
+    ],
+    "remaining_holds": [
+      "full supplemental owner/SQL/lock/ambiguous commit acceptance",
+      "other Platform principals and raw serving metadata SQL capability",
+      "bound issuance/native Company policy",
+      "ADR rawlog packaging pending user decision",
+      "entire release qualification"
+    ],
+    "scope_successor_reason": "Mechanical exhaustive enum consumer; security receipt994fc686a2be60114f88db0d9be83575c4287bbdf0b895d6d628894e95467897, existing arms unchanged. Mechanical embedded-file Buck mapping; /private/tmp/console-platform-list-buck-resource-scope-security-review-20260920.json. Additive independently reviewed owner histories manifest9682b1602ee9f3132224d09442a6b84e7dfcc375b3b76bb68593da729e286e94. Additive credential/transport packet21d8e0b36b2bafc9715f3d62d95769b944a9c15257801f92005693cb9c7cd62a; supplemental policy14test packet38b42bdf, independent root/security receipts. Additive lock/failure packet280e8b08c6d8cf3b9d754d7c124106a5d1b308a35c5db83be3342f86d31df488; root/security reviews approved. Reviewed mechanical3file lint successor15f003ea5cd5d8ab4867009b4d63cd63083e99c4f8a64700c75506451f2b86aa; security119b76cd740b3a753da358360a8a1b3589f02af1b8e97f20f67c46b043fbe1da. Additive reviewed COMMIT-loss packetf4271546d600093737faa2216f02f9ddc8ddcf047b0ca836e9519bbe00951666; root/security source approval, exact declaration composed with lint-only parent."
+  }
+]

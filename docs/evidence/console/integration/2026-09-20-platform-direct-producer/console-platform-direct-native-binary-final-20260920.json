@@ -1,0 +1,14 @@
+{
+  "head": "de05a945d7041c2004938e0273ab4da2a5c9ad99",
+  "path": "/private/tmp/console-client-release-20260919/buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+  "sha256": "75f330d0f8c67bd483e3203464ebf6b580b5ecf665ff9528068c8ba6926ac830",
+  "bytes": 402342024,
+  "discovered": 507,
+  "listing_path": "/private/tmp/console-platform-direct-native-discovery-final-20260920.log",
+  "listing_sha256": "44a0212339a9e5ce2105c28f481d18e992e231272dbb2ee46ff181a475b97694",
+  "production_files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  }
+}

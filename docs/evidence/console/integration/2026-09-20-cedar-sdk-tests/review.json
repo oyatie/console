@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root",
+  "author": "/root/reference_inventory",
+  "status": "APPROVE_BOUNDED_DESIGN_AND_EXACT_TESTS",
+  "base_sha": "0fdd08273fdc486263f9fb8a1bddca82b07913c8",
+  "manifest_sha256": "d6813e20eebd013b733ca849ad4040ddaa5a04ce101d9fcd2e963f1eef5046ea",
+  "checks": [
+    "All nine source preimages and packet hashes match",
+    "Real strict compiler paths converge on current SDK constant",
+    "Current SDK oracle derives from linked Cedar dependency",
+    "Actual evaluator supplies Allow before current-key boundary positive control",
+    "SDK-only historical mismatch rejects and audit preserves both identities",
+    "Exactly one stale current-compile assertion corrected; historical fixtures untouched",
+    "Production bytes remain unchanged in test candidate"
+  ],
+  "runtime_executed": 0,
+  "holds": [
+    "Actual owner RED and lane admission",
+    "Source fix independent review",
+    "No native Company policy or release acceptance"
+  ]
+}

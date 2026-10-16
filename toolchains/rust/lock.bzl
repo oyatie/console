@@ -5,7 +5,7 @@
 # therefore inside its digest. A different compiler is a different action:
 # a cache miss, not the unlinkable-artifact hit that was #1083.
 
-RUST_CHANNEL = "nightly-2026-09-10"
+RUST_CHANNEL = "1.98.1"
 
 # The hosts a sysroot is assembled for. Emitted rather than restated in
 # Starlark: a second hand-maintained copy of this list is exactly the kind
@@ -16,75 +16,75 @@ RUST_HOSTS = ["x86_64-unknown-linux-gnu","aarch64-unknown-linux-gnu","aarch64-ap
 RUST_DIST = {
     "clippy-preview": {
         "aarch64-apple-darwin": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/clippy-nightly-aarch64-apple-darwin.tar.xz",
-            "sha256": "fe84080a28fac7d37b1615b0594e88ecb51417a3b85da2b0a5dfa4cc76d8c1d5",
-            "strip_prefix": "clippy-nightly-aarch64-apple-darwin/clippy-preview",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/clippy-1.98.1-aarch64-apple-darwin.tar.xz",
+            "sha256": "1ad080040ff0f4f8af0751bd7fa1fb1901212f8d164cecaa3c47b0654e0916f2",
+            "strip_prefix": "clippy-1.98.1-aarch64-apple-darwin/clippy-preview",
         },
         "aarch64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/clippy-nightly-aarch64-unknown-linux-gnu.tar.xz",
-            "sha256": "a546f937af89d222147b1facc9ce1190b14f3de3ae016299c66d35a2df6a8e73",
-            "strip_prefix": "clippy-nightly-aarch64-unknown-linux-gnu/clippy-preview",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/clippy-1.98.1-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "396e17c0a669399823d0e59073686a4e5f50b2d41f062f1d3afc9210f9d3553d",
+            "strip_prefix": "clippy-1.98.1-aarch64-unknown-linux-gnu/clippy-preview",
         },
         "x86_64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz",
-            "sha256": "d103e9bd003848b20b136def40152d97761d7af0542bab0567a97e02c1f4673d",
-            "strip_prefix": "clippy-nightly-x86_64-unknown-linux-gnu/clippy-preview",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/clippy-1.98.1-x86_64-unknown-linux-gnu.tar.xz",
+            "sha256": "e167f333be24e1d5eea56ea563c7def0aa0bd613f5ce3445976c93b0288799d1",
+            "strip_prefix": "clippy-1.98.1-x86_64-unknown-linux-gnu/clippy-preview",
         },
     },
     "rust-std": {
         "aarch64-apple-darwin": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-aarch64-apple-darwin.tar.xz",
-            "sha256": "796f94a02e82dd861318976faf72a1100a2a989c97360423420eb5a3def3574a",
-            "strip_prefix": "rust-std-nightly-aarch64-apple-darwin/rust-std-aarch64-apple-darwin",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-aarch64-apple-darwin.tar.xz",
+            "sha256": "2de831ef563ce772519a4d18ba2659f0f7428d497ef66dad24b5a35e8f8cd177",
+            "strip_prefix": "rust-std-1.98.1-aarch64-apple-darwin/rust-std-aarch64-apple-darwin",
         },
         "aarch64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-aarch64-unknown-linux-gnu.tar.xz",
-            "sha256": "ea5a64d8ce87fc4aefee2fe3863edc650093438985f15e8ab9c0b4b76622e9fc",
-            "strip_prefix": "rust-std-nightly-aarch64-unknown-linux-gnu/rust-std-aarch64-unknown-linux-gnu",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "9bf796a6ec5b004813ebd0b650775a7c6a4f3aae97ad362ae294798dca4f3b23",
+            "strip_prefix": "rust-std-1.98.1-aarch64-unknown-linux-gnu/rust-std-aarch64-unknown-linux-gnu",
         },
         "wasm32-unknown-unknown": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-wasm32-unknown-unknown.tar.xz",
-            "sha256": "13c25d83cfa0cf9088aebf5fff8012d4045268f9d116d938290937cbea50de37",
-            "strip_prefix": "rust-std-nightly-wasm32-unknown-unknown/rust-std-wasm32-unknown-unknown",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-wasm32-unknown-unknown.tar.xz",
+            "sha256": "cf1fcf68880d8b2b90128cede7416cfb82ad3584357ce9fb668f2b6244c26e55",
+            "strip_prefix": "rust-std-1.98.1-wasm32-unknown-unknown/rust-std-wasm32-unknown-unknown",
         },
         "x86_64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz",
-            "sha256": "20639addfd74acb2f023d0abaf6a7fd9a0428e5fc461fd61b2dbab256e964562",
-            "strip_prefix": "rust-std-nightly-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-x86_64-unknown-linux-gnu.tar.xz",
+            "sha256": "fa3ff450172a16c026944030230c5069947af93c728d9179971d44e5e0cfb561",
+            "strip_prefix": "rust-std-1.98.1-x86_64-unknown-linux-gnu/rust-std-x86_64-unknown-linux-gnu",
         },
     },
     "rustc": {
         "aarch64-apple-darwin": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rustc-nightly-aarch64-apple-darwin.tar.xz",
-            "sha256": "3ec7f328305e15e40113d1ec40d56330ceae138119a630dfa3735b1e4fba1e34",
-            "strip_prefix": "rustc-nightly-aarch64-apple-darwin/rustc",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rustc-1.98.1-aarch64-apple-darwin.tar.xz",
+            "sha256": "738e3f60114b20550fcf4f8a57c9cea0544239f214709f45594ff3fde327f577",
+            "strip_prefix": "rustc-1.98.1-aarch64-apple-darwin/rustc",
         },
         "aarch64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rustc-nightly-aarch64-unknown-linux-gnu.tar.xz",
-            "sha256": "50276135ce9dfc2139c07df1bde73efd0a44dd9260330b3d72e03a356d020cb3",
-            "strip_prefix": "rustc-nightly-aarch64-unknown-linux-gnu/rustc",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rustc-1.98.1-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "89fb83041993b48816514815606f53a5264729b8b449671a6b291e6f0ae74f40",
+            "strip_prefix": "rustc-1.98.1-aarch64-unknown-linux-gnu/rustc",
         },
         "x86_64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz",
-            "sha256": "8eb09375e66bffd8f5e50d0745228aa07cbbb9040ec13b0c0e9e6cd6a122749d",
-            "strip_prefix": "rustc-nightly-x86_64-unknown-linux-gnu/rustc",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rustc-1.98.1-x86_64-unknown-linux-gnu.tar.xz",
+            "sha256": "e974f036b28565f37c0f3bd92ddefa809bee16c04f9dcf07b9ed96e05aaaf7c4",
+            "strip_prefix": "rustc-1.98.1-x86_64-unknown-linux-gnu/rustc",
         },
     },
     "rustfmt-preview": {
         "aarch64-apple-darwin": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rustfmt-nightly-aarch64-apple-darwin.tar.xz",
-            "sha256": "23892f63b0f63d48cea6f5069f80627c947acbcd3a389f218dd1363dd0dd9613",
-            "strip_prefix": "rustfmt-nightly-aarch64-apple-darwin/rustfmt-preview",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rustfmt-1.98.1-aarch64-apple-darwin.tar.xz",
+            "sha256": "86aa28e2f23edb0045a85288c3f69998dd30294fd2d3f1480efa9485cf137bfd",
+            "strip_prefix": "rustfmt-1.98.1-aarch64-apple-darwin/rustfmt-preview",
         },
         "aarch64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rustfmt-nightly-aarch64-unknown-linux-gnu.tar.xz",
-            "sha256": "4d234d6b74aed95c3d33d171de0e3fc5bf8aed2b994ce105291d8d93bbd33bc0",
-            "strip_prefix": "rustfmt-nightly-aarch64-unknown-linux-gnu/rustfmt-preview",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rustfmt-1.98.1-aarch64-unknown-linux-gnu.tar.xz",
+            "sha256": "7d4c136278b61096d46ef23019c29acb7ee5a2a1412cbfee5050316110c6fd8c",
+            "strip_prefix": "rustfmt-1.98.1-aarch64-unknown-linux-gnu/rustfmt-preview",
         },
         "x86_64-unknown-linux-gnu": {
-            "url": "https://static.rust-lang.org/dist/2026-09-10/rustfmt-nightly-x86_64-unknown-linux-gnu.tar.xz",
-            "sha256": "21abc867097bc6850fbd9cc50969c0186631d34f7216c815df533fc0daddf1cf",
-            "strip_prefix": "rustfmt-nightly-x86_64-unknown-linux-gnu/rustfmt-preview",
+            "url": "https://static.rust-lang.org/dist/2026-09-03/rustfmt-1.98.1-x86_64-unknown-linux-gnu.tar.xz",
+            "sha256": "b29a1addcbf2aa8f5785075605700e63cbe131b08c8334b50c09cfca8bbc51dc",
+            "strip_prefix": "rustfmt-1.98.1-x86_64-unknown-linux-gnu/rustfmt-preview",
         },
     },
 }

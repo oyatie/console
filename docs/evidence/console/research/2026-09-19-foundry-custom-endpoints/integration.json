@@ -1,0 +1,24 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "d0528469417cacce7a707e8d9714dac63f165829",
+  "before_registry_sha256": "02e57a510cac8e40e52ff396423134ac60ed03dbbfe4f87c7c8ad453eba2fa2c",
+  "after_registry_sha256": "6634a93279b822f05e720e992dd193b766ab6d59bbb177a61a6d53ac365ef7af",
+  "leaves_before": 360,
+  "leaves_after": 366,
+  "new_sources": 6,
+  "new_leaves": 6,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "No executable endpoint acceptance, unrestricted credentials, deployment exposure or historical deletion authorized.",
+    "Public response grammar, resource restrictions and release-version semantics require exact owning contract tests."
+  ],
+  "validation": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "e49497ca7d43685daf0f4be41f37547c0375d407e8f4945a2609593896b3bcff"
+  }
+}

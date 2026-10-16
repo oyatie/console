@@ -1,0 +1,77 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "HOLD-final-acceptance-pending-runtime-and-missing-mounted503-evidence",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "working_source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+    "backend/crates/platform/authz/src/platform_policy.rs": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06",
+    "backend/crates/platform/provisioning/src/lib.rs": "c0839851bb8a11964cabe4636833625722b0500fc4324e8a8b087f67cf61d7e7",
+    "backend/crates/platform/platform-rest/src/lib.rs": "d01ba273366bda19a4a60f98cffb160aa8daaa4982a43050f257e7a0efc68ce2",
+    "backend/crates/platform/auth-rest/src/lib.rs": "f0ddf179161083fc6b6da06efe4223043a7569021094f4fd8e0dffab9a47b8f4",
+    "backend/app/src/lib.rs": "4954d9f706efd2b7bfc1cf926f62c3bb881a66707e0ae67e2f483d4304df638d",
+    "ops/generate-account-custody.py": "1c35801c84b87df57e7e3462021733e191624d0fa711eacbafb79e34989e7d89",
+    "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs": "f1e57e98abb246eb78666f2c2e89088b4ef4ac64473a86d920b97c0b2698dfcc",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "bdc7a7234e454684c5a0246ccef3771ba073f822b083365a7c70e7c5bd107b27",
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "85b201eaed524e830b52d428f79d1caaf2aa601b1c1ec5df0b446b4ebaeb6578",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "1fb70485b4cc8e4478d7d4b309e2f3c292205dd023218a0682f330df540bcca3",
+    "backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "e40d55dfe2c273dad509cf21e6b1fcefcc1736331030678ab483042199a707f7",
+    "backend/app/tests/auth_rest/legacy_platform_list_reads.rs": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145",
+    "backend/app/tests/auth_rest/audit_platform_source_transition.rs": "742f461d3acc08a6ed93633e4b23675af07495c3cd0912b46629c72d16059b45",
+    "backend/app/tests/auth_rest/audit_platform_source_predecessor.rs": "4ae629d2de48d130581e9014a040d81e6f5c0de509731cc1b09daf50e21e3b2f",
+    "backend/app/tests/auth_rest/audit_business_session_transition.rs": "2109d0e8b7402a4ec28f1a01a0e1134b633945288678b33348d9ef9e71924aea",
+    "backend/app/tests/auth_rest/audit_company_eligibility_transition.rs": "ec8abb134f9af7d4c324f94afcc26f9ed67373652d30473b98e0753b00130931",
+    "backend/app/tests/auth_rest/audit_account_transition_adversarial.rs": "f5e6e227e1fa3470868a080e515d954dba582eda76997f483e4c6c80d2f845a5"
+  },
+  "scope": "Bounded GET/HEAD /api/platform/orgs public application owner only, not raw SQL grants or complete Platform/release acceptance.",
+  "facts": [
+    "Core production source and custody generator byte-identical to c3f7eca8 implementation.",
+    "Original26d mounted owner test body/assertions byte-identical; only additive child-module include differs. Exact named command executed1failed at intended PLATFORM_LIST_CURRENT_ROLE_REQUIRED on26d and1passed onc3.",
+    "Implementation archive36 and transition archive23 artifacts independently regular-file/hash/original-byte verified.",
+    "Reviewed test successors preserve complete metadata equality, original historical helper oracles, historical command/custody bytes and strict audit-clock assertions.",
+    "Corrected corruption reruns plain1/1pass60.63s and observer1/1pass62.31s observed; full52 final result not observed.",
+    "Prior accepted source/lock/COMMIT/expiry-progress tests and their receipts reused within original limits."
+  ],
+  "findings": [
+    {
+      "id": "PLATFORM-LIST-MOUNTED503-EVIDENCE",
+      "severity": "acceptance-blocking-evidence-gap",
+      "location": "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs / legacy_platform_list_histories.rs / approved design Required actual histories Infrastructure and Transport",
+      "finding": "No actual mounted GET/HEAD owner503 case exists in current list suite; direct TTLzero/missingAccount/COMMITloss and HTTP408 do not establish owner503 wire/privacy/recovery.",
+      "minimum_repair": "Reviewed additive genuine mounted cases for source-helper EXECUTE loss, projection EXECUTE loss, and actual audit trigger raising exact auth-looking SQLSTATE/message; exact503GET/emptyHEAD, private/noecho, all-row no-effects, exact temporary-metadata restore and same-token recovery."
+    }
+  ],
+  "remaining_acceptance": [
+    "Finish actual full52 retained transition and final owner suite after all reviewed corrections; discovered count is not executed/pass count.",
+    "Integrate/review/run mounted503 successor before bounded acceptance.",
+    "Review and bind final committed candidate SHA plus exact source/evidence custody; current dirty-tree fingerprint is not merge-ready immutable SHA.",
+    "Freeze final discovery/execution counts and required lint/generator/boundary checks after final edits; reuse unaffected approvals rather than duplicate runtime.",
+    "Unavailable clock and decode-specific runtime injection not established; existing linkedSDK fault tests establish evaluator failure only at pure policy boundary, not a new HTTP fault seam.",
+    "Protected dev independent COMMENT, checks and merge/readback remain separate; no local evidence means merged/released."
+  ],
+  "lens_audit": {
+    "Cartesian doubt": "RED/GREEN exact owner behavior distinguished from earlier schema/capture/noop/statistics and slow-JIT infrastructure observations.",
+    "Essentialism / YAGNI": "One owner/sole route; no universal handler or new production fault framework.",
+    "Chestertons Fence": "Historical source serializers/pins, raw consumers and existing test oracles preserved.",
+    "Contrarian / outside-the-box": "Raw function grant closure explicitly deferred to real machine/view-as successor, not falsely inferred from guarded Rust route.",
+    "Socratic": "Missing mounted503 evidence challenged against exact accepted design rather than passing subset.",
+    "Pragmatism": "Existing Auth locks and finite Cedar reuse; actual login/DB effects, no mock principal.",
+    "Red Team": "Signed/current role separation, malformed headers/bindings, exact-family sibling isolation; missing error-wire history blocks acceptance.",
+    "Systems Thinking": "Single Business tx retains source through projection/audit/commit; Authz pure facts not transferable authority.",
+    "Operability / Day-2": "Timeout cancellation/recovery and real lost COMMIT acknowledgement tested; rollback must fence unsafe older source, not reopen known gap.",
+    "Opportunity Cost": "Reuse36+23 archived artifacts and individually accepted prior runtime suites; finish identified gaps and avoid unrelated refactors.",
+    "Blast-radius / cell-based": "Bounded route and narrow credential-owner source bridge; test-only corruption transactions and exact restoration.",
+    "Constant-work / anti-fragility": "Observed unrelated source progress and bounded wait cleanup; release mixed-load envelope remains unqualified.",
+    "Shared-nothing / eventual consistency": "No automatic retry after ambiguous commit; explicit recovery preserves exact one observational audit.",
+    "FinOps / unit-cost": "Additional source/family locks and DB-clock checks have no qualified production cost/load claim.",
+    "Telemetry-first": "Strict exact audit actor/20fields/DB-window/history and evidence-corruption controls; static finite error envelopes need pending actual503 proof.",
+    "Zero-trust / defense-in-depth": "Raw credential verified inside owner, retained current source, fixed Cedar tuple, exact role ACL checks and final outer privacy; raw SQL capability remains HOLD."
+  },
+  "release_holds": [
+    "Other Platform operations/workers/view-as/raw metadata EXECUTE cutover and global bound issuance.",
+    "Native browser journey/usability/accessibility/performance acceptance not furnished by this API security lane.",
+    "Full milestones0-10 workload/recovery/Korean applicability/production qualification/exposure separate."
+  ],
+  "review_runtime_executed": 0,
+  "supersedes_receipt_sha256": "314dd79bd5b2f79c941a81a793515b26d59dc32e1f5c55262493399d1fbc659f",
+  "correction": "Remove erroneous ungrounded count111 in Opportunity Cost prose; no new runtime count or acceptance claim. Prior accepted suite counts remain their individual log receipts."
+}

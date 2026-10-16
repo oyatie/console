@@ -1,0 +1,12 @@
+[2026-09-21T16:15:39.727-04:00] Build ID: e79a837c-6232-449d-bd59-35539c9ff9be
+[2026-09-21T16:15:39.729-04:00] File changed (since mergebase): root//docs/evidence/console/payroll/2026-09-21-collection-owner-recovery/console-payroll-list-health-retained-retry-20260921.log
+[2026-09-21T16:15:39.729-04:00] File changed (since mergebase): root//docs/evidence/console/payroll/2026-09-21-collection-owner-recovery/console-payroll-persona-label-green-20260921.log
+[2026-09-21T16:15:39.729-04:00] File changed (since mergebase): root//docs/evidence/console/payroll/2026-09-21-collection-owner-recovery/console-payroll-list-health-retained-green-20260921.log
+[2026-09-21T16:15:39.729-04:00] 10 additional file change events (since mergebase)
+[2026-09-21T16:15:39.729-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:15:40.772-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+writer-ownership: scanned 0 production source files
+writer-ownership STALE SHARED PERMISSION: console-ontology-canonical-adapter-postgres is permitted to write `ont_action_command_receipts` but holds no write — remove the permission or the receipt owner that grants it
+writer-ownership STALE SHARED PERMISSION: console-ontology-rest is permitted to write `ont_action_command_receipts` but holds no write — remove the permission or the receipt owner that grants it
+writer-ownership STALE SHARED PERMISSION: console-payroll-adapter-postgres is permitted to write `ont_action_command_receipts` but holds no write — remove the permission or the receipt owner that grants it

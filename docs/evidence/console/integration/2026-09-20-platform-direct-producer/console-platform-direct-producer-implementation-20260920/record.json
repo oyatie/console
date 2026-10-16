@@ -1,0 +1,23 @@
+{
+  "base": "1db7a17477572bb1a3b5642fa68ab0cdc9702019",
+  "files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "owner_red": {
+    "executed": 1,
+    "failed": 1,
+    "filtered": 506,
+    "log": "/private/tmp/console-platform-direct-producer-owner-red-20260920.log",
+    "failure": "actual platform producer omitted binding"
+  },
+  "signing_prerequisite": {
+    "executed": 1,
+    "failed": 1,
+    "filtered": 506,
+    "log": "/private/tmp/console-platform-direct-signing-owner-red-20260920.log",
+    "failure": "encoder reached, current sign-first producer has zero witnessed inserts"
+  },
+  "scope": "existing Auth owner; production diff only three declared files"
+}

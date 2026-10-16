@@ -1,0 +1,28 @@
+type: object
+additionalProperties: false
+required: [outcome, original_command_id, receipt_id, org_id, group_id, administrative_account_id, replayed, result_path]
+properties:
+  outcome:
+    type: string
+    const: COMMITTED
+  original_command_id:
+    type: string
+    format: uuid
+  receipt_id:
+    type: string
+    format: uuid
+  org_id:
+    type: string
+    format: uuid
+  group_id:
+    type: string
+    format: uuid
+  administrative_account_id:
+    type: string
+    format: uuid
+  replayed:
+    type: boolean
+    description: True on an idempotent replay or a status read of the committed command.
+  result_path:
+    type: string
+    description: Persistent same-origin HTML result path for this command.

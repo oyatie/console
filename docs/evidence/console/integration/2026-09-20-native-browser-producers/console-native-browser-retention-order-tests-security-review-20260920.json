@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_ORDER_TEST_SUCCESSOR_ONLY",
+  "packet": "/private/tmp/console-native-browser-retention-order-tests-20260920-round1",
+  "manifest_sha256": "7fec1cef041340e0acd361c847a7c63ce18448a4f1b9a3566f9a317c629386de",
+  "source_preimage_sha256": "5c144f1f79072f6f578ba4db8a7415dcdeda0627532308c89115b89848f8aee8",
+  "proposed_source_sha256": "482c9e94181e8faa5a8343e6bdf1ab8d2475446258e595f33c19b672c49835ef",
+  "checks": [
+    "Source and every packet hash independently verified; exact one replacement reconstructs candidate SHA.",
+    "Existing swapNamedSteps chronological precondition remains unchanged; successor passes hydration31/upload32 and upload32/collector33 respectively.",
+    "Both original ordering mutations remain and gain YAML parseability assertion before unchanged gate rejection check. Every other source byte unchanged;68test count preserved.",
+    "Prior67pass/1fail log retained; failure is test caller ordering, not product runtime; source approval does not imply green execution."
+  ],
+  "findings": [],
+  "execution": {
+    "reviewer_tests": 0,
+    "repository_writes": 0
+  },
+  "limits": [
+    "Root must run failing suite against successor; hosted artifact upload/readback and Company workflow remain separately unaccepted."
+  ]
+}

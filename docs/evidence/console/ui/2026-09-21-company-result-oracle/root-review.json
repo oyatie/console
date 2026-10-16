@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE exact Company committed-result oracle correction; no browser or workflow acceptance",
+  "base_sha": "799464d166cdb134b8141cf4cb4003ad03189d1d",
+  "original_sha256": "7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57",
+  "candidate_sha256": "9edab0630df042767ccd4da092b79d6b6f34b566f1bc1c2d9dd5df493187f7cd",
+  "frozen_markup_sha256": "bbf1fecd31f494d849640ad72ee1e550f3a41e25fd3c1f1e4f8db88968f9d6fa",
+  "findings": [],
+  "verified": [
+    "Frozen Page::CompanyCreated renders exact Company name as h2 and separate named CTA with /companies/{id} href",
+    "Unique committed panel plus exact semantic h1/h2/CTA counts and Playwright visibility; all three existing result reads require same identity",
+    "Navigation follows actual CTA",
+    "Prefix/suffix exact-byte comparison confirms original request/document observers, fixture input, setup, final protocol and cleanup predicates unchanged",
+    "No product data, mocked server, test-runtime pin or business permission change"
+  ],
+  "limits": [
+    "No real browser executed for this successor; Company source/custody integration prerequisite remains",
+    "Playwright isVisible does not prove optical visibility, contrast, screen-reader behavior or human usability",
+    "Policy label correction is separate reviewed successor"
+  ],
+  "mechanical_pin_update": {
+    "files": [
+      "tools/browser/prepare_native_browser.sh",
+      "tools/browser/test_prepare_native_browser.py"
+    ],
+    "replace_only": {
+      "7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57": "9edab0630df042767ccd4da092b79d6b6f34b566f1bc1c2d9dd5df493187f7cd"
+    }
+  }
+}

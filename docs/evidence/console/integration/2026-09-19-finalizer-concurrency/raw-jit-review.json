@@ -1,0 +1,10 @@
+{
+  "kind": "independent-fixture-review",
+  "reviewer": "root",
+  "author": "integration_tests",
+  "verdict": "approve exact bounded JIT execution configuration; not runtime acceptance",
+  "standalone_sha256": "d97811a82ea04ab533db04f0b041e5ce8b3481cb31db468817df45700890e573",
+  "composed_sha256": "c8479e9a9624a5c22d19a9049b79ed3ed3093c9e7c870244337900dc75699ef1",
+  "findings": [],
+  "scope": "Two settings only, first transaction-local and second connection-local unpooled; all SQL bytes, assertions, locks, deadlines, outcome accounting and cleanup preserved. Source traced through stop_finalizer. Apply separately after clean actual RED admission; repeat exact failing case and lifecycle suite."
+}

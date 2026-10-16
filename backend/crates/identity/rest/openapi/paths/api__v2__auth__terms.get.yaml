@@ -1,0 +1,54 @@
+tags:
+- auth
+operationId: getCurrentTerms
+summary: Read the current required terms release
+description: >-
+  Public, unauthenticated metadata for the current required terms release.
+  The response identifies the selected manifest and revision only when the manifest
+  and all required content are available and verified. Current metadata is never
+  served from a cached release when the current terms authority is unavailable.
+  This operation sets no cookies and does not redirect.
+security: []
+responses:
+  '200':
+    description: Current release metadata. The manifest URL identifies the same digest as terms_version.
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          enum: [no-store]
+      Pragma:
+        schema:
+          type: string
+          enum: [no-cache]
+      X-Content-Type-Options:
+        schema:
+          type: string
+          enum: [nosniff]
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/TermsCurrent'
+  '503':
+    description: The current terms authority is unavailable, its selected release is absent or unsupported, or a required artifact is unavailable or invalid.
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          enum: [no-store]
+      Pragma:
+        schema:
+          type: string
+          enum: [no-cache]
+      X-Content-Type-Options:
+        schema:
+          type: string
+          enum: [nosniff]
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorBody'
+        example:
+          error:
+            code: authority_unavailable
+            message: Terms authority unavailable

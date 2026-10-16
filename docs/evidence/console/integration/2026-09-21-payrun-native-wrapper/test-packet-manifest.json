@@ -1,0 +1,7 @@
+{
+  "ADOPTION.md": "2574ec25b56f8bb40b8fac4627759703598b54581e277b6cf75978d2dae120fb",
+  "historical/tools/buck/test_gen_first_party.py": "3cb98ac906549baac05ca7e614a1db600460410451020842b4bc21f859d1f956",
+  "source-locks.json": "6c5db1e71114ed547f9e3a55173d2bee7b53a0914aaf96e058db2223887481dc",
+  "test.patch": "42573027e4ac650795a8a082f9038bc8a266014b5dcf76a5b360891e252c7eb5",
+  "tools/buck/test_gen_first_party.py": "d75745c870ac031d3bd9273eda917f9c5a8eda6471f0894d6459d4494640df79"
+}

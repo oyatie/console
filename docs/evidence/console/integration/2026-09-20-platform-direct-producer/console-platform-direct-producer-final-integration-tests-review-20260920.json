@@ -1,0 +1,96 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_PRODUCER_IMPLEMENTATION_AND_SELECTED_NATIVE_VERIFICATION",
+  "head": "de05a945d7041c2004938e0273ab4da2a5c9ad99",
+  "production_files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "evidence_hashes": {
+    "/private/tmp/console-platform-direct-producer-implementation-20260920/record.json": "5d3a141506a292ee463756e28f4be604131840f3eaf72d9a3444db04a36f8bbf",
+    "/private/tmp/console-platform-direct-producer-native-unit-20260920.log": "f985e317ce65e71db98e8a03f50eda465412e849a8e1657997e014daf1f248a9",
+    "/private/tmp/console-platform-direct-native-variants-20260920.json": "294799ec0597ed2be3821772824193ad512c5b9d858fbe1a2402933551fc84c4",
+    "/private/tmp/console-platform-direct-native-variants-20260920.log": "14e867222caf0f2ccf0cd7c5afeac40fd761a166825e20fbb79ef2113c3aeecd",
+    "/private/tmp/console-platform-direct-native-matrix-20260920/result.json": "8aa8f1c0344567d36a430a78ab636e68a0596b2a2e5f1de1b763a9f5fa83f86b",
+    "/private/tmp/console-platform-direct-native-matrix-round2-20260920/result.json": "d25531fdb639819ccffbda2d8a748a1d98055e63d3bdde91e8d2d7442521e9e8",
+    "/private/tmp/console-platform-direct-producer-owner-red-20260920.log": "a5af0fd712160902453259d7cf6b4077f3af971588f420f6928178b0ed0c0ffb",
+    "/private/tmp/console-platform-direct-signing-owner-red-20260920.log": "c3489a75e4c581c3cc36f66b8d75c6afbe928e50e501332d8495ac5e4fc022c0",
+    "/private/tmp/console-platform-direct-producer-implementation-security-review-20260920.json": "9883a136776d0e52b34d1d36e425219028a9ed41350db5d38e1614fd55de059e",
+    "/private/tmp/console-platform-direct-family-protocol-oracle-security-review-20260920.json": "bfea04ae13f89aa31f6e719c68fba877d8f05582fcd4ef5748ad2dddeafb83ab",
+    "/private/tmp/console-platform-direct-logout-oracle-security-review-20260920.json": "e016c9f7493681bf8931009a75f8b198475a0a8122158bc50aaea4a21d9451d4",
+    "/private/tmp/console-platform-direct-signing-sqlsafe-security-review-20260920.json": "7515a3ef8f1db09c8285a05bb4ba89784e1b428ad509db8e2c7273a1370c08a7"
+  },
+  "findings": [],
+  "verified_counts": {
+    "unit_target": {
+      "executed": 13,
+      "passed": 13,
+      "failed": 0,
+      "ignored": 0
+    },
+    "jwt_es256_target": {
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "ignored": 0
+    },
+    "first_postgres_matrix": {
+      "invocations": 13,
+      "executed": 13,
+      "passed": 11,
+      "failed": 2,
+      "ignored": 0,
+      "filtered_per_invocation": 506
+    },
+    "successor_postgres_matrix": {
+      "invocations": 3,
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_per_invocation": 506
+    },
+    "selected_distinct_postgres_leaves": {
+      "selected": 13,
+      "with_accepted_green": 13,
+      "unresolved_failures": 0
+    },
+    "variant_targets": {
+      "targets": 4,
+      "executed_per_target": {
+        "auth-rest-dev-auth-inline-postgres": 7,
+        "platform-auth-rest-dev-auth-absence-pg": 1,
+        "auth-rest-dev-auth-session-postgres": 7,
+        "auth-rest-dev-auth-group-admin-postgres": 4
+      },
+      "passed_total": 19,
+      "failed": 0,
+      "ignored": 0
+    },
+    "owner_reds": {
+      "executed": 2,
+      "failed_at_expected_owner_boundary": 2
+    },
+    "reviewer_runtime_executions": 0
+  },
+  "positive_findings": [
+    "All three live production bytes match immutable implementation record and source bindings in both matrix records. Working Git diff is limited to these three files.",
+    "All16 matrix log hashes, exact selected leaf names and per-invocation summaries verified. Original missing-binding RED and actual encoder reached/no-insert signing RED remain preserved. The original named probe is GREEN twice after implementation.",
+    "Two first-matrix failures occur at mistaken logout200 assertions. Actual unchanged owner returns204; independent exact successor approval exists. Git5e9522to de05 changes only these two assertions. Both complete affected leaves and original named producer probe rerun GREEN; later revoke/readback/bound-denial/historical-and-sibling positives are executed, not skipped.",
+    "Reuse of other11 first-matrix successes is valid for this bounded review: production hashes identical across runs and only two test-body status assertions changed; no shared fixture/helper/schema/build change between matrices.",
+    "Unit13and JWT29 actual Buck case summaries and final target success present. Final variant record exit0 and log hash match; four targets report7,1,7,4actual cases and no failures/skip/omit/build/infra errors.",
+    "Retained historical fixture successors remove only additive binding from verified in-memory claims, verify exact equality after restoration and preserve expiry; original current-role/demotion/unrelated-progress assertions retained.",
+    "Protocol oracle successor preserves LEGACY_COMPANY existing owner, strict family correlation and native-nullability/time assertions. Typed-UUID AssertSqlSafe successor changes no trigger behavior or rollback oracle.",
+    "Producer creates/rotates actual Auth family in retained transaction before signing; exact returned family passed to issuer. Platform-only closed binding preserves old APIs unbound. Reader only removes platform blanket refusal and retains current subject/family/scope/protocol/revocation/time checks.",
+    "Actual signing failure tests retain encoder prerequisite, nontransactional insertion witness, exact no-cookie500, complete rollback and retry of exact original ceremony/assertion or refresh token."
+  ],
+  "limits": [
+    "Approval covers only declared platform-direct producer dependency and selected native verification. No Company workflow, browser, milestone, production qualification or complete release acceptance.",
+    "Matrix discovery count is the harness-reported1executed+506filtered each invocation;13selected leaves are not a full507-case suite execution.",
+    "Original failed runs and earlier mistaken oracle approvals must remain historical; no aggregate claim erases failures or counts repeated leaf executions as distinct coverage.",
+    "Final variant receipt identifies head and log but does not embed source hashes; source binding uses unchanged declared three-file record, both matrix source maps and live final hash verification. This is not an independent hermetic artifact attestation.",
+    "Binding supplies correlation, not universal endpoint revocation enforcement or passkey assurance; existing mutation-boundary HOLD remains.",
+    "Reviewer performed read-only source/Git/hash/log inspection and this private receipt write; no product build/test/SQL/browser execution."
+  ]
+}

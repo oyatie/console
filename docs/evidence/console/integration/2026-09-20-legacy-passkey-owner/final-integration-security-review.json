@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_BOUNDED_SELF_PASSKEY_OWNER_IMPLEMENTATION_AND_INTEGRATION_EVIDENCE",
+  "candidate_sha": "49340a6d18551d58457ffd4acf96157e979dbb35",
+  "clean_tree": true,
+  "source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "af1722074e362b58568233053eff3b8547655bbfe3611d2f31a463d12a90848a",
+    "backend/crates/platform/auth/src/lib.rs": "23cf57fa20090ed35c95f02410d911b78869dab6c1bb81677341b0e73e4050df",
+    "backend/crates/platform/auth-rest/src/lib.rs": "c12a322d26b797f075b4ac33bcb9e83e4d5200af6a0056d8ccab3f9f0754e78a",
+    "backend/crates/platform/auth/src/legacy_self_read_tests.rs": "5d13ee4a190161380c7af8b4f17af68db2c4f6dc835f30e1c5224fc82da86a85",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_reads.rs": "8e0aa6ab499b1b74e68af4d86f85b47985a802242b2322d44a102047acb249ea",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_availability.rs": "cee2ec1ea3bb6ec9d7b4b5098d2f1e4c2034a79d2c7d769837f72586d491ba66"
+  },
+  "supplement_sha256": {
+    "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs": "bca3546369d2e20acce21546a7584d64f0ff21ee7c18d893fd90e075f39adb9a",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_histories.rs": "101c1389a21cca89fbd4b627b1c84b77db850bded953d904dcc9897b5b602bcf",
+    "backend/app/tests/auth_rest/native_family_fixture.inc.rs": "ade4d1b98ef023a6bc556e5a9ac98135fd78191ddb03ae3081289dcc0314e725"
+  },
+  "runtime_logs_sha256": {
+    "console-legacy-passkey-suite23-20260920.log": "741920f9dd1858ced1b90f0e67190d46082a7425423586c0d7cd503cfacfe92c",
+    "console-legacy-passkey-retained-auth57-20260920.log": "3f686ddbf244bcc1b14ec04cb9b56b5043f41490e25e8e4c0cbee3912aec43ad",
+    "console-legacy-passkey-retained-readers7-20260920.log": "7c6ed182321729b4e07fbd6397b2e22f414c54206e8c3d18f9debb807303a533",
+    "console-legacy-passkey-clippy-final-20260920.log": "46d9f992b374d803d6bb9d66f6dac777bd4340d621074fd94eeebfa8635aaf7d"
+  },
+  "executed_evidence": {
+    "exact_candidate_http_and_oracles": "23 executed, 23 passed, 0 failed, 0 ignored, 375 filtered; 196.14 seconds",
+    "retained_auth": "57 unique executed and passed: lib11 (including private8), ES25629, verifier16, well-known1",
+    "retained_reader_contract": "7 executed, 7 passed, 0 failed, 0 ignored, 374 filtered; 41.66 seconds",
+    "reuse_limits": "Retained57 and reader7 were executed on predecessor source unchanged in this candidate, not represented as fresh exact-candidate runs. Exact source identity checked; successor changes are approved test additions/one fixture correction and evidence."
+  },
+  "accepted": [
+    "Original real owner RED then GREEN and missing-pool RED/fix/GREEN preserved, with independent design/test/source approvals.",
+    "Current real Auth transaction retains Company/User/Account and exact-family guards through credential projection; caller cannot provide claims as authority.",
+    "Actual observed lock histories now passed: reader/revoker order, family lock exclusion, expiry after source wait and projection wait, historical expiry, family deadline, independent Company progress.",
+    "Ten supplemental real HTTP compatibility/rotation/reuse/purpose/time/outage cases passed after one independently approved Group fixture correction.",
+    "Privacy, noecho, complete read no-effect snapshots, exact logout audit and corruption controls passed.",
+    "Production source hashes match bounded reviewed source; private8 and supplemental packets match reviewed bytes plus only approved child include."
+  ],
+  "remaining_holds": [
+    "Production bound access mint remains disabled; no global legacy reader or derived context conversion is accepted by this receipt.",
+    "Finite Platform policy/list, other application owners and raw SQL capability closure remain separate.",
+    "This primitive is not complete Account/workspace workflow, browser journey, production qualification or release milestones 0\u201310 completion."
+  ],
+  "reviewer_actions": "Read-only exact source/hash comparison, approved receipt/packet checks and actual logs; no reviewer DB/build execution or repository edits."
+}

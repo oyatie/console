@@ -1,0 +1,22 @@
+{
+  "base_sha": "d06ae6379f2bb096b653a641041aa089b58c61c0",
+  "records": 474,
+  "prior_records_preserved": 458,
+  "added_frozen_evidence_records": 16,
+  "tests": {
+    "executed": 60,
+    "passed": 60,
+    "failed": 0,
+    "skipped": 0
+  },
+  "gates": [
+    "documentation manifest OK474",
+    "doc links OK474"
+  ],
+  "generated_index_matches_independent_preview": true,
+  "files": {
+    "docs/documentation-manifest.seed.json": "d3c107e187b87ffa0c0245ad622d3889c160e7db606480bea3a93cb2fa959f25",
+    "docs/documentation-index.json": "a41b11c3c15452f578be661ab51a0a6a0963d28e473159301bc03775a7bc4afe"
+  },
+  "scope": "Metadataonly;noauthority/evidence/sourcebyteschanged;no workflowacceptance"
+}

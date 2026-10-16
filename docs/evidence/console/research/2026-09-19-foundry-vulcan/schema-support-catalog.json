@@ -1,0 +1,401 @@
+{
+  "source_tables": {
+    "vulcan-schema-reference": [
+      [
+        [
+          "Type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "cad_media_reference",
+          "Yes",
+          "Media reference",
+          "The CAD model file. This property accepts any of the formats listed in Supported model formats. Vulcan detects the format from the file extension."
+        ],
+        [
+          "up_axis",
+          "No",
+          "String",
+          "The up-axis convention of the model. Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ."
+        ],
+        [
+          "model_unit",
+          "No",
+          "String",
+          "How Vulcan interprets the model's coordinates when the file declares no unit of its own. Set this property for OBJ, STL, PLY, DXF, LAS, and LAZ, which never declare a unit. This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare. Accepted values are m (or meter / metre) and mm (or millimeter / millimetre). Vulcan ignores any other value."
+        ]
+      ],
+      [
+        [
+          "Type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "annotation_id",
+          "Yes",
+          "String",
+          "Unique identifier for the annotation."
+        ],
+        [
+          "annotation_title",
+          "Yes",
+          "String",
+          "Short label displayed with the annotation."
+        ],
+        [
+          "annotation_content",
+          "Yes",
+          "String",
+          "Longer body text."
+        ],
+        [
+          "part_instance_id",
+          "Yes",
+          "String",
+          "Identifier of the part instance that the annotation is attached to."
+        ],
+        [
+          "annotation_attachment_x",
+          "Yes",
+          "Double",
+          "X-coordinate of the attachment point, in model units."
+        ],
+        [
+          "annotation_attachment_y",
+          "Yes",
+          "Double",
+          "Y-coordinate of the attachment point, in model units."
+        ],
+        [
+          "annotation_attachment_z",
+          "Yes",
+          "Double",
+          "Z-coordinate of the attachment point, in model units."
+        ],
+        [
+          "annotation_sphere_size",
+          "Yes",
+          "Double",
+          "Marker radius in model units. Use 0 to render a point marker."
+        ],
+        [
+          "annotation_created_by",
+          "Yes",
+          "String",
+          "Identifier of the user who created the annotation."
+        ],
+        [
+          "annotation_intent",
+          "Yes",
+          "String",
+          "Visual intent of the annotation marker. See Intent values below."
+        ],
+        [
+          "annotation_timestamp",
+          "Yes",
+          "Timestamp",
+          "When the annotation was created."
+        ]
+      ],
+      [
+        [
+          "Value",
+          "Marker color"
+        ],
+        [
+          "none",
+          "Gray"
+        ],
+        [
+          "primary",
+          "Blue (the default when a new annotation is created)"
+        ],
+        [
+          "success",
+          "Green"
+        ],
+        [
+          "warning",
+          "Yellow"
+        ],
+        [
+          "danger",
+          "Red"
+        ]
+      ],
+      [
+        [
+          "Type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "measurement_id",
+          "Yes",
+          "String",
+          "Unique identifier for the measurement."
+        ],
+        [
+          "measurement_points",
+          "Yes",
+          "Array of doubles",
+          "Ordered 3D point coordinates that define the measurement, serialized as a flat number array. See Points format below."
+        ],
+        [
+          "measurement_created_by",
+          "Yes",
+          "String",
+          "Identifier of the user who created the measurement."
+        ],
+        [
+          "measurement_timestamp",
+          "Yes",
+          "Timestamp",
+          "When the measurement was created."
+        ]
+      ],
+      [
+        [
+          "Type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "section_plane_id",
+          "Yes",
+          "String",
+          "Unique identifier for the section plane."
+        ],
+        [
+          "section_plane_position",
+          "Yes",
+          "Array of doubles",
+          "Exactly three position values in [x, y, z] order."
+        ],
+        [
+          "section_plane_quaternion",
+          "Yes",
+          "Array of doubles",
+          "Exactly four quaternion values in [x, y, z, w] order."
+        ],
+        [
+          "section_plane_created_by",
+          "Yes",
+          "String",
+          "Identifier of the user who created the section plane."
+        ],
+        [
+          "section_plane_timestamp",
+          "Yes",
+          "Timestamp",
+          "When the section plane was created."
+        ]
+      ],
+      [
+        [
+          "Parameter type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "annotation_title",
+          "Yes",
+          "String",
+          "Short label."
+        ],
+        [
+          "annotation_content",
+          "Yes",
+          "String",
+          "Body text."
+        ],
+        [
+          "part_instance_id",
+          "Yes",
+          "String",
+          "Part instance that the annotation attaches to."
+        ],
+        [
+          "annotation_attachment_x",
+          "Yes",
+          "Double",
+          "X-coordinate of the attachment point."
+        ],
+        [
+          "annotation_attachment_y",
+          "Yes",
+          "Double",
+          "Y-coordinate of the attachment point."
+        ],
+        [
+          "annotation_attachment_z",
+          "Yes",
+          "Double",
+          "Z-coordinate of the attachment point."
+        ],
+        [
+          "annotation_sphere_size",
+          "Yes",
+          "Double",
+          "Marker radius in model units. Use 0 for a point marker."
+        ],
+        [
+          "annotation_intent",
+          "Yes",
+          "String",
+          "Category or severity."
+        ],
+        [
+          "annotation_timestamp",
+          "Yes",
+          "Timestamp",
+          "Creation timestamp."
+        ],
+        [
+          "cad_object",
+          "Yes",
+          "Object reference",
+          "Reference to the CAD object that the annotation belongs to."
+        ]
+      ],
+      [
+        [
+          "Parameter type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "measurement_points",
+          "Yes",
+          "Array of doubles",
+          "Ordered point coordinates in [x1, y1, z1, x2, y2, z2, ...] format."
+        ]
+      ],
+      [
+        [
+          "Parameter type class (name)",
+          "Required",
+          "Data type",
+          "Description"
+        ],
+        [
+          "section_plane_position",
+          "Yes",
+          "Array of doubles",
+          "Exactly three position values in [x, y, z] order."
+        ],
+        [
+          "section_plane_quaternion",
+          "Yes",
+          "Array of doubles",
+          "Exactly four quaternion values in [x, y, z, w] order."
+        ]
+      ],
+      [
+        [
+          "Type class (name)",
+          "Required",
+          "Description"
+        ],
+        [
+          "cad_object",
+          "Yes",
+          "Associates an annotation with its parent CAD object."
+        ]
+      ]
+    ],
+    "vulcan-widget": [
+      [
+        [
+          "Field",
+          "Required",
+          "Type",
+          "Description"
+        ],
+        [
+          "id",
+          "Yes",
+          "String",
+          "The part instance or assembly ID to transform."
+        ],
+        [
+          "transform",
+          "Yes",
+          "Array of numbers",
+          "Exactly 16 finite numbers representing a 4\u00d74 transformation matrix in column-major order."
+        ]
+      ],
+      [
+        [
+          "Field",
+          "Required",
+          "Type",
+          "Description"
+        ],
+        [
+          "partInstanceIds",
+          "Yes",
+          "Array of strings",
+          "One or more part instance or assembly IDs to style."
+        ],
+        [
+          "color",
+          "No",
+          "String",
+          "A CSS color value, such as #0055ff or rgb(0, 85, 255)."
+        ],
+        [
+          "opacity",
+          "No",
+          "Number",
+          "Base opacity, from 0 for transparent to 1 for opaque."
+        ],
+        [
+          "selectedOpacity",
+          "No",
+          "Number",
+          "Opacity while selected or highlighted, using the same 0 to 1 scale."
+        ]
+      ],
+      [
+        [
+          "Setting",
+          "Functionality"
+        ],
+        [
+          "Enable annotation tool",
+          "Annotation creation on model parts."
+        ],
+        [
+          "Enable mesh styling tool",
+          "Appearance controls for individual meshes."
+        ],
+        [
+          "Enable measurement tool",
+          "Distance measurements between model points."
+        ],
+        [
+          "Enable section view tool",
+          "Model cross-sections using section planes."
+        ],
+        [
+          "Enable transform tool",
+          "Repositioning of parts and assemblies."
+        ],
+        [
+          "Enable scene coloring tool",
+          "Property- or function-based coloring of parts."
+        ]
+      ]
+    ]
+  },
+  "status": "post-cutoff documentation; historical qualification and executable support not established"
+}

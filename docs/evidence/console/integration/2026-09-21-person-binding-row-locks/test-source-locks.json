@@ -1,0 +1,4 @@
+{
+  "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs": "b1e4b7b6a2f6106770a5602e537db887921a372c71779f14cde4ca6f9c53a477",
+  "backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql": "9b0f786d715621a88d29178f628277d29f626e464aa597cffc169032dd810b5a"
+}

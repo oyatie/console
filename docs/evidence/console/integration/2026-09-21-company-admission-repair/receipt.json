@@ -1,0 +1,45 @@
+{
+  "status": "prospective Company implementation admission only",
+  "root_base": "63e267b1432b55a736912b7a1cb286d15f27dfab",
+  "test_base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "owner": "/root/company_owner",
+  "implementation_root": "/private/tmp/console-client-release-20260919",
+  "reviewer": "/root/integration_security",
+  "root_verification": "Reviewed actual stack, six evidence hashes and clean detached exact base; Company enrollment404 versus201 after Account prerequisites.1 executed,1 failed,516 filtered,0 infrastructure failures.",
+  "invalid_predecessor": "Prior renewal failed Docker access and ran zero tests; generic admitted message did not qualify it. Preserved without retroactive validation.",
+  "handoff": "Original bounded writer resumed prospectively after actual RED and independent review. Root released Buck/PostgreSQL lease. New paths require exact separately reviewed successor.",
+  "premortem": "Infrastructure failure misclassified as semantic RED admits unproved work.",
+  "blast_radius": "Company implementation admission; no release or workflow acceptance.",
+  "detection": "Inspect executed counts, error class, stack phase and clean source identity, not wrapper exit alone.",
+  "rollback": "Stop writer and preserve dirty checkout/evidence; no shared reset.",
+  "stop_conditions": [
+    "Infrastructure failure",
+    "Wrong test boundary",
+    "Unreviewed semantic test/source change",
+    "Unapproved path or shared resource mutation"
+  ],
+  "holds": [
+    "Original full Company probe must pass with durable effects and reopening",
+    "No browser/workflow/MVP acceptance",
+    "Historical custody and broader release holds remain"
+  ],
+  "files": {
+    "console-company-admission-runtime-security-review-20260921.json": "6285be85d6bf135ee4a0b5ecd96a8bce4d4894076b539d7ede8ea85053a7b2eb",
+    "console-company-admission-backtrace-spec-20260921.json": "63a883df3512206de91d185fd850fad15f2366981a99269f0493d9dc0f0a6592",
+    "console-company-admission-backtrace-buck-20260921.sh": "6a9917bb51bc1e357bbb2ebb84e758cfda9dbe6787d66affa8bdce181e0d5777",
+    "console-company-admission-backtrace-probe-20260921.log": "70458e859e314c65fb89e0d7263f7c0c93699c93666370fcc3f3d470072ff2c4",
+    "console-company-admission-backtrace-admit-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-company-owner-renewal-red-20260921.log": "e7b533ab83470090fe7802c1ee1ce5cc6a0c1697ee832dd98ee7135ecedfe8fb",
+    "console-company-admission-repair-probe-20260921.log": "dcf4e528ecb01f1586e7eb1d85cf64f3ee304ba6c1d1fac4b19941d46f48773f",
+    "console-company-owner-scope-successor-20260921.json": "9714989e78d1a29facb69cefaff34335e98e9b778402b1facd0817ff0d8daeaf",
+    "console-company-recovery-path-scope-security-review-round2-20260921.json": "2e42cae02b8cce9b22311ead810ad0aa0da02a871c71102409cc2c415ff073f2",
+    "console-company-admission-archive-security-review-20260921.json": "8d6f79e662dfe695b61ead39733686e06ea9d804a27bdb4e6f08a2e91080b832",
+    "console-company-admission-evidence-adrs-20260921.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995"
+  },
+  "archive_verification": "Independent archive review8d6f79e662dfe695b61ead39733686e06ea9d804a27bdb4e6f08a2e91080b832 checked9copies; root added missing scope hashes. ADR gate passed44ADRs/8design notes.",
+  "whitespace_verification": {
+    "full_staged_diff": "one trailing-space diagnostic in unchanged archived console-company-admission-repair-probe-20260921.log:118",
+    "preservation": "Raw log bytes retained with recorded SHA; no historical cleanup or checker rule change.",
+    "non_log_command": "git diff --cached --check -- . :(exclude)docs/evidence/console/integration/2026-09-21-company-admission-repair/console-company-admission-repair-probe-20260921.log"
+  }
+}

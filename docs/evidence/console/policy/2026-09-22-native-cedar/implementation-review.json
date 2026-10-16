@@ -1,0 +1,47 @@
+{
+  "reviewer": "/root/policy_browser_tests",
+  "base": "96f3007a7ada4da2d592d6fb035b0fe2570dfcff",
+  "decision": "APPROVE bounded integrated Cedar prerequisite",
+  "findings": [],
+  "files": {
+    "backend/app/tests/auth_rest/native_company_policy_http_tests.rs": "2b8e043c3136d6b19caaecde5dee01e48ddc677b5af4a1af0c6e014d2eb8312d",
+    "backend/crates/identity/application/src/company_policy.rs": "81727909b4d62c82c0dca0bcf9c812a8e1d4719b6e22cfd2579b400bc5ffc520",
+    "backend/crates/identity/application/src/company_policy/business.rs": "d6dae8d7f6964251016446f67e4b7a59a0120277f0fd42dc73f719a735b7baa5",
+    "backend/crates/identity/application/src/company_policy/native_business.rs": "cb135e700c1716f3333e32b090338f35ca7457e52d432f47804aa099a96ccbbe",
+    "backend/crates/platform/authz/BUCK": "f88e6efe5aa44c4ba6d72b057b973d63d2b21636487fd9e840196427e757ef85",
+    "backend/crates/platform/authz/src/company_policy.rs": "507381027e123b663f7e373e67cde149f01427f7cadd47044fbee9b5ed73f4d0",
+    "backend/crates/platform/authz/src/company_policy/native-business-bootstrap-v1.cedar": "25ec7cbd092432c38ed25944edd609e67d2da529e21ac47b5dd9146fd451db82",
+    "backend/crates/platform/authz/src/company_policy/native-business-bootstrap-v1.cedarschema": "58d413453cca9e8f67206a73c95dcb33fc020a794a3615f96da2107bac7d40b7",
+    "backend/crates/platform/authz/src/company_policy/native-payroll-collection-read-v1.cedar": "f861ad6a2b9e41471a9c17dc880ef925bcab32c7c0e074b8bd6aa0686e83cfa8",
+    "backend/crates/platform/authz/src/company_policy/native-payroll-collection-read-v1.cedarschema": "5eba76196c0203980310cad04bc64ffa0cb65fac3bc18b9a1416fb84c213ac34",
+    "backend/crates/platform/authz/src/company_policy/native_business.rs": "98b7361999c6a30627ea33f9e5805464e67427fec23bb6b19ecce904b3a60e30",
+    "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs": "7ec696bbad78d71dc2e7dcbd3b625700f39ff14736c5a2881d36ea5e58f9ad64",
+    "backend/crates/platform/authz/src/native_business_policy_unit_tests.rs": "fc388180d03354201a8b4301c2e1118c1e7a408a67e0fc3b25329988789cf6a2",
+    "tools/buck/gen_first_party.py": "bce19475cc1aaa126abfa3d9f58f9b9e9704cca289e33e96aff5e93058d1e00f"
+  },
+  "verified": [
+    "Installed 2 implementation files byte-identical to independently reviewed drafts; installed 11-test file byte-identical to round2 approved packet; 4 resource SHA256 values match frozen contract.",
+    "CompanyPolicy::new validates both new exact fixed bundles inside catch_unwind in addition to existing schema/SDK validation.",
+    "Both required trait methods have no default implementation and route evaluation through catch_unwind to EvaluatorUnavailable on panic. Exactly 3 trait implementations exist; 2 test wrappers explicitly delegate new methods to real CompanyPolicy.",
+    "Shared authorize preserves sdk_calls increment, panic_at_authorizer injection, diagnostics-error failure and existing Allow/Deny mapping. Existing request evaluation now invokes that unchanged behavior.",
+    "Generator adds only src/company_policy/*.cedar glob; generated library and unit target mapped_srcs make exactly corresponding two additions; no Cargo/build fallback introduced.",
+    "MANIFEST change is visibility only (pub(super)); bytes and codec unchanged."
+  ],
+  "runtime_evidence": {
+    "path": "/private/tmp/console-policy-buck-prerequisite-20260922/native-business-cedar.log",
+    "sha256": "5876a817d0f4021b4c762ea17a5909b2f0e775f3d653ea9bd74042cc5174a976",
+    "observed_result": "142 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out",
+    "reviewer_executed_tests": 0
+  },
+  "next_adapter_required_proof": [
+    "Construct NativePolicySourceBinding from independent actual authenticated Account/session/generation and actual transaction xid/backend/latest DB clock, not by copying all those facts from the projection row.",
+    "Canonical SQL material must prove current designation/deployment/Company/Group/provenance; ACTIVE attributes and designation actor in Cedar rely on that finite owner contract.",
+    "Payroll action and exactly18 PropertyRefs must come from the actual registered manifest and current clause membership; Rust shape/count/type checks do not invent or prove semantic property registration. Use selected current assignment valid_from/valid_until (11-column reader successor), not permanent role interval.",
+    "Retain same transaction and authorized Company RLS scope through read/write, shared audit, deferred closure and final Auth/Cedar checks after waits. Rebuild current observed_at for final temporal decision.",
+    "Two commit commands, current-authorized receipt replay before stale-head checks, no synthesized success after uncertain commit, exact separate ontology event and closure remain owner/adapter integration acceptance."
+  ],
+  "limits": [
+    "This prerequisite does not itself integrate a native mutation/query adapter or accept the browser workflow.",
+    "No database/browser sessions run by reviewer; log result independently read rather than rerun."
+  ]
+}

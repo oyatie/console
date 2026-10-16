@@ -1,0 +1,7 @@
+{
+  "README.md": "7a8af42290287f48dfb757a0d838617f82b62e623e6fc7b8c4c2b63839c56d8e",
+  "backend/app/tests/auth_rest/native_document_cases.rs": "4e8a270385142431b9d393c36201c5e20c344c439d2c7cac1873c051191800bf",
+  "backend/app/tests/health_readiness.rs": "a46f27e6f31411877066f83f6474d83b141fa63c2acbe2d8dca858033ebeb757",
+  "candidate.diff": "4ed5fade8af739d6cbf70a480b5d37bfd89f0b495ea6aa3145f13db288e4f611",
+  "source-custody.json": "e7ab91f027920da67a703771e3c9b8ca76e65a148d25d96db4ea3aa5a7381289"
+}

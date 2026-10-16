@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE archive with explicit private failure metadata",
+  "archive": "/private/tmp/console-native-prerequisites-archive-20260920",
+  "manifest_sha256": "b01314807da189e1ae96a752f6a56fd1bb650dafe48f206143b39b71eb384e90",
+  "verification_sha256": "9950ab6ce22da1d031c851ca1cfa9d634214e09ce549c79976eeff3ca925c18a",
+  "excluded_private_failure_metadata_sha256": "63fae1ab2600d9c8602cece6eda6e655f8b530ddec0dd2fcde29e9a6d313d650",
+  "prior_33_artifact_review_sha256": "46afae66e5da9f2d9d989150dbba4e65221f7ae9fe1b6d0a218de8eb85d1f532",
+  "counts": {
+    "preserved_artifacts": 33,
+    "manifest": 1,
+    "verification": 1,
+    "excluded_failure_metadata": 1,
+    "total_files": 36
+  },
+  "checks": [
+    "All prior33 artifacts, manifest and verification remain unchanged from inspected approved archive.",
+    "Independently hashed original private failure without displaying its contents; exact hash equals metadata. Classification correctly excludes bootstrap failure from compiler/test evidence. Metadata publishes neither URL nor token.",
+    "One explicit additional metadata file explains private retention without mutating historical evidence. Manifest indexes33preserved artifacts; this receipt separately pins metadata and count36.",
+    "No source/runtime/capability-state changes. Existing incomplete Group and full-release HOLDs remain. User priority change to polished MVP does not retroactively qualify full release."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "repository_mutations_by_reviewer": 0
+}

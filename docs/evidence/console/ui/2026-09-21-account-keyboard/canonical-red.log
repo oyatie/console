@@ -1,0 +1,371 @@
+✔ complete observation positive control accepts (0.492542ms)
+✖ new keyboard_logout omission is rejected (0.342375ms)
+✖ new keyboard_logout refuses false (0.073959ms)
+✖ new keyboard_logout refuses null (0.0515ms)
+✖ new keyboard_logout refuses "true" (0.052708ms)
+✖ new keyboard_logout refuses 1 (0.046083ms)
+✖ new keyboard_login_entry omission is rejected (0.039584ms)
+✖ new keyboard_login_entry refuses false (0.034541ms)
+✖ new keyboard_login_entry refuses null (0.043417ms)
+✖ new keyboard_login_entry refuses "true" (0.076709ms)
+✖ new keyboard_login_entry refuses 1 (0.050583ms)
+✖ new keyboard_login_submit omission is rejected (0.041875ms)
+✖ new keyboard_login_submit refuses false (0.036667ms)
+✖ new keyboard_login_submit refuses null (0.027584ms)
+✖ new keyboard_login_submit refuses "true" (0.027917ms)
+✖ new keyboard_login_submit refuses 1 (0.023958ms)
+✔ retained registration_wire omission still fails (0.030292ms)
+✔ retained resident omission still fails (0.021875ms)
+✔ retained cookie_security omission still fails (0.028709ms)
+✔ retained literal_secret_absent omission still fails (0.036333ms)
+✔ retained logout_cookie_clear omission still fails (0.029292ms)
+✔ retained login_wire omission still fails (0.022125ms)
+✔ retained same_account omission still fails (0.038ms)
+✔ retained active_after_login omission still fails (0.019792ms)
+✔ retained reflow_root_320 omission still fails (0.018583ms)
+✔ retained reflow_register_320 omission still fails (0.016083ms)
+✔ retained reflow_account_320 omission still fails (0.0175ms)
+✔ retained keyboard_skip omission still fails (0.014833ms)
+✔ retained keyboard_registration omission still fails (0.02775ms)
+✔ retained keyboard_terms omission still fails (0.014875ms)
+✔ retained keyboard_registration_submit omission still fails (0.02225ms)
+✔ missing actual request count /api/v2/auth/registration/start fails (0.022667ms)
+✔ missing actual request count /api/v2/auth/registration/finish fails (0.014083ms)
+✔ missing actual request count /api/v2/auth/passkey/login/start fails (0.014ms)
+✔ missing actual request count /api/v2/auth/passkey/login/finish fails (0.020709ms)
+✔ missing actual request count /api/v2/auth/logout fails (0.022042ms)
+✔ missing owner acknowledgement ENROLLED fails (0.02675ms)
+✔ missing owner acknowledgement LOGGED_OUT fails (0.019917ms)
+✔ missing owner acknowledgement LOGGED_IN fails (0.028792ms)
+✔ retained cleanup unconfirmed prevents success (0.0225ms)
+✔ retained explicit failure prevents success (0.02275ms)
+✔ retained unexpected post prevents success (0.023583ms)
+✔ retained external request prevents success (0.016375ms)
+✔ retained browser drift prevents success (0.022916ms)
+✔ retained relay failure prevents success (0.017459ms)
+✔ retained TLS error prevents success (0.017042ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 31
+ℹ fail 15
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41.328417
+
+✖ failing tests:
+
+test at tools/browser/account.test.cjs:11:2
+✖ new keyboard_logout omission is rejected (0.342375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:11:88)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_logout refuses false (0.073959ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_logout refuses null (0.0515ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_logout refuses "true" (0.052708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_logout refuses 1 (0.046083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:11:2
+✖ new keyboard_login_entry omission is rejected (0.039584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:11:88)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_entry refuses false (0.034541ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_entry refuses null (0.043417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_entry refuses "true" (0.076709ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_entry refuses 1 (0.050583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:11:2
+✖ new keyboard_login_submit omission is rejected (0.041875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:11:88)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_submit refuses false (0.036667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_submit refuses null (0.027584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_submit refuses "true" (0.027917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tools/browser/account.test.cjs:12:41
+✖ new keyboard_login_submit refuses 1 (0.023958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.test.cjs:12:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,162 @@
+{
+  "3dda01de40b1da0b2e4d9e2f75a96dfcfe12f3c2fbb17fdd2dc24db8a13e8325": {
+    "json_path": "/props/pageProps/releases/127/releaseNotes/1",
+    "record": {
+      "id": "3dda01de40b1da0b2e4d9e2f75a96dfcfe12f3c2fbb17fdd2dc24db8a13e8325",
+      "type": "FEATURE",
+      "description": "Flow Capture now allows you to resize images and have those changes persist in documentation. Resized images also carry over to Notepad and PDF exports.",
+      "categoryTitle": "AI Platform (AIP)",
+      "categoryId": "aip",
+      "applicationId": "",
+      "applicationTitle": "Flow Capture",
+      "date": "February 18, 2026",
+      "title": "Image resizing in Flow Capture",
+      "prominence": "Basic",
+      "releaseVersion": "@foundry/foundry-frontend@6.485.0",
+      "productId": "Foundry",
+      "frontendApplicationId": "flow-capture",
+      "mediaFilenames": [],
+      "applications": [
+        {
+          "productId": "Foundry",
+          "categoryId": "aip",
+          "categoryTitle": "AI Platform (AIP)",
+          "applicationTitle": "Flow Capture",
+          "frontendApplicationId": "flow-capture",
+          "isKeyComponent": true
+        }
+      ],
+      "application": {
+        "id": "",
+        "title": "Flow Capture"
+      },
+      "category": {
+        "id": "aip",
+        "title": "AI Platform (AIP)"
+      },
+      "product": {
+        "id": "Foundry"
+      }
+    }
+  },
+  "fdb44475cd28e8d43e82dd85c1fc327539565997fd83e3b0587c90b38f3c3692": {
+    "json_path": "/props/pageProps/releases/127/releaseNotes/2",
+    "record": {
+      "id": "fdb44475cd28e8d43e82dd85c1fc327539565997fd83e3b0587c90b38f3c3692",
+      "type": "ENHANCEMENT",
+      "description": "Flow Capture now intercepts links that would open in new tabs during recording sessions. When clicking a link that would normally open in a new tab (via target=\"_blank\" or cmd/ctrl+click), users are presented with a dialog offering two options: open in a new tab (exiting the recording context) or open in the current tab (continuing the recording). This prevents accidental loss of recording context when navigating between pages.",
+      "categoryTitle": "AI Platform (AIP)",
+      "categoryId": "aip",
+      "applicationId": "",
+      "applicationTitle": "Flow Capture",
+      "date": "February 18, 2026",
+      "title": "Flow Capture prevents accidental recording interruptions when opening links",
+      "prominence": "Basic",
+      "releaseVersion": "@foundry/foundry-frontend@6.485.0",
+      "productId": "Foundry",
+      "frontendApplicationId": "flow-capture",
+      "mediaFilenames": [],
+      "applications": [
+        {
+          "productId": "Foundry",
+          "categoryId": "aip",
+          "categoryTitle": "AI Platform (AIP)",
+          "applicationTitle": "Flow Capture",
+          "frontendApplicationId": "flow-capture",
+          "isKeyComponent": true
+        }
+      ],
+      "application": {
+        "id": "",
+        "title": "Flow Capture"
+      },
+      "category": {
+        "id": "aip",
+        "title": "AI Platform (AIP)"
+      },
+      "product": {
+        "id": "Foundry"
+      }
+    }
+  },
+  "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30": {
+    "json_path": "/props/pageProps/releases/130/releaseNotes/0",
+    "record": {
+      "id": "886238144efc782699c2a8738ce997fddd82413138b3212104fc482bdf730c30",
+      "type": "FIX",
+      "description": "Flow Capture now displays a confirmation dialog when you attempt to navigate away from the edit page with unsaved changes. This prevents accidental loss of work by giving you the option to stay on the page and save your changes.",
+      "categoryTitle": "AI Platform (AIP)",
+      "categoryId": "aip",
+      "applicationId": "",
+      "applicationTitle": "Flow Capture",
+      "date": "February 14, 2026",
+      "title": "Unsaved changes confirmation in Flow Capture",
+      "prominence": "Basic",
+      "releaseVersion": "",
+      "productId": "Foundry",
+      "frontendApplicationId": "flow-capture",
+      "mediaFilenames": [],
+      "applications": [
+        {
+          "productId": "Foundry",
+          "categoryId": "aip",
+          "categoryTitle": "AI Platform (AIP)",
+          "applicationTitle": "Flow Capture",
+          "frontendApplicationId": "flow-capture",
+          "isKeyComponent": true
+        }
+      ],
+      "application": {
+        "id": "",
+        "title": "Flow Capture"
+      },
+      "category": {
+        "id": "aip",
+        "title": "AI Platform (AIP)"
+      },
+      "product": {
+        "id": "Foundry"
+      }
+    }
+  },
+  "a21993316797017cbc9a5fef35917a7b2d3c90ff4efe3c367b6ac9ddf0dc07d6": {
+    "json_path": "/props/pageProps/releases/134/releaseNotes/0",
+    "record": {
+      "id": "a21993316797017cbc9a5fef35917a7b2d3c90ff4efe3c367b6ac9ddf0dc07d6",
+      "type": "FEATURE",
+      "description": "Flow Capture now supports a complete review phase for uploaded videos. After uploading a prerecorded demo, you can review the extracted screenshots in a thumbnail grid, adjust timestamps, delete unwanted images, and confirm your selections before finalizing the documentation. This completes the video upload workflow, enabling you to use prerecorded demos as a starting point for documentation.",
+      "categoryTitle": "AI Platform (AIP)",
+      "categoryId": "aip",
+      "applicationId": "",
+      "applicationTitle": "Flow Capture",
+      "date": "February 9, 2026",
+      "title": "Review uploaded videos in Flow Capture",
+      "prominence": "Basic",
+      "releaseVersion": "@foundry/foundry-frontend@6.483.0",
+      "productId": "Foundry",
+      "frontendApplicationId": "flow-capture",
+      "mediaFilenames": [],
+      "applications": [
+        {
+          "productId": "Foundry",
+          "categoryId": "aip",
+          "categoryTitle": "AI Platform (AIP)",
+          "applicationTitle": "Flow Capture",
+          "frontendApplicationId": "flow-capture",
+          "isKeyComponent": true
+        }
+      ],
+      "application": {
+        "id": "",
+        "title": "Flow Capture"
+      },
+      "category": {
+        "id": "aip",
+        "title": "AI Platform (AIP)"
+      },
+      "product": {
+        "id": "Foundry"
+      }
+    }
+  }
+}

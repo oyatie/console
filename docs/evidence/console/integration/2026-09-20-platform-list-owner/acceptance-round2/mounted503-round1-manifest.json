@@ -1,0 +1,19 @@
+{
+  "base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "source": {
+    "file": "legacy_platform_list_unavailable.rs",
+    "sha256": "0c478ef9a836b55a6edf92c7c9fc16bd60843642bb2b0e93309e5ff53a9dc149"
+  },
+  "integration": "Add path module declaration to legacy_platform_list_histories.rs; root regenerates App BUCK",
+  "parent": {
+    "path": "backend/app/tests/auth_rest/legacy_platform_list_histories.rs",
+    "sha256": "1fb70485b4cc8e4478d7d4b309e2f3c292205dd023218a0682f330df540bcca3"
+  },
+  "cases": {
+    "sqlx_tests": 1,
+    "mounted_attempts": 6,
+    "recovery_reads": 3
+  },
+  "limits": "Exact affected function metadata, canonical ACLs, audit trigger catalog and all business/audit rows; does not claim full unrelated catalog or pool/clock/decode injection.",
+  "runtime_tests": 0
+}

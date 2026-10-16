@@ -1,0 +1,71 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T05:32:33.548-04:00] Build ID: 558c8ef2-22be-47cd-b0c6-9cb40aa1d608
+[2026-09-21T05:32:33.550-04:00] File changed: root//rustfmt.toml
+[2026-09-21T05:32:33.550-04:00] File changed: root//backend/app/BUCK
+[2026-09-21T05:32:33.550-04:00] File changed: root//backend/app/src/lib.rs
+[2026-09-21T05:32:33.550-04:00] 8 additional file change events
+[2026-09-21T05:32:40.650-04:00] Waiting on root//backend/crates/identity/application:console-identity-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 427 other actions
+[2026-09-21T05:32:47.748-04:00] Waiting on root//backend/crates/platform/audit-chain:console-platform-audit-chain (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 318 other actions
+[2026-09-21T05:32:54.850-04:00] Waiting on root//third-party/rust:nom-8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 260 other actions
+[2026-09-21T05:33:01.949-04:00] Waiting on root//third-party/rust:zlib-rs-0.6 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 201 other actions
+[2026-09-21T05:33:08.950-04:00] Waiting on root//third-party/rust:h2-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 132 other actions
+[2026-09-21T05:33:16.048-04:00] Waiting on root//third-party/rust:zerocopy-0.8 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 121 other actions
+[2026-09-21T05:33:23.050-04:00] Waiting on root//third-party/rust:hickory-proto-0.26 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 60 other actions
+[2026-09-21T05:33:30.149-04:00] Waiting on root//third-party/rust:syn-2 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 40 other actions
+[2026-09-21T05:33:37.249-04:00] Waiting on root//third-party/rust:chrono-tz-0.10 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 27 other actions
+[2026-09-21T05:33:44.249-04:00] Waiting on root//third-party/rust:js-sys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 34 other actions
+[2026-09-21T05:33:51.350-04:00] Waiting on root//third-party/rust:umya-spreadsheet-3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 128 other actions
+[2026-09-21T05:33:58.451-04:00] Waiting on root//third-party/rust:umya-spreadsheet-3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 106 other actions
+[2026-09-21T05:34:05.549-04:00] Waiting on root//backend/crates/platform/auth-rest:console-platform-auth-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 73 other actions
+[2026-09-21T05:34:12.551-04:00] Waiting on root//backend/crates/attendance/rest:console-attendance-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 63 other actions
+[2026-09-21T05:34:19.650-04:00] Waiting on root//backend/crates/platform/auth-rest:console-platform-auth-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 53 other actions
+[2026-09-21T05:34:26.651-04:00] Waiting on root//third-party/rust:web-sys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 43 other actions
+[2026-09-21T05:34:33.749-04:00] Waiting on root//third-party/rust:web-sys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 30 other actions
+[2026-09-21T05:34:40.749-04:00] Waiting on root//third-party/rust:web-sys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 20 other actions
+[2026-09-21T05:34:47.849-04:00] Waiting on root//backend/crates/identity/rest:console-identity-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 10 other actions
+[2026-09-21T05:34:54.849-04:00] Waiting on root//third-party/rust:tachys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 4 other actions
+[2026-09-21T05:35:01.851-04:00] Waiting on root//third-party/rust:leptos_server-0.9 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T05:35:08.951-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T05:35:16.049-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T05:35:23.050-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T05:35:30.149-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:35:37.150-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:35:44.151-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:35:51.151-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:35:57.269-04:00] Cache hits: 0%
+[2026-09-21T05:35:57.269-04:00] Commands: 2120 (cached: 0, remote: 0, local: 2120)
+[2026-09-21T05:35:57.269-04:00] Network: Up: 0B  Down: 20MiB
+BUILD SUCCEEDED
+[2026-09-21T05:35:57.293-04:00] Build ID: efde55a5-5c49-43f9-8f89-8751f546960e
+[2026-09-21T05:35:57.297-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T05:36:04.393-04:00] Waiting on root//third-party/rust:serde_json-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (write __rustc_shim.sh), and 806 other actions
+[2026-09-21T05:36:11.893-04:00] Waiting on root//third-party/rust:block-buffer-0.10 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 256 other actions
+[2026-09-21T05:36:19.094-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-21T05:36:23.749-04:00] ✗ Fail: root//tools/buck:app-auth-rest-pg (10.1s)
+[2026-09-21T05:36:23.749-04:00] ---- STDOUT ----
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] running 1 test
+[2026-09-21T05:36:23.749-04:00] test account_browser::deployment_operator_designation::company_setup::entry_read::company_entry_preview_metadata_cookie_and_method_contract_is_current ... FAILED
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] failures:
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] ---- account_browser::deployment_operator_designation::company_setup::entry_read::company_entry_preview_metadata_cookie_and_method_contract_is_current stdout ----
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] thread 'account_browser::deployment_operator_designation::company_setup::entry_read::company_entry_preview_metadata_cookie_and_method_contract_is_current' (75180875) panicked at backend/app/backend/app/tests/auth_rest/native_company_setup.rs:1044:17:
+[2026-09-21T05:36:23.749-04:00] unreleased preview must not submit or invent authority
+[2026-09-21T05:36:23.749-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] failures:
+[2026-09-21T05:36:23.749-04:00]     account_browser::deployment_operator_designation::company_setup::entry_read::company_entry_preview_metadata_cookie_and_method_contract_is_current
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 516 filtered out; finished in 7.46s
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.749-04:00] ---- STDERR ----
+[2026-09-21T05:36:23.749-04:00]
+[2026-09-21T05:36:23.765-04:00] Network: Up: 0B  Down: 0B
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//tools/buck:app-auth-rest-pg

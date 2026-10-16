@@ -1,0 +1,47 @@
+{
+  "reviewer": "/root/integration_tests",
+  "status": "ACCEPT_BOUNDED_NATIVE_ENVELOPE_BUILD_AND_CI_WIRING",
+  "head": "fb07d34fa4eed001a791cafd43cd407c1940f9f5",
+  "source_review_sha256": "16baf9b016a5e14761dd40605d9389643a5e7542490907c39e01e7fedbc109bd",
+  "committed_five_source_hashes_match_approved": true,
+  "generator_regression_source_unchanged": true,
+  "results": {
+    "generator_regression": {
+      "executed": 59,
+      "passed": 59,
+      "failed": 0
+    },
+    "ci_preflight_regression": {
+      "executed": 81,
+      "passed": 81,
+      "failed": 0,
+      "skipped": 0
+    },
+    "actual_ci_reachability_owner": "GREEN after exact named missing-target RED and recorded lane admission",
+    "reused_html413_mapper_evidence": {
+      "integration_executed": 3,
+      "integration_passed": 3,
+      "lib_executed": 31,
+      "lib_passed": 31,
+      "new_run_claimed": false
+    }
+  },
+  "evidence_sha256": {
+    "/private/tmp/console-native-envelope-generator-green-20260920.log": "3a17928c7009d9b17d005566bccea281fc1f96c1061c403d7d2b1601f183b0c9",
+    "/private/tmp/console-native-envelope-ci-owner-green-20260920-round2.log": "60aa6409e3a4047248a9c1fae6d8bc6f6a3df30735d299f0be4127b88311cc92",
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-native-envelope-ci/preflight-green.log": "da5ba73a5fde932879c05d394615452dca6131ddee86f49c215ef599e5a45ad6",
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-native-html413-owner/mapper-green.log": "3651407c57c0487fedc33e3dc6426707454649aa0ae285f978f4928dc0b3bbcc"
+  },
+  "conclusions": [
+    "Reviewed resource.none matches three pure in-process mapper/body-limit tests. Canonical generated target and exact unfiltered Cargo integration invocation/status collector now exist.",
+    "Five committed files match reviewed bytes; other existing graph/CI/baseline/guard records preserved. Existing generator59 and preflight81 regressions pass.",
+    "Declared count31whole-source/3integration and executable workflow reachability are static contracts. Reused local Rust3/3 evidence is distinct and was not re-executed or double-counted."
+  ],
+  "remaining_holds": [
+    "Hosted CI execution on deployment candidate is not established by local graph gates.",
+    "Broader whole-repository/release qualification, native Company command journeys and complete assembled release remain separate.",
+    "No production exposure, user-study/accessibility qualification, HA recovery or direct-payment authority granted."
+  ],
+  "reviewer_repo_writes": 0,
+  "reviewer_runtime_reruns": 0
+}

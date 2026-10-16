@@ -1,0 +1,10 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_MECHANICAL_BUCK_RESOURCE_SCOPE_ADDITION",
+  "preimage_generator_sha256": "b00841d4ff38e55c42e8c4356cafb193b838b645cb1e19e09f0dd019977b7ef4",
+  "exact_change": "Add RESOURCE_CONFIG[console-platform-authz].srcs with src/platform_policy/*.cedar, src/platform_policy/*.cedarschema and src/platform_policy/truth-table.json. Preserve existing external map and itest_srcs. Regenerate Authz BUCK under root writer.",
+  "basis": "Current resource config has no srcs key; existing library/unit mapped_srcs glob includes only Rust, so reviewed include_str/include_bytes resource files are absent from Buck graph. This is required source resource mapping, not dependency version/test-filter or authority change.",
+  "app_generated_limit": "Existing admitted App BUCK output may capture prior retained test modules; final generated diff must correspond only to actual reviewed files, with no source inclusion workaround or removal of existing tests.",
+  "tests_executed": 0,
+  "repository_writes": 0
+}

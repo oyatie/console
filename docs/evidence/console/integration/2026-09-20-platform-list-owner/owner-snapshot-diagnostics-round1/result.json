@@ -1,0 +1,26 @@
+{
+  "owner": "/root",
+  "failed_candidate": "cfd16748349d0b3f4cab811a0809703ad24fb255",
+  "full52": {
+    "passed": 51,
+    "failed": 1,
+    "ignored": 0,
+    "filtered": 392,
+    "seconds": 659.18,
+    "failed_leaf": "platform_source_sql_nil_scope_isolation_missing_and_fenced_refusals",
+    "diagnosis": "undetermined exact tuple drift; component not observed in this run"
+  },
+  "diagnostic_candidate": "8bae9a50bb28d1d10ac783ed3927072a2239ac85",
+  "focused_run1": {
+    "passed": 1,
+    "failed": 0,
+    "filtered": 443,
+    "seconds": 16.7
+  },
+  "limits": [
+    "single focused pass does not resolve intermittent full-suite failure",
+    "five further diagnostic invocations pending",
+    "list owner acceptance remains open"
+  ],
+  "changes": "exact tuple equality retained, metadata-only differing paths and static business-state marker"
+}

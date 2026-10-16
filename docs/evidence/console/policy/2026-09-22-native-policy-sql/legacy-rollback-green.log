@@ -1,0 +1,10 @@
+BEGIN
+              set_config              
+--------------------------------------
+ ed8647f7-c66a-45d4-bd4f-8c82459cc45e
+(1 row)
+
+SET
+INSERT 0 1
+SET CONSTRAINTS
+ROLLBACK

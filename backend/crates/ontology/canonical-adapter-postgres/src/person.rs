@@ -59,6 +59,10 @@
 //! the trait ever gains an async form.
 
 use console_kernel_core::{KernelError, OrgId, UserId};
+use console_ontology_canonical_domain::legacy_receipt_compatibility::{
+    LegacyReceiptBinding, LegacyReceiptExpectation, legacy_receipt_binding,
+    legacy_user_receipt_shape,
+};
 use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     ObjectKey, Person, Preflight, ReceiptOwner,
@@ -312,21 +316,52 @@ pub async fn write_in_tx(
     let command_uuid = *command.command_id.as_uuid();
 
     if let Some(stored) = sqlx::query(
-        "SELECT actor_id, payload_digest, receipt, created_at \
-             FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
+        "SELECT r.actor_id, r.payload_digest, r.receipt, r.created_at, r.owner, r.target, r.action_key, r.object_type_id, \
+             to_jsonb(r)->'actor_kind' AS receipt_actor_kind, to_jsonb(r)->'actor_account_id' AS receipt_actor_account \
+             FROM ont_action_command_receipts r WHERE r.org_id = $1 AND r.command_id = $2",
     )
     .bind(org)
     .bind(command_uuid)
     .fetch_optional(tx.as_mut())
     .await?
     {
+        let kind: Option<serde_json::Value> = stored.try_get("receipt_actor_kind")?;
+        let account: Option<serde_json::Value> = stored.try_get("receipt_actor_account")?;
+        if !legacy_user_receipt_shape(kind.as_ref(), account.as_ref()) {
+            return Err(PersonError::DigestConflict(command_uuid));
+        }
+        let stored_actor: Option<Uuid> = stored.try_get("actor_id")?;
+        let owner: String = stored.try_get("owner")?;
+        let stored_target_key: Option<String> = stored.try_get("target")?;
+        let action_key: Option<String> = stored.try_get("action_key")?;
+        if !legacy_receipt_binding(
+            &LegacyReceiptBinding {
+                actor: stored_actor,
+                owner: &owner,
+                target: stored_target_key.as_deref(),
+                action_key: action_key.as_deref(),
+                object_type_id: stored.try_get("object_type_id")?,
+            },
+            &LegacyReceiptExpectation {
+                actor: *command.actor_id.as_uuid(),
+                target: Some(command.query.target()),
+                action_key: &command.action_key,
+                object_type_id: command.object_type_id,
+            },
+        ) {
+            return Err(PersonError::DigestConflict(command_uuid));
+        }
+        let stored_actor = stored_actor.ok_or(PersonError::DigestConflict(command_uuid))?;
         let stored_digest: Vec<u8> = stored.get("payload_digest");
         if stored_digest != digest {
             return Err(PersonError::DigestConflict(command_uuid));
         }
         let result: serde_json::Value = stored.get("receipt");
         let target = stored_target(command_uuid, &result)?;
-        let stored_actor: Uuid = stored.get("actor_id");
+        if target != command.query.target() {
+            return Err(PersonError::DigestConflict(command_uuid));
+        }
+
         let created_at: OffsetDateTime = stored.get("created_at");
         return Ok(receipt(
             command,
@@ -606,10 +641,48 @@ fn person_head(id: Uuid, version: i64, attributes: &serde_json::Value) -> Person
     }
 }
 
-fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {
+pub(super) fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {
     attributes
         .get(key)
         .and_then(serde_json::Value::as_str)
         .filter(|value| !value.is_empty())
         .map(str::to_owned)
+}
+
+/// Native Account writer in the existing canonical Person owner. The original
+/// codec1 bytes were decoded and hashed by retained native_directory rows; the
+/// protected native terminal and deferred closure independently bind this frame.
+pub(crate) async fn write_native_directory_person_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    terminal: &console_ontology_application::people::DirectoryTerminalV1,
+    effect_digest: &[u8; 32],
+) -> Result<(), sqlx::Error> {
+    use console_ontology_application::people::DirectoryTerminalOutcomeV1;
+    if terminal.outcome() != DirectoryTerminalOutcomeV1::Committed {
+        return Err(sqlx::Error::Protocol(
+            "native Person writer requires committed terminal".into(),
+        ));
+    }
+    let accepted = terminal.accepted();
+    let command = accepted.command();
+    let org = *command.company().as_uuid();
+    let person = command.employee_id();
+    let actor = *accepted.actor().as_uuid();
+    let at = terminal.terminal_at();
+    let receipt = terminal
+        .canonical_result()
+        .ok_or_else(|| sqlx::Error::Protocol("native Person result missing".into()))?;
+    sqlx::query("INSERT INTO public.persons (org_id,id,created_at) VALUES ($1,$2,$3)")
+        .bind(org)
+        .bind(person)
+        .bind(at)
+        .execute(tx.as_mut())
+        .await?;
+    sqlx::query("INSERT INTO public.person_revisions (org_id,person_id,version,command_id,actor_kind,actor_id,actor_account_id,payload_digest,attributes,receipt,created_at) VALUES ($1,$2,1,$3,'ACCOUNT',NULL,$4,$5,$6,$7,$8)")
+      .bind(org).bind(person).bind(command.command_id()).bind(actor).bind(effect_digest.as_slice()).bind(serde_json::json!({"legal_name":command.input().legal_name()})).bind(&receipt).bind(at).execute(tx.as_mut()).await?;
+    sqlx::query("INSERT INTO public.employee_person_bindings (org_id,employee_id,person_id,actor_kind,actor_id,actor_account_id,payload_digest,created_at) VALUES ($1,$2,$2,'ACCOUNT',NULL,$3,$4,$5)")
+      .bind(org).bind(person).bind(actor).bind(effect_digest.as_slice()).bind(at).execute(tx.as_mut()).await?;
+    sqlx::query("INSERT INTO public.ont_action_command_receipts (org_id,command_id,actor_kind,actor_id,actor_account_id,payload_digest,receipt,action_key,object_type_id,created_at,owner,target) VALUES ($1,$2,'ACCOUNT',NULL,$3,$4,$5,'directory_create',$6,$7,'person','people.create_person')")
+      .bind(org).bind(command.command_id()).bind(actor).bind(effect_digest.as_slice()).bind(receipt).bind(command.expected().object_type_id).bind(at).execute(tx.as_mut()).await?;
+    Ok(())
 }

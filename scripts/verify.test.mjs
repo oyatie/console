@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -224,4 +224,43 @@ test("the topology script rejects duplicate role passwords before DB access", ()
   const afterPreflight = runTopology(unique);
   assert.notEqual(afterPreflight.status, 0, "fixture intentionally has no database");
   assert.doesNotMatch(afterPreflight.stderr, /passwords must be pairwise distinct/);
+});
+
+test("native browser journeys remain executable in the local database tier", () => {
+  for (const name of [
+    "Native Account browser",
+    "Native Company creation browser",
+    "Native Company preview browser",
+    "Native payroll hydration browser",
+  ]) {
+    assert.deepEqual(verifyModule.stepMirrorDisposition(name), { tier: "db" }, name);
+    const step = assertPlanCoversCi().find((step) => step.name === name);
+    assert.equal(step.cwd, ".");
+    assert.match(step.run, /tools\/buck\/test_needs_postgres\.sh/);
+    assert.match(step.run, /owner-receipt\.json/);
+  }
+  assert.deepEqual(
+    verifyModule.stepMirrorDisposition("Install pinned native browser prerequisites"),
+    {
+      tier: "ci-only",
+      why: "Linux x86_64 Actions bootstrap writes GITHUB_ENV; local db verification requires prepared pinned browser drivers, hashes and output directories",
+    },
+  );
+});
+
+test("local shell preserves CI failure before retained-evidence checks", () => {
+  const directory = mkdtempSync(join(tmpdir(), "console-verify-shell-"));
+  const sentinel = join(directory, "tail-ran");
+  const env = { ...process.env, CONSOLE_VERIFY_SENTINEL: sentinel };
+  const trailing = 'printf unexpected > "$CONSOLE_VERIFY_SENTINEL"';
+  try {
+    for (const failing of ["false", "false | true"]) {
+      const status = verifyModule.run(`${failing}; ${trailing}`, env);
+      assert.deepEqual({ status, tailRan: existsSync(sentinel) }, { status: 1, tailRan: false });
+    }
+    assert.equal(verifyModule.run(`true; ${trailing}`, env), 0);
+    assert.equal(readFileSync(sentinel, "utf8"), "unexpected");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

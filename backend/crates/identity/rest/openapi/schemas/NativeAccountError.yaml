@@ -1,0 +1,165 @@
+type: object
+additionalProperties: false
+required:
+- error
+properties:
+  error:
+    oneOf:
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: ambiguous_credentials
+        message:
+          type: string
+          const: Credential transport is ambiguous.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: authentication_invalid
+        message:
+          type: string
+          const: Authentication is invalid.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: enrollment_invalid
+        message:
+          type: string
+          const: Enrollment is invalid.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: request_origin_denied
+        message:
+          type: string
+          const: Request origin is denied.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: csrf_invalid
+        message:
+          type: string
+          const: Request proof is invalid.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: already_authenticated
+        message:
+          type: string
+          const: Account is already authenticated.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: terms_acceptance_required
+        message:
+          type: string
+          const: Terms acceptance is required.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: terms_changed
+        message:
+          type: string
+          const: Terms have changed.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: request_too_large
+        message:
+          type: string
+          const: Request exceeds the supported size.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: invalid_request
+        message:
+          type: string
+          const: Request is invalid.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: rate_limited
+        message:
+          type: string
+          const: Request rate is exceeded.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: authority_unavailable
+        message:
+          type: string
+          const: Account authority is unavailable.
+    - type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          const: navigation_unavailable
+        message:
+          type: string
+          const: Navigation authority is unavailable.
+description: Exact native Account refusal envelope with fixed safe messages; no token or raw diagnostic
+  fields. Per-operation response descriptions list the applicable codes.

@@ -1,0 +1,9 @@
+{
+  "base": "cfd16748349d0b3f4cab811a0809703ad24fb255",
+  "path": "backend/app/tests/auth_rest/audit_platform_source_transition.rs",
+  "before_sha256": "da47a22d48b670545104b4148d3804d837868cabe795516ddeac3a260d03aba3",
+  "candidate_sha256": "7d83c98712f410bf2f3d13d80ba3634f21ba85cc4b4b8ceffbaff8c439411f25",
+  "replacements": 5,
+  "scope": "Diagnostics only: metadata differing paths via existing helper, boolean business-state marker only; exact tuple equality unchanged. No values or business object keys emitted.",
+  "runtime": 0
+}

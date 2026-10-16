@@ -1,0 +1,15 @@
+   Compiling console-payroll-ui v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.96s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_payroll_ui-941fd558c1238788)
+
+running 5 tests
+test private_document_tests::ssr_private_frame_oracle_rejects_missing_permissive_and_duplicate_policies ... ok
+test private_document_tests::ssr_private_shell_response_preserves_anonymous_document ... ok
+test private_document_tests::ssr_private_runs_response_preserves_empty_and_authorized_documents ... ok
+test private_document_tests::ssr_private_native_documents_retain_status_bytes_and_restrictive_csp ... ok
+test private_document_tests::ssr_private_screens_response_preserves_all_focus_and_disclosure_states ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+

@@ -1,0 +1,24 @@
+{
+  "source_base": "58191b77",
+  "changed_test": "backend/app/tests/health_readiness.rs",
+  "candidate_sha256": "f989347c2afce618d56023115f18f696cde9a0839100ae7cb65f9de467e5ee9b",
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-root-health-regression-map.json --only app-auth-rest-pg --runner cargo",
+  "discovered": 15,
+  "executed": 14,
+  "passed": 14,
+  "failed": 0,
+  "preexisting_ignored": 1,
+  "seconds": 23.58,
+  "prior_runtime": {
+    "passed": 13,
+    "failed": 1,
+    "preexisting_ignored": 1,
+    "seconds": 23.27
+  },
+  "dependency_correction": "Existing disabled AuthRestState is present; missing dependency specifically was the distinct current Auth database transport. Existing finalized testDB helper plus real Auth/Business logins restore prerequisites. No signing/WebAuthn services needed.",
+  "semantic_correction": "Fifth previously masked anonymousroot fixture now expects exactPublic; protected/persona/role fields assertions retained with added noRun/noWASM controls",
+  "limits": [
+    "Ignored proposedSSR transport test remains ignored; no tests removed/skipped",
+    "Publicroot validation is not full Account/Company or release acceptance"
+  ]
+}

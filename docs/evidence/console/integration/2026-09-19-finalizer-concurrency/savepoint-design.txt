@@ -1,0 +1,40 @@
+# Conditional Account finalizer coordination — design proposal
+
+Status: proposal requiring four independent design rounds and new exact test approval. No implementation or acceptance claimed. Root is sole repository writer. Previous unconditional serialization is rejected by actual ordinary nextest qualification:15executed,3passed,12failed,0skipped, shared-anchor55P03. Do not widen5s lock/60s statement bounds or cap test concurrency.
+
+Scope: the same two test-support administrator helpers; preserve exact historical SQL, migrations, role topology, fingerprints, credential transports, READ COMMITTED, transaction-local jit=off, and genuine production finalizer calls. This is disposable fixture coordination, not a new production bootstrap writer.
+
+## Source findings
+
+Both historical finalizer bodies were inspected for CREATE/ALTER/DROP ROLE/USER/GROUP, role-membership GRANT/REVOKE, and pg_auth* mutation. The only shared-role mutation is ops/postgres-finalize-account-credentials.sql:14825: conditional CREATE ROLE console_credential_owner with its exact historical attributes. Root finalization does not create it. Other GRANT/REVOKE/OWNER operations change objects in the current database. PostgreSQL shared dependency records for object ownership are database-qualified; they do not make another database's pg_class/pg_namespace/ACL rows visible.
+
+Native custody fingerprints include protected role attributes and memberships (account_custody_state.sql:859–863); owner object/schema/default-privilege/grant enumeration uses database-local catalogs (866–890). Therefore independent database finalizations may run concurrently once the credential role is committed and stable. Existence selects synchronization behavior only; it must never substitute for the unchanged historical SQL's complete validation.
+
+Topology provisioning establishes console_account_owner, console_terms_owner, and restricted login identities before test selection. Account staging migrations run as admitted console_app. Historical0026/0031 contain other role creation/attribute fallback paths; established topology makes their creation unnecessary.0112/0167 global setting mutation is superuser-gated, while the admitted owner migration connection is not superuser. These invariants remain prerequisites, not facts inferred from a green mocked harness. Seven intentionally role-mutating binaries remain isolated in separate clusters. This protocol cannot protect against an uncooperative concurrent role DROP/ALTER/membership change; such work cannot join the ordinary cohort.
+
+## Transaction protocol
+
+For each actual helper, begin the existing outer transaction, establish READ COMMITTED/jit=off/deadlines, and verify marked disposable administrator identity as today. Then:
+
+1. Create a named savepoint before acquiring the shared anchor; do not acquire that row elsewhere first.
+2. Fetch exactly one console_account_owner oid FOR UPDATE from pg_catalog.pg_authid. Missing topology fails closed, including warm runs.
+3. In a separate statement after lock acquisition, read whether console_credential_owner exists. READ COMMITTED must provide the post-wait snapshot.
+4. If present, ROLLBACK TO the savepoint to release the newly acquired anchor, then RELEASE the savepoint. No writes occur in this subtransaction. Continue exact historical finalization concurrently in this database.
+5. If absent, RELEASE the savepoint without rollback. Its row lock remains held by the outer transaction. Continue exact historical finalization and hold the anchor through commit/rollback. Only the historical credential body creates the role. Root-only work also retains the anchor while absent so its global fingerprint reads cannot overlap initial creation; it does not fabricate the credential role.
+
+If another creator commits while this helper waits, step3 sees the committed role and releases the anchor promptly. If it rolls back, step3 still sees absence and this helper retains the anchor. No role precreation, catch-and-ignore, opportunistic unlocked fast path, historical byte changes, advisory lock replacement, or retry that hides failures.
+
+All configuration must precede the savepoint so rollback cannot reset isolation/JIT/deadline configuration. Keep SQL statements separate around the lock and role recheck. An error anywhere still rolls back the owning outer transaction and its locks; cleanup must flush SQLx's queued rollback/observe backend termination as existing tests do.
+
+## Mechanism and qualification limits
+
+This removes the warm N-times-full-finalizer queue, but first creation still serializes one full historical creation transaction. Fifteen cold contenders must all acquire/recheck within the unchanged5s lock budget after that first publication. If the existing ordinary cohort or fresh first-create case still times out, this design is rejected too. A two-helper green result alone is insufficient.
+
+Measure individual wait/finalization durations and actual discovered/executed counts. Re-run exact actual ordinary nextest15-case workload at unchanged concurrency, fresh filtered serving/serving first-creation with --nocapture and markertrue, all revised helper cases, retained custody/operator cases, and corruption controls. Qualify both cold and warm cohorts explicitly; a prior successful fixture must not silently turn cold evidence into warm evidence.
+
+## Risks, rollback, and stop conditions
+
+Pre-mortem: RELEASE is mistaken for rollback and retains warm locks; recheck occurs before wait and misses the creator commit; an inherited repeatable-read snapshot survives; role presence bypasses custody validation; cleanup retains a savepoint or row lock; a new binary mutates shared topology unnoticed.
+Detection: actual backend/lock observers, cold+warm full-helper histories, unchanged classifiers/fingerprints, actual ordinary nextest workload and injected incorrect-coordination implementations. Rollback: revert bounded helper/test candidate; retain historical failure receipts. Stop on unreviewed semantic test changes, missing executed cases, timeout, first-create markerfalse in cold qualification, custody/source hash drift, privilege widening, or uncatalogued shared-role mutation.
+
+The test changes described separately revise rejected synchronization expectations. They require independent semantic review and exact hashes; preserve original tests/evidence rather than silently weakening the previous contract. No release milestone closes from this fixture change.

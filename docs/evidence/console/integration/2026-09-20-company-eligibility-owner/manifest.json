@@ -1,0 +1,10 @@
+{
+  "files": {
+    "proposal.patch": "6e52789286df4bfc428b25e40dd442271633249dcc587caa0fca869a32fb8824",
+    "preservation.json": "eb396dc2d157f1f7b721763f9e640f70b63bc3e92af8f55f1f8215fa4b2a190c",
+    "state-upgrade-addition.py": "c4b108e6ec3f3223f03f635ae1ac5e918a6ffa798b300a10d93b07f974bb795c",
+    "DESIGN.md": "944297bebb8d1ac0c1d345067464fe24b7b07ea48bccc1e3cb869ca12460819f",
+    "build_candidate.py": "525e903596bf7862dff1573004b8f85b5722a601a4a2d63061876f8fb13fddb6",
+    "generate-account-custody.py": "6aaf9b2edb40b1588ffa88ad956f5988b1224ff827bd39029fec6acb62970c94"
+  }
+}

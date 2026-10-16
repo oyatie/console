@@ -1,0 +1,135 @@
+{
+  "kind": "INDEPENDENT_VISUAL_AND_INTERACTION_EVIDENCE_CRITIQUE",
+  "reviewer": "/root/reference_inventory",
+  "scope": "Five captured Account pages viewed using view_image; result and owner receipt read. No independent browser/DB execution or source edits.",
+  "inputs": [
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/01-public.png",
+      "sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/02-terms.png",
+      "sha256": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/03-account-enrolled.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/04-sign-in.png",
+      "sha256": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/05-account-returned.png",
+      "sha256": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "width": 320,
+      "height": 900
+    },
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/owner-receipt.json",
+      "sha256": "377869ad12c0bad89288d2d7002ba762c8eb82153aea8004c792e9b70b2e054b"
+    },
+    {
+      "path": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account/result.json",
+      "sha256": "9a7536448d2cca72dcf3295b0049224f907610ed4aa4d24cc063e8c9d198556a"
+    }
+  ],
+  "verdict": "ADOPT_ACCOUNT_ENTRY_VISUAL_BASELINE_WITH_TWO_INTERACTION_ADAPTATIONS; AUTHORIZED_WORKSPACE_AND_RECOVERY_NOT_ACCEPTED",
+  "observations": [
+    {
+      "decision": "ADOPT",
+      "surfaces": [
+        "01-public.png",
+        "02-terms.png",
+        "03-account-enrolled.png",
+        "04-sign-in.png",
+        "05-account-returned.png"
+      ],
+      "finding": "All five320x900 captures preserve one readable column, generous page margins, clear heading/body hierarchy, and fully visible controls. No visible clipped content or horizontal-overflow symptom in these captures. Korean labels read naturally overall.",
+      "task_outcome": "Supports Account entry and narrow-screen orientation. Reuse shell/control vocabulary for subsequent native journeys without inferring wide-screen or zoom acceptance."
+    },
+    {
+      "decision": "ADOPT",
+      "surfaces": [
+        "01-public.png",
+        "02-terms.png"
+      ],
+      "finding": "Primary login and secondary create-account actions are immediately discoverable. Registration describes passkey creation and explicitly says Company/job title are not requested now. Separate term checkboxes and disclosure links retain distinct actions; captured checkbox focus is visibly outlined.",
+      "task_outcome": "Users can distinguish entering an existing Account from creating one. Checked screenshot does not establish default checkbox state; driver interaction occurred before capture."
+    },
+    {
+      "decision": "ADOPT",
+      "surfaces": [
+        "03-account-enrolled.png",
+        "05-account-returned.png"
+      ],
+      "finding": "Logged-in Account and absence of accessible workspaces are explicitly separate states. The screen does not invent Company membership or business authority. Returned screen is visually consistent with newly enrolled state.",
+      "task_outcome": "Preserves truthful progress and Account independence from Employment/Company. result.json reports same_account and active_after_login; reviewer did not independently query DB."
+    },
+    {
+      "decision": "ADAPT",
+      "priority": "MEDIUM",
+      "surfaces": [
+        "04-sign-in.png"
+      ],
+      "finding": "A large empty text-input shape labeled 패스키 계정 선택 appears before copy explaining that no name or email entry is needed. It resembles a required conventional login field, while the action begins with the button beneath it. The screenshot contains no visible browser suggestion/picker state.",
+      "recommendation": "Make the browser-assisted selection purpose apparent before the input and distinguish it from required typed data. Verify both button-driven passkey selection and any conditional browser suggestions with actual browser states. Preserve reviewed passkey/credential behavior; do not replace it with an unowned shortcut.",
+      "task_outcome": "Reduce hesitation and mistaken typing at sign-in. Severity is a reviewer hypothesis, not measured user failure."
+    },
+    {
+      "decision": "ADAPT",
+      "priority": "MEDIUM",
+      "surfaces": [
+        "03-account-enrolled.png",
+        "05-account-returned.png"
+      ],
+      "finding": "The no-workspace state explains current status but offers only 다시 확인 and logout. It does not explain who can connect work or provide an assistance/handoff route.",
+      "recommendation": "When actual enrollment/invitation/access owners are available, show the permitted next action or a concrete accountable assistance path. Keep ordinary Account and designated operator affordances policy-specific. Do not add a dead link or imply current enrollment capability that is not implemented.",
+      "task_outcome": "Let a person move toward useful work instead of repeatedly refreshing without changed authority. This remains a workflow gap, not a reason to disclose unauthorized Company information."
+    },
+    {
+      "decision": "ADOPT_TEST_ONLY",
+      "surfaces": [
+        "02-terms.png"
+      ],
+      "finding": "Terms are explicitly labeled 테스트 서비스 약관 and 테스트 개인정보 안내. This is honest for the provided test-only publication seed.",
+      "task_outcome": "Retain clear test labeling in evidence. These screenshots cannot qualify the eventual client terms publication or legal approval."
+    },
+    {
+      "decision": "REJECT_ACCEPTANCE_CLAIM",
+      "surfaces": [
+        "result.json",
+        "owner-receipt.json"
+      ],
+      "finding": "Evidence covers enrollment, logout and login using a Chromium virtual resident authenticator. It includes no canceled passkey, missing-device, lost-credential, denied-access, service-outage, interrupted-commit recovery, or authorized workspace screen.",
+      "task_outcome": "Do not accept recovery or useful business-work completion from this happy-path leaf. Capture and verify those journeys against their actual owners."
+    }
+  ],
+  "evidence_interpretation": {
+    "result": "BROWSER_LEAF_PASSED; three checkpoints; registration/login/logout POST counts; zero external_requests and unexpected_posts reported.",
+    "geometry_and_keyboard": "result.json reports root/register/account320px reflow and keyboard skip/registration/terms/submit discovery. Screenshots corroborate visible narrow layout and one focus ring, not all keyboard behavior.",
+    "owner_receipt": "Attests three DB checkpoints, unchanged source, successful driver exit and process cleanup; it is a parent-owned receipt, not this reviewer's independent database readback.",
+    "not_established": [
+      "representative-user usability",
+      "screen-reader semantics or announcements",
+      "Korean IME input",
+      "measured color contrast",
+      "200percent zoom",
+      "physical authenticator/device picker behavior",
+      "production TLS or HA",
+      "authorized Company/workspace operation",
+      "cancellation/error/recovery completion",
+      "complete WCAG conformity"
+    ]
+  },
+  "changes_made": "Private critique artifact only; no source or product/runtime changes.",
+  "decision_boundary": "Accept visual baseline for Account entry only. Continue real Company/workspace implementation and explicit recovery evidence; full release remains incomplete."
+}

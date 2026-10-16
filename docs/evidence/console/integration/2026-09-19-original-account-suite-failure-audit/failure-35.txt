@@ -1,0 +1,2 @@
+thread 'account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change' (64276289) panicked at third-party/rust/sqlx-core-0.9.0.crate/src/testing/mod.rs:227:14:
+failed to connect to setup test database: Io(Custom { kind: UnexpectedEof, error: "expected to read 5 bytes, got 0 bytes at EOF" })

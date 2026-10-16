@@ -1,0 +1,25 @@
+{
+  "candidate": "3439f7996669a75eb9a19f60b0e7847e1ce4fb6c",
+  "clean_tree": true,
+  "owner_command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-list-owner-map-20260920.json --only platform-list-owner",
+  "owner_discovered": 1,
+  "owner_executed": 1,
+  "owner_passed": 0,
+  "owner_failed": 1,
+  "owner_ignored": 0,
+  "owner_filtered": 400,
+  "owner_seconds": 6.34,
+  "classification": "PREREQUISITE_FAILURE_NOT_LANE_ADMISSION",
+  "observed": "Positive metadata response reached, but exact positive list audit/no-other-effects oracle failed before role demotion. No cause established by this log.",
+  "oracle_command": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest legacy_platform_list_reads::list_ -- --nocapture --test-threads=1",
+  "oracle_executed": 2,
+  "oracle_passed": 2,
+  "oracle_failed": 0,
+  "oracle_ignored": 0,
+  "oracle_filtered": 399,
+  "artifacts_sha256": {
+    "initial-owner-prerequisite-failure.log": "271f00674d5485ec5fff65d1356ff5ddf1edb19dfcc7baa5158f3fba99799f39",
+    "initial-oracles2-green.log": "dbdd152c2774c9974a8cff3cae9608645ffff2bb9815666228b997150afb9b28"
+  },
+  "next": "Reviewed non-sensitive diagnostics and causal diagnosis; all assertions preserved; implementation unadmitted."
+}

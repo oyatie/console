@@ -1,0 +1,38 @@
+[
+  {
+    "lane": "frozen-fusion-function-matrix",
+    "owner": "/root",
+    "base_sha": "a33913110a84a38c4f072c6ba1c8442ed8bce17b",
+    "immutable_target": "202 exact reviewed Fusion function reference records in existing runtime matrix; planned states unchanged",
+    "probe": "node --test --test-name-pattern='Fusion catalogue rejects changed signature' scripts/console/validate-console-truth-ledger.test.mjs",
+    "allowed_paths": [
+      "docs/program/console-capability-registry.json",
+      "scripts/console/validate-console-truth-ledger.mjs"
+    ],
+    "design_manifest": "c6a3923089706addc6f3e691a7651646675fca9ebf0984b05c00ee73d4b013c6",
+    "tests_manifest": "91bbb22ca9c589493f7b24b451fd604e3e253c9e96976f428adef0cccde01773",
+    "mechanical_guide": "Append exact reviewed row; enforce presence, exact own keys before pinned canonical digest, conservative null semantics, exact existing shared binding membership with owner binding validation. Preserve all preimage values.",
+    "pre_mortem": "Ignored catalogue or invisible added own keys produce false validation authority",
+    "blast_radius": "Existing reference inventory/checker only",
+    "detection": "Actual owner RED/GREEN, complete owner/planner suites, preimage removal equality",
+    "rollback": "Preserve immutable evidence; fence invalid registry, revert candidate before acceptance only",
+    "stop_conditions": [
+      "source or preimage mismatch",
+      "unexpected prerequisite RED",
+      "state promotion",
+      "unreviewed semantic test changes"
+    ],
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "full reference freeze",
+      "all formula runtime semantics",
+      "milestones0-10 qualification"
+    ],
+    "leases": [
+      "root sole registry/checker/generated writer"
+    ]
+  }
+]

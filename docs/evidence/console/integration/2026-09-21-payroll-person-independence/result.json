@@ -1,0 +1,47 @@
+{
+  "base": "9b9baed6a3ad471635fdaee27f8c0f5ab0168e72",
+  "test_commit": "a48daad2c61c5f2f330c3bc203172f8d59485a99",
+  "source_sha256": "36d6c360c14cadb642ada5dc24861a86390397953a95910bb252469f0c4b357b",
+  "owner": "/root",
+  "change": "Shared payroll decision requires two bound distinct natural Persons, retaining actual User and binding rows FOR SHARE through commit. Existing REST and canonical callers both use this owner.",
+  "proof": {
+    "red": {
+      "executed": 1,
+      "failed": 1,
+      "filtered": 23,
+      "observed": "Same-Person approval returned successful canonical receipt; schema/login/privilege prerequisites functioning."
+    },
+    "green": {
+      "executed": 1,
+      "passed": 1,
+      "filtered": 23
+    },
+    "full": {
+      "canonical_owner": 24,
+      "rest_lifecycle": 5,
+      "passed": 29,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "buck_suites": 2,
+      "buck_skip": 0,
+      "buck_omit": 0,
+      "buck_infrastructure_failures": 0
+    },
+    "command": "DOCKER_CONTEXT=colima-console-release-20260919 bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg //tools/buck:payroll-rest-run-lifecycle-api-pg",
+    "build_id": "44e3fbdd-4b5f-4918-b352-e6ba231f3a5f",
+    "test_build_id": "0e5f371c-3c22-45af-b842-f57e5c1f98ea"
+  },
+  "preserved": [
+    "All original assertions retained; explicit independent Person fixture inserted in two canonical positives and REST full lifecycle.",
+    "Prior restricted-login privilege test remains exact.",
+    "Historical commands, receipts, migrations and public error variants unchanged."
+  ],
+  "limits": [
+    "Legacy User-to-Employee-to-Person mapping only; native Account attribution integration remains required.",
+    "Concurrency leaves use shared owner transaction directly and do not claim canonical receipt/audit generation; canonical denial/replay leaves compare all durable public rows.",
+    "New six behavior leaves use actual Business login; inherited leaves still use SET ROLE.",
+    "Person history attribution, Governance unlocked-reader correction and complete connected MVP remain outstanding.",
+    "No production exposure, payment execution or legal qualification."
+  ]
+}

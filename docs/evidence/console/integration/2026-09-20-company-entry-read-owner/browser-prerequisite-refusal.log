@@ -1,0 +1,2 @@
+permission denied while trying to connect to the docker API at unix:///Users/jasonlee/.colima/console-release-20260919/docker.sock
+cargo-postgres: could not pull pinned PostgreSQL image

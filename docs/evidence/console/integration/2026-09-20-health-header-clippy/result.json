@@ -1,0 +1,17 @@
+{
+  "change": "Twoexactheaderassertionspreserved without forbidden unwrap",
+  "clippy": {
+    "default": "pass",
+    "dev_auth": "pass"
+  },
+  "owner": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "filtered": 14
+  },
+  "remaining_holds": [
+    "Fullrepositoryrecheck after documentation repair",
+    "FullCompany/release incomplete"
+  ]
+}

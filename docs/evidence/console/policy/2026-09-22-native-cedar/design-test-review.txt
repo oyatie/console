@@ -1,0 +1,19 @@
+# Finite native Cedar API and tests: round2 independent review
+
+Verdict: approve exact round2 API, eleven-test source and the narrow payroll SQL interval successor for implementation. No Cedar compilation or runtime acceptance claimed.
+
+Candidate `/private/tmp/console-native-policy-cedar-tests-api-round2-20260922/manifest.json`, SHA-256 `2935f95796d27624a17a53b50cf7cbeddef9c462d1e5802a238b630bb0a53ad8`. Reviewer `/root/company_scope_review` read the complete predecessor API/tests and complete successor diff. All seven artifact, five reference and six source digests match. Counted eleven Rust test functions. The four Cedar/schema files are byte-identical to their previously frozen versions. SQL successor contract SHA-256 `34f71a0dd7bc8fa83744765b176cef3ea433bf4444f3538b102f0dc6503b28d9`.
+
+Three concrete review findings are resolved:
+
+1. Payroll's previous nine-column owner read could not provide actual finite assignment validity. The successor appends only actual `assignment_valid_from` and `assignment_valid_until`, preserving prior columns and all Identity/bootstrap contracts. Dates come from the selected current assignment revision; permanent role-clause dates cannot substitute.
+2. Existing clause field JSON has UUID references, not property-key labels. The successor removes invented key/reference pairs and uses exactly eighteen distinct same-Company/type/schema references, backed by the SQL owner's independently validated complete manifest roster. No adapter may label sorted UUIDs by manifest order or bypass protected tables to synthesize material.
+3. Acquisition time may precede expiry while the newest same-transaction observation is already expired. Checked payroll authority now retains independently captured source time separately, and Cedar uses that latest time. An additional exact test forces acquisition-before-expiry/current-time-at-expiry and requires denial.
+
+Finite bootstrap material still matches the exact 27-column source plus independent actual Auth/transaction binding. Constructors check shape and correlation but never claim those checks authenticate SQL locks, designation, consent or receipt custody. Those remain trusted canonical-owner prerequisites and final retained checks. Bootstrap maintenance correctly does not require the distinct recipient to retain payroll-use eligibility; the source contract preserves the reachable recipient_ineligible terminal. Payroll use has no operator-designation dependency.
+
+The application adds two required finite decision methods to the existing port, with no default allow/deny body. Production uses the existing strict compiler/Authorizer, metadata/digest verification and panic/diagnostic failure handling. Existing two test wrappers explicitly delegate new methods; their old action overrides remain. No general policy framework, user-controlled authority flag, historical parser widening or new table is proposed.
+
+The eleven tests cover fixed resource hashes and strict compilation, actual SDK invocation for current/successor operator, requested-scope mismatch, Auth/xid/PID/provenance correlation, complete property set and assignment shape, half-open intervals and latest independent clock, absence of install-implies-use, evaluator panic, and independent literal-resource predicates. Literal inactive recipient and missing-each-field controls test policy source independently from mapping. These are pure vectors, not authenticated database fixtures. Source tests cannot prove actual foreign/expired/revoked SQL source exclusion; owner/browser execution remains required.
+
+Remaining verification is executable code review, Buck compilation, eleven tests and applicable existing tests, exact SQL/custody review, actual final-time/revocation/source-corruption histories and the full owner-backed browser journey. No builds, DB commands or product edits were performed in this review.

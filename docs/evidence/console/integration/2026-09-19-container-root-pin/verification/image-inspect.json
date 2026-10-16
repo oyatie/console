@@ -1,0 +1,50 @@
+{
+  "Id": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7",
+  "RepoTags": [
+    "console-client-release:8efec5b0"
+  ],
+  "RepoDigests": [
+    "console-client-release@sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7"
+  ],
+  "Comment": "buildkit.dockerfile.v0",
+  "Created": "2026-09-19T23:25:40.621570537-04:00",
+  "Config": {
+    "User": "10001",
+    "ExposedPorts": {
+      "8080/tcp": {}
+    },
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    ],
+    "Entrypoint": [
+      "/usr/local/bin/console-app"
+    ]
+  },
+  "Architecture": "arm64",
+  "Os": "linux",
+  "Size": 256187897,
+  "RootFS": {
+    "Type": "layers",
+    "Layers": [
+      "sha256:13a56b6535801be2adde694dabaf1c2df1d862a390661907dac821c42cd565cc",
+      "sha256:ed8aaf23f7931db94fb573ce290e9efaab49adb57ff56519ed55fc3507d99bd4",
+      "sha256:17d1a73294e81f62fcd08ed947343384585f34c01a769c2436958147bfcff639"
+    ]
+  },
+  "Metadata": {
+    "LastTagTime": "2026-09-20T03:25:47.166441887Z"
+  },
+  "Descriptor": {
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "digest": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7",
+    "size": 855
+  },
+  "Identity": {
+    "Build": [
+      {
+        "Ref": "olbud9zwdd7fqnzmkb69t8c7z",
+        "CreatedAt": "2026-09-19T23:25:49.477130998-04:00"
+      }
+    ]
+  }
+}

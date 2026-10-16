@@ -1,0 +1,86 @@
+{
+  "status": "implemented verified prerequisite; actual policy browser workflow and database integration remain outstanding",
+  "base": "96f3007a7ada4da2d592d6fb035b0fe2570dfcff",
+  "owner": "/root",
+  "source_sha256": {
+    "backend/app/tests/auth_rest/native_company_policy_http_tests.rs": "2b8e043c3136d6b19caaecde5dee01e48ddc677b5af4a1af0c6e014d2eb8312d",
+    "backend/crates/identity/application/src/company_policy.rs": "81727909b4d62c82c0dca0bcf9c812a8e1d4719b6e22cfd2579b400bc5ffc520",
+    "backend/crates/identity/application/src/company_policy/business.rs": "d6dae8d7f6964251016446f67e4b7a59a0120277f0fd42dc73f719a735b7baa5",
+    "backend/crates/identity/application/src/company_policy/native_business.rs": "cb135e700c1716f3333e32b090338f35ca7457e52d432f47804aa099a96ccbbe",
+    "backend/crates/payroll/ui/bundle.lock.json": "854ff66b4fc47cdd99d8577ff568b86cdb5b0983f2f887c2d650585073e0ff17",
+    "backend/crates/platform/authz/BUCK": "f88e6efe5aa44c4ba6d72b057b973d63d2b21636487fd9e840196427e757ef85",
+    "backend/crates/platform/authz/src/company_policy.rs": "507381027e123b663f7e373e67cde149f01427f7cadd47044fbee9b5ed73f4d0",
+    "backend/crates/platform/authz/src/company_policy/native-business-bootstrap-v1.cedar": "25ec7cbd092432c38ed25944edd609e67d2da529e21ac47b5dd9146fd451db82",
+    "backend/crates/platform/authz/src/company_policy/native-business-bootstrap-v1.cedarschema": "58d413453cca9e8f67206a73c95dcb33fc020a794a3615f96da2107bac7d40b7",
+    "backend/crates/platform/authz/src/company_policy/native-payroll-collection-read-v1.cedar": "f861ad6a2b9e41471a9c17dc880ef925bcab32c7c0e074b8bd6aa0686e83cfa8",
+    "backend/crates/platform/authz/src/company_policy/native-payroll-collection-read-v1.cedarschema": "5eba76196c0203980310cad04bc64ffa0cb65fac3bc18b9a1416fb84c213ac34",
+    "backend/crates/platform/authz/src/company_policy/native_business.rs": "98b7361999c6a30627ea33f9e5805464e67427fec23bb6b19ecce904b3a60e30",
+    "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs": "7ec696bbad78d71dc2e7dcbd3b625700f39ff14736c5a2881d36ea5e58f9ad64",
+    "backend/crates/platform/authz/src/native_business_policy_unit_tests.rs": "fc388180d03354201a8b4301c2e1118c1e7a408a67e0fc3b25329988789cf6a2",
+    "tools/buck/gen_first_party.py": "bce19475cc1aaa126abfa3d9f58f9b9e9704cca289e33e96aff5e93058d1e00f"
+  },
+  "proof": {
+    "authz": {
+      "executed": 142,
+      "passed": 142,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "new_tests": 11
+    },
+    "identity_application": {
+      "executed": 20,
+      "passed": 20,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "generator": {
+      "executed": 72,
+      "passed": 72
+    },
+    "app_auth_test_target": {
+      "build": "succeeded",
+      "executed_tests": 0
+    },
+    "hydration": "native Buck producer ran; committed JS/WASM byte-identical; only generator input digest and derived source-snapshot digest changed"
+  },
+  "commands": [
+    "env PATH=<pinned-dotslash> tools/buck2 test -j1 -c root//project.ignore=.git,backend/target //backend/crates/platform/authz:console-platform-authz-unit",
+    "env PATH=<pinned-dotslash> tools/buck2 test -j1 -c root//project.ignore=.git,backend/target //backend/crates/identity/application:console-identity-application-unit",
+    "python3 -m unittest tools/buck/test_gen_first_party.py",
+    "env PATH=<pinned-dotslash> tools/buck2 build -j1 -c root//project.ignore=.git,backend/target //backend/app:console-app-itest-auth_rest",
+    "env PATH=<pinned-dotslash> bash tools/ui/build-payroll-wasm.sh -j1 -c root//project.ignore=.git,backend/target"
+  ],
+  "failures": [
+    "First App build rejected stale hydration source identity after reviewed generator resource addition. Existing native producer refreshed provenance; unchanged validator then passed App build. No runtime tests were counted for either build."
+  ],
+  "pre_mortem": "Detached projection, substituted clock or manual role evaluation could admit expired or foreign Company disclosure.",
+  "detection": "Strict literal Cedar compilation;11 independent tests require SDK reachability, field completeness, negative selectors and latest-binding expiry denial;142 old/new tests passed.",
+  "blast_radius": "Finite application material and Company policy evaluator; all3 trait implementations compiled. Existing policy path retains shared SDK diagnostics/panic handling.",
+  "rollback": "Revert additive source before integration; no SQL historical schema or protocol bytes changed.",
+  "stop_conditions": [
+    "material mismatch with canonical SQL source",
+    "unreviewed semantic test change",
+    "historical command byte drift"
+  ],
+  "remaining": [
+    "Actual current SQL source/readers with retained Auth binding and final rechecks",
+    "Policy forms, acceptance/execution/replay and common audit transaction",
+    "Native payroll collection browser path",
+    "Full five-module UI/workflows and assembled release qualification"
+  ],
+  "artifacts_sha256": {
+    "native-business-hydration.log": "b180f9d7064e22bed26dd23e4b434ff299cfde8b746afbee2ad118551b1366d4",
+    "implementation-review.json": "8594163034508de2f85a351844490d2d76e2679f6797ce29ae86b69276df81a4",
+    "native-business-app-build.log": "eb559a3204a213b84ec118732f9b479683f2c1232da160a8237c4848f988aa86",
+    "native-business-generator.log": "79b212e40ce7cd1fb16c6f7dc7bd8c723a35f561bd6755596259f0b13ba31880",
+    "api-contract.txt": "d6d99af9ea022a119d5c5a9aca9ff54c7d3f394b223bb621432e52f14567bf35",
+    "test-manifest.json": "2935f95796d27624a17a53b50cf7cbeddef9c462d1e5802a238b630bb0a53ad8",
+    "native-business-identity.log": "a19b428ed6152fe2306b8508ed1af3abd745b6026a1dd6c6f76ab5505adea6f6",
+    "hydration-review.json": "59ccda6e972aa65a937467ca93b410d52e740fe8ade9f842291f5368cd638ada",
+    "native-business-cedar.log": "5876a817d0f4021b4c762ea17a5909b2f0e775f3d653ea9bd74042cc5174a976",
+    "native-business-app-build-round2.log": "b2ecab35e567cc9147d1bad24f5e780f90f48e146a26bf984e5cdfb7537195c7",
+    "design-test-review.txt": "8bfb742415042a9bb126efabd9047efccd8f77dfefc5f1dd18c72a2e5bc361e7"
+  }
+}

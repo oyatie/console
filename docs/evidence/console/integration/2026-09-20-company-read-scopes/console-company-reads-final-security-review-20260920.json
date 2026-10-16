@@ -1,0 +1,61 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_READ_ORCHESTRATION_FINAL_VERIFICATION_AND_POSITIVE_COUNT_SUCCESSOR",
+  "base": "42a87196d61b3947b177fcfa057b7e1f7289ea83",
+  "files": [
+    {
+      "path": "backend/crates/identity/application/src/company_policy.rs",
+      "sha256": "c8fce69ea68d656b7be3a1204db40f44767efed15d8ff3005f8455813e2ce313"
+    },
+    {
+      "path": "backend/crates/identity/application/src/company_policy/reads.rs",
+      "sha256": "8f94e55342364b8f652b88d02de0fbd791e6c359c82246eeb02e6f6beeeb7910"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/company_policy.rs",
+      "sha256": "2a430ad53dd7a963e8f1cb5fa29c0d0c5e12bf4f4fcddf967b983fb17eb119ba"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "sha256": "217ecdd43b0f442c1c9cb439c814feb54e3850cd685344cebc55c855d52376e4"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "sha256": "8f6d2cb933111eada7b742d15d532b1c3bf4a1d7b9ff267701413f9fdb797e2e"
+    },
+    {
+      "path": "docs/program/executed-tests-baseline.json",
+      "sha256": "699f72c70e7e42cc38f064d61c55066ff3045b945c893cb7ada39b35ec4c640a"
+    }
+  ],
+  "evidence_hashes": {
+    "/private/tmp/console-company-reads-final-implementation-20260920.json": "6103e98a2192f9c89cf1ee59d17db1f007c0254898599ee41a3aa0a6b76e6ba5",
+    "/private/tmp/console-company-reads-final-verification-20260920.json": "1bfb787b7a1dbe39400bd581b7532a7ac619c41a328ef2fbf2e49516fb906f0e",
+    "/private/tmp/console-company-reads-first-verification-20260920.json": "8d7df6e222c0ddabccb38104d6d563e95c0a0307d1faaac7d9ae10e2d79d4dff",
+    "/private/tmp/console-company-reads-count-red-20260920.log": "51bb334d0d9af5ccf589f95f8fcb78ecec923fd349f96c5db99704e63941febb",
+    "/private/tmp/console-company-reads-count-update-20260920.log": "291aad6e00f8c6c483cfaf34ec21f285fa9fd79c91100e1d6dde2ff4a35caac2",
+    "/private/tmp/console-company-reads-count-green-20260920.log": "ee89d727e9a39f798872e4db7d71433e40dbab21438be69683333b1e642004ce"
+  },
+  "findings": [],
+  "checks": [
+    "All six live hashes match final record. Previously source-approved implementation and ordinary test registration are unchanged; round4 test bytes match independent approval.",
+    "Final actual native Authz run reports127passed,0failed/ignored/filtered; all six new read-usecase leaf names have explicit ok lines. Earlier same-production Domain7/Application10 pass records retained, yielding144distinct cases, not sum of repeated Authz runs.",
+    "Final strict Clippy --locked --offline --all-targets -Dwarnings reports finished/exit0; format empty log matches declared hash and process record exit0. No assertion/lint suppression or dependency change.",
+    "Exact baseline JSON differs from42a87196d only Authz static count121to127. Six additional attributes correspond to six independently approved actually executed leaves. Named dark source, feature variants, checker logic and all other counts unchanged.",
+    "Retained named checker RED reports one gained source; canonical update records3121static attributes; subsequent checker log has same retained dark set and no failure. Static attributes are explicitly not execution evidence.",
+    "Full Company HTTP404vs201 remains open; this component approval does not relabel enclosing lane GREEN."
+  ],
+  "counts": {
+    "final_authz_passed": 127,
+    "reused_identity_application_passed": 10,
+    "reused_identity_domain_passed": 7,
+    "distinct_native_cases": 144,
+    "new_read_usecase_cases": 6,
+    "reviewer_runtime_executions": 0
+  },
+  "limits": [
+    "No concrete database adapter, current SQL/Auth guards, mounted API/SSR/browser or complete Company workflow accepted.",
+    "Source/log binding is bounded local evidence, not a hermetic artifact or release qualification attestation. Parent owns commit and later archive custody.",
+    "Reviewer performed read-only source/Git/hash/log review and private receipt only; no repository writes or product execution."
+  ]
+}

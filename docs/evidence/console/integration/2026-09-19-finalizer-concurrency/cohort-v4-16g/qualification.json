@@ -1,0 +1,27 @@
+{
+  "kind": "observed-disposable-cohort-memory-envelope",
+  "source_head": "21934da5b80b605603e81a997fbcfafd31f846d2",
+  "source_sha256": "bb4ace9c9864db932253ae3013114e9aac9681da72192c1058ff7de6b57f414c",
+  "DOCKER_CONTEXT": "colima-console-release-20260919",
+  "vm_memory_gib": 16,
+  "vm_cpus": 4,
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=\"/private/tmp/console-finalizer-cohort-observer-v4:$PATH\" tools/ci/cargo_needs_postgres.sh --only app-audit-api-pg,app-evaluation-cycle-api-pg --runner nextest",
+  "executed": 30,
+  "passed": 30,
+  "failed": 0,
+  "skipped": 0,
+  "cold_leak_annotations": 1,
+  "warm_leak_annotations": 0,
+  "functional_review": "accepted_with_cleanup_hold",
+  "operational_acceptance": false,
+  "memory_peak_bytes": 10040786944,
+  "samples": 57,
+  "oom_kills": 0,
+  "remaining_hold": "Cold evaluation_routes_are_mounted_by_the_authenticated_app_router output-pipe LEAK cause unresolved.",
+  "limitations": [
+    "Original observer accepted field checked returncode/counts only and does not reject LEAK; operational acceptance explicitly false here.",
+    "Observed test memory envelope only, not production sizing or qualified load envelope.",
+    "Prior8GiB cohort OOM failures retained in predecessor evidence; not replaced by these results.",
+    "New v5 passive own-process diagnostic running separately."
+  ]
+}

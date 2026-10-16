@@ -12,6 +12,7 @@
 # static.rust-lang.org to pass fails when upstream has an outage.
 load(":lock.bzl", "RUST_DIST", "RUST_HOSTS")
 load(":sysroot.bzl", "rust_sysroot")
+load(":wasm.bzl", "wasm_bindgen_tool", "wasm_cxx_tools")
 
 # One http_archive per (package, triple). sha256 is what makes these content-
 # addressed: buck2 defers the download when a hash is present, so the bytes come
@@ -50,18 +51,86 @@ _COMPONENTS = [p for p in RUST_DIST if p not in _SYSROOT_SKIP]
     rust_sysroot(
         name = "sysroot-{}".format(host),
         rustc = ":rustc-{}".format(host),
-        # The host std ONLY. Cross-target stds are in the lock because rustup
-        # needs them from the pin -- `targets = ["wasm32-unknown-unknown"]` is
-        # how a fresh clone can run tools/ui/build-payroll-wasm.sh without a
-        # separate `rustup target add`. But buck2 never cross-compiles here:
-        # `rustc_target_triple` only ever selects a host, and the wasm bundle is
-        # built by cargo in that script, not by any buck2 rule. Overlaying every
-        # non-host std put ~100 MB of unreachable wasm32 std into each sysroot,
-        # three times over once exec configurations multiply it.
+        # Host actions need only host std. Hydration uses the dedicated sysroot
+        # below, which also contains the pinned WASM standard library.
         stds = [":rust-std-{}".format(host)],
         components = [":{}-{}".format(c, host) for c in _COMPONENTS],
         triple = host,
         visibility = ["PUBLIC"],
     )
     for host in RUST_HOSTS
+]
+
+# Host execution remains separate from the wasm target configuration. These
+# artifacts retain the existing host compiler/std and add the pinned cross std.
+[
+    rust_sysroot(
+        name = "hydrate-sysroot-{}".format(host),
+        rustc = ":rustc-{}".format(host),
+        stds = [":rust-std-{}".format(host), ":rust-std-wasm32-unknown-unknown"],
+        components = [":{}-{}".format(c, host) for c in _COMPONENTS],
+        triple = host,
+        visibility = ["PUBLIC"],
+    )
+    for host in RUST_HOSTS
+]
+
+_HOST = select({
+    "toolchains//:linux-x86_64": "x86_64-unknown-linux-gnu",
+    "toolchains//:linux-arm64": "aarch64-unknown-linux-gnu",
+    "prelude//os:macos": "aarch64-apple-darwin",
+})
+
+alias(
+    name = "hydrate-sysroot",
+    actual = select({
+        "toolchains//:linux-x86_64": ":hydrate-sysroot-x86_64-unknown-linux-gnu",
+        "toolchains//:linux-arm64": ":hydrate-sysroot-aarch64-unknown-linux-gnu",
+        "prelude//os:macos": ":hydrate-sysroot-aarch64-apple-darwin",
+    }),
+    visibility = ["PUBLIC"],
+)
+
+wasm_cxx_tools(
+    name = "wasm-cxx-tools",
+    sysroot = ":hydrate-sysroot",
+    host = _HOST,
+    visibility = ["PUBLIC"],
+)
+
+# Official release digests independently verified in the admission packet.
+_BINDGEN = {
+    "aarch64-apple-darwin": "756065a71813819f21ff96e30a87404aa4d385002d77d0b6246fec1d6c66174f",
+    "aarch64-unknown-linux-gnu": "c800cc196139d8db4af26ca3343be64e6ccf9f5208d5350d843ecec9e8d18d43",
+    "x86_64-unknown-linux-musl": "80fc5c1d5c128fd67e99b14318eeabf79dfbadf459ece2d38ba93a82e55730c6",
+}
+
+[
+    http_archive(
+        name = "wasm-bindgen-{}".format(host),
+        urls = ["https://github.com/wasm-bindgen/wasm-bindgen/releases/download/0.2.123/wasm-bindgen-0.2.123-{}.tar.gz".format(host)],
+        sha256 = digest,
+        strip_prefix = "wasm-bindgen-0.2.123-{}".format(host),
+    )
+    for host, digest in _BINDGEN.items()
+]
+
+wasm_bindgen_tool(
+    name = "wasm-bindgen",
+    archive = select({
+        "toolchains//:linux-x86_64": ":wasm-bindgen-x86_64-unknown-linux-musl",
+        "toolchains//:linux-arm64": ":wasm-bindgen-aarch64-unknown-linux-gnu",
+        "prelude//os:macos": ":wasm-bindgen-aarch64-apple-darwin",
+    }),
+    visibility = ["PUBLIC"],
+)
+
+# Source-only integrity inputs; no compiler or toolchain selection.
+[
+    export_file(
+        name = "hydration-" + source,
+        src = source,
+        visibility = ["PUBLIC"],
+    )
+    for source in ['BUCK', 'hermetic.bzl', 'sysroot.bzl', 'wasm.bzl', 'lock.bzl']
 ]

@@ -1,0 +1,44 @@
+{
+  "implementation_candidate": "5cf1126f5a54ed3cafff69072290df174d2248b9",
+  "test_candidate": "a33913110a84a38c4f072c6ba1c8442ed8bce17b",
+  "owner": "/root",
+  "result": "bounded planned reference matrix validated; no release-state promotion",
+  "preservation": {
+    "preimage_sha256": "568e4701f7306a2af006887758103d6f408778cb12f8e66ccd49439b5b575431",
+    "remove_only_appended_runtime_row_equals_entire_preimage": true,
+    "runtime_rows_before": 88,
+    "runtime_rows_after": 89,
+    "function_records": 202,
+    "states_unchanged": true
+  },
+  "verification": {
+    "positive_prerequisites": 3,
+    "named_owner_red": {
+      "executed": 1,
+      "failed": 1,
+      "reason": "missing expected rejection at actual validator"
+    },
+    "named_owner_green": {
+      "executed": 1,
+      "passed": 1
+    },
+    "final_owner_suite": {
+      "executed": 135,
+      "passed": 135,
+      "failed": 0,
+      "skipped": 0,
+      "negative_histories": 51
+    },
+    "planner_suite": {
+      "executed": 29,
+      "passed": 29
+    }
+  },
+  "limits": [
+    "Reference catalogue is not formula runtime implementation or semantics qualification",
+    "Foundry full freeze incomplete; cutoff source gaps remain",
+    "401 release leaves retain all prior states",
+    "No milestone or full release completion",
+    "Final source/runtime review recorded separately"
+  ]
+}

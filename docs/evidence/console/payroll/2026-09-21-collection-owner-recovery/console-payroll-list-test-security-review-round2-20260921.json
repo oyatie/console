@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "kind": "independent_payroll_list_test_successor_review",
+  "candidate": "/private/tmp/console-payroll-list-recovery-test-round2-20260921.rs",
+  "candidate_sha256": "cda15a1dbbf9e00b07705c81e1eab25c426f70b4513e05642d9d9ed6ab3ddc01",
+  "design_sha256": "4c9ced745b76a51ecb84535176204cc06d96693fa88c55afd8aa7ee4b925ebd2",
+  "verdict": "APPROVED exact bounded test candidate for baseline execution and semantic RED admission; not execution or workflow acceptance.",
+  "verified": [
+    "Exact successor adds only parsed JSON equality to internal/internal server error without details; every existing round1 positive, audit failure, denied/unknown omission, no-partial-row and recovery assertion preserved.",
+    "Equality now detects the concrete adapter PgPayrollError\u2192KernelError raw DB-detail disclosure trap identified in round3 design review.",
+    "Root confirmed intended implementation logs original PgPayrollError and sanitizes database errors after with_audits completes while preserving Domain KernelError kind/message. Implementation source must be independently verified."
+  ],
+  "remaining_holds": [
+    "Actual exact test discovery, functioning prerequisites and owner-bound semantic RED before implementation.",
+    "Current-revocation and other existing auth/isolation regressions remain required; this single test does not cover full authority or release acceptance."
+  ],
+  "tests_executed": 0,
+  "repository_edits": 0
+}

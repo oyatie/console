@@ -1,0 +1,158 @@
+# Platform Company collection: retained source prerequisite
+
+Successor design for the bounded actual list_tenants owner, plus read-only census. This starts the required independent design-review sequence; it is not implementation, test authoring, migration approval or lane admission. The predecessor remains immutable. Root-approved scope review39fec96dd1843bdce9d9a142a9e552f46e6a6c2375a62e448616dab068afda24 distinguishes the application-owner lane from later raw SQL capability closure. Root remains sole repository/runtime writer. This applies the approved finite policy round5 manifest `7823ee9032c28c0d54300c4e23bf3100bf42742eef69e4f3fcd9df9e40a60c42` and legacy session contract round2. Red Team, operability and ownership conclusions distinguish verified credentials, current facts, Cedar decisions and actual retained locks.
+
+## What exists and what is missing
+
+`GET /api/platform/orgs` calls `platform-rest::list_orgs`, which calls `PlatformProvisioner::list_tenants(pool, actor:Option<UserId>, now)`. That coordinator opens one Business transaction, calls `platform_list_organizations()`, maps nine Company/Group identity columns, appends `platform.tenant.list` with target_type `organizations`, target_id `list`, NULL org and `{count: n}`, commits, then returns the bare array. Neither its actor argument nor the SQL function proves current source authority. The function's current body has no arguments, temporarily disables RLS, excludes the sentinel and exposes full metadata to any console_rt caller.
+
+The generic resolver cryptographically verifies the token, checks current identity/fence and roles, then constructs the existing unconditional PlatformPrincipal. `SessionVerification::legacy_session_context` commits its Auth snapshot before returning. The SQL context projection itself is STABLE and takes no source row locks. Neither is usable as a retained list guard. The resolver must never evaluate an invented TenantList request for another caller.
+
+Existing `guard_legacy_subject_in_tx` provides correct reusable lock operations: arm verified Company GUC; `auth_legacy_company_lock_v1` Company KEY SHARE and READ COMMITTED check; `account_company_deactivation_guard_v1` User UPDATE then Account UPDATE and fresh fence; `auth_legacy_user_active_v1` current activity. Account root absence/unavailable fence is an infrastructure refusal, not a valid negative authorization. These locks persist only in the caller's transaction. Calling this Rust helper directly with a console_rt transaction currently fails because active/context helper EXECUTE is not granted to Business; Business also cannot read credential family tables. Granting credential-table access to Business or business mutation rights to Auth is excluded.
+
+## Proposed smallest reusable seam
+
+Auth owns a narrow new `live_legacy_platform_source_in_tx` application API, following the existing native `live_account_session_in_tx` / `ensure_account_session_fresh_in_tx` convention:
+
+    live_legacy_platform_source_in_tx(
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        access: &str,
+        absolute_family_ttl: Duration,
+    ) -> Result<LegacyPlatformSource, LegacyPlatformSourceError>
+
+    ensure_legacy_platform_source_fresh_in_tx(
+        tx: &mut Transaction<'_, Postgres>,
+        source: &LegacyPlatformSource,
+    ) -> Result<OffsetDateTime, LegacyPlatformSourceError>
+
+Names are proposed, not existing APIs. The first function cryptographically verifies the original raw token inside Auth, strictly admits direct platform tier/sentinel home/non-derived shape only, and distinguishes absent historical binding from a valid present direct binding. No client ID, parsed claim DTO, PlatformPrincipal, role hint, policy label or bool can construct its internal verified credential. An internal private-field verified value is not Serialize/Deserialize and never Debug-prints tokens. Unsupported bound/derived/ordinary-Company material denies; present malformed material never becomes absence.
+
+`LegacyPlatformSource` is a finite private-field nonserializable result carrying actual verified subject/home/lifetime/mode and current owner facts (roles, activity/fence, exact optional family tuple/deadline). It is not an authorization permit. Narrow read-only accessors let the existing provisioning coordinator construct the approved pure policy input; Auth does not depend on the Cedar SDK or implement SUPER_ADMIN feature policy. The fresh-check method requires the caller still holds the same transaction's guards; as with the existing native API, the application ownership contract and actual histories prove this condition, not a claim that a copied Rust value retains a database lock. No constructor or API returns a reusable grant, SQL authorized flag or detached transaction.
+
+For this source guard, add one versioned credential-owned SQL bridge, proposed `auth_legacy_platform_source_material_v1(p_subject uuid, p_family uuid)`. Home is the fixed platform sentinel, not a caller-selected tenant. `p_family=NULL` is only the application adapter's actual historical absence; a nonnil present ID selects exactly one family. SQL trusts serving application credentials to address the already verified subject/family as in the approved v2 contract; it does not pretend UUID knowledge is JWT possession. No JWT cryptography moves into SQL.
+
+The Auth API arms the verified fixed sentinel GUC in its caller transaction before invoking the bridge; the helper independently validates that exact context. The helper runs VOLATILE/SECURITY DEFINER with fixed safe search_path and READ COMMITTED validation. It invokes the existing Company/deactivation/activity guards in their established order, then reads current roles through the existing context projection while the User/Account locks remain held. Bound mode selects exact family under FOR SHARE, returning only the necessary subject/home/protocol/created/revoked/native-field facts. Missing family, mismatch, non-LEGACY_COMPANY or nonnull native-only material denies; no latest-family query, refresh secret, token hash or unrelated row is returned. It returns facts, never Cedar approval. Reuse the existing helper bodies rather than reimplement their lock/fence rules.
+
+Proposed initial grants: the new bridge is owned by console_credential_owner and serving-callable only through exact EXECUTE for console_rt. No console_app or console_auth_rt grant is needed for this initial Business-transaction caller; any later additional caller requires its own exact privilege review. Reuse existing credential-owner privileges on family rows and EXECUTE on Company/User/Account guards. Add only console_credential_owner EXECUTE on the existing current-context projection if that reuse is selected; do not grant Business that broader projection, new table access, role membership or Auth business powers. Final exact ACL/signature and generated custody transitions require independent migration review before tests/admission. These are proposed grants, not current database facts.
+
+Fresh time comes from DB clock after waits and immediately before materialization/completion, with checked signed lifetime and bound family-created + existing server absolute TTL. Reuse the accepted passkey prerequisite's exact precision/expiry rules where they apply, preserving historical absent-token semantics and policy's raw validation contract. Rotation inside the exact live family is not revocation; logout/reuse is. Bound mint stays disabled until its separate consumers are ready.
+
+## Owning transaction and policy
+
+The actual list coordinator owns ONE Business transaction from source guard acquisition through projection, required audit and successful commit. Auth's `_in_tx` seam runs its narrow SQL owner bridge on this same transaction. No second Auth transaction is committed before Business work, and no multi-transaction pseudo-guard is introduced.
+
+Proposed exact replacement method (no actor-only overload):
+
+    pub async fn list_tenants(
+        &self,
+        pool: &PgPool,
+        verifier: &JwtVerifier,
+        access: &str,
+        absolute_family_ttl: Duration,
+        policy: &PlatformPolicy,
+    ) -> Result<Vec<OrganizationSummary>, ProvisioningError>
+
+The root-composed verifier, server TTL and compiled policy are trusted application dependencies; access is the original presented credential. The sole list_orgs caller forwards that credential and these dependencies and stops using PlatformPrincipal::authorize(TenantList) as authorization. Any middleware projection is admission only. Direct non-HTTP callers use this same signature and cannot supply an actor/principal to skip real current verification. No private unchecked legacy overload remains. The method drops caller actor and caller timestamp as authority inputs; actor comes only from the verified source, and audit time from current DB time. Root composes these dependencies. `PlatformRestState` needs an explicit seam carrying the TTL read by App from `AppState.config.auth_rest.as_ref().refresh_family_absolute_ttl` and one immutable compiled policy; it must not copy a default or infer TTL from access-token configuration. Provisioning already depends on Auth; adding its explicit Authz dependency requires ordinary architecture/generated-graph review, not an Auth→Authz cycle or source inclusion.
+
+Ordered list operation:
+
+1. Verify actual direct platform credential and acquire current source guards/family through Auth in the Business transaction.
+2. Build the approved finite input from those actual facts and evaluate **TenantList / Companies / ReadProjection / DirectPlatformOwner**, using the actual bound or historical_unbound mode. Only the composite public Allow passes. MEMBER/ADMIN/unknown/current demotion/error denies, never an unconditional principal shortcut. No generic resolver evaluation substitutes for this operation.
+3. Materialize the existing exact nine-column collection under the same source locks. Only Company/Group identity metadata is in scope; no payroll, person, credential or arbitrary tenant row is added. Companies is a fixed platform collection resource, so this read needs no per-target Company mutation lock or Group topology writer lock. The collection query has its own consistent SQL snapshot; current source authority remains serialized. Native Company identity may appear as metadata without authorizing legacy writes to native Companies.
+4. Refresh DB time and composite policy/lifetime checks after materialization/waits. Build the exact existing audit action/target/snapshot bytes from verified actor and actual result count. Append within this same transaction, then final current lifetime check immediately before successful commit. An audit insert may wait; the final check must follow that wait. On expiry/refusal/error rollback audit and discard all result rows. Only successful commit returns the bare array.
+
+Historical reads may append their required observational list audit under the admitted ReadProjection; this is not an old credential obtaining an unrelated Effect or ContextMint. Unknown commit outcomes cannot trigger an automatic duplicate read/audit retry disguised as the original attempt; recovery must honestly distinguish unavailable response from known refusal.
+
+This first application-owner lane reuses the existing metadata projection and exact audit implementation inside the retained transaction. It adds no second SQL listing function or copied SQL feature-policy predicate. The new credential material bridge returns facts and locks only; the existing pure Cedar policy makes the actual collection decision. The argument-free projection's broad serving SQL grant remains explicitly unclosed, as detailed below. Do not relabel guarded use of that existing persistence primitive as SQL/ACL closure.
+
+## Raw-function consumers and correct cutover dependency
+
+The public Rust `list_tenants` method has only one current caller: platform-rest::list_orgs. There are no discovered non-HTTP Rust callers to that method. The underlying SQL function has **six** actual runtime call sites: the list coordinator, view-as target lookup, and four machine discovery loops. `callers.json` records each with source lines and intended responsibility; custody declarations/generator strings and the RLS-gate test fixture are references, not runtime calls.
+
+The four service loops consume only IDs: workflow schedules, workflow drain, audit-chain sealing and facilities HVAC polling. Root wires them from the worker's existing console_rt pool; they are not human sessions. They must not invent a platform SUPER_ADMIN or borrow a human refresh family. In the later SQL-capability lane, before revoking the raw full-metadata projection grant, preserve their existing work through a distinct least-data service discovery owner returning only non-sentinel Company IDs with deterministic order. Its machine authority and existing per-Company guarded work remain explicit; no browser/API uses it as a disclosure shortcut. Sharing the console_rt database identity today is a real limitation, so scope/document its id-only privilege rather than claiming the DB distinguishes worker and API identities.
+
+View-as `lookup_active_org` is the fifth additional metadata consumer. Both context-start handlers use it, with their actual TenantHealthRead or TenantManage / Company / ContextMint contracts. It must move through its real source/target guard seam and typed metadata lookup as part of its separately admitted context-mint conversion. Replacing it with another unguarded full-metadata function or silently breaking the starts is not a valid list closure. Its current lookup transaction commits before later mint/audit, so it is not a retained target guard. Existing `platform_get_organization` also has broad metadata behavior and cannot be used as a claimed security fix just by changing names.
+
+Therefore later SQL-boundary acceptance depends on the working guarded metadata successor, all four service enumeration replacements, and the real view-as lookup conversion being available before the old console_rt metadata EXECUTE grant is removed. Those five separate caller conversions are NOT prerequisites for the bounded list_tenants application-owner lane: they do not invoke its Rust API. The first lane can close the actual human collection route and public use-case bypass by removing the actor-only method and converting its sole caller under retained guards. Its accepted evidence must still state the raw serving SQL capability and view-as authorization remain release HOLDs; it cannot claim full SQL/Platform closure. No operational workflow is disabled to manufacture green. Historical migration0061 and previously sealed custody fingerprints stay unchanged; versioned successor migration/finalizer profiles and actual-role ACL tests must close this cutover.
+
+## Lock census and required histories
+
+The platform collection's source order is sentinel Company KEY SHARE → platform User UPDATE → Account custody root UPDATE → exact family SHARE (bound only) → audit insert. There is no target Company UPDATE or Group topology lock in this metadata-only read. Existing credential issuance/logout/rotation/reuse take the legacy source guard before family UPDATE; the read conflicts at User and/or exact family, retaining source identity and revocation until completion. The Account root guard prevents native cutover/fence from racing disclosure; sorted Group/Company bridge rules still apply to later multi-resource writers, not invented here.
+
+Required actual histories at this owner: same JWT before/after committed role demotion; demotion/inactivity/fence after middleware but before owner; reader first vs revoker first with observed blockers; signed/family expiry during a lock wait; expiry while projection or audit waits; exact revoked family with another live sibling; current source restore recovery; unavailable owner/SQL/Cedar/commit returns no collection; independent subject/Company work proceeds while one source is blocked. Test both historical and bound read paths, deny every derived/ordinary-Company shape, preserve exact payload/audit/noecho/private response contracts. Use real pg_blocking_pids/wait-state evidence and bounded task/transaction cleanup; no sleep or mocked principal establishes ordering.
+
+Initial SQL controls must exercise actual console_rt/console_auth_rt/owner roles and inherited/public paths for the new narrow material bridge, demonstrate exact current source/family facts and locks, and prove Business receives no credential-table access or role elevation and Auth gains no business mutation rights. Generated custody checks and old/new profile compatibility are required for that bridge. Existing machine/view-as paths remain unchanged and receive appropriate regression evidence, not claims of newly accepted authorization. The later SQL-capability lane must separately prove raw full-metadata execution denied, service discovery IDs only, and its closed human successor mapping agrees with finite Cedar policy. Pure policy tests are supplementary; none of this design constitutes executable RED or a migrated grant.
+
+Pre-mortem: snapshot passed across commit; raw list SQL survives; worker breaks on grant revocation; target lookup secretly becomes a generic list permit; metadata helper widens credential privileges; Company lock upgrade forms a cycle. Detection: exact caller/ACL custody, actual owner histories, real service positives and corruption controls. Rollback retains expanded readers/historical fingerprints and working old/new compatible owners under an explicit HOLD; never reopens a known bypass as a completed state. Stop before this owner implementation if its retained source/credential-helper ownership, exact ACL/custody transition or sole human caller conversion remains unspecified. Deferred machine/view-as SQL cutover stays an explicit release dependency rather than a fabricated blocker for the correctly bounded owner lane. No external blocker or release completion is asserted.
+
+
+## Four independent design rounds before tests
+
+DELIVERY.md lines25–29 requires four independent design-review rounds, consensus and revision-bound explicit design approval before exact tests are authored. Proposed review sequence for this bounded owner:
+
+1. Actual list use-case/API, sole human caller conversion, verified credentials and explicit application-versus-SQL acceptance scope.
+2. Exact credential material bridge signature/columns/ACL/custody transition, Company→User→Account→family locks, and no cross-pool authority.
+3. Signed/family lifetime, current role/fence checks, Cedar input/composite output, SQL/error classification, response privacy and exact list audit recovery.
+4. Actual route/non-HTTP owner RED fixtures and corruption oracles, observed lock histories, migration/runtime prerequisites, allowed source paths and exact remaining HOLDs.
+
+Each round needs root and independent adversarial concurrence on immutable bytes; findings produce successors. This successor does not claim any round complete. Existing approved finite-policy/passkey source principles may be reused by exact receipt, but do not approve this new privilege bridge. Root then integrates independently approved tests into a clean candidate and admits only a real owner behavior RED using lane tooling. Missing helper compilation, schema/ACL/startup failure or zero executed tests never substitutes for admission. Root serializes all credential-custody generated artifacts and migration changes.
+
+
+## Independent design round 2: exact material bridge and composition
+
+This additive section freezes the next review surface and supersedes only ambiguous bridge/wiring proposals above. Round1 receipt202aa8c1e8a227e0a9175c992baf3a36c084f8c797f9cc6fd357d50c1ca697b8 approved owner/API/scope. No SQL body, tests, repository code or generated pins have been authored by this packet. Root alone integrates an independently reviewed prospective custody source.
+
+### Finite SQL contract
+
+Exact proposed signature: `public.auth_legacy_platform_source_material_v1(p_subject uuid,p_family uuid)`. Exact result columns, in order:
+
+| Name | PostgreSQL type | Historical unbound | Bound |
+|---|---|---|---|
+| roles | text[] | current nonempty source roles | same |
+| family_id | uuid | NULL | exact selected id |
+| family_user_id | uuid | NULL | stored user_id |
+| family_org_id | uuid | NULL | stored org_id |
+| family_protocol | text | NULL | stored protocol |
+| family_created_at | timestamptz | NULL | stored created_at |
+| family_revoked_at | timestamptz | NULL | stored revoked_at |
+| family_account_security_generation | bigint | NULL | stored account_security_generation |
+| family_auth_time | timestamptz | NULL | stored auth_time |
+| family_assurance | text | NULL | stored assurance |
+
+Exactly one row is returned for a current source and selected existing family, or historical absence. Missing selected family is an explicit `P0002 / auth_legacy_platform.family_not_found` refusal, never an all-NULL row. Subject NULL/nil and present nil family fail `22023 / auth_legacy_platform.invalid_identity`; absence is SQL NULL only. No names, usernames, branch IDs, Group grants, credential hashes, refresh rows, secrets, policy permits or arbitrary records leave this bridge. Returning native-field NULL/non-NULL facts lets Auth independently enforce the full exact-family tuple; no fallback family is queried. Historical absence does not query or lock a family.
+
+Implementation sequence is fixed, with separate SQL/SPI statements where fresh visibility is required:
+
+1. Validate READ COMMITTED and exact fixed home `00000000-0000-0000-0000-00000000face`; helper never accepts a home parameter. Reject absent/malformed/mismatched `app.current_org`, and invalid subject/family shape before any projection. Auth sets this verified sentinel transaction-locally before calling. A mismatched GUC is not repaired by the helper.
+2. Call existing `auth_legacy_company_lock_v1(sentinel)` retaining sentinel Company KEY SHARE. Call `account_company_deactivation_guard_v1(sentinel,p_subject)` retaining User UPDATE then Account UPDATE; false is the known fenced-source refusal `28000 / auth_legacy_platform.source_fenced`, while missing Account root or invalid fence exceptions propagate as infrastructure failures. Call `auth_legacy_user_active_v1(sentinel,p_subject)`; false yields `28000 / auth_legacy_platform.source_inactive`.
+3. In the next statement select only `roles` from existing `auth_legacy_session_context_v1(sentinel,p_subject)` into a strict local variable. This reuses existing current activity/role/fence validation with fresh visibility after lock waits. It takes no extra role-grant/topology locks because this direct-platform decision uses only the locked User roles, not the function's other output columns. Read the existing function's full execution dependencies in custody review; its unused branches/Group metadata are not returned. No copy of SUPER_ADMIN policy appears in SQL.
+4. If p_family is present, select the exact primary-key family row and the nine named fields `FOR SHARE OF f`, then verify FOUND. User/Account locks precede this family lock; no latest-family or family-first path. Return actual stored tuple unchanged for Auth validation. If absent, return current roles and nine typed NULLs.
+
+Attributes are `LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE SET search_path=pg_catalog,pg_temp SET row_security=on`. Public objects are schema-qualified, body contains no dynamic SQL, no user-selected object names, no row_security off, no catch-all that reclassifies infrastructure as denial. Clock stays in Auth's existing `account_now_in_tx` caller after SQL waits, not transaction_timestamp/statement_timestamp cached at entry. No new row writer, advisory lock, cross-pool call or source principal cache.
+
+### Exact privilege delta
+
+New function owner `console_credential_owner`. Revoke ALL explicitly from PUBLIC, console_app, console_rt, console_auth_rt, console_auth_startup, console_account_owner, console_terms_owner, console_credential_owner, console_leave_cmd, console_ontology_cmd and console_platform_force_cmd; then grant EXECUTE only to console_credential_owner and console_rt. The owner retains inherent ownership rights; console_rt is the only serving grantee. Ordinary owner existence is a prerequisite, not dynamically created/repaired here.
+
+Add `GRANT EXECUTE ON FUNCTION public.auth_legacy_session_context_v1(uuid,uuid) TO console_credential_owner`; preserve its existing console_app/Auth grants and body byte-for-byte. This is the only existing-function ACL delta. Existing credential-owner Company/deactivation/activity EXECUTE and family table SELECT/row-lock privileges are reused, with no wider grants. No new membership, PUBLIC grant, table privilege, grant option, default ACL, owner reassignment or BYPASSRLS. Business still cannot directly read credential families or execute the wider session context/activity projection. Auth still cannot execute the new bridge or gain business mutation powers. Confirm effective inherited privileges, not only literal proacl.
+
+### Prospective custody transition
+
+Use the existing generated credential finalizer, not a standalone ordinary SQL migration or ad hoc boot-time repair: this is a function/ACL addition to its exact security-object profile, without schema/data shape migration. The finalizer's established Company→User→Account/security/terms→credential→context/deployment→audit locks remain unchanged. The new helper is installed only in that same operator-owned locked transaction after exact predecessor certification. Every historical migration, install body, serializer and fingerprint tuple—including Business-session and Company-eligibility—remains byte-identical. No historical command/event bytes are reencoded or resealed.
+
+Add a new prospective snapshot function layered on the unchanged Company-eligibility serializer, including the new function identity/body/language/volatility/parallel/prosecdef/config/owner/ACL plus changed context-helper ACL and complete effective privilege graph. It must cover presence/count expectations and ambient grants/roles/default ACLs as existing whole-profile custody does. Preserve historical serializer algorithms byte-for-byte and their identical output for an identical historical profile. The prospective context-helper ACL delta necessarily changes captured metadata/digest after installation; no claim of equal pre/post-extension digest is made. Do not teach old fingerprints to describe the new shape. Add four new distinct reviewed pins: absent-new-helper prior plain/observer and exact finalized plain/observer. Capture these only in root-owned temporary databases after source review and compare actual delta independently against the declared two-object privilege change. This packet supplies no guessed pins and does not authorize accepting runtime-learned fingerprints.
+
+New outer classifier: exact new-finalized profile plus startup final rights→finalized; exact prior profile→extension_required; any present unknown new-helper profile→profile_mismatch; otherwise defer to the unchanged historical Company-eligibility classifier only to plan an existing historical upgrade, never to admit serving. Native root/credential state and packaged postcondition advance to this outer classifier. New finalizer adds an outer preparation label: exact current Company-eligibility prior with live rows skips old installers and applies only this bridge transition; earlier admissible profiles run the existing unchanged upgrade sequence before reaching the exact new prior. Replay of the exact final profile returns without writes. Partial helper, ACL drift, extra grants, wrong body/search_path/owner, unknown profile or missing operator authority fails without repair.
+
+Old binaries with old profile checks may reject expanded security objects; do not claim mixed-version serving compatibility. Qualify old/new reader behavior explicitly. Rollback keeps the additive DB objects and restores only an artifact proven compatible with that expanded profile; otherwise fence admission and deploy the prior correctly reviewed software/profile combination through a separately reviewed inverse transition. No blind DROP/REVOKE or old-pin rewrite to force rollback. Bounded candidate acceptance requires exact fresh/populated prior→new/replay/corrupt-profile histories; assembled-release rolling upgrade qualification remains separate.
+
+### Root composition without phantom fields
+
+AppState::new already returns Result and is the common constructor used by from_config. Compile `PlatformPolicy::compile_current()` once there and store `Arc<PlatformPolicy>` in AppState; compilation error is startup configuration failure, never a permissive policy. This requires the separately reviewed finite-policy API to exist first. The pure policy remains in Authz; no SQL or authorization decision moves into App.
+
+Keep existing PlatformRestState::new for compatibility with unrelated route fixtures, but add an explicit `with_platform_list_authority(absolute_family_ttl: Duration, policy: Arc<PlatformPolicy>)` seam and private optional list-authority dependencies. They contain only server configuration, not a granted principal. In App build_router, apply the seam only when `state.config.auth_rest.as_ref()` exists, passing exactly that config's refresh_family_absolute_ttl plus the compiled policy clone. Never default TTL, read an env var again, or substitute access-token TTL. Missing seam/config yields unavailable for the list route; tests must prove the production configured root installs it. The handler uses existing `state.session_verification.as_ref().token_verifier()` solely as the verifier dependency; no Auth pool/session projection is used by the list owner. Missing verifier is unavailable. Invalid/nonpositive configured family TTL fails closed; bound lifetime overflow is unavailable.
+
+List handler extracts the original Authorization credential through a narrowly reviewed single-Bearer transport selection (precise selection/privacy mapping is round3; the existing private HeaderMap.get parser does not reject duplicate headers), then calls the proposed list_tenants with Business pool, verifier, raw access, configured TTL and compiled policy. Middleware PlatformPrincipal may remain needed for sibling routes, but neither its actor nor authorize method is consumed by list_tenants. Every direct application test/caller supplies the same root-composed dependencies and raw signed credential. No new overload accepts actor/time/principal. Test-only constructors are not serving authority. Existing worker/view-as dependencies remain unchanged and explicitly unaccepted for later SQL closure.
+
+Round2 acceptance requested: finite SQL columns/semantics, exact two-object ACL delta, prospective custody chain/rollback, lock order and explicit root wiring only. Source/test implementation and runtime approval remain withheld until subsequent rounds and exact reviewed tests. No file in the repository changed and no build/SQL/server/browser was executed by this author.

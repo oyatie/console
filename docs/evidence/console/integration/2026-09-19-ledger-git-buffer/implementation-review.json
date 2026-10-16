@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-source-and-evidence",
+  "source_sha256": "cf9b4afd53665b38b0a15daa46988660e514e4861a6326a77d064def299b93c8",
+  "tests_sha256": "edd175dbdca29850fcec6226b91cda0834445fc06b610d3c9f9b6b3633a158f1",
+  "design_sha256": "79f101ebeab1c54955d25c8bfb708f38315d330d8eccd1e9f09a395f3cdfe989",
+  "findings": [],
+  "source_conformance": "Independently compared actual current source with HEAD: exactly one existing execFileSync options object gains fixed16MiB maxBuffer; every other source byte unchanged. Exact reviewed test bytes retained.",
+  "counts": {
+    "red": {
+      "executed": 3,
+      "passed": 1,
+      "failed": 2,
+      "skipped": 0
+    },
+    "green": {
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "regression": {
+      "executed": 107,
+      "passed": 107,
+      "failed": 0,
+      "skipped": 0
+    },
+    "planner": {
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "evidence_sha256": {
+    "/private/tmp/console-ledger-git-buffer-red.log": "47e8e14ed28939504781cdd4981cc2bbae15778cf173f253919e61dd555df0d1",
+    "/private/tmp/console-ledger-git-buffer-green.log": "4b57ab18281f7725894063fca3547bbf247fb639813d72a3985a5626cab00bea",
+    "/private/tmp/console-ledger-git-buffer-regression.log": "990a151dc8c533097f9903f0fe8b023ab5c15453ed9ee238961c6caa4fb3c1f3",
+    "/private/tmp/console-ledger-git-buffer-planner.log": "b56faa459096fd0ee752d1ce9d9a087a3d3dfebacf7eabfb42458baa492689d8",
+    "/private/tmp/console-ledger-git-buffer-census.log": "dd198c77ccb6e11e436cac257203943a5fe72f2149d424001fa4199b828d431f"
+  },
+  "census": {
+    "scanned": 102,
+    "known_residuals": 3,
+    "reported_findings": 3,
+    "result": "passed"
+  },
+  "qualifications": [
+    "Regression107tests covers validator and authority tests actually discovered; nonexistent planner path in that invocation provided no coverage. Separate real planner29test log supplies planner evidence.",
+    "Three new tests prove complete>1MiB reads, exact late-marker rejection and public fail-closed behavior for>16MiB source.",
+    "Finite perread memory capacity increased; above16MiB remains a rejection/replacement trigger. No signature/path/mode/merge-marker/candidate authority semantics changed.",
+    "Full assembled release, complete repository qualification and other lanes are outside this acceptance."
+  ]
+}

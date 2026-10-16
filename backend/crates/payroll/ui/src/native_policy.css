@@ -1,0 +1,15 @@
+.policy-workspace .workflow-layout{grid-template-columns:minmax(0,1fr) minmax(260px,340px)}
+.policy-panel-body{padding:22px}.policy-panel-body p:first-child{margin-top:0}.policy-panel-body p:last-child{margin-bottom:0}
+.policy-panel-body p{word-break:keep-all;overflow-wrap:anywhere}.policy-state{font-weight:650;color:var(--ink)}
+.policy-label{display:block;margin:22px 0 8px;font-weight:650}.policy-workspace input[type=datetime-local]{display:block;width:100%;max-width:360px;min-width:0;min-height:48px;padding:10px 12px;border:1px solid var(--control-border);border-radius:8px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums}
+.policy-workspace .supporting{color:var(--muted);font-size:13px;margin:12px 0 0}.policy-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin-top:24px}
+.policy-button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;max-width:100%;padding:10px 18px;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:white;font-weight:650;text-decoration:none;cursor:pointer;overflow-wrap:anywhere;white-space:normal}
+.policy-button:hover{background:var(--accent-hover);color:white}.policy-button.secondary{background:var(--surface);color:var(--accent)}.policy-button.danger{background:var(--flag-ink);border-color:var(--flag-ink)}
+.policy-provenance{border-top:1px solid var(--line);margin-top:24px;padding-top:14px}.policy-provenance summary{cursor:pointer;padding:8px 0;min-height:44px;font-weight:550}.policy-provenance dl{margin:8px 0 16px}
+.policy-limit{padding-top:16px;border-top:1px solid var(--line);color:var(--muted)}.policy-consequences{border-left:3px solid var(--accent)}
+.policy-workspace .record-meta{grid-template-columns:76px minmax(0,1fr);font-variant-numeric:tabular-nums}.policy-account-nav{margin-top:32px}
+@media(max-width:1150px){.policy-workspace .workflow-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:680px){.policy-panel-body{padding:16px}.policy-account-nav{margin-top:12px}.policy-actions{align-items:stretch;flex-direction:column}.policy-actions a{padding-top:10px;padding-bottom:10px}.policy-workspace .record-meta{grid-template-columns:68px minmax(0,1fr);gap:10px}}
+
+.policy-workspace :is([data-policy-preflight-operation],[data-policy-result-layout]) .workflow-guide{grid-column:2;grid-row:1}.policy-workspace :is([data-policy-preflight-operation],[data-policy-result-layout]) .workflow-main{grid-column:1;grid-row:1}
+@media(max-width:1150px){.policy-workspace :is([data-policy-preflight-operation],[data-policy-result-layout]) .workflow-guide,.policy-workspace :is([data-policy-preflight-operation],[data-policy-result-layout]) .workflow-main{grid-column:1;grid-row:auto}}

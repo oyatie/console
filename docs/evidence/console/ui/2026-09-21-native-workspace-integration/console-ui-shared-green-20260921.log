@@ -1,0 +1,20 @@
+[2026-09-21T14:55:46.695-04:00] Build ID: 2e3296de-5504-4905-a22b-f066b2e1282b
+[2026-09-21T14:55:46.869-04:00] File changed (since mergebase): root//backend/crates/payroll/ui/src/lib.rs
+[2026-09-21T14:55:46.869-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T14:55:54.254-04:00] Waiting on buck2 daemon 2e3296de-5504-4905-a22b-f066b2e1282b...
+[2026-09-21T14:55:54.254-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T14:55:54.254-04:00] Resource usage: CPU: 7%
+[2026-09-21T14:55:54.254-04:00] IO: Remove: 1
+[2026-09-21T14:56:01.353-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 576 other actions
+[2026-09-21T14:56:09.154-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T14:56:14.798-04:00] Cache hits: 0%
+[2026-09-21T14:56:14.798-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T14:56:14.798-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+
+running 2 tests
+test workspace_tests::workspace_navigation_never_advertises_denied_or_unimplemented_destinations ... ok
+test workspace_tests::workspace_focused_pages_have_a_named_main_and_keyboard_navigation ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.00s
+

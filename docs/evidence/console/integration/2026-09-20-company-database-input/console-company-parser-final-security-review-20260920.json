@@ -1,0 +1,100 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT_BOUNDED_PURE_SQL_PARSER_IMPLEMENTATION_AND_NATIVE_RUNTIME_FOR_COMMIT",
+  "base_test_commit": "2f11f2f4fc7b29a0495bb9499ab8618a5b21ddc0",
+  "source_hashes": {
+    "ops/generate-account-custody.py": "9cb4056a18e94a3821fbcb1237d7553d519f2be3db24b5b8d52dd0d466e8263b",
+    "ops/postgres-company-enrollment-input.sql": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290",
+    "backend/app/BUCK": "142e6b5937c00a6bb3ce870499391fa28f38d53c62e9e9a97db2d1330fb34541",
+    "backend/app/tests/auth_rest/native_company_input_parser.rs": "c43e4281585e49c6c3a8891b45e001f62e7b995b2bdb16a906ec887290a498fc",
+    "backend/app/tests/auth_rest/fixtures/company-enrollment-input-golden.sql": "2a6d065d71d580aa6113dd7332d02574c1bc2f588a079bf4d963a9d7f96d83d5",
+    "backend/app/tests/auth_rest/fixtures/company-enrollment-input-malformed.sql": "4a2d570e0f7eaca200bfdbc0bd54b86bc6b0b0a61c7891eaf03c4cca8fdd5d27",
+    "backend/app/tests/auth_rest/fixtures/company-enrollment-input-boundary.sql": "3404dd5a604e91029f21250be9f1324575942e7ec122237eb6b8652708965c67",
+    "ops/test_company_enrollment_input_generator.py": "8d506011077396a050c6a6405b12143d6e04b00bc5a15a8a8d2aea11fbe08988"
+  },
+  "native_artifact": {
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+    "sha256": "1d36668870531433fa1cad31f83958dd3fd0b43d4c0709cd18c4d6428b0f07e6"
+  },
+  "logs": {
+    "/private/tmp/console-company-parser-native-runtime-20260920.log": "f6504f459e078771535a219258361a13230077b592e490517dd554742b54780e",
+    "/private/tmp/console-company-parser-native-successor-runtime-20260920.log": "60adb3b4870d5fc6c2ed2774a2675a0b2ede976e25b7b320c9243b9ce5d028e6",
+    "/private/tmp/console-company-parser-buck-generator-20260920.log": "cf6bd6e1e5ca59c141dc9e641d301cf99ad92d81dc1e9abf771751bd6d0ae240",
+    "/private/tmp/console-company-parser-buck-generator-staged-20260920.log": "0fff96256842b30ea12fda007929967eff10cd3632446aa71aa343c2c3b63735",
+    "/private/tmp/console-company-parser-reachability-20260920.log": "f513a183e274d7c3c7365ec29b0ef1f84ee81f1224f0caf4361880d18127aeb9"
+  },
+  "observed_runtime": {
+    "exact_leaf": "account_browser::deployment_operator_designation::company_setup::input_parser::company_input_parser_executes_710_cases_only_in_private_mismatched_profile",
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 476,
+    "test_seconds": 50.94,
+    "buck_target": "root//tools/buck:app-auth-rest-pg"
+  },
+  "executed_oracles_by_reviewed_source": {
+    "parser_calls": 710,
+    "valid": 34,
+    "invalid": 676,
+    "real_restricted_login_42501_denials": 6,
+    "profiles": "Both original classifiers finalized before helper; both profile_mismatch afterward and after parsercases",
+    "preservation": "Full all_rows before/after equal; only private helper metadata added",
+    "evidence_note": "Successful libtest output captures percase eprintln;710and6counts derive from unchanged reviewed exact test/oracles and successful completion, not710individual loglines."
+  },
+  "verification": {
+    "buck_generator_tests": {
+      "executed": 61,
+      "passed": 61,
+      "failed": 0
+    },
+    "old_generated_artifacts": {
+      "count": 6,
+      "independently_checked_hashes": "all unchanged"
+    },
+    "generator_preservation_test": "Root reports1/1passed repeated; no separate retained log supplied",
+    "reachability": "386defined/386reachable; sole preexisting seaweedfs_worm dark, not claimed as executed",
+    "other_checks": "Root reports generator--check,rustfmt,diffcheck passed"
+  },
+  "preserved_failures": [
+    "Initial runtime1failed476filtered at CREATE FUNCTION42601; no goldenoracle reached",
+    "Original2byteoffset source preserved and independently diagnosed",
+    "Generatorfirst61suite60passed1failed unstaged-output cleanliness; same unchanged suite61passed after reviewed generated output staged"
+  ],
+  "prior_reviews": [
+    "/private/tmp/console-native-company-parser-sqlx-tests-round1-security-review-20260920.json",
+    "/private/tmp/console-native-company-parser-format-lane-security-review-20260920.json",
+    "/private/tmp/console-company-parser-offsets-security-hold-20260920.json",
+    "/private/tmp/console-company-parser-successor-source-cedar-storage-security-review-20260920.json"
+  ],
+  "resolved_findings": [
+    "COMPANY-SQL-PARSER-VERSION-OFFSETS",
+    "SQL CASE upper BETWEEN bound syntax"
+  ],
+  "remaining_holds": [
+    "Helper remains UNINSTALLED in product serving profile",
+    "No enrollment request/receipt/schema/prepare/effect acceptance",
+    "Original complete Company enrollment lane remains open",
+    "No production durability/browser/load/fullrelease/exposure acceptance"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Contrarian / outside-the-box",
+    "Socratic",
+    "Pragmatism",
+    "Red Team",
+    "Systems Thinking",
+    "Operability / Day-2",
+    "Opportunity Cost",
+    "Blast-radius / cell-based",
+    "Constant-work / anti-fragility",
+    "Shared-nothing / eventual consistency",
+    "FinOps / unit-cost",
+    "Telemetry-first",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "reviewer_product_tests_executed": 0
+}

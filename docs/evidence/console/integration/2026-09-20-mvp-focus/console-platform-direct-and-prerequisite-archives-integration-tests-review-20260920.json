@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_EVIDENCE_ARCHIVES",
+  "source_candidate": "622b3050a9d7ce7003e4be41e665639fdd5eb5ae",
+  "archive_receipts": {
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-platform-direct-producer/receipt.json": "6c2bef131bd7b3af3680692cd8dfd1c6ecc37de0604140b6906a2cb84e9f77db",
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-verifier-and-census/receipt.json": "45d7aaabaad2f3a93287b291ba36b0b8c994b2265ba1682e02395c97aaf0648f",
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-mvp-prerequisites/receipt.json": "a88b91ce324f1a4f47f4cf385e8c3baa34dd32aeaa192763b17797450a8a704b"
+  },
+  "members_verified": {
+    "platform_direct_producer": 107,
+    "verifier_and_census": 29,
+    "mvp_prerequisites": 65,
+    "total_manifested": 201
+  },
+  "supplementary_exact_copies": {
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-mvp-prerequisites/console-final-fast-verifier-count-observations-integration-tests-20260920.json": "7344ee28bd3d4497558d989806d8fa843ea461ce7d126c56c04f3e22dcc59186",
+    "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-mvp-prerequisites/console-verifier-prerequisite-archives-integration-tests-review-20260920.json": "6f8823f9cf9a1352bb85dbaf878d58064228ccc8568063b3e9b5f93e264a6195"
+  },
+  "findings": [],
+  "checks": [
+    "Every201manifested member has exact stored SHA256, decompressed/original SHA256, original byte length and byte equality against extant private original. No missing member or mismatch.",
+    "Producer directory contains exactly107manifested members plus receipt. Prior verifier29and MVP65members and both historical receipts are byte-exact copies of approved private archives. Both obsolete pending-receipt.json files are excluded.",
+    "MVP directory additionally contains exactly two supplementary review/count JSON records, byte-exact against original files and separately pinned by this review. They are intentionally outside the unchanged historical65member receipt; no false exact-directory-copy claim.",
+    "No .md files in any reviewed archive. Historical design/plan/source/patch prose is raw .log.gz evidence; it introduces no new normative Markdown authority.",
+    "Producer source candidate commit622b3050 changes exactly three reviewed production files. Git object bytes and live source hashes match final binary source map and approved implementation record.",
+    "Final native executable still exists at recorded path, exactly402342024bytes/SHA25675f330d0f8c67bd483e3203464ebf6b580b5ecf665ff9528068c8ba6926ac830. Listing hash matches and independently counts507test leaves, ending507tests0benchmarks.",
+    "Verification claim matches prior independent review:13distinct selected HTTP leaves GREEN through original11pass2oraclefail and corrected3pass matrix;42unit/JWT passes;19variant passes. Original expected owner REDs, wrong protocol/logout oracle failures and independently reviewed successors remain archived.",
+    "Archive status and remaining HOLDs explicitly reject MVP acceptance. Full507case suite was not executed; browser/Company/milestone/release claims remain unproved by this archive.",
+    "Previous final-fast-verifier count observations and archive review remain exact; final907.46s fast tier is not relabeled full release qualification. Earlier failed counts/logs are retained as historical."
+  ],
+  "limits": [
+    "Custody packaging review only; no new runtime/product acceptance. Prior bounded correctness reviews retain their limits.",
+    "No product build/test/DB/browser execution or repository modification by reviewer. Read-only Git/source/hash/log/decompression checks and private receipt write only.",
+    "Final binary local hash identifies captured artifact; it is not hermetic attestation or production deployment qualification.",
+    "Authority gate execution and committing evidence remain root-owned and outside this receipt."
+  ]
+}

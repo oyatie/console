@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "scope": "read-only generated BUCK decoder source preservation",
+  "head": "bfe3a7b91ad6f609b2aa2b601fa088c47f36d1d1",
+  "decision": "approved source preservation only; no runtime or generator execution",
+  "preimage_path": "/private/tmp/console-platform-group-decoder-BUCK-preimage-20260920",
+  "preimage_sha256": "d50a779099941dde89b3bfbb460844e1a1e4655b3bbe0100052cd813d300c902",
+  "candidate_sha256": "9da005beb2a489c047b569d70db337b56b5ff3b2c8a76245c977eb9d62448a8f",
+  "literal": "\"tests/auth_rest/legacy_platform_group_decoder.rs\"",
+  "occurrences": 67,
+  "integration_root_count": 67,
+  "removing_only_literal_restores_preimage": true,
+  "preimage_equals_head": true,
+  "generator_unchanged": true,
+  "module_wiring": "backend/app/tests/auth_rest/legacy_platform_group_credentials.rs:409-410 declares path module legacy_platform_group_decoder.rs",
+  "generator_refs": [
+    "tools/buck/gen_first_party.py:1268-1314",
+    "tools/buck/gen_first_party.py:2049-2068"
+  ],
+  "executed_product_tests": 0
+}

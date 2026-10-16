@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-ops-current-source-acceptance-source-only",
+  "manifest_sha256": "464e8790860d1009d26b0ec29a67a23bd1c83b2bdf35a5ef11fb95acf7a8253c",
+  "candidate_sha256": "9c7950154d25027333a17f565d4b2afacb2f3d987500eed776ebd938ca30988a",
+  "checks": [
+    "All ten packet hashes verified; predecessor composition exact Bround2/current listlocks. Only three scoped helper visibility prefixes plus reexport and additive child; prior bodies/tests/includes unchanged.",
+    "Actual direct owner positive, exact one-user inactive mutation,401/no effects, restoration and same-token complete projection/audit recovery.",
+    "Actual account_security fence fixture added with exact one subject row and no other table changes; direct401/no effects, exact removal and recovery.",
+    "MissingAccount corruption reuses retained isolated fixture: immediateconstraints, temporary trigger suppression restored beforecommit; exact root catalog remains same, only exact one account row absent.",
+    "MissingAccount expected direct503class not401; allrows equality, exact raw account reinsertion/catalog restoration before propagating captured failure, then same-token200 recovery.",
+    "Boolean snapshots avoid emitting credential/account values; no production mutation or historical schema/security change."
+  ],
+  "findings": [],
+  "source_declared_sqlx_leaves": 2,
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "FutureAPI acceptance-only; actual root runtime/discovery required, missingAPI compile is not admissionRED.",
+    "Root must compose exact current source and retain existing list children; canonical race/expiry/progress/COMMIT acceptance remains later scope.",
+    "No wholeops/workflow/release qualification."
+  ]
+}

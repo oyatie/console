@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root",
+  "round": 3,
+  "design_manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "decision": "approve integration/prerequisite design; no test or implementation admission",
+  "checks": [
+    "App already composes required verifier/current policy/configuredTTL; composition unchanged",
+    "Sole production list_groups caller is platform-rest handler; auth-rest exhaustive error mapping requires mechanical newvariants",
+    "Retained platform_groups fixture usesSETROLE and omits policyTTL; replace only setup with genuineBusiness/Auth and preserve allCRUD assertions",
+    "Two existing unselected sibling examples exactGETgroups require approved descendant replacement plus affirmativeGroupGETHEAD tests",
+    "Existing Company and ops selected paths/methods, noheader401, querystrings and HEAD privacy retained",
+    "All17sources unchanged through95e48111; reviewedops source/runtime acceptance available",
+    "Test fixture cancellation/join and ownedPIDcleanup precede catalog restoration to avoid cleanupDDL blocking"
+  ],
+  "runtime_executed": 0,
+  "holds": [
+    "Finalround4consensus",
+    "Independent semantic test review",
+    "ActualRED prerequisite/admission",
+    "RawSQL grants/mutations/snapshot intermittency/fullrelease"
+  ]
+}

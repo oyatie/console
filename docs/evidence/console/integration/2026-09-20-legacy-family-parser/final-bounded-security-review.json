@@ -1,0 +1,96 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_PARSER_WITH_REVIEWED_ADDITIVE_COVERAGE_AND_RUNTIME_REUSE",
+  "candidate_head": "e1007b0c4235f86079cfff40f2f8280c9fa40c3a",
+  "clean_tree_observed": true,
+  "source_sha256": {
+    "backend/crates/platform/auth/src/jwt.rs": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b",
+    "backend/crates/platform/auth/src/lib.rs": "042a668d9eced004c86f008b0f879e7a425de0d57e72a499415b15dae94b68e4",
+    "backend/crates/platform/auth/tests/jwt_verifier.rs": "70558c133ee87d4b5b7ad619493eb21c76a2cf71caadfd421ac1b1c6399c7274"
+  },
+  "source_findings": [
+    "Approved production jwt/lib source hashes unchanged45db.../042a..., byte-identical to original implementation commit430257b67b6e246a81e5dce29ca2d54400d3c6d4.",
+    "Reinspected mandatory closed binding/map-only decoder and shared signed validation placement after historical crypto/protocol/org/scope/Group checks. Absent binding retains historical semantics.",
+    "Reinspected production constructor explicitly legacy_session:None; AccessTokenInput unchanged, no bound mint enabled. Parser is correlation only, not live/current permission.",
+    "Exact supplemental source has only one empty line removed from independently reviewed40c70... packet to70558... current test hash. Mechanical byte identity verifies old14tests remain unchanged when supplemental bytes removed. Root reviewed formatting.",
+    "Four fully populated positional arrays and47valid-derived single-path mutations now covered, retaining16positive signed tokens across new2tests; each uses both unchanged actual signed verifier entry points. No Role vocabulary duplicate beyond supported fixtures."
+  ],
+  "runtime_evidence": {
+    "initial_actual_owner_red": {
+      "executed": 7,
+      "passed": 1,
+      "failed": 6,
+      "seconds": 0.02
+    },
+    "same_owner_green": {
+      "executed": 7,
+      "passed": 7,
+      "failed": 0,
+      "seconds": 0.11
+    },
+    "supplement_subset": {
+      "executed": 9,
+      "passed": 9,
+      "ignored": 0,
+      "filtered": 7,
+      "seconds": 0.37
+    },
+    "retained_unique": {
+      "executed": 49,
+      "passed": 49,
+      "ignored": 0,
+      "parts": {
+        "library": 3,
+        "jwt_es256": 29,
+        "jwt_verifier": 16,
+        "well_known": 1
+      },
+      "subset_not_added_twice": true
+    },
+    "source_clippy": "Prior unchanged auth library passed -D warnings; no new build executed by reviewer"
+  },
+  "runtime_custody_limit": "Supplement9 and retained49 executed before mechanical one-blank-line rustfmt removal, using reviewed40c70... test source. Accept semantic reuse through exact independently checked format receipt, not claim a new reviewer run or exacte100 built-artifact test run. Root reports full npm verification reexecutes current16 but it is ongoing and explicitly outside this receipt.",
+  "exact_root_reported_commands": {
+    "workdir": "/private/tmp/console-client-release-20260919",
+    "supplement": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth --test jwt_verifier legacy_family_binding:: > /private/tmp/console-legacy-family-parser-supplement-green-20260920.log 2>&1",
+    "retained": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth --test jwt_es256 --test jwt_verifier --test well_known --lib > /private/tmp/console-legacy-family-parser-retained49-20260920.log 2>&1",
+    "clippy": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo clippy --locked --manifest-path backend/Cargo.toml -p console-platform-auth --lib -- -D warnings"
+  },
+  "baseline": [
+    "Recorded executable static gate RED after test gain, named lane admission, canonical update, then same gate GREEN.",
+    "Git diff a7f97a1ee\u2192e100 contains only jwt_verifier14\u219216 within existing test baseline; all other counts unchanged.",
+    "386defined/reachable binaries and3072declared attrs are static reachability metrics, not executed test counts. Existing one dark seaweedfs_worm source and17Buck2-only reachability remain explicitly reported; not closed by parser acceptance."
+  ],
+  "closed_prior_parser_coverage_holds": [
+    "Full valid positional array negative regression",
+    "Valid-derived relationship mutation matrix with retained signed positives"
+  ],
+  "remaining_holds": [
+    "Exact current family/current policy checks and retained read/effect/subscription owner guards",
+    "Downstream canonical role checking and source/target permission qualification",
+    "All issuer conversion/census/compatibility recovery and bound mint rollout",
+    "Full ongoing npm verification outcome, assembled release and production qualification"
+  ],
+  "evidence_sha256": {
+    "lane.json": "45fc7ced279e22acfba782ecbb413f01957d7a322bfa7edbce6c7ed945b4a92f",
+    "owner-red.log": "05f6f00b8053b686b7e49976a1e9fa42b772798b6c020a3307d41e0329d5c592",
+    "owner-green.log": "266f92e9654d0d29d9d40bc403992a5c5af757c2070ab06097497ed52ba14cd3",
+    "source-review.json": "4ac1232856f4f2c51c5f433b48c3fdbf40fbb6271aa2475111bb2a2eb6e6796d",
+    "supplement-format-receipt.json": "89f474bdadd5459263ecd3ba99a9d47a245e046a39b81975a5e79a376c1f0699",
+    "supplement-tests-root-review.json": "a527147da29342918886e3bc5dbd500359067b26923b7942ec5ba227eab3dd4c",
+    "supplement-receipt.json": "0bfed1aa2b14cdc8412c3d8c660f9b56d1fa995e1d140b54c76af617c0a55060",
+    "supplement9-green.log": "ad55a59e915873b9146163b6e992c9087b1b79dd1adb4da951a68ad1df512a5c",
+    "supplement-full-retained49.log": "93343dc53b36d4be118b3385d4fa88bb8b5b79282af029cb9ecf9218f6b0fad2",
+    "supplement-baseline-lane.json": "ea90d19613d6049266c3464f90c98ab22f43a869cc4a12b9701e80599a454229",
+    "supplement-baseline-red.log": "0d6848a89870b521f31a172d78038540031b53f37a73ddb26c592e2c30ad1d62",
+    "supplement-baseline-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "supplement-baseline-update.log": "da88f5f8b24afd786e5c705cc481c5c49a6df3224b45fd370427d1dd78975561",
+    "supplement-baseline-green.log": "be5708d3f16413d5f4c8194a7c55beb631e5f3e4e2caff26e929b3ddf28844f5"
+  },
+  "reviewer_actions": "Read-only repository/source/log checks plus private receipt. No repo/DB/build writes or test execution.",
+  "lenses": [
+    "Cartesian doubt: distinguish static counts, overlapping subsets, preformat runtime and ongoing full run.",
+    "Zero trust: parser correlation does not authorize live sessions.",
+    "Blast radius: unchanged production mint and preserved historical test/codec bytes."
+  ]
+}

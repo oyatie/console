@@ -1,0 +1,6 @@
+{
+  "tools/ci/postgres-cargo-map.json": {
+    "before": "5dd97d9e3e3b99723b541b8eafa05602fdfe0eca6e6bbe78977109b09dd1aacd",
+    "candidate": "93b71810215e83e1b5d15291949e8df32712ddd58215bf03fee63eee98fd5ea8"
+  }
+}

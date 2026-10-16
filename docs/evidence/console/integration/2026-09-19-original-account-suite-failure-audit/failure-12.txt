@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::ordinary_login_roles_cannot_designate_revoke_or_read_authority' (62940783) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent

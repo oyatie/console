@@ -1,0 +1,5 @@
+buck-postgres: pulling the pinned PostgreSQL image failed; retrying
+buck-postgres: pulling the pinned PostgreSQL image failed; retrying
+buck-postgres: pulling the pinned PostgreSQL image failed; retrying
+permission denied while trying to connect to the docker API at unix:///Users/jasonlee/.colima/console-custody-20260914/docker.sock
+buck-postgres: could not pull the pinned PostgreSQL image after 4 attempts

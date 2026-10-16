@@ -1,0 +1,17 @@
+{
+  "status": "PROPOSED_NARROW_AUTH_INTERFACE_AND_ADDITIVE_CAPTURE_TTL_TESTS",
+  "source_head": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "supersedes_manifest_sha256": "e813d3ae81732b94b249235abbc542cf2753d3139bf423e29da6bfc286fbeb02",
+  "author": "/root/reference_inventory",
+  "repository_writes": false,
+  "executed_tests": 0,
+  "authored_sqlx_leaves": 5,
+  "authored_pure_leaves": 1,
+  "interface_is_implementation": false,
+  "files": {
+    "DESIGN.md": "6817deda28384df664b12e76ee781ac0a45318557136f0f30f1bb6d5b6eae678",
+    "INTERFACE.rs": "8d57845634a6db1aa7076be61828e7ee5d346b0b413abe0d11546c4c973c3665",
+    "native_company_signed_credentials.rs": "6a375d281c944b7e5d5a8a38e8d413520b5d2ab71359c5d89ac36f447f8981c1",
+    "source-lock.json": "179c65187cf8e84da81cca96265195357f53835f5a6b7bcf8d7b2e3188e0d965"
+  }
+}

@@ -1,0 +1,15 @@
+warning: patch `calamine v0.35.0 (/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/vendor/calamine-0.35.0-quickxml41)` was not used in the crate graph
+warning: patch `quick-xml v0.41.0 (/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/vendor/quick-xml-0.41.0-compat)` was not used in the crate graph
+warning: patch `umya-spreadsheet v3.0.0 (/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: patch `calamine v0.35.0 (/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/vendor/calamine-0.35.0-quickxml41)` was not used in the crate graph
+warning: patch `quick-xml v0.41.0 (/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/vendor/quick-xml-0.41.0-compat)` was not used in the crate graph
+warning: patch `umya-spreadsheet v3.0.0 (/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+Generated isolated hydration metadata and Buck graph without Cargo compilation

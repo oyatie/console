@@ -1,0 +1,3 @@
+scripts/console/validate-console-truth-ledger.mjs:454: optional-computed key="area" (not in scripts/prototype-chain-lookup-baseline.json): for (const area of ['identity_scope', 'object_action_workflow', 'search', 'audit_lineage', 'interoperability']) nonempty(omni.required_outcomes?.[area], `shared omni-platform gate ${area}`);
+scripts/prototype-chain-lookup-baseline.json: stale residual no longer observed: scripts/console/validate-console-truth-ledger.mjs:303 optional-computed key="area"
+prototype-chain lookup census FAILED: scanned=102 missing=0 findings=3 unknown=1 stale=1

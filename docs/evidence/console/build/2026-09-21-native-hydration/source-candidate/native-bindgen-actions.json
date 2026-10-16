@@ -1,0 +1,42 @@
+[
+  {
+    "action": {
+      "reason": "build",
+      "identity": "root//backend/crates/payroll/ui:console-payroll-ui-wasm-bundle (prelude//platforms:default#39893c7e49283da4) (wasm_bindgen)",
+      "reproducer": {
+        "executor": "Local",
+        "details": {
+          "command": [
+            "buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python",
+            "buck-out/v2/art/root/39893c7e49283da4/tools/ui/__hydration-wasm_bundle.py__/hydration-wasm_bundle.py",
+            "produce",
+            "--snapshot",
+            "buck-out/v2/art/root/47b899467996b656/backend/crates/payroll/ui/__console-payroll-ui-source-snapshot__/snapshot",
+            "--input",
+            "buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/1df0848291be7840/CPPL/libbackend_crates_payroll_ui_console-payroll-ui-hydrate.so",
+            "--bindgen",
+            "buck-out/v2/art/toolchains/11a256c53bf8083e/rust/__wasm-bindgen-aarch64-apple-darwin__/wasm-bindgen-aarch64-apple-darwin/wasm-bindgen",
+            "--out-dir",
+            "buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-wasm-bundle__/bundle"
+          ],
+          "env": {
+            "TMPDIR": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root/buck-out/v2/tmp/root/391e9910b25ba9a6/wasm_bindgen",
+            "BUCK_SCRATCH_PATH": "buck-out/v2/tmp/root/391e9910b25ba9a6/wasm_bindgen",
+            "BUCK2_DAEMON_UUID": "ba108938-f860-4556-8c23-0fcc2e0681e5",
+            "BUCK_BUILD_ID": "5579bba8-a167-4167-a0c9-9fa5fec3ed8a"
+          }
+        }
+      },
+      "duration": "0.3s"
+    },
+    "executable": "buck-out/v2/art/toolchains/11a256c53bf8083e/rust/__wasm-bindgen-aarch64-apple-darwin__/wasm-bindgen-aarch64-apple-darwin/wasm-bindgen",
+    "executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
+    "linked_input": "buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/1df0848291be7840/CPPL/libbackend_crates_payroll_ui_console-payroll-ui-hydrate.so",
+    "linked_input_sha256": "1df0848291be7840bb14bfc97a96d5b1f64fe93dad45fa5ddc0c02289a1576cd",
+    "compiler_output": "buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/output_artifacts/CPPL/libbackend_crates_payroll_ui_console-payroll-ui-hydrate.so",
+    "outputs": {
+      "console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
+      "console_payroll_ui_bg.wasm": "9e90572c893e7d4c4ec7f36ea38d1aa93ad28bdbc0320556bef0633679d17989"
+    }
+  }
+]

@@ -1,0 +1,43 @@
+[
+  {
+    "base": "1a647146cb90e9d3d17edfa612ced6fe0ded5b6a",
+    "immutable_target": "Existing mounted native Leptos renderer provides truthful, accessible authorized presentation; no new authority or fake action",
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "pre_mortem": [
+      "Denial leaks through navigation",
+      "Healthy sibling hides failure",
+      "Fixture becomes served data",
+      "Source bundle identity bypassed"
+    ],
+    "detection": [
+      "Exact semantic renderer RED turns GREEN",
+      "Retained13 SSR/island tests",
+      "Independent source and actual browser review before presentation acceptance"
+    ],
+    "rollback": "Revert bounded presentation changes; retain original tests, owner data and historical bundle evidence",
+    "stop_conditions": [
+      "Unreviewed test semantics",
+      "Changed authority",
+      "Fixture product route",
+      "Shared writer conflict",
+      "Missing tool treated as RED"
+    ],
+    "remaining_holds": [
+      "UI browser visual/reflow evidence",
+      "Real native bundle regeneration",
+      "Complete five workflows and full release"
+    ],
+    "mechanical_guide": "Implement approved23114dde design/079398d8 tests: separate Company inventory and OrgUnit hierarchy, truthful independent failures and recovery, actual IDs, iterative bounded traversal, duplicates conflict including descendants, no fabricated Company relation. Payroll wraps unmodified existing AuthorizedRuns island in non-record-specific guidance and recovery. No new authority/actions/fixture server. Isolated lib.rs hooks mod organization/payroll_workspace, delegate org_body/payroll_body, remove replaced Companies/OrgUnits only. No shared styles/native_account/island/tests/generated/SQL/authority changes. Root integrates and styles serially.",
+    "lane": "native-ui-org-payroll-20260921",
+    "owner": "/root/integration_tests",
+    "allow": [
+      "backend/crates/payroll/ui/src/organization.rs",
+      "backend/crates/payroll/ui/src/payroll_workspace.rs",
+      "backend/crates/payroll/ui/src/lib.rs"
+    ],
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin tools/buck2 run //backend/crates/payroll/ui:console-payroll-ui-unit -- --exact workflow_presentation_tests::organization_preserves_partial_read_failure_and_offers_real_reload > /private/tmp/console-ui-org-admission-probe-20260921.log 2>&1"
+  }
+]

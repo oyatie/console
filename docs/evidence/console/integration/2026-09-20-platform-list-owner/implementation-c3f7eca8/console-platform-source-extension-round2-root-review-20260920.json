@@ -1,0 +1,7 @@
+{
+  "verdict": "APPROVE_SOURCE_FOR_CAPTURE",
+  "reviewer": "/root",
+  "source_sha256": "6c8efb6b777e9d87c298e3203964ea5203918a3facb0f9de4d5cd1bd87f77f7f",
+  "existing_functions_unchanged": 21,
+  "scope": "ten-column bridge, fixed sentinel, source lock ordering, exact two-object ACL delta, prospective serializer; pins and runtime acceptance pending"
+}

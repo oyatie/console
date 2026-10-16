@@ -1,0 +1,24 @@
+{
+  "kind": "INDEPENDENT_HYDRATION_DATABASE_EFFECTS",
+  "driver_sha256": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
+  "driver_source_unchanged": true,
+  "browser_pid": 45357,
+  "browser_exited": true,
+  "driver_exit_success": true,
+  "server_stopped": true,
+  "redirect_control": {
+    "sink_stopped": true,
+    "sink_positive_observed_then_reset": true,
+    "source_requests": 1,
+    "source_expected_authorization": 1,
+    "sink_requests": 0,
+    "sink_authorization": 0
+  },
+  "exact_durable_effects_accepted": true,
+  "expected_authorized_read_audits": 3,
+  "embedded_assets": {
+    "js": "98950409e6b616abab0ea90f074115bab26870c6e9a0bd54a8d80a48dddde43d",
+    "wasm": "21a79442f6d473f212c3c86249f6f16f3f055eb2653c0c726378e2f1a5a8a79c"
+  },
+  "limits": "Fixture Bearer only; TEST_ONLY status projection; no native Account/Company/payroll workflow or release acceptance"
+}

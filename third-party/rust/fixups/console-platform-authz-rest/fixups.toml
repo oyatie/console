@@ -1,0 +1,3 @@
+# This first-party script emits only Cargo migration rerun tracking.
+# Buck maps the migration tree directly; there are no generated or link outputs.
+buildscript.run = false

@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_EXACT_TYPE_ONLY_FIX",
+  "source": "backend/app/tests/auth_rest/native_company_intake_schema.rs",
+  "preimage_sha256": "3dde80db2be7e8cdc9b964ae6b08146951a2caff8f47eab1051de0a1675af4a7",
+  "unformatted_postimage_sha256": "d4c55190792e5cee6e90b833a10097a50a7c1d52e5518d5effdd823b934e102c",
+  "exact_replacement": {
+    "before": "mutation: &str, expected: &str",
+    "after": "mutation: &'static str, expected: &str"
+  },
+  "evidence": [
+    "Read actual Buck E0521 diagnostic: sqlx::raw_sql(mutation) requires reference outlive static.",
+    "Both corrupt_acl call sites supply unchanged string literals, which satisfy static lifetime.",
+    "Only helper parameter type changes; SQL bytes, expected classifier, rollback and both corruption oracles unchanged."
+  ],
+  "formatting": "Root may apply rustfmt; semantic-token changes beyond this one lifetime require renewed review.",
+  "executed_tests": 0,
+  "remaining_hold": "Previous Buck attempt compiled zero tests; root must rebuild and execute exact SQLx leaf, preserving failed build log."
+}

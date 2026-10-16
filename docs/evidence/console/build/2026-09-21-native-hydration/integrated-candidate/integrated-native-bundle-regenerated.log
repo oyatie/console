@@ -1,0 +1,22 @@
+[2026-09-21T21:23:03.643-04:00] Build ID: 87a9b219-6929-4972-810a-fe3202800d60
+[2026-09-21T21:23:03.643-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4463526512
+[2026-09-21T21:23:03.643-04:00] Directory changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4463526512
+[2026-09-21T21:23:03.643-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc
+[2026-09-21T21:23:03.643-04:00] 497 additional file change events (since mergebase)
+[2026-09-21T21:23:03.643-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T21:23:10.742-04:00] Waiting on root//third-party/rust/hydrate:potential_utf-0.1.5.crate (toolchains//:wasm32-platform#47b899467996b656) -- action (http_archive potential_utf-0.1.5.crate) [local_execute], and 225 other actions
+[2026-09-21T21:23:17.842-04:00] Waiting on root//third-party/rust/hydrate:xxhash-rust-0.8 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 133 other actions
+[2026-09-21T21:23:24.942-04:00] Waiting on root//third-party/rust/hydrate:itertools-0.14 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 84 other actions
+[2026-09-21T21:23:32.041-04:00] Waiting on root//third-party/rust/hydrate:camino-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 41 other actions
+[2026-09-21T21:23:39.042-04:00] Waiting on root//third-party/rust/hydrate:serde_core-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 34 other actions
+[2026-09-21T21:23:46.142-04:00] Waiting on root//third-party/rust/hydrate:syn-3 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 28 other actions
+[2026-09-21T21:23:53.241-04:00] Waiting on root//third-party/rust/hydrate:futures-util-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 38 other actions
+[2026-09-21T21:24:00.243-04:00] Waiting on root//third-party/rust/hydrate:codee-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 27 other actions
+[2026-09-21T21:24:07.342-04:00] Waiting on root//third-party/rust/hydrate:web-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 21 other actions
+[2026-09-21T21:24:14.442-04:00] Waiting on root//third-party/rust/hydrate:web-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 21 other actions
+[2026-09-21T21:24:21.543-04:00] Waiting on root//third-party/rust/hydrate:icu_properties-2 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 8 other actions
+[2026-09-21T21:24:28.643-04:00] Waiting on root//third-party/rust/hydrate:leptos-0.9 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T21:24:31.089-04:00] Cache hits: 0%
+[2026-09-21T21:24:31.089-04:00] Commands: 940 (cached: 0, remote: 0, local: 940)
+[2026-09-21T21:24:31.089-04:00] Network: Up: 0B  Down: 9.3MiB
+BUILD SUCCEEDED

@@ -1,0 +1,11 @@
+# Native unavailable recovery exact test candidate
+
+Design manifest: 5e83498ffc907e4c5294336a6e7215ba07dd6f05df885e16a6ff2872dac000fc; root independent design approval /private/tmp/console-native-recovery-design-root-review.json. Observed base c659210e37f3f0fa5b8dc7d3b9ed7b8e07b7d139; source-custody binds actual preimages including separately reviewed health fixture changes.
+
+Two existing files only. Existing assertion statements and tests remain unchanged; the no-DB route list gains registration. Shared unavailable helper gains literal empty primary retry href and separate home assertions; real restricted Auth transport recovery gains anonymous registration with actual current terms digest and full-state preservation. Existing current-terms outage/repair automatically uses the strengthened helper. Health shared renderer equality remains and gains independently literal destination assertions. No fake HTTP or DB owner.
+
+Named owner probe: account_browser::native_document_auth_transport_outage_is_unavailable_not_anonymous in auth_rest test target. Expected behavioral RED at literal empty href while current UI hardcodes /account. Root must compile/run on admitted exact clean candidate with real finalized SQL prerequisites; this author ran zero Cargo/DB/browser tests and makes no RED claim. Additional affected leaves: account_browser::native_document_current_terms_unavailable_cannot_create_pending_identity_or_consent; health_readiness::ui_shell_serves_empty_ssr_html.
+
+Browser query/fragment/fresh GET behavior remains separate required evidence. No product UI, schema, generated artifact, lockfile, migration or repository write. No Company or release acceptance. Pre-mortem: shared renderer equality masks same bad href; full snapshots and independent literal assertions detect wrong destination/effects. Rollback discards private candidate before integration. Stop on preimage drift, changed existing oracle, missing prerequisite presented as RED, or any claim of browser recovery from HTTP fixtures alone.
+
+Round2 changes only the registration let statement formatting requested by independent rustfmt review; original manifestc88998bb7e8c4e3832ab4c779f16c2eabe8468bec5fdbc026fc2a0cc68105f23 retained.

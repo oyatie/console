@@ -1,0 +1,12 @@
+{
+  "stage": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1",
+  "status": "verified existing pinned test prerequisites; browser not run for theme candidate",
+  "sha256": {
+    "account.cjs": "1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664",
+    "runtime/package.json": "8d57d95d41a1c2833b846f382610db55b8d193c20e3b2473c1e59f43e798a9b9",
+    "runtime/package-lock.json": "a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044",
+    "runtime/node_modules/playwright-core/browsers.json": "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946",
+    "runtime/browser/chrome-headless-shell-mac-arm64/chrome-headless-shell": "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+  },
+  "source": "tools/browser/account.cjs, tools/browser/prepare_native_browser.sh and earlier reviewed Mac runtime receipt"
+}

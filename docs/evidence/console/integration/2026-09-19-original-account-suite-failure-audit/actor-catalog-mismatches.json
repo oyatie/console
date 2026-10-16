@@ -1,0 +1,207 @@
+{
+  "expected_enrolled_references": 46,
+  "missing_keys": [
+    {
+      "column": "workflow_runs.initiated_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "workflow_waiting_tasks.assignee_user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "workflow_waiting_tasks.claimed_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "workflow_waiting_tasks.completed_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "gov_approval_requests.requested_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "gov_approvals.requested_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "gov_approvals.approver_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "gov_approval_consumptions.consumed_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "ont_action_command_receipts.actor_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "employee_contract_wages.created_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "payroll_draft_runs.created_by",
+      "target": "accounts"
+    },
+    {
+      "column": "payroll_draft_runs.approved_by",
+      "target": "accounts"
+    },
+    {
+      "column": "payroll_draft_runs.submitted_by",
+      "target": "accounts"
+    },
+    {
+      "column": "payroll_draft_runs.decided_by",
+      "target": "accounts"
+    },
+    {
+      "column": "payroll_run_exceptions.resolved_by",
+      "target": "accounts"
+    },
+    {
+      "column": "policy_roles.created_by",
+      "target": "accounts"
+    },
+    {
+      "column": "policy_roles.updated_by",
+      "target": "accounts"
+    },
+    {
+      "column": "user_role_assignments.user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "user_role_assignments.assigned_by",
+      "target": "accounts"
+    },
+    {
+      "column": "policy_assignment_preview_receipts.actor_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "policy_assignment_preview_receipts.user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "subject_authz_versions.user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "leave_requests.requester_user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "leave_requests.decided_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "leave_charge_resolutions.resolved_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "leave_balance_import_receipts.actor",
+      "target": "company_actors"
+    },
+    {
+      "column": "employee_attendance_records.actor_user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "attendance_exceptions.created_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "attendance_exception_resolutions.actor_user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "attendance_substitutions.created_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "attendance_month_closes.attested_by",
+      "target": "company_actors"
+    },
+    {
+      "column": "attendance_close_amendments.actor_user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "attendance_week52_acknowledgements.acknowledged_by_user_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "workflow_definitions.created_by",
+      "target": "accounts"
+    },
+    {
+      "column": "workflow_definitions.updated_by",
+      "target": "accounts"
+    },
+    {
+      "column": "workflow_definition_versions.created_by",
+      "target": "accounts"
+    },
+    {
+      "column": "person_revisions.actor_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "person_source_bindings.actor_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "employment_revisions.actor_id",
+      "target": "company_actors"
+    },
+    {
+      "column": "employment_source_bindings.actor_id",
+      "target": "company_actors"
+    }
+  ],
+  "legacy_user_foreign_keys": [
+    "workflow_runs.initiated_by",
+    "workflow_waiting_tasks.assignee_user_id",
+    "workflow_waiting_tasks.claimed_by",
+    "workflow_waiting_tasks.completed_by",
+    "gov_approval_requests.requested_by",
+    "gov_approvals.requested_by",
+    "gov_approvals.approver_id",
+    "gov_approval_consumptions.consumed_by",
+    "ont_action_command_receipts.actor_id",
+    "employee_contract_wages.created_by",
+    "payroll_draft_runs.created_by",
+    "payroll_draft_runs.approved_by",
+    "payroll_draft_runs.submitted_by",
+    "payroll_draft_runs.decided_by",
+    "payroll_run_exceptions.resolved_by",
+    "policy_roles.created_by",
+    "policy_roles.updated_by",
+    "user_role_assignments.user_id",
+    "user_role_assignments.assigned_by",
+    "policy_assignment_preview_receipts.actor_id",
+    "policy_assignment_preview_receipts.user_id",
+    "subject_authz_versions.user_id",
+    "leave_requests.requester_user_id",
+    "leave_requests.decided_by",
+    "leave_charge_resolutions.resolved_by",
+    "leave_balance_import_receipts.actor",
+    "employee_attendance_records.actor_user_id",
+    "attendance_exceptions.created_by",
+    "attendance_exception_resolutions.actor_user_id",
+    "attendance_substitutions.created_by",
+    "attendance_month_closes.attested_by",
+    "attendance_close_amendments.actor_user_id",
+    "attendance_week52_acknowledgements.acknowledged_by_user_id",
+    "workflow_definitions.created_by",
+    "workflow_definitions.updated_by",
+    "workflow_definition_versions.created_by",
+    "person_revisions.actor_id",
+    "employment_revisions.actor_id",
+    "employment_source_bindings.actor_id"
+  ],
+  "unique_affected_columns": 40
+}

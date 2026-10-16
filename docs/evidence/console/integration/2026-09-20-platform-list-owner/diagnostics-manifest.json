@@ -1,0 +1,12 @@
+{
+  "kind": "platform-list-prerequisite-diagnostics-only-proposal",
+  "files_sha256": {
+    "README.md": "dac2b2479a1761766c1b91f45d86b13c8e27690e0f3363b3c00343f5dff25f6b",
+    "call.rs": "1f6c772b7c03dfda84bb933ce96934c6f21bf8d8a112283a7e95cfe3827defd6",
+    "candidate.rs": "bb6ca1a47b8a9a1466db210941b8115feaedbef297e27200212d44847a28b095",
+    "diagnostics.patch": "6b1e373c8e4a9260fe2c3edcd5c88b77edf556ba8bf99c5465f63e6ea848014f",
+    "diagnostics.rs": "abed5d3e902358bacd7bbf625b7a1ff0a846339777b5bde8226f808b09140e7a",
+    "preimage.rs": "cccc81874e54abcc0eb0d11a558e8566dbfdd8d77990c7586728faecd4131595",
+    "verification.json": "41dc1be0788a964601b32e742028abf0d75ab023bceb4967ce4d290d13bfc626"
+  }
+}

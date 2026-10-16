@@ -1,0 +1,26 @@
+{
+  "status": "approved-declared-source-custody-candidate",
+  "reviewer": "/root/policy_browser_tests",
+  "packet_manifest_sha256": "1cc03858f13e245baec5930322d192695fd51500f58a653a3a188e92b249d550",
+  "successor_generator_sha256": "0b7b28d9eca4261dce7323a438236d9d40b7706e2ddf390c3435c374c7b5aead",
+  "approved_plain": "ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2",
+  "approved_observer": "5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005",
+  "checks": [
+    "All packet hashes and16 sources match independently approved SQL round2.",
+    "49 declared routine bodies independently SHA256-compared to captured metadata; owner, exact EXECUTE ACL, search_path/row_security, definer/invoker, language, parallel and volatility match source.",
+    "All57 declared trigger bindings independently compared: target table, function, ALWAYS, timing/events, row/statement and deferred flags match.",
+    "Input13 and receipt30 column shapes, same-Company foreign keys, immutable/completion triggers, force RLS, exact org policy and nonowner REFERENCES-only receipt ACL inspected against schema/shape declarations.",
+    "Both metadata JSON byte hashes independently recomputed. Correct restricted plain capture used; initial unqualified capture rejected and preserved.",
+    "Observer difference is exactly additional unchanged observer routine/boundary and startup deny roster; common routine metadata identical.",
+    "Generated capture query equals packet capture bytes. All14 historical generated artifacts unchanged.",
+    "Source49 routine names disjoint from predecessor snapshot roster, preserving genuine absent state. Partial artifacts reach mismatch; no observed hash adoption.",
+    "Finalizer exact corresponding plain/observer predecessor mapping, sorted61 relations, fixed search_path and lock timeout, atomic DO, postcondition, immediate closure inspected. Round3 only pg_catalog qualification before fixed path; approved.",
+    "Read source-owner logs: exact plain upgrade and replay, observer replay rollback, altered ACL causes mismatch and installer refusal, rollback restores finalized; uninstalled form8 no-write control."
+  ],
+  "executed_tests_by_reviewer": 0,
+  "remaining": [
+    "Final pair/map registration must use exact approved values; source owner runs generated --check and finalizer controls.",
+    "Parent startup and application composition must use fixed search_path and reject mismatch.",
+    "Actual A/B store effects and browser acceptance remain pending; no production qualification."
+  ]
+}

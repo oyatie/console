@@ -1,0 +1,48 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T16:05:09.143-04:00] Build ID: 74dca1c5-60b5-40b8-b2d5-44211a9137a4
+[2026-09-21T16:05:09.145-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:05:16.241-04:00] Waiting on root//third-party/rust:quote-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (write __rustc_shim.sh), and 915 other actions
+[2026-09-21T16:05:24.640-04:00] Waiting on root//third-party/rust:flagset-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 369 other actions
+[2026-09-21T16:05:30.917-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T16:05:30.942-04:00] Build ID: dfd071ee-8dae-43ce-94af-5caab6978ad5
+[2026-09-21T16:05:30.944-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:05:38.044-04:00] Waiting on root//third-party/rust:opentelemetry-otlp-0.32.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write opentelemetry-otlp-0.32.0.crate_unpack.sh), and 779 other actions
+[2026-09-21T16:05:46.643-04:00] Waiting on root//third-party/rust:crossbeam-utils-0.8-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __ld_shim.sh), and 667 other actions
+[2026-09-21T16:05:54.744-04:00] Waiting on root//third-party/rust:fancy-regex-0.14 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPL/fancy_regex-link-diag.args), and 92 other actions
+[2026-09-21T16:06:01.745-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:08.845-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:15.944-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:23.043-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:30.044-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:37.045-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:44.144-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:06:48.648-04:00] ✓ Pass: root//tools/buck:app-health-readiness-pg (49.6s)
+[2026-09-21T16:06:48.648-04:00] ---- STDOUT ----
+[2026-09-21T16:06:48.648-04:00]
+[2026-09-21T16:06:48.648-04:00] running 16 tests
+[2026-09-21T16:06:48.648-04:00] test authorized::adr0042_ssr_session_cookie::adr0042_ssr_session_cookie_contract ... ignored, ADR-0042 proposed; SSR session cookie not implemented
+[2026-09-21T16:06:48.648-04:00] test authorized::adr0042_ssr_session_cookie::cookie_does_not_authorize_json_api ... ok
+[2026-09-21T16:06:48.648-04:00] test authorized::browser_navigation_reaches_no_authorized_screen_adr_0042 ... ok
+[2026-09-21T16:06:48.648-04:00] test authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty ... ok
+[2026-09-21T16:06:48.648-04:00] test authorized::proposed_ssr_session_cookie_does_not_authorize_html_get_yet ... ok
+[2026-09-21T16:06:48.648-04:00] test authorized::ui_persona_e2e ... ok
+[2026-09-21T16:06:48.648-04:00] test authorized::ui_shell_omits_runs_unless_payroll_run_read ... ok
+[2026-09-21T16:06:48.648-04:00] test authorized::ui_shipping_screens_deny_by_omission ... ok
+[2026-09-21T16:06:48.648-04:00] test healthz_reports_process_liveness_and_role ... ok
+[2026-09-21T16:06:48.648-04:00] test metrics_endpoint_exposes_the_slo_http_duration_histogram ... ok
+[2026-09-21T16:06:48.648-04:00] test proposed_ssr_session_cookie_is_not_minted_or_consumed_yet ... ok
+[2026-09-21T16:06:48.648-04:00] test readyz_is_ready_without_configured_dependencies ... ok
+[2026-09-21T16:06:48.648-04:00] test readyz_returns_503_when_configured_database_is_unreachable ... ok
+[2026-09-21T16:06:48.648-04:00] test ssr_shell_does_not_store_access_token_in_local_storage ... ok
+[2026-09-21T16:06:48.648-04:00] test ui_pkg_serves_committed_hydrate_assets ... ok
+[2026-09-21T16:06:48.648-04:00] test ui_shell_serves_empty_ssr_html ... ok
+[2026-09-21T16:06:48.648-04:00]
+[2026-09-21T16:06:48.648-04:00] test result: ok. 15 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 47.19s
+[2026-09-21T16:06:48.648-04:00]
+[2026-09-21T16:06:48.648-04:00]
+[2026-09-21T16:06:48.648-04:00] ---- STDERR ----
+[2026-09-21T16:06:48.648-04:00]
+[2026-09-21T16:06:48.658-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

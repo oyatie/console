@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_GENERATED_TARGET_PENDING_RETAINED_GREEN",
+  "base_sha": "36ea256b2b32960e82f8d8784b22d6f8fb0a7e50",
+  "design_review_sha256": "4b1b3b45b7fe66fbfba3802fb6b78ef8a40b9d1e88d53d639fe0fee6f65ece8e",
+  "source_sha256": {
+    "backend/crates/platform/authz/BUCK": {
+      "before": "e917968c391c575e760934e9f494bc4c1f88bfcbe98f0c8ea5d3e27ba132060d",
+      "after": "f41c0f576fb2e702b322b76bc6a35230f3117159498d70756e3e058b214fc155"
+    },
+    "tools/buck/gen_first_party.py": {
+      "before": "34752e99eb3688276007e87d3c3e8ecca7bc1a97ea25993599ce6f9f1e845bb4",
+      "after": "4409ed0318c63a112b3b17034441cdb41326d03ddfefd7c2ef5450cf729106ed"
+    }
+  },
+  "checks": [
+    "Entire tracked diff contains exactly the approved one-line resource.none metadata entry and one 22-line generated authz test target.",
+    "Mechanically proved removing that exact insertion reconstructs each base file byte-for-byte; no generator logic or previous target changed.",
+    "Generated crate root, source path, edition, owner/domain/test/resource labels and direct authz dependency match the existing SDK test and neighboring generated integration targets.",
+    "Pure SDK tests retain their original bytes and resource semantics; no database or existing test was removed or weakened."
+  ],
+  "admission_log_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+  "remaining": [
+    "Root must commit reviewed generated outputs then execute retained cleanliness test and full generator suite; this receipt does not assert their GREEN or Buck runtime execution."
+  ]
+}

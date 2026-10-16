@@ -1,0 +1,20 @@
+{
+  "base_sha": "c7147150452f805f139edb24bbdabad17b20de11",
+  "source_locks": {
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "bb2795e654e466b65975d2874b96f84ffacc60476733a440b024c85d01e30e0e",
+    "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "db2b0bfef636095ac15be526298b4838b04d77790d4a07944f4bff634166fee4",
+    "backend/crates/platform/auth/src/session.rs": "e2a277d6dbbba53de3c9c68896a0c92aefe72ff7cf1468238914a8990a1e0db3",
+    "backend/app/tests/auth_rest/native_business_session.rs": "2494e06918e06265083bb59beada01564304b1b5e6a4690be744b0bacce7d81c"
+  },
+  "files": {
+    "ADDITIONS.rs": "50da23d660375fbd706b2ab51abbe2e00449a9d6bd6e6caf4c00a7bb6c84938a",
+    "README.md": "cafa7453b34df31cfc28684b44b4252194e27c87e49fce83299c1677fc7ff45d",
+    "TEST_ADDITIONS.rs": "c01952c42b37ce92cded32629fb6adf59d14d83f6a0a8cfec4620646bb376874",
+    "company_enrollment.rs": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2",
+    "company_enrollment.rs.patch": "76b38c8bc0c127f21115c16451f108d315d838fa7a3f6bd447c0c1d102028b36",
+    "native_company_signed_credentials.rs": "684c176ebc67b16b62bb2ddd69080d9a6583ba9a99373e5d6dd23f52d0bd29b8",
+    "native_company_signed_credentials.rs.patch": "a8d5867d7c44d5030e5d3e6391d49de85ab36c00e701e45dca01f80513e8bd9d"
+  },
+  "authored_sqlx_leaves": 4,
+  "executed_tests": 0
+}

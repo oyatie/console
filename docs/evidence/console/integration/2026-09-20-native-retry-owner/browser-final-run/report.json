@@ -1,0 +1,3334 @@
+{
+  "kind": "real-binary-no-database-native-retry",
+  "started_at": "2026-09-20T04:25:01.888Z",
+  "checks": [
+    {
+      "name": "own loopback server ready",
+      "pass": true
+    },
+    {
+      "name": "owned listener only loopback",
+      "pass": true
+    },
+    {
+      "name": "/: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/: private503",
+      "pass": true
+    },
+    {
+      "name": "/: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/",
+          "url": "http://127.0.0.1:55954/",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/: private503",
+      "pass": true
+    },
+    {
+      "name": "/: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: private503",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/?retry_probe=1",
+          "url": "http://127.0.0.1:55954/?retry_probe=1",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/?retry_probe=1: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: private503",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=1: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/?retry_probe=1",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/?retry_probe=1: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: private503",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: private503",
+      "pass": true
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: private503",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/?retry_probe=fragment#main-content",
+          "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: private503",
+      "pass": true
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/?retry_probe=fragment#main-content: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account: private503",
+      "pass": true
+    },
+    {
+      "name": "/account: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account",
+          "url": "http://127.0.0.1:55954/account",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account: private503",
+      "pass": true
+    },
+    {
+      "name": "/account: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: private503",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account?retry_probe=1",
+          "url": "http://127.0.0.1:55954/account?retry_probe=1",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account?retry_probe=1: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: private503",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=1: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account?retry_probe=1",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account?retry_probe=1: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: private503",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: private503",
+      "pass": true
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: private503",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account?retry_probe=fragment#main-content",
+          "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: private503",
+      "pass": true
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account?retry_probe=fragment#main-content: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account/register: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account/register: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account/register: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account/register: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account/register",
+          "url": "http://127.0.0.1:55954/account/register",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account/register: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account/register",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account/register: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account/register?retry_probe=1",
+          "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account/register?retry_probe=1: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=1: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account/register?retry_probe=1: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: initial requested route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: initial response is direct GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: same current destination",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "/account/register?retry_probe=fragment#main-content",
+          "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: private503",
+      "pass": true
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "/account/register?retry_probe=fragment#main-content: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: literal empty href",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: same current destination",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: no base/form/island",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: keyboard focus visible",
+      "pass": true,
+      "detail": {
+        "active": true,
+        "outline": "solid",
+        "outlineWidth": "3px",
+        "visible": true
+      }
+    },
+    {
+      "name": "keyboard-register: actual fresh same-route GET",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: final route/query preserved",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: exactly one new document request",
+      "pass": true,
+      "detail": [
+        {
+          "phase": "keyboard-register",
+          "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+          "method": "GET",
+          "resource": "document",
+          "navigation": true
+        }
+      ]
+    },
+    {
+      "name": "keyboard-register: complete private envelope",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: private503",
+      "pass": true
+    },
+    {
+      "name": "keyboard-register: exactly one new document response",
+      "pass": true,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "name": "keyboard-register: current unavailable owner body",
+      "pass": true
+    },
+    {
+      "name": "all thirteen actual retries executed",
+      "pass": true
+    },
+    {
+      "name": "no POST API island or external requests",
+      "pass": true
+    },
+    {
+      "name": "no Set-Cookie responses",
+      "pass": true
+    },
+    {
+      "name": "no credential echo",
+      "pass": true
+    },
+    {
+      "name": "no page errors",
+      "pass": true
+    },
+    {
+      "name": "only expected document503 console errors",
+      "pass": true
+    },
+    {
+      "name": "no failed requests",
+      "pass": true
+    },
+    {
+      "name": "real css asset bytes",
+      "pass": true
+    },
+    {
+      "name": "real js asset bytes",
+      "pass": true
+    },
+    {
+      "name": "response capture complete",
+      "pass": true
+    },
+    {
+      "name": "owned server stopped",
+      "pass": true
+    },
+    {
+      "name": "source and binary stable",
+      "pass": true
+    }
+  ],
+  "requests": [
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/?retry_probe=1",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/?retry_probe=1",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/account",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/account",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account?retry_probe=1",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account?retry_probe=1",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/account/register",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/account/register",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    },
+    {
+      "phase": "keyboard-register",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "method": "GET",
+      "resource": "document",
+      "navigation": true
+    },
+    {
+      "phase": "keyboard-register",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "method": "GET",
+      "resource": "stylesheet",
+      "navigation": false
+    },
+    {
+      "phase": "keyboard-register",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "method": "GET",
+      "resource": "script",
+      "navigation": false
+    }
+  ],
+  "responses": [
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:05 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:05 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:05 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:05 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:05 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:05 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/?retry_probe=1",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:06 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:06 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:06 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/?retry_probe=1",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:06 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:06 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:06 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:07 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:07 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:07 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:07 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:07 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:07 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:08 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:08 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:08 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:08 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:08 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:08 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/account",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:09 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:09 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:09 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/account",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:10 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:10 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:10 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account?retry_probe=1",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:10 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:10 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:10 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account?retry_probe=1",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:11 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:11 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:11 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:11 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:11 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:11 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:12 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:12 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:12 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:12 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:12 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:12 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:13 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:13 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:13 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/account/register",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:13 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:13 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:13 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/account/register",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:14 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:14 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:14 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:14 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:14 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:14 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:15 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:15 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:15 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:15 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:15 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:15 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:16 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:16 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:16 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:16 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:16 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:16 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:17 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:17 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:17 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    },
+    {
+      "phase": "keyboard-register",
+      "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "status": 503,
+      "navigation": true,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "1038",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:18 GMT",
+        "pragma": "no-cache",
+        "referrer-policy": "no-referrer",
+        "vary": "Cookie, Origin",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "6d2cea53f7d4838c608ae050f4dd0c29c6173ccf279e17cae2ecbb258e928623",
+      "bytes": 1038
+    },
+    {
+      "phase": "keyboard-register",
+      "url": "http://127.0.0.1:55954/assets/native-account.css",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "4337",
+        "content-type": "text/css; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:18 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "bytes": 4337
+    },
+    {
+      "phase": "keyboard-register",
+      "url": "http://127.0.0.1:55954/assets/native-account.js",
+      "status": 200,
+      "navigation": false,
+      "headers": {
+        "cache-control": "no-store",
+        "content-length": "12412",
+        "content-type": "text/javascript; charset=utf-8",
+        "date": "Sun, 20 Sep 2026 04:25:18 GMT",
+        "x-content-type-options": "nosniff"
+      },
+      "credential_echo": false,
+      "body_sha256": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+      "bytes": 12412
+    }
+  ],
+  "cases": [
+    {
+      "phase": "/",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/",
+      "request": "http://127.0.0.1:55954/",
+      "response": "http://127.0.0.1:55954/",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/?retry_probe=1",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/?retry_probe=1",
+      "request": "http://127.0.0.1:55954/?retry_probe=1",
+      "response": "http://127.0.0.1:55954/?retry_probe=1",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/?retry_probe=1",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "request": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "response": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/?retry_probe=fragment#main-content",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "request": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "response": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/?retry_probe=fragment",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account",
+      "request": "http://127.0.0.1:55954/account",
+      "response": "http://127.0.0.1:55954/account",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account?retry_probe=1",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account?retry_probe=1",
+      "request": "http://127.0.0.1:55954/account?retry_probe=1",
+      "response": "http://127.0.0.1:55954/account?retry_probe=1",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account?retry_probe=1",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "request": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "response": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account?retry_probe=fragment#main-content",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "request": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "response": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account?retry_probe=fragment",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account/register",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account/register",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account/register",
+      "request": "http://127.0.0.1:55954/account/register",
+      "response": "http://127.0.0.1:55954/account/register",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account/register",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "request": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "response": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account/register?retry_probe=1",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "request": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "response": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "keyboard": false,
+      "before": "http://127.0.0.1:55954/account/register?retry_probe=fragment#main-content",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "request": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "response": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    },
+    {
+      "phase": "keyboard-register",
+      "keyboard": true,
+      "before": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "raw_href": "",
+      "resolved": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "request": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "response": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "status": 503,
+      "final": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+      "new_document_requests": 1,
+      "new_document_responses": 1
+    }
+  ],
+  "screenshots": [
+    "keyboard-retry-focus.png"
+  ],
+  "page_errors": [],
+  "console": [
+    {
+      "phase": "/",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/?retry_probe=1",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/?retry_probe=1",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/?retry_probe=1",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/?retry_probe=fragment#main-content",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/?retry_probe=fragment#main-content",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/?retry_probe=fragment",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account?retry_probe=1",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account?retry_probe=1",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account?retry_probe=1",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account?retry_probe=fragment#main-content",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account?retry_probe=fragment#main-content",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account?retry_probe=fragment",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register?retry_probe=1",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?retry_probe=1",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?return_to=https%3A%2F%2Fexample.invalid%2Foutside",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment#main-content",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "/account/register?retry_probe=fragment#main-content",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "phase": "keyboard-register",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "location": {
+        "url": "http://127.0.0.1:55954/account/register?retry_probe=fragment",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "request_failures": [],
+  "limitations": [
+    "No database or authenticated identity. Root fixture cookie only selects unavailable native routing.",
+    "Does not establish repaired authenticated browser workflow, Company setup, usability study or release acceptance.",
+    "Loopback HTTP is not deployment TLS; keyboard focus only, no screen reader/IME/actual zoom qualification."
+  ],
+  "custody_before": {
+    "head": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+    "binary_sha256": "2931718983a68b4cdc34f9f51883cc09d69f68dce7a200b1dcbe1709bfba756c",
+    "sources": {
+      "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+      "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+      "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+      "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91"
+    }
+  },
+  "server": {
+    "binary": "/private/tmp/console-rust1981-owner-target/debug/console-app",
+    "base": "http://127.0.0.1:55954",
+    "environment": {
+      "PATH": "/Users/jasonlee/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/opt/homebrew/bin:/Users/jasonlee/.codex/packages/standalone/releases/0.155.1-aarch64-apple-darwin/codex-path:/Users/jasonlee/.codex/tmp/arg0/codex-arg0LbKcsW:/Users/jasonlee/.unity/bin:/Users/jasonlee/.cargo/bin:/Users/jasonlee/.bun/bin:/Users/jasonlee/.local/state/fnm_multishells/42996_1789572996863/bin:/opt/homebrew/opt/fnm/bin:/Users/jasonlee/.local/bin:/Users/jasonlee/.grok/bin:/Users/jasonlee/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/opt/homebrew/sbin:/Applications/Ghostty.app/Contents/MacOS",
+      "CONSOLE_APP_ROLE": "api",
+      "CONSOLE_HTTP_ADDR": "127.0.0.1:55954",
+      "RUST_LOG": "warn"
+    },
+    "listeners": "COMMAND     PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nconsole-a 91485 jasonlee    9u  IPv4 0x80728ed7f02bc1f9      0t0  TCP 127.0.0.1:55954 (LISTEN)\n",
+    "stopped": true
+  },
+  "browser": {
+    "version": "153.0.8010.12",
+    "playwright": "1.63.0",
+    "executable": "/private/tmp/console-preparation-browsers/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+    "sha256": "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+  },
+  "custody_after": {
+    "head": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+    "binary_sha256": "2931718983a68b4cdc34f9f51883cc09d69f68dce7a200b1dcbe1709bfba756c",
+    "sources": {
+      "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+      "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+      "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+      "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91"
+    }
+  },
+  "finished_at": "2026-09-20T04:25:18.456Z",
+  "failed": 0,
+  "passed": 193
+}

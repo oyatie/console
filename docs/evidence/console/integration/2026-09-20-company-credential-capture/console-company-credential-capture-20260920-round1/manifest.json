@@ -1,0 +1,28 @@
+{
+  "observed_head": "ff56a8dd3fc987dda5a40027e8892cb7389a9c12",
+  "source_locks": {
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "84e1a639c7ef72c8b5a62d9c44c1ed6d514efec8e0ddd67022f41577cbcde114",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "a89b7ae66af5f25cd73e9a30bb99d9b8718fb9e9ed2f207e9c04fd440fecdcc2",
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth-rest/Cargo.toml": "af39682b5514edfcb7191d3d1e979299256f3729b744f39c0fa386de62a3e7bf",
+    "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "684c176ebc67b16b62bb2ddd69080d9a6583ba9a99373e5d6dd23f52d0bd29b8",
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2"
+  },
+  "files": {
+    "API_ADDITIONS.rs": "6ce84407d563b1e7b3dd430be37319cf2f7f510478b7bbb6f361622d9a6fda99",
+    "DOCUMENT_ADDITIONS.rs": "279036572ac70f3162e0a502b1bb16ac963888fa5327375de4ce1052bef75596",
+    "README.md": "641c7741640eaefa12fe0ac2ab9fa04c678e125f818ff4d8a131b8eb3ca79f0c",
+    "SIGNED_TEST_ADDITION.rs": "a3c5d4426ea5063fa006922bf6f0118bdf9e848acffb38e7e0a3ec3b514d1a86",
+    "account_browser.rs": "81c126f3fff3f072749f6c1ef4573f4b48223a3a45c2753dd16a0c30a8eb23e9",
+    "account_browser.rs.patch": "26644a009f89134bb224cf9377e4176b858a52d7d44caa09bf7883578f437fe0",
+    "account_entry.rs": "9c05763e6cdc3a42a60c377c5980636c093726788272dcb95d0afa9cfcfe2ddc",
+    "account_entry.rs.patch": "38c5b0cadf7482f51ddeee38c3af998933831b399b4d86864aad24f32cb86c51",
+    "company_credential_capture_tests.rs": "88d38a84a15f150af458f81db7073c56fda3aa5df263e16d1fc2b2524f68920c",
+    "native_company_signed_credentials.rs": "de477d937de0cb538cadf6ea53628808c2edaa96e83223fb42945ed43c8e52b4",
+    "native_company_signed_credentials.rs.patch": "40e06d3979146f5f345187b6d0e6103313333bf6456045bf02fbb32dd6293040"
+  },
+  "authored_transport_tests": 4,
+  "authored_sqlx_tests": 1,
+  "runtime_discovered": 0,
+  "runtime_executed": 0
+}

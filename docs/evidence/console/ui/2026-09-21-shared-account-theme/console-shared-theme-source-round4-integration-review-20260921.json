@@ -1,0 +1,31 @@
+{
+  "reviewer": "integration_tests",
+  "manifest": "/private/tmp/console-shared-theme-20260921/manifest.json",
+  "manifest_sha256": "0f7d13acbfee6be63fc959af82c4f32dd11f7b352c530e0e6c4a0dfeb4c888f4",
+  "files": {
+    "design.json": "e6fbe5050b04a4398966a79a8931663028313a2714cda1d8ac92b6420392c3e4",
+    "lib-tests.rs": "37775cf90ad6f1995ae032a425b248c01ee06c0946eb5340486278022ae31309",
+    "lib-implementation.rs": "79704a7437dff4722de1337fcae87724041fb95a99561e272deddbd08be78872",
+    "native_account.css": "8c22211fbeed70b0b93af1c66d5294282a31b7adde77142d3cf3b55604418f26",
+    "theme.css": "a2f352cc6798b7d217711e4556394026fe754b3ad595bcfcac73ce5f7b5bf2d7"
+  },
+  "verdict": "approved_bounded_source_design_and_test_successor",
+  "scope": "Private shared-theme5artifact review, no canonical adoption/native execution/browser acceptance",
+  "findings": [],
+  "evidence": [
+    "All5manifest hashes matched.",
+    "Test37775cf9 removes exactly its test-only clippy allow to reproduce previously reviewed11ddea27 byte hash; no assertion/behavior change.",
+    "Implementation79704a74 differs from test-only candidate only by shared CSS composition, existing select border token, and existing CSS-handler composition. Headers/routes/render authorization and JS behavior unchanged.",
+    "Current workspace palette preserved in shared theme; Account semantic colors use same ink/muted/accent/error/status roles; local layouts/media queries/control dimensions retained.",
+    "Shared Korean/system typography uses no external import/font dependency; installed system fallback replaces unavailable Inter.",
+    "Dedicated control border#7c887e contrast3.697white/3.385canvas; footer muted5.639canvas; info8.697 and chip7.135. Ratios are static sRGB pairs, not complete rendered/WCAG qualification.",
+    "Generator change required is narrow existing UI srcs addition; no hand-edited generated-only graph allowed."
+  ],
+  "executed": 0,
+  "holds": [
+    "Exact mechanical generator/UI BUCK adoption review",
+    "Semantic native RED\u2192GREEN and retained UI/generator suites",
+    "Fresh real Account browser screenshot/keyboard320px observations and independent visual critique",
+    "200percent zoom/screenreader/representative-user and complete release qualification"
+  ]
+}

@@ -1,0 +1,12 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T06:19:33.173-04:00] Build ID: f5e1977d-cfb4-472a-8ee3-12abcc1da46c
+[2026-09-21T06:19:33.175-04:00] File changed (since mergebase): root//backend/crates/platform/db/migrations/0229_person_binding_row_lock_privilege.sql
+[2026-09-21T06:19:33.175-04:00] File changed (since mergebase): root//backend/app/src/account_custody_state.sql
+[2026-09-21T06:19:33.175-04:00] File changed (since mergebase): root//ops/postgres-finalize-account-custody.sql
+[2026-09-21T06:19:33.175-04:00] 8 additional file change events (since mergebase)
+[2026-09-21T06:19:33.175-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:19:40.275-04:00] Waiting on root//third-party/rust:errno-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 611 other actions
+[2026-09-21T06:19:43.395-04:00] Network: Up: 0B  Down: 0B
+BUILD FAILED
+The evaluation of this key was cancelled: Rejected

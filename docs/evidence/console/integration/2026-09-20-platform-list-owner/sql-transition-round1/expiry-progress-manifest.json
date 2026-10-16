@@ -1,0 +1,11 @@
+{
+  "kind": "configured-platform-list-absolute-family-expiry-and-independent-source-test-proposal",
+  "files_sha256": {
+    "README.md": "7457b1ec9c9e69a8d2c836d78c86dc1706deafac0cb50f92baf7576b733c5a93",
+    "legacy_platform_list_expiry_progress.rs": "85b201eaed524e830b52d428f79d1caaf2aa601b1c1ec5df0b446b4ebaeb6578",
+    "legacy_platform_list_locks.rs": "e40d55dfe2c273dad509cf21e6b1fcefcc1736331030678ab483042199a707f7",
+    "legacy_platform_list_locks.rs.preimage": "3e9d69ba292bdb45fcee441c212cf4c1a9c61bf4f8698c12e9d9e2c67b5f439c",
+    "tests.patch": "0b0d5ad53361592636941717aa816e762647c0b84d9e8dfd9b1446fcadeaaa58",
+    "verification.json": "a0d3604283401e0b05fdd989ac17d98490ec43673b416ee0ec11e861c156d600"
+  }
+}

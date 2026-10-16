@@ -1,0 +1,15 @@
+{
+  "head": "847045f7a20091c63e6e7cccccc86361d9f4688c",
+  "command": [
+    "npm",
+    "run",
+    "verify"
+  ],
+  "log": "/private/tmp/console-mvp-prerequisite-fast-verify-847045f7-20260920.log",
+  "exit": 0,
+  "seconds": 907.46,
+  "log_sha256": "1cbbd191f4796166096429fcccc6aed433ed885f76f502b34b97b59edbcf413d",
+  "limits": [
+    "Fast repository tier; not browser/database workflow or full Buck-native qualification"
+  ]
+}

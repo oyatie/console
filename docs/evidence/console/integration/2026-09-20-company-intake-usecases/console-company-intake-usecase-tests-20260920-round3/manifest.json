@@ -1,0 +1,32 @@
+{
+  "observed_head": "ec590f81879dc574a92d532fe5a2230127c54633",
+  "design_sha256": "b32bd97fbd4f035d49ff216562c2ba0ebd1ec63176a712b0c99778b3f13e16a0",
+  "source_locks": {
+    "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "de477d937de0cb538cadf6ea53628808c2edaa96e83223fb42945ed43c8e52b4",
+    "backend/app/tests/auth_rest/native_company_intake_owner.rs": "2f4e13baf77683d452fc81dd6d411884e13f08c62bea2b46b1648c6ae43e3d79",
+    "backend/app/tests/auth_rest/deployment_operator_designation.rs": "665b67a912233f29658f16ef003e98381e897879bf73f0be29b7c3b3820641d9",
+    "backend/crates/identity/application/src/company.rs": "58eb1cf312dc4718cd937658611315c86d88e1c2a8c7ec6828163a4d78e06abf",
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+    "ops/postgres-company-enrollment-guards.sql": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a"
+  },
+  "files": {
+    "REVIEW.md": "2afb49054236bf8ab5819bed50cfa5a263fea98bbbb84d5a7bf771367cd84b3a",
+    "TEST_ADDITIONS.rs": "54e6ba27c47dd538047e8f09a09d94ca8e8f55f0435748be579e43d48004e074",
+    "enrollment_projection_tests.rs": "1bb992bac86faf1182dc88cb5d1c7d086febaa595554ef5d58bcfed5ae9e881a",
+    "native_company_signed_credentials.rs": "b370b7be977b268e050d36e6875a3a349a8eed3d9cda0d2c7bdff7a1306ff39a",
+    "signed-tests.patch": "3751d35155ae61c916aa20c0fa3c04f9328fb04cdf06148df7000a2d9fef2acc"
+  },
+  "authored_sqlx_tests": 5,
+  "authored_pure_tests": 2,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "implementation_authored": false,
+  "predecessor_manifest_sha256": "c85b04477f10f205ec8357883b797803d89aab22b47aaefc97f0c338b4f93d86",
+  "reviewed_private_candidate_sources": {
+    "/private/tmp/console-company-intake-usecases-20260920-round2/WIRING.txt": "4cc680f3ef64e1cc2a1ec2ebf320d8cc4bf69ec8f3091139c6bfbd4426f4e4d6",
+    "/private/tmp/console-company-intake-usecases-20260920-round2/company.rs": "0d31297b18e0b41803e129dbeb2f52ff9b493dea538fce1c7b3234f12f484683",
+    "/private/tmp/console-company-intake-usecases-20260920-round2/company_enrollment.rs": "0ff2c7d2b4da90e6b73df25155604b10fe0adbfd68b11e1c2d2b20a73c6f715b",
+    "/private/tmp/console-company-intake-usecases-20260920-round2/company_enrollment_adapter.rs": "86216797feabeace876f9078fdea60f5789b4a10a825d8ca6334ef3af1c1c1e5"
+  }
+}

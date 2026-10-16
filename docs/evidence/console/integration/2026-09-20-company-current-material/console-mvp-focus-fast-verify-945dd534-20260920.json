@@ -1,0 +1,12 @@
+{
+  "head": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "command": [
+    "npm",
+    "run",
+    "verify"
+  ],
+  "exit": 1,
+  "seconds": 925.59,
+  "log": "/private/tmp/console-mvp-focus-fast-verify-945dd534-20260920.log",
+  "log_sha256": "963cff831055ee8653b5e7b620e1cc9bc88124a9e3ff1c3612be5c7696f7809f"
+}

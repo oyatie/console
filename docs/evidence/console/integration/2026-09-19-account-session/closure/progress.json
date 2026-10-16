@@ -1,0 +1,157 @@
+{
+  "kind": "account-session-integration-closure-progress",
+  "status": "implementation and verification in progress; not integration acceptance",
+  "base_sha": "01e069883b998d9c430500c85a6d464c263d4ae3",
+  "admission": "account-session-integrated-entry",
+  "owner": "root sole repository writer",
+  "changes": [
+    "Reach all five imported test binaries through existing CI; preserve dark baseline.",
+    "Cargo supplies distinct Auth and command-login credentials through private files.",
+    "Native OpenAPI413/429 explicitly share ErrorBody while retaining exact native constraints; Retry-After60 documented. Runtime unchanged.",
+    "Buck auth_rest source layout copies declared inputs as regular files using pinned prelude; no custody test weakening.",
+    "Full single-target Account wrapper gets finite21600-second executor budget; exact/mixed/unrelated invocations unchanged. SQL deadlines/thread1 preserved.",
+    "Reconcile static audit transaction gate with existing owning helper and add missing-effect/disconnected-entry mutation controls.",
+    "Retain all assertions while fixing tuple type lint and propagating consent fixture setup errors."
+  ],
+  "results": [
+    {
+      "command": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_auth7_transition::auth7_replay_refuses_effective_column_acl_drift_without_repair tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
+      "before": "1failed: required regular SQL was a symlink",
+      "after": "1passed,324filtered,150.21seconds",
+      "artifact_check": "both declared SQL files regular and SHA256 equal checkout bytes"
+    },
+    {
+      "command": "node --test tools/ci/cargo-needs-postgres-args.test.mjs",
+      "before": "missing CONSOLE_AUTH_POSTGRES_PASSWORD",
+      "after": "8passed; mocked transport only"
+    },
+    {
+      "command": "node --test scripts/check-ci-preflight.test.mjs",
+      "after": "66passed"
+    },
+    {
+      "command": "node --test scripts/check-openapi-error-envelope.test.mjs",
+      "after": "9passed"
+    },
+    {
+      "command": "node scripts/check-openapi-error-envelope.mjs",
+      "after": "532paths,15shared responses,zero findings"
+    },
+    {
+      "command": "SQLX_OFFLINE=true cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-provisioning --test account_historical_consent",
+      "after": "1passed"
+    },
+    {
+      "command": "SQLX_OFFLINE=true cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-audit-chain --test ed25519_compatibility",
+      "after": "13passed"
+    },
+    {
+      "command": "SQLX_OFFLINE=true cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_diagnostic_fail_closed",
+      "after": "5passed"
+    },
+    {
+      "command": "SQLX_OFFLINE=true cargo clippy --locked --offline --manifest-path backend/Cargo.toml -p console-app -p console-platform-provisioning --all-targets -- -D warnings",
+      "after": "pass; manifest unused-dependency and upstream future-compat warnings remain"
+    },
+    {
+      "command": "npm run check:workflow-runtime-m2-cedar-guards",
+      "after": "7tests passed and gate passed; source checks are not runtime atomicity proof"
+    },
+    {
+      "command": "bash tools/buck/test_needs_postgres.test.sh",
+      "before": "failed absent full-suite timeout",
+      "after": "pass; existing fake build emits missing-env grep diagnostics before test phase"
+    },
+    {
+      "command": "node tools/ci/check-postgres-cargo-map.mjs",
+      "after": "223workflow entries; no fabricated measurements"
+    },
+    {
+      "command": "node scripts/check-executed-tests.mjs",
+      "after": "384defined/reachable;382reachable sources;3045declared attributes;one retained SeaweedFS dark baseline; static counts not execution"
+    },
+    {
+      "command": "npm run check:request-body-contract",
+      "after": "620passed,2failed because SDK/docs changes not committed; repeat after commit"
+    },
+    {
+      "command": "python3 -m unittest tools.buck.test_gen_first_party",
+      "after": "58passed,1failed because generated app BUCK not committed; repeat after commit"
+    },
+    {
+      "command": "tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
+      "after": "original325-body run timed out600seconds; replacement full run underway with reviewed budget; no full green claim"
+    }
+  ],
+  "reviews": [
+    {
+      "reviewer": "integration_tests",
+      "scope": "CI workflow/wrappers/map, exact test baseline gains, topology diagnostic, Cargo credential test/harness, tuple aliases and consent propagation",
+      "verdict": "approved exact candidates in session; hashes in manifests"
+    },
+    {
+      "reviewer": "integration_security and integration_tests",
+      "scope": "native16response references and7headers",
+      "manifest_sha256": "59b8fbaa417744b02b3bdcbc700b4dce943cc8007793d714ae81aed00c0b9d20",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_tests",
+      "scope": "regular-input Buck generator",
+      "sha256": "0e68ebd0502ea608b58928893d42a4fef8c1e1328b24f820b036ad4680859f0f",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_tests",
+      "scope": "single-target full Account timeout",
+      "harness_sha256": "b1d49ccb3f60d21567d510c2765d4b3c89accbc251e10c84e0719351a8a6c68a",
+      "test_sha256": "3132b174e7da1eb9c8a3664dfad1bb25920540600d2b4ad1ee0dfd093553bb95",
+      "verdict": "approved after mixed-target correction"
+    },
+    {
+      "reviewer": "integration_security",
+      "scope": "static audit gate delegation/helper reconciliation plus mutation tests",
+      "gate_sha256": "aca6606b4737fa6b030414e2b3ddab8860f1121039a7fbf5e88e3529f9b6b42b",
+      "test_sha256": "c7a0b0c3856b690290b941b5d975dc930e3ea4b48273210b062ddb466bcf6df0",
+      "verdict": "approved; existing raw-text regex limitations remain"
+    }
+  ],
+  "premortem": "A passing source or small HTTP gate masks unexecuted full owner/browser/custody tests.",
+  "blast_radius": "Shared verification/build/CI and published native error documentation; no runtime business transition or historical migration edits.",
+  "detection": "Unchanged actual custody test, full retained suite, generated output checks, independent exact-byte review and corruption controls.",
+  "rollback": "Revert bounded integration repair commits; immutable previous candidates retained; disposable databases only.",
+  "stop_conditions": [
+    "Historical migration/custody byte changes",
+    "weakened unreviewed assertion",
+    "credential fallback",
+    "false acceptance or hidden failures"
+  ],
+  "remaining": [
+    "Full Account suite results pending.",
+    "Complete browser/current-context/Company integration remains required.",
+    "Existing audit HTTP handlers reconstruct stale JWT principal; real revocation regression and owner fix pending.",
+    "Payroll SSR errors still conflate unavailable and empty.",
+    "Live subscription revocation remains unproven.",
+    "Native413/429 actual HTTP coverage being designed.",
+    "Full fast verification and artifact qualification not passed; earlier sandbox/Git and Buck/Cargo file-discovery failures need corrected reruns.",
+    "Milestones0\u201310 release acceptance, Korean qualified authority and deployment-equivalent qualification remain incomplete."
+  ],
+  "log_uncompressed_sha256": {
+    "auth7-regular-red": "c81e33a969c2973f516e29df431a479fb108d6adf73ea9105300799645e10ef9",
+    "auth7-regular-green": "604af24a6e36fe4805b35e0d289b59df2697b52729191e0b317887ad2d4ac32c",
+    "auth-full-timeout": "cfe0cdd4c86331af9efbd81c16deeaa05f392b30d69d92c3e5991a664180ad44",
+    "cargo-transport-red": "97a3810748b74dc8b9561710ebbc9af235b704d56e71ba2c724046e15262c490",
+    "cargo-transport-green": "6994e85b2b3e552aea6a167932658a05bc91307bfe633fc4bd6590fbfb733f1d",
+    "ci-preflight-green": "3df1838df8acb8e87e702fda83f9c9358c75872989b945574f253c25e842fd59",
+    "native-envelope-green": "7ec33eb6707d8eb3cd1b84f61ee489a8454942301246924d5136fe62bc8a7ec6",
+    "consent-green": "08144ae9decde7a406bbc4e2ef8ffeb6ec929f316a4250c96bd7185b967cf6d5",
+    "ed25519-green": "61770feea69bd63c7f782c86c5eb89b21c8cb3479c9e02b85b23b3e6066e451f",
+    "cedar-diagnostic-green": "489fe7a41a0700d63f4b47787924e4275d6a935f724c270d4bb91f519369d0ea",
+    "clippy-green": "26ed2f332d57f1c7671561e4f7791cc71b4dd55ebc4ff9f19c00550c945a2ddf",
+    "audit-gate-red": "8c62ca7cf9b33d57efa727f96b35c0576c13e9ac5b32b6e00a374997e6f22584",
+    "audit-gate-green": "cb8b6a1fefc665c960d83794a9ec3269a387669d431e30570472daf5aa1bf682",
+    "auth-timeout-red": "2fb6efcd973528336f9cd998b27daf40bc40482b06b5541d5a3d32a67ca372ee",
+    "auth-timeout-green": "95740b80e4e45e819eab7beb773bcc21fcfce2879525ee06a0c723d64ea253c2",
+    "contract-before-commit": "65a0cd545475ba8b04262007d68e11a615cd7e42af053099cdd170a774e94df7"
+  }
+}

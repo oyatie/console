@@ -1,0 +1,11 @@
+{
+  "kind": "private-bounded-media-operation-rate-catalogue-design",
+  "round": 1,
+  "authority": "none;four independent design rounds and exact root consensus required before tests",
+  "files": {
+    "design.md": "33cdbf5e8d1fb8f169d7c8b5461a0f424c2cc1474bf2952f4b61fdc09ea42c55",
+    "oracle-roster.json": "56f4ec7169d0758c5098321d368607577c4879e62a56763fbc5b476328170edc",
+    "prospective-runtime-row.json": "aa4b00df68176048c3b079525e72bd8292ea610584da4018f70eb7e4def89685",
+    "source-custody.json": "0ae502ee787acc8d35bb576e90f4d024efcf82989fbc1ef9a93fd4e9592cc5c8"
+  }
+}

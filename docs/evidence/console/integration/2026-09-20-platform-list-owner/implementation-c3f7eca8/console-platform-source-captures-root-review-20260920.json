@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root",
+  "verdict": "APPROVE_CAPTURED_PROFILES_FOR_PROSPECTIVE_FINALIZER",
+  "manifest_sha256": "5ddacd584438203dbfd17ce601d4f8fe9ad30aca0f5034f6d239d8d179e1322e",
+  "capture_result_sha256": "f4416b6cfd88ccb59105691b022034ec07e4bad510e902751bb2ab42231ef25c",
+  "variants": {
+    "plain": {
+      "profiles": [
+        "0f2db80a4afeacb1d6d6aaf0bbaef9d8f7968e77500322cf691774f02d88e8ea",
+        "5aee358ff0bea94268d40b5f16f86779952ea95a74cab48cbf99984eedf6e2da"
+      ],
+      "public_tables_preserved": 307,
+      "capture_sha256": "9f36c805261dc7733108043c595a7d4d2fc5d957dd6d8ec919977affb11d35b6",
+      "exact_rollback": true,
+      "metadata_delta": "one new exact bridge; only existing context ACL adds credential owner EXECUTE"
+    },
+    "observer": {
+      "profiles": [
+        "93236c9a9e850db234f4dc777553e4eb829bbb76a0f6cc27551f761cc28bffe7",
+        "475c1f9a43b402539e0469f31adc6f06848669abfa34c08350aa1ee006664103"
+      ],
+      "public_tables_preserved": 307,
+      "capture_sha256": "bfc66510027db81e2cbbdd458dbd5e81bc3671c6d93d3197be0ef5b08c1fe316",
+      "exact_rollback": true,
+      "metadata_delta": "one new exact bridge; only existing context ACL adds credential owner EXECUTE"
+    }
+  },
+  "scope": "prospective profile pins only; finalizer/runtime accepted separately"
+}

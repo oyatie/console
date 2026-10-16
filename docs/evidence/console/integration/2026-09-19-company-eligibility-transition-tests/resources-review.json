@@ -1,0 +1,24 @@
+{
+  "kind": "independent-company-eligibility-buck-fixture-resource-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:12:27.230535+00:00",
+  "decision": "APPROVE_EXACT_FIVE_STATIC_RESOURCE_ADDITIONS",
+  "manifest_sha256": "5de496dd2cdbe949527ebd7f5d82e628726f3389bbfce8b626fdb380f484ebb6",
+  "preimage_sha256": "0e68ebd0502ea608b58928893d42a4fef8c1e1328b24f820b036ad4680859f0f",
+  "candidate_sha256": "34752e99eb3688276007e87d3c3e8ecca7bc1a97ea25993599ce6f9f1e845bb4",
+  "added_paths": [
+    "tests/auth_rest/fixtures/account-business-session-c613626e-root.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-credentials.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-verify.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-root-state.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-credential-state.sql"
+  ],
+  "checks": [
+    "All candidate hashes verified. Removing only the five exact quoted path entries restores current generator preimage byte-for-byte.",
+    "All five paths correspond exactly to previously reviewed frozen predecessor source fixtures.",
+    "AST parses; no generator algorithm/test changes; no resource removals or unrelated target changes."
+  ],
+  "approved_next_action": "Root may integrate with approved transition test addition and run existing generator once; require only expected app BUCK projection, unchanged generator suite and actual compilation/discovery.",
+  "runtime_tests_executed": 0,
+  "repository_edits": 0
+}

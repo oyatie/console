@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::distinct_accounts_contend_at_one_actual_designation_slot' (62911899) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent

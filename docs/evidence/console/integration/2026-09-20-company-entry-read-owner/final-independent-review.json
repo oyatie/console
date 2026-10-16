@@ -1,0 +1,100 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_COMPANY_ENTRY_READ_DEPENDENCY",
+  "observed_head": "cbadd37a5405c294889b0a782c60b12f5ba33c18",
+  "exact_source_sha256": {
+    "backend/crates/platform/auth/src/account.rs": "046cd1289f2df69fadcd23807f1e07a8a0e81f697a229e2eeccf36d5856e1bad",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "a89b7ae66af5f25cd73e9a30bb99d9b8718fb9e9ed2f207e9c04fd440fecdcc2",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "84e1a639c7ef72c8b5a62d9c44c1ed6d514efec8e0ddd67022f41577cbcde114",
+    "backend/crates/platform/auth-rest/src/lib.rs": "520ac39667c736cfdecc5881d777e7936c04e26569850766cba8f5434981d0f2",
+    "backend/app/src/lib.rs": "b5a5a79f7c90b33f3ab19d68c5caed673ad56c21589af6f73a71aeee8f3dcf72",
+    "backend/crates/payroll/ui/src/native_account.rs": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e"
+  },
+  "source_review_sha256": "9693e5b78e536e170cf6fbf0cf859eef31a496d99d5a89f21338303efe13ce91",
+  "evidence_sha256": {
+    "entry_http": "8359588fbe6a53d999909557cf8368709bf33bb41e289f4d83c973f647a44694",
+    "eligibility": "948db0bcac00f37cabf3b15098e9dc276434693ab721391112b95ce2d6e1da4a",
+    "discovery_owner": "d6bed59a791f52f776319fd997f80382b04c1b860721a3a9685582adfccf9520",
+    "ui": "62fb7ea0e7f007124dc5e1e50f324626d7316cd9010e142646e07a0e6136bae1",
+    "drift": "4d5f20f404beb9666a076c72a06017c098c6cd115fc83fb877642dc8c8f16b21",
+    "asset_http": "cafa98f5ed3d9baafb712e8fa88af14dff6f3f8383fe5b9fb6829a4dcdc44c15",
+    "clippy": "720ba8b245dd5f8f795624aeed8702b9396c2510bdf4f8f44c52a61eeb5a3dec",
+    "browser_result": "aa7f224cc7431f5f72f0bfee0edd7f9a88632fb3a3dfd741f08d3ffdbdd9f972",
+    "browser_owner_receipt": "89485c5867b2333a66618c98b634f981e17f56c7342e17208607326b63b57aa6"
+  },
+  "runtime": {
+    "entry_http": {
+      "passed": 6,
+      "failed": 0,
+      "seconds": 63.12
+    },
+    "eligibility": {
+      "passed": 11,
+      "failed": 0
+    },
+    "discovery_owner": {
+      "passed": 1,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 1,
+      "failed": 0,
+      "actual_documents": 5,
+      "actual_registration_posts": 2,
+      "owner_checkpoints": 2,
+      "version": "151.0.7922.34"
+    },
+    "ui": {
+      "passed": 8,
+      "failed": 0
+    },
+    "drift": {
+      "passed": 18,
+      "failed": 0
+    },
+    "asset_http": {
+      "passed": 1,
+      "failed": 0
+    },
+    "clippy": "four changed packages --lib -D warnings passed; not runtime tests"
+  },
+  "oracle_reviews_reused": [
+    "/private/tmp/console-company-preview-owner-label-root-review-20260920.json",
+    "/private/tmp/console-company-csrf-effect-oracle-root-review-20260920.json"
+  ],
+  "conclusions": [
+    "Actual signed Account registration, restricted designation, authorized discovery and nativepreview exercised real owning database; preview typing/Enter preserved URLs/history/inputs and durable business rows.",
+    "Six actual HTTP cases cover access classes, metadata/HEAD/parser precedence, Auth repair, SQLhelper permission outage/exactrestore, context independence and witnessed expiry.",
+    "CSRF oracle correction permits only precisely reviewed two owner limiter records; all prior limiter history and othertables remain exact. Originalfailedrun remains historical.",
+    "Browser label correction aligns exact full existing ownerparagraph; transport/checkpoint oracles remain strict.",
+    "Generatedbundle recipe/drift and assetHTTP pass but actual authorizedWASM hydration still pending separately."
+  ],
+  "visual_review": {
+    "screenshots": {
+      "01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+      "03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+      "04-company-preview-input-preserved.png": "892fa7afc8401b255f379f218eaf09a1e5f1ad8ec853bb0a418c93af9b58be83"
+    },
+    "ADOPT": [
+      "Consistent lighttheme, Korean-readable heading/body hierarchy, clearly distinct primary/secondary controls.",
+      "320px public/registration/Account/setup pages fit without page-level horizontaloverflow; visible keyboardfocus is clear.",
+      "Explicit emptyworkspace state preserves Account identity and logout.",
+      "Company fields have visible names/legend/currentAccount context; Enter does not discard typed work."
+    ],
+    "ADAPT": [
+      "When completing the canonicalCompany command, add space between fieldlabel/control groups; current secondlabel sits close to priorinput.",
+      "Provide truthful draft/status/completion/recovery on the completedCompany workflow; current inputpreview has no completion action and must remain unreleased."
+    ],
+    "REJECT": [
+      "Reject treating this form-free preview or screenshots as completedCompany enrollment, fullworkspace acceptance or release readiness."
+    ]
+  },
+  "holds": [
+    "Company command, durable draft/replay/reopen/grant-revoke and completedbusinessworkflow remain required.",
+    "Syntheticresident authenticator/localhostTLS test topology does not qualify physicaldevice, productionTLS/HA, KoreanIME, screenreader,200percentzoom or representative-user studies.",
+    "HTML413 middleware defect and actualauthorizedWASM browserproof remain open dependencies.",
+    "No production-qualified/released state or exactdeploymentartifact qualification is established."
+  ],
+  "accepted_source_commit": "cbadd37a5405c294889b0a782c60b12f5ba33c18"
+}

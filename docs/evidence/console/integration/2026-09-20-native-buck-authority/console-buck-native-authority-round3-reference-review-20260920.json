@@ -1,0 +1,64 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "round": 3,
+  "scope": "operability, security, rollback and remaining blockers",
+  "decision": "approve same sealed authority candidate; no release or native implementation acceptance",
+  "packet_path": "/private/tmp/console-buck-native-authority-design-20260920-round1",
+  "manifest_sha256": "73a89553c7867074dd88dd9bcf51c9330fe8a448468242186f2004d15184d733",
+  "base_sha": "209af958af44fba8577ce8e2cae1068150a1b410",
+  "verified_changes": {
+    "docs/current/PRODUCT.md": [
+      {
+        "operation": "replace",
+        "old_start": 48,
+        "old_end": 48,
+        "new_start": 48,
+        "new_end": 48
+      }
+    ],
+    "docs/current/ROADMAP.md": [
+      {
+        "operation": "replace",
+        "old_start": 39,
+        "old_end": 39,
+        "new_start": 39,
+        "new_end": 39
+      }
+    ],
+    "docs/current/DELIVERY.md": [
+      {
+        "operation": "insert",
+        "old_start": 82,
+        "old_end": 81,
+        "new_start": 82,
+        "new_end": 83
+      }
+    ]
+  },
+  "findings": [],
+  "conclusions": [
+    "Only PRODUCT:48 and ROADMAP:39 replacements plus DELIVERY:82-83 insertion; production/exposure/credential/legal HOLD text is byte-preserved.",
+    "No SQL, migration, historical command bytes, custody fingerprints, TLS configuration, toolchain files, CI producer, secret, credential or runtime artifact is changed by this authority proposal.",
+    "DELIVERY retains Rust 1.98.1 and verified TLS qualification; native requirement does not authorize toolchain or TLS changes.",
+    "Native action/artifact evidence is required for application/worker, SSR/WASM, compiled gates, required Rust variants and release-image inputs; generated targets, Cargo green runs and wrappers cannot qualify native release.",
+    "ROADMAP retains transitional producers/evidence until same discovered/executed tests, feature variants, PostgreSQL isolation, failure behavior and credential safety are proven. No green subset or compile-only success can retire the current producer.",
+    "DELIVERY retains executable protected required checks before enforcement; changed producers must preserve actual protected check delivery rather than merely workflow context names.",
+    "DELIVERY:7 requires per-lane pre-mortem, detection, rollback and stop conditions with serialized generated/CI/authority writers. Existing producers/artifact evidence are retained while replacements are proved; fallback does not turn an old Cargo artifact into native-qualified release evidence.",
+    "DELIVERY retains separate software rollback, data restoration and irreversible-effect reconciliation; no build-system change grants authority to rewrite business history or roll back irreversible external effects.",
+    "PRODUCT explicitly says current mixed graph is not release-qualified. ROADMAP names undeclared inputs, native hydration, optimized release production and Cargo-driven CI as remaining implementation work.",
+    "DELIVERY explicitly disclaims deriving hermeticity, cross-platform cache reuse or performance from native execution; consistent with artifact-pinned host Rust but system C toolchain and missing cross-target WASM path in source audit.",
+    "Complete assembled release requirements remain in force, including recovery, exact deployment artifact, migration, workload, accessibility, security and separate exposure decision."
+  ],
+  "remaining_native_evidence": [
+    "Complete generator fixture declarations and prove actual native compilation/execution.",
+    "Native hydration WASM plus bindgen/package inputs and outputs.",
+    "Optimized native application/worker binary and release-image exact artifact ingestion.",
+    "Required CI test/compiled-gate variant and count equivalence, including negative controls and credential-safe PostgreSQL execution.",
+    "Deployment-equivalent complete release qualification; separate exposure authorization remains absent."
+  ],
+  "limits": [
+    "Read-only authority review at immutable candidate; no repository modifications or runtime/build/test execution.",
+    "Root remains sole authority writer; operational implementation and later exact-candidate gates remain pending."
+  ],
+  "executed_tests": 0
+}

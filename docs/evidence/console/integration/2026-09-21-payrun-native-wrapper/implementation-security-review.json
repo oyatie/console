@@ -1,0 +1,44 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_BOUNDED_WRAPPER_IMPLEMENTATION_AND_RECORDED_VERIFICATION",
+  "base": "e40ab56519bfd2432d2c9d126cf85bc730a6900f",
+  "head_read": "e40ab56519bfd2432d2c9d126cf85bc730a6900f",
+  "source": "tools/buck/BUCK",
+  "source_sha256": "44d371a73f610bd29f4fd674bcbb96099f14d62f91f28d11340696a30b383a8f",
+  "source_before_sha256": "7285aa961af3125d8510524a99b20c5187a0770a0fc5fbac15cc67db7bce72a7",
+  "test_sha256": "d75745c870ac031d3bd9273eda917f9c5a8eda6471f0894d6459d4494640df79",
+  "facts": [
+    "Exactly one standard eight-line wrapper addition; removing its AST restores original BUCK AST.",
+    "Exact approved regression protects five fields, declared existing inner target and unchanged credential-safe loader.",
+    "Only tools/buck/BUCK dirty at review.",
+    "Read root admission receipt and actual missing-wrapper RED (1 executed, 1 failure); focused GREEN (1/1), full generator GREEN (69/69).",
+    "Native Buck wrapper completed one suite, all 17 Rust leaves passed with 0 ignored/filtered; Buck 0 skips/omits/infra/build failures."
+  ],
+  "logs": {
+    "/private/tmp/console-payrun-wrapper-red-20260921.log": {
+      "sha256": "b3f4b081c17af23a0ff7be5262e99470b6b1a173c9f11946934b871f78df866f"
+    },
+    "/private/tmp/console-payrun-wrapper-green-20260921.log": {
+      "sha256": "011671105019b49b6992a9aed73e29f6861b970f5681308ec7c93554f4c794bc"
+    },
+    "/private/tmp/console-payrun-wrapper-full-20260921.log": {
+      "sha256": "8f2cde115b481bb76fdfc9ffc1103226bdc1d89cfddadb594e8ac3afb2aecb29"
+    },
+    "/private/tmp/console-payrun-wrapper-admit-20260921.log": {
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    },
+    "/private/tmp/console-payrun-native-owner-baseline-20260921.log": {
+      "sha256": "ff8b061e3c8bf0e2240254507b5d2b29d71eed980ecf4f6156490ff761d8f143"
+    }
+  },
+  "reviewer_execution": {
+    "tests": 0,
+    "builds": 0,
+    "sql": 0,
+    "browser": 0
+  },
+  "holds": [
+    "Final committed-source/evidence readback pending.",
+    "Payroll natural-person independence, native Account business integration and full release not accepted."
+  ]
+}

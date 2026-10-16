@@ -7,7 +7,7 @@
 
 use crate::Timestamp;
 use crate::error::KernelError;
-use crate::ids::{AuditEventId, BranchId, OrgId, UserId};
+use crate::ids::{AccountId, AuditEventId, BranchId, OrgId, UserId};
 use crate::trace::TraceContext;
 
 /// Dot-namespaced action code, e.g. `work_order.approve`, `kpi.exclusion.revoke`.
@@ -82,10 +82,10 @@ pub struct AuditClassification {
 
 /// One append-only audit record.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct AuditEvent {
+pub struct AuditEvent<A = UserId> {
     pub id: AuditEventId,
     /// `None` = system-initiated (escalation timer, retention job, …).
-    pub actor: Option<UserId>,
+    pub actor: Option<A>,
     pub action: AuditAction,
     /// Entity kind, e.g. `work_order`, `daily_plan`, `consent`.
     pub target_type: String,
@@ -110,12 +110,47 @@ pub struct AuditEvent {
     pub occurred_at: Timestamp,
 }
 
-impl AuditEvent {
+impl AuditEvent<UserId> {
     /// Builder for the common case. Snapshots and branch attach via the
     /// `with_*` methods.
     #[must_use]
     pub fn new(
         actor: Option<UserId>,
+        action: AuditAction,
+        target_type: impl Into<String>,
+        target_id: impl Into<String>,
+        trace: TraceContext,
+        occurred_at: Timestamp,
+    ) -> Self {
+        Self::from_actor(actor, action, target_type, target_id, trace, occurred_at)
+    }
+}
+
+impl AuditEvent<AccountId> {
+    /// Native Account attribution without a legacy User identity conversion.
+    #[must_use]
+    pub fn new_account(
+        actor: AccountId,
+        action: AuditAction,
+        target_type: impl Into<String>,
+        target_id: impl Into<String>,
+        trace: TraceContext,
+        occurred_at: Timestamp,
+    ) -> Self {
+        Self::from_actor(
+            Some(actor),
+            action,
+            target_type,
+            target_id,
+            trace,
+            occurred_at,
+        )
+    }
+}
+
+impl<A> AuditEvent<A> {
+    fn from_actor(
+        actor: Option<A>,
         action: AuditAction,
         target_type: impl Into<String>,
         target_id: impl Into<String>,
@@ -283,3 +318,11 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "audit_legacy_wire_tests.rs"]
+mod legacy_wire_tests;
+
+#[cfg(test)]
+#[path = "audit_account_tests.rs"]
+mod account_tests;

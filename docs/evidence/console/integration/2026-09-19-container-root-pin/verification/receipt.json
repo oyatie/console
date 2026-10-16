@@ -1,0 +1,26 @@
+{
+  "source_commit": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+  "image": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7",
+  "result": "Pinned Rust1.98.1 Linux image builds and isolated nonroot no-network process smoke passes; independently reviewed",
+  "smoke_assertions": "exact image, no network, no published ports, uid10001, health200, ready200 with unconfigured dependencies, exact container deletion readback",
+  "preserved_failures": "Initial readiness503 assumption and cleanup case comparison were smoke oracle errors; both retained",
+  "qualified_business_tests": 0,
+  "remaining": "Database workflows, browser/WASM, deployment/load/recovery and all release milestones remain incomplete",
+  "files": {
+    "runtime-smoke.json": "ba23e56cd5f03f30e40ec27d0f614267c241ac8a32ce3b2ba5577c7103e44c1e",
+    "links.log": "12da85c6e9cd41ea083c48d6576d251a026d8a9b438aaf66ba2824aa17fc1962",
+    "full-image.log": "2ad2b53efed6157e4cca913b5584e7fde571acf3e2597aedd20f69b6563f5412",
+    "runtime_smoke_case_sensitive.py": "3f0e985f681cf5c1ff1346fc19efa80d54fb905249a0f07b734b33e94da6e077",
+    "console-container-root-pin-final-round2-independent-review.json": "27fdd2353d55d7a2640edeb532d5d5d199541d2a2cebf13953e7c3dcf5bf0fbb",
+    "image-inspect.json": "8a4e913ba01596f1af4862b6ccc2aac7f524e670ad7425084695be9c312ddb4f",
+    "identity.log": "42f9efccc2a0e2ac0e31e309e465569b5797fe42de50595bebceca8157d830c6",
+    "console-container-root-pin-immutable-smoke-independent-review.json": "23d255ff6ac5133fa162ce7caa31f937c8110a5c314a325a54c83606662061c8",
+    "runtime_smoke.py": "d55442829b0e1e836f29ff89e19111d030f021a047cf00324ffb658ac56eeb04",
+    "builder-green.log": "33683c21ac6e4122951cc0791bf5a32eb5d206b9fea2b279e84fe601b21a8cb1",
+    "runtime_smoke_tag_predecessor.py": "cdc837ffb1bce8e73c8dfc610f677ba8cfb590a3e00084af7c08cdf5eda46983",
+    "binary-sha256.log": "000904c297b4bd0c54eae029c228796621db636020abbf5765f10b56d58b52dc",
+    "runtime-smoke-tag-predecessor.json": "033e54fbde12b6b06caede26cd46aa0dd11369c1c695582c1c9b31bed588861a",
+    "initial-smoke-expectation-failure.json": "e9e28a97cd8d5aab8d2841f181fe9ac5c76ea8991e57294ba3b5e3ad0b5a3adf",
+    "runtime-smoke-cleanup-case-failure.json": "ac9efa22ae5618ce34fba50da5211b8a14791b84ef0a7550ab0283fd96128753"
+  }
+}

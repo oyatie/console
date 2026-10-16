@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/policy_browser_tests",
+  "decision": "APPROVE generated provenance refresh",
+  "base": "96f3007a7ada4da2d592d6fb035b0fe2570dfcff",
+  "manifest": "backend/crates/payroll/ui/bundle.lock.json",
+  "manifest_sha256": "854ff66b4fc47cdd99d8577ff568b86cdb5b0983f2f887c2d650585073e0ff17",
+  "verified": [
+    "Exactly two JSON values changed: reviewed generator input digest and canonical derived source_snapshot_sha256. Every recorded current input hash independently matched actual bytes.",
+    "Published JS and WASM byte-identical to base; historical producer tool/compiler/output facts unchanged.",
+    "Producer/validator/build script/shared hydration rules and Rust toolchain files byte-identical to base. No weakened validation or toolchain change.",
+    "Actual App log failed closed on changed generator; actual regeneration log reports BUILD SUCCEEDED."
+  ],
+  "published_output_sha256": {
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "b9068d7a4a94dbe87485d01fb7d0f25e4cf316b4febdc60c0b2bea0c069f90aa"
+  },
+  "new_source_snapshot_sha256": "43c509b7dc161ac6a123e69f4d28b609fa3958af5484dd70984351e9deefe995",
+  "runtime_reviewer_invocations": 0,
+  "logs": {
+    "/private/tmp/console-policy-buck-prerequisite-20260922/native-business-app-build.log": "eb559a3204a213b84ec118732f9b479683f2c1232da160a8237c4848f988aa86",
+    "/private/tmp/console-policy-buck-prerequisite-20260922/native-business-hydration.log": "b180f9d7064e22bed26dd23e4b434ff299cfde8b746afbee2ad118551b1366d4"
+  },
+  "limits": [
+    "Review uses actual bytes and logs; does not claim independent build rerun or pending full App build success."
+  ]
+}

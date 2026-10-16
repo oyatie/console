@@ -1,0 +1,10 @@
+{
+  "generator": "python3 tools/buck/gen_first_party.py",
+  "before_sha256": "fc91447444ffe533cbccb19f31e1142c72cd5f6b7947a4f4dc6076cdf80fe07b",
+  "after_sha256": "d50a779099941dde89b3bfbb460844e1a1e4655b3bbe0100052cd813d300c902",
+  "added_source_literals": {
+    "legacy_platform_group_reads.rs": 67,
+    "legacy_platform_group_credentials.rs": 67
+  },
+  "remove_only_added_literals_equals_exact_preimage": true
+}

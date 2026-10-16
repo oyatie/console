@@ -1,0 +1,38 @@
+{
+  "status": "PROPOSED_APPLICATION_ORCHESTRATION_TESTS_PENDING_INDEPENDENT_REVIEW",
+  "base": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "authored_pure_leaves": 5,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "repository_mutations": 0,
+  "private_formatter": "rustup run 1.98.1 rustfmt --edition 2024 native_company_read_usecase_tests.rs; exit0",
+  "files": [
+    {
+      "path": "DESIGN.md",
+      "sha256": "c286cf26a7f507d9153ff7e66541f42466cbc8e750b7bfa6b4e026ab91728c64"
+    },
+    {
+      "path": "INTERFACES.rs",
+      "sha256": "29395da96f42d0d1d0ba21895b28dae925cb423d7b664fe4c458ff04539b7306"
+    },
+    {
+      "path": "SUCCESSOR.md",
+      "sha256": "54c012c03d18a891f013ee8f7130d9846cfa5924e3143cb6c374797065762b58"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "sha256": "3bd9276d4d2c3995a912a8fcaff6013ae26a80e8d90a2f64c78f4c5767e2f92c"
+    },
+    {
+      "path": "registration.rs.fragment",
+      "sha256": "6f6195ec19ad656f2207fc70ec43f0235b3b6b2de26843b751f80825e5bfb434"
+    },
+    {
+      "path": "source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc"
+    }
+  ],
+  "predecessor_manifest_sha256": "381226dad04e972b7205b3f12b6d59d63d0ebd351fa5cb7baac9639d0e87400b",
+  "successor": "Retain four ?Sized bounds; one object_id getter caller rename; exact allowed destination and ordinary child registration.",
+  "adoption_destination": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs"
+}

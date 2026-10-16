@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_TEST_AND_BOUNDED_WIRING_DESIGN",
+  "packet_manifest_sha256": "95fbaaa5fe1a3c96033201e416b5bffb2f48698fcbf2367a239ef8fbce556ed8",
+  "checks": {
+    "packet_hashes": 20,
+    "exact_base_source_hashes": 13,
+    "private_baseline_node": {
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "skipped": 0
+    },
+    "private_positive_only_planned_two_owner_changes": {
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "skipped": 0
+    },
+    "production_writes": 0,
+    "cargo": 0,
+    "DB": 0
+  },
+  "findings": [],
+  "conclusions": [
+    "New tests reuse actual execution extractor and existing reachable owner gate; retain12existing tests.",
+    "Static baseline2 correctly distinguished from execution and generated Buck declaration.",
+    "Control10 corruptions refuse nonexecuting/partial/missing failure collector; minimal exact command+baseline successor made15/15 pass privately.",
+    "Root must run exact clean test candidate RED before source admission and serialize CI/baseline writes. Existing command and fail-slow collector preservation require final diff check; actual CI execution not claimed."
+  ]
+}

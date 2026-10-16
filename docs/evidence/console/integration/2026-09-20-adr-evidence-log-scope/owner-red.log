@@ -1,0 +1,4 @@
+ADR governance gate failed (3):
+- docs/evidence/console/integration/2026-09-20-cedar-ci-and-readiness/candidate1085613a-verify.log:2153: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes
+- docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log:2030: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes
+- docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log:2053: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes

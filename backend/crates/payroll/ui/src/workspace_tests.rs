@@ -1,0 +1,1352 @@
+//! Shared workspace acceptance at the existing mounted SSR renderer.
+use super::{ScreenSection, ShippingScreens, UiScreen, render_screens};
+
+#[test]
+fn workspace_focused_pages_have_a_named_main_and_keyboard_navigation() {
+    let screens = ShippingScreens {
+        companies: ScreenSection::Empty,
+        people: ScreenSection::Empty,
+        runs: ScreenSection::Empty,
+        ..ShippingScreens::default()
+    };
+    for (focus, subject) in [
+        (UiScreen::Home, "업무 공간"),
+        (UiScreen::Organization, "조직"),
+        (UiScreen::Hr, "사람과 고용"),
+        (UiScreen::Payroll, "급여"),
+    ] {
+        let html = render_screens(&screens, focus);
+        assert_eq!(html.matches("<h1").count(), 1, "one page subject: {html}");
+        let heading = html
+            .split("<h1")
+            .nth(1)
+            .unwrap()
+            .split("</h1>")
+            .next()
+            .unwrap();
+        assert!(
+            heading.contains(subject),
+            "focused page subject must be meaningful: {heading}"
+        );
+        assert!(
+            html.contains("href=\"#main-content\""),
+            "keyboard users need a working skip link"
+        );
+        assert!(
+            html.contains("<main id=\"main-content\""),
+            "skip link must target main"
+        );
+        let nav = html
+            .split("<nav")
+            .nth(1)
+            .expect("navigation landmark")
+            .split('>')
+            .next()
+            .unwrap();
+        assert!(
+            nav.contains("aria-label=\"주요 탐색\""),
+            "navigation landmark must be named"
+        );
+        assert!(
+            !html.contains("/pkg/"),
+            "static workspace must not download hydration"
+        );
+    }
+}
+
+#[test]
+fn workspace_navigation_never_advertises_denied_or_unimplemented_destinations() {
+    let html = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Empty,
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    let nav = html
+        .split("<nav")
+        .nth(1)
+        .expect("navigation landmark")
+        .split("</nav>")
+        .next()
+        .unwrap();
+    assert_eq!(nav.matches("aria-current=\"page\"").count(), 1);
+    let at = nav.find("href=\"/hr\"").expect("authorized HR destination");
+    let start = nav[..at].rfind("<a ").expect("destination is a link");
+    let link = nav[start..].split('>').next().unwrap();
+    assert!(
+        link.contains("aria-current=\"page\""),
+        "current state belongs to focused destination"
+    );
+    for destination in [
+        "/organization",
+        "/payroll",
+        "/approvals",
+        "/messenger",
+        "/calendar",
+        "/data",
+    ] {
+        assert!(
+            !html.contains(&format!("href=\"{destination}\"")),
+            "unoffered destination: {destination}"
+        );
+    }
+    assert!(
+        !html.contains("href=\"#\"") && !html.contains("disabled"),
+        "no pretend workspace action"
+    );
+    let denied = render_screens(&ShippingScreens::default(), UiScreen::Hr);
+    assert!(
+        !denied.contains("<nav") && !denied.contains("사람과 고용"),
+        "denied focus stays omitted"
+    );
+}
+
+// Renderer fixtures only. These values are never product data or browser provisioning.
+use super::native_account::{self, Page};
+use axum::http::{StatusCode, header};
+
+const COMPANY: &str = "00000000-0000-4000-8000-000000000101";
+fn page(flags: u8) -> Page {
+    Page::Company {
+        org_id: COMPANY.into(),
+        name: "긴 회사 이름 <연구 & 본사> 주식회사".into(),
+        slug: "seoul-<research&production>-".repeat(12),
+        show_payroll_navigation: flags & 1 != 0,
+        show_people_navigation: false,
+        show_people_create_navigation: false,
+        show_policy_navigation: flags & 2 != 0,
+        show_payroll_policy_navigation: flags & 4 != 0,
+        people_policy: None,
+    }
+}
+fn links(html: &str) -> Vec<(&str, &str)> {
+    html.split("<a ")
+        .skip(1)
+        .map(|part| {
+            let (attributes, rest) = part.split_once('>').expect("anchor opening");
+            let href = attributes
+                .split("href=\"")
+                .nth(1)
+                .expect("anchor href")
+                .split('"')
+                .next()
+                .unwrap();
+            let label = rest.split_once("</a>").expect("anchor closing").0;
+            assert!(
+                !attributes.contains(" hidden") && !attributes.contains("aria-hidden=\"true\"")
+            );
+            (href, label)
+        })
+        .collect()
+}
+fn destination_href_present(html: &str, href: &str) -> bool {
+    html.contains(&format!("href=\"{href}\""))
+}
+#[test]
+fn destination_href_oracle_distinguishes_independently_authorized_descendant() {
+    let parent = "/companies/id/policy";
+    let descendant = "/companies/id/policy/payroll-read/install";
+    let only_descendant = format!("<a href=\"{descendant}\">급여 목록 열람 권한</a>");
+    assert!(destination_href_present(&only_descendant, descendant));
+    assert!(!destination_href_present(&only_descendant, parent));
+    let with_parent = format!("{only_descendant}<a href=\"{parent}\">권한 관리</a>");
+    assert!(destination_href_present(&with_parent, parent));
+    assert!(!destination_href_present("", parent));
+}
+fn has_expected_cards(html: &str, flags: u8) -> bool {
+    let cards: Vec<_> = html.split("<article ").skip(1).collect();
+    cards.len() == flags.count_ones() as usize
+        && [(1, "payroll"), (2, "policy"), (4, "payroll-policy")]
+            .iter()
+            .all(|(bit, key)| {
+                cards
+                    .iter()
+                    .filter(|card| {
+                        card.split_once('>').is_some_and(|(attrs, _)| {
+                            attrs.contains(&format!("data-company-destination=\"{key}\""))
+                                && !attrs.contains("hidden")
+                        })
+                    })
+                    .count()
+                    == usize::from(flags & bit != 0)
+            })
+}
+fn one_account_destination(html: &str) -> bool {
+    let links = links(html);
+    let account: Vec<_> = links
+        .iter()
+        .filter(|(href, _)| *href == "/account")
+        .collect();
+    account.len() == 1 && account[0].1 == "내 업무 공간 목록"
+}
+#[test]
+fn company_workspace_oracles_reject_unoffered_cards_and_duplicate_account_links() {
+    let account = "<a href=\"/account\">내 업무 공간 목록</a>";
+    assert!(one_account_destination(account));
+    assert!(!one_account_destination(&format!(
+        "{account}<a href=\"/account\">다른 이름</a>"
+    )));
+    assert!(!one_account_destination(
+        "<a href=\"/account\">다른 이름</a>"
+    ));
+    assert!(!one_account_destination(""));
+    let payroll = "<article data-company-destination=\"payroll\"><a href=\"/companies/x/payroll\">급여</a></article>";
+    assert!(has_expected_cards(payroll, 1));
+    assert!(has_expected_cards("", 0));
+    assert!(!has_expected_cards("", 1));
+    assert!(!has_expected_cards(payroll, 0));
+    assert!(!has_expected_cards(
+        "<article data-company-destination=\"payroll\"><h2>급여</h2></article>",
+        0
+    ));
+    assert!(!has_expected_cards(&format!("{payroll}{payroll}"), 1));
+    assert!(!has_expected_cards(
+        &payroll.replace("payroll\"", "wrong\""),
+        1
+    ));
+    assert!(!has_expected_cards(
+        &payroll.replace("<article ", "<article hidden "),
+        1
+    ));
+}
+#[test]
+fn company_workspace_keeps_each_destination_independently_authorized() {
+    for flags in 0..8 {
+        let html = native_account::render(page(flags));
+        assert!(html.contains("class=\"workspace company-workspace\""));
+        assert!(html.contains("href=\"/assets/workspace.css\""));
+        assert!(html.contains("<html lang=\"ko\""));
+        assert!(html.contains("id=\"main-content\" tabindex=\"-1\""));
+        assert!(html.contains(&format!("data-company-id=\"{COMPANY}\"")));
+        assert!(html.contains("긴 회사 이름 &lt;연구 &amp; 본사&gt; 주식회사"));
+        assert!(html.contains(&"seoul-&lt;research&amp;production&gt;-".repeat(12)));
+        let headings: Vec<_> = html.split("<h1").skip(1).collect();
+        assert_eq!(headings.len(), 1);
+        assert_eq!(
+            headings[0]
+                .split_once('>')
+                .unwrap()
+                .1
+                .split_once("</h1>")
+                .unwrap()
+                .0,
+            "긴 회사 이름 &lt;연구 &amp; 본사&gt; 주식회사"
+        );
+        assert_eq!(html.matches("<main ").count(), 1);
+        assert_eq!(html.matches("<header ").count(), 1);
+        assert!(html.contains("native-workspace-header"));
+        assert!(html.contains("aria-label=\"계정 탐색\""));
+        let (desktop, mobile) = company_header_presentations(&html);
+        for region in [desktop, mobile] {
+            let current: Vec<_> = region
+                .split("<a ")
+                .skip(1)
+                .filter(|link| {
+                    link.split('>')
+                        .next()
+                        .unwrap()
+                        .contains("aria-current=\"page\"")
+                })
+                .collect();
+            assert_eq!(current.len(), 1);
+            assert!(current[0].contains(&format!("href=\"/companies/{COMPANY}\"")));
+            let account: Vec<_> = links(region)
+                .into_iter()
+                .filter(|(href, _)| *href == "/account")
+                .collect();
+            assert_eq!(account, vec![("/account", "내 계정 · 업무 공간 선택")]);
+        }
+        assert!(
+            !html.contains("<script")
+                && !html.contains("<leptos-island")
+                && !html.contains("native-account.js")
+        );
+        let main = company_main_region(&html);
+        let actual = links(main);
+        assert!(has_expected_cards(main, flags));
+        assert_eq!(
+            links(main)
+                .iter()
+                .filter(|(href, _)| *href == "/account")
+                .count(),
+            0
+        );
+        assert_eq!(
+            actual
+                .iter()
+                .filter(|(href, _)| *href == "/account")
+                .count(),
+            0
+        );
+        assert_eq!(
+            links(&html)
+                .iter()
+                .filter(|(href, _)| *href == "#main-content")
+                .count(),
+            1
+        );
+        let allowed = [
+            (1, format!("/companies/{COMPANY}/payroll"), "급여"),
+            (2, format!("/companies/{COMPANY}/policy"), "권한 관리"),
+            (
+                4,
+                format!("/companies/{COMPANY}/policy/payroll-read/install"),
+                "급여 목록 열람 권한",
+            ),
+        ];
+        for (bit, href, label) in &allowed {
+            let matches: Vec<_> = actual.iter().filter(|(target, _)| target == href).collect();
+            assert_eq!(matches.len(), usize::from(flags & bit != 0));
+            if let Some((_, actual_label)) = matches.first() {
+                assert_eq!(*actual_label, *label);
+            }
+            if flags & bit == 0 {
+                assert!(!destination_href_present(&html, href));
+            }
+        }
+        assert_eq!(
+            actual
+                .iter()
+                .filter(|(href, label)| *href == "/account" && *label == "내 업무 공간 목록")
+                .count(),
+            0
+        );
+        for (href, _) in links(&html) {
+            assert!(
+                ["/", "/account", "#main-content"].contains(&href)
+                    || href == format!("/companies/{COMPANY}")
+                    || allowed
+                        .iter()
+                        .any(|(bit, path, _)| flags & bit != 0 && href == path.as_str())
+            );
+        }
+        assert_eq!(
+            html.contains("data-company-destinations=\"empty\""),
+            flags == 0
+        );
+        assert_eq!(
+            html.contains("이 화면에서 열 수 있는 업무가 없습니다"),
+            flags == 0
+        );
+        if flags == 0 {
+            assert!(html.contains(
+                "내 업무 공간 목록에서 다른 회사를 선택하거나 담당자에게 업무 권한을 확인해 주세요."
+            ));
+        }
+        assert!(
+            !html.contains("disabled")
+                && !html.contains("/hr\"")
+                && !html.contains("/organization\"")
+        );
+    }
+}
+#[test]
+fn static_company_csp_preserves_private_headers_and_interactive_account_script() {
+    let response = native_account::document(page(7), StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::OK);
+    let headers = response.headers();
+    assert_eq!(headers[header::CACHE_CONTROL], "no-store");
+    assert_eq!(headers[header::X_CONTENT_TYPE_OPTIONS], "nosniff");
+    assert_eq!(
+        headers[header::CONTENT_SECURITY_POLICY],
+        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    );
+    let sign_in = native_account::render(Page::SignIn);
+    assert!(sign_in.contains("src=\"/assets/native-account.js\""));
+    assert!(sign_in.contains("data-native-action=\"login\""));
+    for id in [
+        "native-status",
+        "native-error",
+        "native-cancel",
+        "native-recheck",
+        "native-retry-finish",
+        "native-continue",
+        "native-reload-terms",
+    ] {
+        assert_eq!(sign_in.matches(&format!("id=\"{id}\"")).count(), 1);
+    }
+    for label in [
+        "취소",
+        "결과 다시 확인",
+        "같은 요청 다시 제출",
+        "로그인으로 확인",
+        "새 약관 확인",
+    ] {
+        assert!(sign_in.contains(label));
+    }
+    assert_eq!(
+        native_account::document(Page::SignIn, StatusCode::OK).headers()
+            [header::CONTENT_SECURITY_POLICY],
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    );
+}
+
+// Renderer fixtures only. These inputs do not grant rights or qualify a real browser state.
+fn company_main_region(html: &str) -> &str {
+    assert_eq!(html.matches("<main ").count(), 1);
+    html.split_once("<main ")
+        .unwrap()
+        .1
+        .split_once("</main>")
+        .unwrap()
+        .0
+}
+
+fn company_header_presentations(html: &str) -> (&str, &str) {
+    assert_eq!(html.matches("<header ").count(), 1);
+    let header = html
+        .split_once("<header ")
+        .unwrap()
+        .1
+        .split_once("</header>")
+        .unwrap()
+        .0;
+    let desktop_marker = "data-native-navigation=\"desktop\"";
+    let mobile_marker = "data-native-navigation=\"mobile\"";
+    assert_eq!(
+        header.matches(desktop_marker).count(),
+        1,
+        "Company must use the shared desktop header"
+    );
+    assert_eq!(
+        header.matches(mobile_marker).count(),
+        1,
+        "Company must use the shared mobile header"
+    );
+    let desktop = header.split_once(desktop_marker).unwrap().1;
+    desktop.split_once(mobile_marker).unwrap()
+}
+
+fn company_shared_header_matrix_case(flags: u8) {
+    use super::native_policy::{Operation, PolicyAction, Subject};
+    let root = format!("/companies/{COMPANY}");
+    let read = flags & 1 != 0;
+    let create = flags & 2 != 0;
+    let policy = flags & 4 != 0;
+    let payroll = flags & 8 != 0;
+    for people_policy_case in 0..3 {
+        let people_policy = match people_policy_case {
+            0 => None,
+            1 => Some(vec![]),
+            _ => Some(vec![
+                PolicyAction {
+                    subject: Subject::PeopleRead,
+                    operation: Operation::Grant,
+                },
+                PolicyAction {
+                    subject: Subject::PeopleCreate,
+                    operation: Operation::Grant,
+                },
+            ]),
+        };
+        let html = native_account::render(Page::Company {
+            org_id: COMPANY.into(),
+            name: "회사 <연구 & 본사>".into(),
+            slug: "unit-scope".into(),
+            show_people_navigation: read,
+            show_people_create_navigation: create,
+            show_policy_navigation: policy,
+            show_payroll_navigation: payroll,
+            show_payroll_policy_navigation: false,
+            people_policy,
+        });
+        let main = company_main_region(&html);
+        let (desktop, mobile) = company_header_presentations(&html);
+        let mut expected = vec!["/account".to_owned(), root.clone()];
+        for (visible, suffix) in [
+            (read, "/people"),
+            (create, "/people/new"),
+            (policy, "/policy"),
+            (payroll, "/payroll"),
+        ] {
+            let href = format!("{root}{suffix}");
+            assert_eq!(
+                destination_href_present(&html, &href),
+                visible,
+                "raw href flags={flags} policy_case={people_policy_case}"
+            );
+            assert_eq!(
+                links(main).iter().filter(|(path, _)| *path == href).count(),
+                usize::from(visible),
+                "main destination must be unique"
+            );
+            if visible {
+                expected.push(href);
+            }
+        }
+        expected.sort();
+        for region in [desktop, mobile] {
+            let mut actual: Vec<_> = links(region)
+                .into_iter()
+                .map(|(href, _)| href.to_owned())
+                .collect();
+            actual.sort();
+            assert_eq!(
+                actual, expected,
+                "header projections flags={flags} policy_case={people_policy_case}"
+            );
+            assert_eq!(region.matches("aria-current=\"page\"").count(), 1);
+            let current = region
+                .split("<a ")
+                .skip(1)
+                .find(|link| {
+                    link.split('>')
+                        .next()
+                        .unwrap()
+                        .contains("aria-current=\"page\"")
+                })
+                .unwrap();
+            assert!(
+                current
+                    .split('>')
+                    .next()
+                    .unwrap()
+                    .contains(&format!("href=\"{root}\""))
+            );
+            assert!(!region.contains("<form") && !region.contains("<input"));
+            let labels: Vec<_> = format!("{region}{main}")
+                .split("<nav ")
+                .skip(1)
+                .map(|part| {
+                    part.split_once("aria-label=\"")
+                        .unwrap()
+                        .1
+                        .split('"')
+                        .next()
+                        .unwrap()
+                        .to_owned()
+                })
+                .collect();
+            assert_eq!(
+                labels.len(),
+                labels
+                    .iter()
+                    .collect::<std::collections::BTreeSet<_>>()
+                    .len(),
+                "visible landmark names must differ"
+            );
+        }
+        assert!(desktop.contains("aria-label=\"회사 업무 탐색\""));
+        assert_eq!(
+            desktop.contains("aria-label=\"사람과 조직 탐색\""),
+            read || create || payroll
+        );
+        assert_eq!(
+            mobile.matches("data-native-payroll-shortcut").count(),
+            usize::from(payroll)
+        );
+        let menu = mobile.split_once("<details ").unwrap().1;
+        assert!(!destination_href_present(menu, &format!("{root}/payroll")));
+        assert!(main.contains("<summary>업무 공간 식별자</summary>"));
+        assert!(main.contains("tabindex=\"-1\""));
+        assert!(!html.contains("<script") && !html.contains("disabled"));
+        assert!(
+            !destination_href_present(&html, "#")
+                && !html.contains("/organization")
+                && !html.contains("/employment")
+                && !html.contains("/approval")
+        );
+        let shortcut = if create {
+            Some(format!("{root}/people/new"))
+        } else if people_policy_case == 1 {
+            Some(format!("{root}/policy/people-directory/install"))
+        } else if people_policy_case == 2 {
+            Some(format!("{root}/policy/people-directory/create/grant"))
+        } else {
+            None
+        };
+        assert_eq!(
+            main.contains("id=\"company-next-task-title\">바로가기</h2>"),
+            shortcut.is_some()
+        );
+        assert!(!main.contains("id=\"company-next-task-title\">다음 업무</h2>"));
+        if let Some(target) = shortcut {
+            assert_eq!(
+                links(main)
+                    .iter()
+                    .filter(|(href, _)| *href == target)
+                    .count(),
+                1,
+                "shortcut must have no competing main action"
+            );
+        }
+    }
+}
+
+macro_rules! company_header_case {
+    ($name:ident, $flags:literal) => {
+        #[test]
+        fn $name() {
+            company_shared_header_matrix_case($flags);
+        }
+    };
+}
+company_header_case!(company_shared_header_flags_0000, 0);
+company_header_case!(company_shared_header_flags_0001, 1);
+company_header_case!(company_shared_header_flags_0010, 2);
+company_header_case!(company_shared_header_flags_0011, 3);
+company_header_case!(company_shared_header_flags_0100, 4);
+company_header_case!(company_shared_header_flags_0101, 5);
+company_header_case!(company_shared_header_flags_0110, 6);
+company_header_case!(company_shared_header_flags_0111, 7);
+company_header_case!(company_shared_header_flags_1000, 8);
+company_header_case!(company_shared_header_flags_1001, 9);
+company_header_case!(company_shared_header_flags_1010, 10);
+company_header_case!(company_shared_header_flags_1011, 11);
+company_header_case!(company_shared_header_flags_1100, 12);
+company_header_case!(company_shared_header_flags_1101, 13);
+company_header_case!(company_shared_header_flags_1110, 14);
+company_header_case!(company_shared_header_flags_1111, 15);
+
+#[test]
+fn company_policy_root_clauses_are_truthful_static_rows() {
+    let html = native_account::render(Page::CompanyPolicy {
+        org_id: COMPANY.into(),
+        action_keys: vec!["company.identity.read"],
+        delegable_action_keys: vec!["company.identity.read"],
+    });
+    let main = company_main_region(&html);
+    let (desktop, mobile) = company_header_presentations(&html);
+    for region in [desktop, mobile] {
+        assert_eq!(region.matches("aria-current=\"page\"").count(), 1);
+        assert!(region.contains(&format!("href=\"/companies/{COMPANY}/policy\"")));
+    }
+    assert!(main.contains("연결된 사용 조항") && main.contains("위임 상한에 포함된 조항"));
+    assert!(
+        !main.contains("사용할 수 있는 기능") && !main.contains("다른 계정에 연결할 수 있는 범위")
+    );
+    assert!(main.contains("실행") && main.contains("현재 정책"));
+    assert!(main.contains("회사 이름과 식별자 열람"));
+    assert!(!html.contains("<script") && !main.contains("<form") && !main.contains("<button"));
+    for href in [
+        format!("/companies/{COMPANY}/people"),
+        format!("/companies/{COMPANY}/people/new"),
+        format!("/companies/{COMPANY}/payroll"),
+    ] {
+        assert!(
+            !destination_href_present(&html, &href),
+            "clauses alone must not create action destinations"
+        );
+    }
+    let response = native_account::document(
+        Page::CompanyPolicy {
+            org_id: COMPANY.into(),
+            action_keys: vec![],
+            delegable_action_keys: vec![],
+        },
+        StatusCode::OK,
+    );
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+    assert_eq!(
+        response.headers()[header::CONTENT_SECURITY_POLICY],
+        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    );
+}
+
+#[test]
+fn company_policy_root_refusal_preserves_status_csp_and_omits_protected_context() {
+    let html = native_account::render(Page::Refused);
+    for forbidden in [
+        COMPANY,
+        "会社",
+        "/companies/",
+        "<form",
+        "data-company-id",
+        "unit-scope",
+    ] {
+        assert!(!html.contains(forbidden));
+    }
+    let response = native_account::document(Page::Refused, StatusCode::NOT_FOUND);
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+    assert_eq!(
+        response.headers()[header::X_CONTENT_TYPE_OPTIONS],
+        "nosniff"
+    );
+    assert_eq!(
+        response.headers()[header::VARY],
+        "Authorization, Cookie, Origin"
+    );
+    assert_eq!(
+        response.headers()[header::CONTENT_SECURITY_POLICY],
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    );
+}
+
+// Additive native-header oracle only; projections below are renderer fixtures,
+// never authorization or business provisioning. Preserve all older helpers.
+fn section_attributes(tag: &str) -> Vec<(&str, Option<&str>)> {
+    let mut rest = tag
+        .split_once(char::is_whitespace)
+        .map_or("", |(_, rest)| rest);
+    let mut attributes = Vec::new();
+    while !rest.trim_start().trim_end_matches('/').is_empty() {
+        rest = rest.trim_start();
+        let end = rest
+            .find(|c: char| c.is_whitespace() || c == '=' || c == '/')
+            .unwrap_or(rest.len());
+        assert!(end > 0, "malformed header attribute");
+        let name = &rest[..end];
+        rest = rest[end..].trim_start();
+        let value = if let Some(value) = rest.strip_prefix('=') {
+            let value = value.trim_start();
+            let quote = value.chars().next().expect("attribute value");
+            assert!(quote == '"' || quote == '\'', "quoted header attribute");
+            let value = &value[1..];
+            let end = value.find(quote).expect("closed header attribute");
+            rest = &value[end + 1..];
+            Some(&value[..end])
+        } else {
+            None
+        };
+        attributes.push((name, value));
+    }
+    attributes
+}
+
+fn section_attribute<'a>(tag: &'a str, name: &str) -> Option<&'a str> {
+    let values: Vec<_> = section_attributes(tag)
+        .into_iter()
+        .filter(|(key, _)| *key == name)
+        .collect();
+    assert!(values.len() <= 1, "duplicate header attribute: {name}");
+    values.first().and_then(|(_, value)| *value)
+}
+
+fn section_tags(html: &str) -> Vec<&str> {
+    html.split('<')
+        .skip(1)
+        .filter(|part| !part.starts_with('/') && !part.starts_with('!'))
+        .map(|part| part.split_once('>').expect("closed header tag").0)
+        .collect()
+}
+
+fn section_anchors(html: &str) -> Vec<&str> {
+    section_tags(html)
+        .into_iter()
+        .filter(|tag| tag.split_ascii_whitespace().next() == Some("a"))
+        .map(|tag| {
+            assert!(
+                !section_attributes(tag)
+                    .iter()
+                    .any(|(name, value)| *name == "hidden"
+                        || (*name == "aria-hidden" && *value == Some("true"))),
+                "offered anchor stays visible"
+            );
+            section_attribute(tag, "href").expect("header anchor href")
+        })
+        .collect()
+}
+
+fn section_parts(html: &str) -> (&str, [&str; 2]) {
+    assert_eq!(html.matches("<header ").count(), 1, "one complete header");
+    let header = &html[html.find("<header ").unwrap()..];
+    let header = header.split_once("</header>").expect("closed header").0;
+    let desktop = "data-native-navigation=\"desktop\"";
+    let mobile = "data-native-navigation=\"mobile\"";
+    assert_eq!(header.matches(desktop).count(), 1);
+    assert_eq!(header.matches(mobile).count(), 1);
+    let desktop_start = header[..header.find(desktop).unwrap()]
+        .rfind("<div ")
+        .expect("desktop container");
+    let mobile_start = header[..header.find(mobile).unwrap()]
+        .rfind("<div ")
+        .expect("mobile container");
+    assert!(desktop_start < mobile_start);
+    (
+        header,
+        [
+            &header[desktop_start..mobile_start],
+            &header[mobile_start..],
+        ],
+    )
+}
+
+fn section_currents(region: &str) -> Vec<(&str, &str)> {
+    section_tags(region)
+        .into_iter()
+        .filter_map(|tag| {
+            let attributes = section_attributes(tag);
+            let currents: Vec<_> = attributes
+                .iter()
+                .filter(|(name, _)| *name == "aria-current")
+                .collect();
+            assert!(currents.len() <= 1, "duplicate current attribute");
+            currents.first().map(|(_, value)| {
+                assert_eq!(
+                    tag.split_ascii_whitespace().next(),
+                    Some("a"),
+                    "current must belong to an anchor"
+                );
+                let value = value.expect("current attribute value");
+                assert!(
+                    value == "page" || value == "location",
+                    "unknown current value"
+                );
+                (
+                    section_attribute(tag, "href").expect("current anchor href"),
+                    value,
+                )
+            })
+        })
+        .collect()
+}
+
+// flags: independently projected read/create/Company/Policy/Payroll links.
+// This expected-header construction is test data, not permission authority.
+pub(super) fn assert_native_section_header(
+    html: &str,
+    company: &str,
+    flags: [bool; 5],
+    selected: Option<(&str, &str)>,
+    payroll_current: bool,
+    administration_label: &str,
+) {
+    let [read, create, company_link, policy, payroll] = flags;
+    let root = format!("/companies/{company}");
+    let payroll_href = format!("{root}/payroll");
+    let (header, regions) = section_parts(html);
+    let brands: Vec<_> = section_tags(header)
+        .into_iter()
+        .filter(|tag| {
+            section_attribute(tag, "class")
+                .is_some_and(|classes| classes.split_ascii_whitespace().any(|c| c == "brand"))
+        })
+        .collect();
+    assert_eq!(brands.len(), 1, "one shared brand anchor");
+    assert_eq!(brands[0].split_ascii_whitespace().next(), Some("a"));
+    assert_eq!(section_attribute(brands[0], "href"), Some("/"));
+    assert!(section_attribute(brands[0], "aria-current").is_none());
+    assert_eq!(
+        section_currents(header).len(),
+        2 * usize::from(selected.is_some())
+    );
+    assert!(!header.contains("<form") && !header.contains("<input"));
+
+    for (mode, region) in regions.into_iter().enumerate() {
+        let mut people = Vec::new();
+        for (offered, suffix) in [(read, "/people"), (create, "/people/new")] {
+            if offered {
+                people.push(format!("{root}{suffix}"));
+            }
+        }
+        if payroll && mode == 0 {
+            people.push(payroll_href.clone());
+        }
+        let mut administration = Vec::new();
+        if company_link {
+            administration.push(root.clone());
+        }
+        if policy {
+            administration.push(format!("{root}/policy"));
+        }
+        let mut expected = Vec::new();
+        if payroll && mode == 1 {
+            expected.push(payroll_href.as_str());
+        }
+        expected.extend(people.iter().map(String::as_str));
+        expected.extend(administration.iter().map(String::as_str));
+        expected.push("/account");
+        assert_eq!(
+            section_anchors(region),
+            expected,
+            "exact offered header order/multiset"
+        );
+        assert_eq!(
+            section_currents(region),
+            selected.into_iter().collect::<Vec<_>>(),
+            "typed page selection"
+        );
+
+        let groups: Vec<_> = region
+            .match_indices("<p ")
+            .filter_map(|(position, _)| {
+                let (tag, body) = region[position + 1..]
+                    .split_once('>')
+                    .expect("group opening");
+                section_attribute(tag, "class")
+                    .is_some_and(|classes| {
+                        classes.split_ascii_whitespace().any(|c| c == "nav-group")
+                    })
+                    .then(|| (position, body.split_once("</p>").expect("group closing").0))
+            })
+            .collect();
+        let expected_groups: Vec<_> = [
+            (!people.is_empty()).then_some("사람과 조직"),
+            (!administration.is_empty()).then_some("관리"),
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        assert_eq!(
+            groups.iter().map(|(_, label)| *label).collect::<Vec<_>>(),
+            expected_groups,
+            "mode-aware nonempty group labels"
+        );
+        let navs: Vec<_> = region
+            .match_indices("<nav ")
+            .map(|(position, _)| {
+                let (attributes, body) = region[position + 1..].split_once('>').unwrap();
+                let label = section_attribute(attributes, "aria-label").expect("named navigation");
+                let body = body.split_once("</nav>").expect("closed navigation").0;
+                (position, label, section_anchors(body))
+            })
+            .collect();
+        let mut expected_navs = Vec::new();
+        if !people.is_empty() {
+            expected_navs.push((
+                "사람과 조직 탐색",
+                people.iter().map(String::as_str).collect::<Vec<_>>(),
+            ));
+        }
+        if !administration.is_empty() {
+            expected_navs.push((
+                administration_label,
+                administration
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>(),
+            ));
+        }
+        expected_navs.push(("계정 탐색", vec!["/account"]));
+        assert_eq!(
+            navs.iter()
+                .map(|(_, label, links)| (*label, links.clone()))
+                .collect::<Vec<_>>(),
+            expected_navs,
+            "nonempty label/nav pairs and account last"
+        );
+        for (index, (label_position, _)) in groups.iter().enumerate() {
+            assert!(
+                *label_position < navs[index].0,
+                "label must precede its navigation"
+            );
+            if index > 0 {
+                assert!(
+                    *label_position > navs[index - 1].0,
+                    "label belongs to its own group"
+                );
+            }
+        }
+    }
+    let mobile = regions[1];
+    let (before_menu, menu) = mobile
+        .split_once("<details ")
+        .expect("native mobile disclosure");
+    assert_eq!(mobile.matches("<details ").count(), 1);
+    let shortcuts: Vec<_> = section_tags(mobile)
+        .into_iter()
+        .filter(|tag| {
+            section_attributes(tag)
+                .iter()
+                .any(|(name, _)| *name == "data-native-payroll-shortcut")
+        })
+        .collect();
+    assert_eq!(shortcuts.len(), usize::from(payroll));
+    assert_eq!(
+        before_menu.matches("data-native-payroll-shortcut").count(),
+        usize::from(payroll)
+    );
+    assert!(
+        !section_anchors(menu).contains(&payroll_href.as_str()),
+        "Payroll stays outside disclosure"
+    );
+    if let Some(shortcut) = shortcuts.first() {
+        assert_eq!(
+            section_attribute(shortcut, "href"),
+            Some(payroll_href.as_str())
+        );
+        assert_eq!(
+            section_attribute(shortcut, "aria-current"),
+            payroll_current.then_some("page")
+        );
+    }
+    let ids: Vec<_> = section_tags(html)
+        .into_iter()
+        .filter_map(|tag| section_attribute(tag, "id"))
+        .collect();
+    assert_eq!(
+        ids.len(),
+        ids.iter().collect::<std::collections::BTreeSet<_>>().len()
+    );
+    assert_eq!(
+        section_anchors(header).len(),
+        1 + section_anchors(regions[0]).len() + section_anchors(regions[1]).len(),
+        "brand plus complete regions only"
+    );
+}
+
+pub(super) fn corrupt_native_section(html: &str, mobile: bool, from: &str, to: &str) -> String {
+    let (_, regions) = section_parts(html);
+    let region = regions[usize::from(mobile)];
+    assert_eq!(region.matches(from).count(), 1, "one corruption target");
+    let start = region.as_ptr() as usize - html.as_ptr() as usize;
+    let position = start + region.find(from).unwrap();
+    let mut corrupt = html.to_owned();
+    corrupt.replace_range(position..position + from.len(), to);
+    corrupt
+}
+
+#[test]
+pub(super) fn native_workspace_sections_keep_company_and_policy_exact_roots() {
+    let root = format!("/companies/{COMPANY}");
+    let policy_root = format!("{root}/policy");
+    for bits in 0_u8..16 {
+        let [read, create, policy, payroll] = [1, 2, 4, 8].map(|mask| bits & mask != 0);
+        let mut projection = page(0);
+        if let Page::Company {
+            show_people_navigation,
+            show_people_create_navigation,
+            show_policy_navigation,
+            show_payroll_navigation,
+            ..
+        } = &mut projection
+        {
+            *show_people_navigation = read;
+            *show_people_create_navigation = create;
+            *show_policy_navigation = policy;
+            *show_payroll_navigation = payroll;
+        }
+        let html = native_account::render(projection);
+        let flags = [read, create, true, policy, payroll];
+        section_workspace_existing_links(&html, flags, &root);
+        assert_native_section_header(
+            &html,
+            COMPANY,
+            flags,
+            Some((&root, "page")),
+            false,
+            "회사 업무 탐색",
+        );
+        section_workspace_zero_location_controls(&html, flags, &root);
+    }
+    for bits in 0_u8..8 {
+        let [read, create, payroll] = [1, 2, 4].map(|mask| bits & mask != 0);
+        for named in [false, true] {
+            let html = native_account::render_with_policy_navigation(
+                Page::CompanyPolicy {
+                    org_id: COMPANY.into(),
+                    action_keys: vec!["company.identity.read"],
+                    delegable_action_keys: vec!["company.identity.read"],
+                },
+                native_account::CompanyPolicyNavigation {
+                    company_name: named.then(|| "검토 회사".into()),
+                    show_people_navigation: read,
+                    show_people_create_navigation: create,
+                    show_payroll_navigation: payroll,
+                },
+            );
+            let flags = [read, create, named, true, payroll];
+            section_workspace_existing_links(&html, flags, &policy_root);
+            assert_native_section_header(
+                &html,
+                COMPANY,
+                flags,
+                Some((&policy_root, "page")),
+                false,
+                "회사 업무 탐색",
+            );
+            section_workspace_zero_location_controls(&html, flags, &policy_root);
+            assert!(company_main_region(&html).contains("연결된 사용 조항"));
+        }
+    }
+}
+
+fn section_workspace_existing_links(html: &str, flags: [bool; 5], current: &str) {
+    let root = format!("/companies/{COMPANY}");
+    let mut expected = vec!["/account".to_owned()];
+    for (visible, suffix) in
+        flags
+            .into_iter()
+            .zip(["/people", "/people/new", "", "/policy", "/payroll"])
+    {
+        if visible {
+            expected.push(format!("{root}{suffix}"));
+        }
+    }
+    expected.sort();
+    let (desktop, mobile) = company_header_presentations(html);
+    for region in [desktop, mobile] {
+        let mut actual: Vec<_> = links(region)
+            .iter()
+            .map(|(href, _)| (*href).to_owned())
+            .collect();
+        actual.sort();
+        assert_eq!(actual, expected);
+        assert_eq!(region.matches("aria-current=\"page\"").count(), 1);
+        assert!(region.split("<a ").skip(1).any(|tail| {
+            let tag = tail.split_once('>').unwrap().0;
+            tag.contains("aria-current=\"page\"") && tag.contains(&format!("href=\"{current}\""))
+        }));
+    }
+    assert!(
+        flags[2] || flags[3],
+        "root Administration is backed by an offered root link"
+    );
+    assert!(!html.contains("<script") && !company_main_region(html).contains("<form"));
+}
+
+fn section_workspace_zero_location_controls(html: &str, flags: [bool; 5], current: &str) {
+    for mobile in [false, true] {
+        let bad = corrupt_native_section(
+            html,
+            mobile,
+            "<a href=\"/account\"",
+            "<a aria-current=\"location\" href=\"/account\"",
+        );
+        section_workspace_existing_links(&bad, flags, current); // old page/link oracle passes
+        assert!(
+            std::panic::catch_unwind(|| assert_native_section_header(
+                &bad,
+                COMPANY,
+                flags,
+                Some((current, "page")),
+                false,
+                "회사 업무 탐색"
+            ))
+            .is_err()
+        );
+    }
+}
+
+fn section_reject_corruption(html: &str, flags: [bool; 5], selected: Option<(&str, &str)>) {
+    assert!(
+        std::panic::catch_unwind(|| assert_native_section_header(
+            html,
+            COMPANY,
+            flags,
+            selected,
+            false,
+            "회사 관리"
+        ))
+        .is_err(),
+        "corrupt navigation must fail the independent oracle"
+    );
+}
+
+#[test]
+fn native_section_oracle_rejects_corruption_on_the_red_base() {
+    use super::native_people::{self, Page as PeoplePage, Scope as PeopleScope};
+    let people = format!("/companies/{COMPANY}/people");
+    let registration = format!("{people}/new");
+    let payroll = format!("/companies/{COMPANY}/payroll");
+    // Directory already satisfies this root contract on the red base.
+    let html = native_people::render(PeoplePage::Directory {
+        scope: PeopleScope {
+            company: COMPANY.into(),
+            company_name: Some("검토 회사".into()),
+            directory_link: true,
+            can_create: true,
+            company_link: true,
+            policy_link: true,
+            payroll_link: true,
+        },
+        records: vec![],
+        search_number: None,
+        next_href: None,
+        after_cursor: false,
+    });
+    assert_native_section_header(
+        &html,
+        COMPANY,
+        [true; 5],
+        Some((&people, "page")),
+        false,
+        "회사 관리",
+    );
+    // Test-only marker calibration on actual root HTML, not a claimed Detail render.
+    let location = corrupt_native_section(
+        &html,
+        false,
+        "aria-current=\"page\"",
+        "aria-current=\"location\"",
+    );
+    let location = corrupt_native_section(
+        &location,
+        true,
+        "aria-current=\"page\"",
+        "aria-current=\"location\"",
+    );
+    assert_native_section_header(
+        &location,
+        COMPANY,
+        [true; 5],
+        Some((&people, "location")),
+        false,
+        "회사 관리",
+    );
+    for mobile in [false, true] {
+        for replacement in [
+            "",
+            "aria-current=\"page\"",
+            "aria-current=\"other\"",
+            "aria-current=\"location\" aria-current=\"location\"",
+        ] {
+            let bad =
+                corrupt_native_section(&location, mobile, "aria-current=\"location\"", replacement);
+            section_reject_corruption(&bad, [true; 5], Some((&people, "location")));
+        }
+        let missing = corrupt_native_section(&location, mobile, "aria-current=\"location\"", "");
+        let wrong = corrupt_native_section(
+            &missing,
+            mobile,
+            &format!("<a href=\"{registration}\""),
+            &format!("<a aria-current=\"location\" href=\"{registration}\""),
+        );
+        section_reject_corruption(&wrong, [true; 5], Some((&people, "location")));
+        let duplicate = corrupt_native_section(
+            &location,
+            mobile,
+            "<a href=\"/account\"",
+            "<a aria-current=\"location\" href=\"/account\"",
+        );
+        section_reject_corruption(&duplicate, [true; 5], Some((&people, "location")));
+        let container = corrupt_native_section(
+            &location,
+            mobile,
+            if mobile {
+                "data-native-navigation=\"mobile\""
+            } else {
+                "data-native-navigation=\"desktop\""
+            },
+            if mobile {
+                "data-native-navigation=\"mobile\" aria-current=\"location\""
+            } else {
+                "data-native-navigation=\"desktop\" aria-current=\"location\""
+            },
+        );
+        section_reject_corruption(&container, [true; 5], Some((&people, "location")));
+        let fabricated = corrupt_native_section(
+            &location,
+            mobile,
+            &format!("href=\"{people}\""),
+            "href=\"/companies/00000000-0000-4000-8000-000000000102/people\"",
+        );
+        section_reject_corruption(&fabricated, [true; 5], Some((&people, "location")));
+        let (_, regions) = section_parts(&location);
+        let region = regions[usize::from(mobile)];
+        let first = region.find("<p class=\"nav-group\">").unwrap();
+        let second = first + region[first + 1..].find("<p class=\"nav-group\">").unwrap() + 1;
+        let account = region.find("<nav class=\"native-account-nav\"").unwrap();
+        let reversed = corrupt_native_section(
+            &location,
+            mobile,
+            &region[first..account],
+            &format!("{}{}", &region[second..account], &region[first..second]),
+        );
+        section_reject_corruption(&reversed, [true; 5], Some((&people, "location")));
+        let first_anchor = region.find(&format!("<a href=\"{people}\"")).unwrap();
+        let first_end = first_anchor + region[first_anchor..].find("</a>").unwrap() + 4;
+        let second_anchor = region.find(&format!("<a href=\"{registration}\"")).unwrap();
+        let second_end = second_anchor + region[second_anchor..].find("</a>").unwrap() + 4;
+        let reversed = corrupt_native_section(
+            &location,
+            mobile,
+            &region[first_anchor..second_end],
+            &format!(
+                "{}{}{}",
+                &region[second_anchor..second_end],
+                &region[first_end..second_anchor],
+                &region[first_anchor..first_end]
+            ),
+        );
+        section_reject_corruption(&reversed, [true; 5], Some((&people, "location")));
+    }
+    let brand = section_tags(&location)
+        .into_iter()
+        .find(|tag| section_attribute(tag, "class") == Some("brand"))
+        .unwrap();
+    let bad = location.replacen(
+        &format!("<{brand}>"),
+        &format!("<{brand} aria-current=\"location\">"),
+        1,
+    );
+    section_reject_corruption(&bad, [true; 5], Some((&people, "location")));
+    let bad = location.replacen("<header ", "<header aria-current=\"location\" ", 1);
+    section_reject_corruption(&bad, [true; 5], Some((&people, "location")));
+    let (_, regions) = section_parts(&location);
+    let shortcut_start = regions[1].find("<a ").unwrap();
+    let shortcut_end = shortcut_start + regions[1][shortcut_start..].find("</a>").unwrap() + 4;
+    let shortcut = &regions[1][shortcut_start..shortcut_end];
+    let duplicate =
+        corrupt_native_section(&location, true, shortcut, &format!("{shortcut}{shortcut}"));
+    section_reject_corruption(&duplicate, [true; 5], Some((&people, "location")));
+    let in_menu = corrupt_native_section(
+        &location,
+        true,
+        "<div class=\"native-mobile-menu-body\">",
+        &format!("<div class=\"native-mobile-menu-body\"><a href=\"{payroll}\">급여</a>"),
+    );
+    section_reject_corruption(&in_menu, [true; 5], Some((&people, "location")));
+    let denied = native_people::render(PeoplePage::Refused);
+    assert_native_section_header(&denied, COMPANY, [false; 5], None, false, "회사 관리");
+    for mobile in [false, true] {
+        let empty = corrupt_native_section(
+            &denied,
+            mobile,
+            "<nav class=\"native-account-nav\"",
+            "<p class=\"nav-group\">사람과 조직</p><nav aria-label=\"사람과 조직 탐색\"></nav><nav class=\"native-account-nav\"",
+        );
+        section_reject_corruption(&empty, [false; 5], None);
+    }
+    // Explicit zero-location corruption in each presentation for representative
+    // root/People/Policy/Payroll errors; old literal page/href helpers still pass.
+    let policy_error = super::native_policy::render(super::native_policy::Page::Problem {
+        state: "invalid",
+        title: "확인하세요",
+        description: "unit problem",
+    });
+    let payroll_error = super::native_payroll::render(super::native_payroll::Page::NotVisible);
+    let not_visible = native_people::render(PeoplePage::RequestNotVisible {
+        scope: PeopleScope {
+            company: COMPANY.into(),
+            company_name: None,
+            directory_link: true,
+            can_create: false,
+            company_link: false,
+            policy_link: false,
+            payroll_link: false,
+        },
+        command: "00000000-0000-4000-8000-000000000102".into(),
+    });
+    for (original, flags, selected) in [
+        (&html, [true; 5], Some((people.as_str(), "page"))),
+        (&not_visible, [true, false, false, false, false], None),
+        (&denied, [false; 5], None),
+        (&policy_error, [false; 5], None),
+        (&payroll_error, [false; 5], None),
+    ] {
+        assert_native_section_header(original, COMPANY, flags, selected, false, "회사 관리");
+        for mobile in [false, true] {
+            let bad = corrupt_native_section(
+                original,
+                mobile,
+                "<a href=\"/account\"",
+                "<a aria-current=\"location\" href=\"/account\"",
+            );
+            let (old_desktop, old_mobile) = company_header_presentations(original);
+            let (bad_desktop, bad_mobile) = company_header_presentations(&bad);
+            for (old, corrupt) in [(old_desktop, bad_desktop), (old_mobile, bad_mobile)] {
+                assert_eq!(links(old), links(corrupt));
+                assert_eq!(
+                    old.matches("aria-current=\"page\"").count(),
+                    corrupt.matches("aria-current=\"page\"").count()
+                );
+            }
+            section_reject_corruption(&bad, flags, selected);
+        }
+    }
+}
+
+#[test]
+fn native_workspace_sections_cover_authorized_locations_groups_and_recovery() {
+    super::native_people_tests::native_people_sections_orient_authorized_descendants();
+    super::native_people_tests::native_people_sections_keep_roots_and_unknown_states_unselected();
+    super::native_policy_validation_tests::native_policy_sections_orient_every_supported_task_and_result();
+    super::native_policy_validation_tests::native_policy_sections_leave_all_unscoped_errors_without_location();
+    super::native_payroll_tests::native_payroll_sections_keep_exact_root_and_nonempty_mobile_groups(
+    );
+    native_workspace_sections_keep_company_and_policy_exact_roots();
+}

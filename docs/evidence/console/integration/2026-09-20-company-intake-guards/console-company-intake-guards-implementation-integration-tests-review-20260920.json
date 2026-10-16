@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_BOUNDED_GUARD_IMPLEMENTATION_SOURCE_NATIVE_RUNTIME_PENDING",
+  "base": "458fb682eee64bb72af264bfe2b542343d0acff7",
+  "source_lock": "/private/tmp/console-company-guards-implementation-source-lock-20260920.json",
+  "source_lock_sha256": "ea0b3a11e631515eebe98e35432d15219c1f8ac9290183d25f1dd9ae50880fe6",
+  "files": {
+    "backend/app/BUCK": "72ae6c9e19fd3b7842962cc3a96af614d2e7a3f08bd2a8bb93a416c8512fa251",
+    "ops/BUCK": "83b2a44a5166f6b7557f4c29d0696bac2d58c5ab077064f1e0c0cbc95de0a96d",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "ops/postgres-company-enrollment-guards.sql": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a",
+    "tools/buck/gen_first_party.py": "4eeb806a10282f7b4fe6d9d75e9c25295a4e4b8a72f7b3a66217f3f2e571d652"
+  },
+  "findings": [],
+  "evidence": [
+    "All five staged/disk files equal exact source lock; approved formatted six-leaf test source remains byte-identical.",
+    "New separate UNINSTALLED resource implements6trigger routines/8ALWAYS triggers matching approved metadata; no new runtime grant or custody installation.",
+    "READ COMMITTED check and fixed-order AccessExclusive locks precede fresh empty census under1s lock timeout.",
+    "Request strict-byte/origin/time checks and immutable tuple comparison retain only pending-to-cancel/expire; receipt insert/COMMITTED fail closed, zero-row destructive statement guards remain effective.",
+    "AFTER event validates final row, exact request/revision and real same-Account family/current generation; no new Account lock after command fence or historical currentness at commit.",
+    "Deferred closure runs as Account owner, keyed to exactNEWAccount/command; event count1/2, initial/terminal tuple, payload state, receipt absence and incomplete/unsupported states enforced without global census.",
+    "Six reviewed SQLx sources cover genuine prepare/cancel,4catalog corruptions, direct owner invalid/partial rewrites, suppressed events at SETCONSTRAINTS/COMMIT with sequence witness, modified final event time and nonempty/concurrent installer refusal.",
+    "Generator adds only company_enrollment_guards_sql plus its output dictionary entry; all9predecessor disk SHA256 values unchanged.",
+    "App BUCK differs only69guard source mappings and1auth_rest external guard SQL resource; ops export and generator resource mapping add only that resource."
+  ],
+  "observed_root_logs": {
+    "generator68": "/private/tmp/console-company-guards-buck-generator-20260920.log",
+    "preservation1": "/private/tmp/console-company-guards-preservation-20260920.log",
+    "generator_check_empty_log": "/private/tmp/console-company-guards-generation-check-20260920.log"
+  },
+  "limits": [
+    "Root six native guard executions pending; reviewer ran no builds/tests/SQL.",
+    "No positive168h expiry/cleanup owner or full effect/receipt/activation acceptance; source implements admitted fail-closed guard scope only.",
+    "No protection asserted against malicious table owner dropping triggers or valid complete paired transition through trusted owner privileges.",
+    "No populated guard rollout or release qualification implied."
+  ],
+  "reviewer_runtime_executions": 0,
+  "repository_writes": 0
+}

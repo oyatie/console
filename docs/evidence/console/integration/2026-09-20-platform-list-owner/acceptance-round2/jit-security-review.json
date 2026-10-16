@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-exact-test-harness-source-only",
+  "manifest_sha256": "d8cf55c20c64085091f215ea0b09db82abcd175236a7680d2f69e73a235dd28d",
+  "candidate_sha256": "f5e6e227e1fa3470868a080e515d954dba582eda76997f483e4c6c80d2f845a5",
+  "findings": [],
+  "checks": [
+    "Exact current preimage and candidate hashes independently verified.",
+    "Only change appends SET LOCAL jit=off to existing drift observer transaction setup.",
+    "Frozen classifier SQL, expected values, assertions, fault/savepoint phases, timeout settings, test identities and separate explicit sessionon/localoff/restoration control unchanged.",
+    "Optional transaction-local JIT setting changes execution mode without weakening SQL result oracle; existing operator transaction already sets jit=off.",
+    "No repository/config/production change by reviewer and no skipped test or reduced full-suite filter authorized."
+  ],
+  "runtime_executed": 0,
+  "limits": [
+    "Long-running unblocked metadata query observed; JIT cause remains hypothesis until measured successor execution.",
+    "Retain interrupted full52 log as incomplete, rerun all52 and actual JIT control; no final suite success yet."
+  ]
+}

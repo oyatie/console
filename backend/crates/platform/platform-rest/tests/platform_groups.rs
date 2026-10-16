@@ -9,6 +9,7 @@ use axum::Router;
 use axum::body::{Body, to_bytes};
 use console_kernel_core::{OrgId, UserId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_authz::platform_policy::PlatformPolicy;
 use console_platform_provisioning::PlatformProvisioner;
 use console_platform_rest::{PLATFORM_GROUPS_PATH, PlatformRestState, router};
 use http::{Method, Request, StatusCode, header};
@@ -17,7 +18,7 @@ use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::Value;
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
+use std::sync::Arc;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
@@ -50,7 +51,12 @@ impl Harness {
         }
     }
 
-    fn service(&self) -> Router {
+    async fn service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -60,11 +66,20 @@ impl Harness {
             self.public_pem.as_bytes(),
         )
         .unwrap();
-        router(PlatformRestState::new(
-            self.rt_pool.clone(),
-            Some(verifier),
-            PlatformProvisioner::new(Duration::minutes(15)),
-        ))
+        router(
+            PlatformRestState::new(
+                self.rt_pool.clone(),
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
+                PlatformProvisioner::new(Duration::minutes(15)),
+            )
+            .with_platform_list_authority(
+                Duration::days(30),
+                Arc::new(PlatformPolicy::compile_current().unwrap()),
+            ),
+        )
     }
 
     fn token(&self, user_id: UserId, org_id: OrgId, platform: bool) -> String {
@@ -99,18 +114,11 @@ impl Harness {
 }
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+    console_platform_test_support::login_test_pool(
+        owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    )
+    .await
 }
 
 async fn request(
@@ -179,14 +187,15 @@ async fn seed_tenant(pool: &PgPool, slug: &str) -> Uuid {
         .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn platform_group_crud_assigns_subsidiaries_and_audits(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(&pool).await;
     let admin = seed_platform_admin(&pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
     let tenant_a = seed_tenant(&pool, "alpha").await;
     let _tenant_b = seed_tenant(&pool, "beta").await;
-    let service = harness.service();
+    let service = harness.service().await;
 
     let (status, created) = request(
         &service,

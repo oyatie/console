@@ -22,6 +22,7 @@ console-governance-adapter-postgres = { path = "../../governance/adapter-postgre
 console-governance-domain = { path = "../../governance/domain" }
 console-kernel-core.workspace = true
 console-platform-auth = { path = "../../platform/auth" }
+console-platform-auth-rest = { path = "../../platform/auth-rest" }
 console-platform-authz.workspace = true
 console-platform-authz-rest.workspace = true
 console-platform-db.workspace = true
@@ -38,6 +39,8 @@ tracing.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
+console-attendance-adapter-postgres = { path = "../../attendance/adapter-postgres" }
+console-attendance-application = { path = "../../attendance/application" }
 console-governance-application = { path = "../../governance/application" }
 # Dev-only: publishing an object type is four ordered HTTP calls, two of which
 # are governance approvals. Driving that ladder over HTTP ONLY — which is the

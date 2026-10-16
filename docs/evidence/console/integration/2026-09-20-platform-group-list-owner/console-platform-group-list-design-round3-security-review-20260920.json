@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 3,
+  "focus": "Integration, caller census, fixture authenticity, transport and semantic test maintenance",
+  "decision": "APPROVE unchanged round2 design for third review round; no authoring or implementation admission",
+  "manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "design_sha256": "a1d858465156868aee8c81a983edbda0497df3fc44b8b291cac5ce9a4888b72c",
+  "observed_compatible_head": "95e48111ad23abc1ebec7f1a0bd396b2deca4871",
+  "checks": [
+    "All17pinned source files unchanged through95e48111; exact mounted list_groups sole-call census repeated.",
+    "Auth-rest exhaustive ProvisioningError mapping requires only3new variants in existing unavailable arm; native BrowserError mapping already safely wildcard-collapses nonAccount errors and needs no change.",
+    "App already injects Business pool/original verifier/current compiledpolicy/serverfamilyTTL and reapplies privacy after error envelope. No composition SQL or new authority source needed.",
+    "Standalone groups fixture currently SETROLE; existing login_test_pool validates real session/current identities and absence of5adminprivileges. Use it for Business/Auth transports; inject existing30dayTTL/currentpolicy.",
+    "Retained compound CRUD/account/grant/list/removal assertions are all kept. Their mutation authorization gaps remain documented; making their existing fixture authentic must not imply mutation qualification.",
+    "Only two exact GETgroups sibling examples become obsolete. Replace them with real-shaped Group accounts descendant; keep other selected Company/ops cases, trailing slash, writes, old testnames; add explicit new selectedGETHEAD/query/noheader assertions under independent semantic review.",
+    "Known-good App fixture establishes admission: no missingauth config/sourcebridge/schema or oldstandalone fixture failure qualifies as roleRED.",
+    "Decoder fixture must boundedly cancel/join live tasks and clean ownedPID before blocking DDL restoration; exact source/catalog restore and same-token recovery before reporting outcome."
+  ],
+  "findings": [],
+  "remaining_holds": [
+    "Fourth independent design review and exact root consensus before tests.",
+    "Semantic sibling/retained fixture changes and actual decoder function substitution require concrete source review.",
+    "Executable ownerRED and laneadmission unperformed.",
+    "RawSQL grants, Groupmutation/account/mint bypasses and source-snapshot intermittent reliability remain separate HOLDs."
+  ]
+}

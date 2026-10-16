@@ -1,0 +1,15 @@
+{
+  "kind": "bounded-platform-operations-read-owner-design",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "design_sha256": "8aa7db37a305d6e53da22e83b5444de32ddafe100a0bd0e37cf9b8ab7ea72abe",
+  "source_sha256": {
+    "backend/crates/platform/provisioning/src/lib.rs": "c0839851bb8a11964cabe4636833625722b0500fc4324e8a8b087f67cf61d7e7",
+    "backend/crates/platform/platform-rest/src/lib.rs": "d01ba273366bda19a4a60f98cffb160aa8daaa4982a43050f257e7a0efc68ce2",
+    "backend/crates/platform/auth-rest/src/lib.rs": "f0ddf179161083fc6b6da06efe4223043a7569021094f4fd8e0dffab9a47b8f4",
+    "backend/crates/platform/authz/src/platform_policy.rs": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06",
+    "backend/app/src/lib.rs": "4954d9f706efd2b7bfc1cf926f62c3bb881a66707e0ae67e2f483d4304df638d"
+  },
+  "implementation_admitted": false,
+  "runtime_executed": 0,
+  "prior_manifest_sha256": "bac43725e0c37cef907e3634f54b92fbaf3a40dfa239be675f8ccaa1e9695e28"
+}

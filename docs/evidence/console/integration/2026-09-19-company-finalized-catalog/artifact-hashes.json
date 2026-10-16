@@ -1,0 +1,11 @@
+{
+  "observer.py": "02adb6d2fb99bcb9ff25778d181c0b553167184aa6eee63d8e1616820c8b251b",
+  "independent-review.json": "d12d906bbc09e9445e6aa56ec6378d360bc971f3a86174427de2ec56e706d1ad",
+  "probe.log": "4e087124e78ab304a3b51c4cfaa13085b2a57107efb6758eca1fb3dfbe311fe9",
+  "jsonb-independent-review.json": "9f933717cae8a220b7fe47c4c4053deb9c73029f0492a7a500f4e14b81e44052",
+  "metadata.json": "12cadfaffcac8eb2feda5e8d100d82ba5c20ca3ebc6dbed52f49ae4f1fda7efd",
+  "jsonb-receipt.json": "e3d55cb395ec77789c2dacdb6286f556e3e1cc174bd91247d98c473267159312",
+  "jsonb-oracle.sql": "2acf5235b4c9ae73a22df51ae3cab1391a05e3062d0d6a89e6c89a49c9e0301a",
+  "jsonb-oracle.stdout": "f0a93eaaac16ae16cb7b8f87890f318ccc526e2cca6af3452bc152c62ad38f32",
+  "metadata.sql": "04b32a871f43e0b55d51a03bf24e659538f175d3e6baf5bd6a1be21aef5796c5"
+}

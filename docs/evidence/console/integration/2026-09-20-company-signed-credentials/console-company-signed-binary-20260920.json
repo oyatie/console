@@ -1,0 +1,10 @@
+{
+  "path": "/private/tmp/console-client-release-20260919/buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+  "sha256": "b468e4506e1a68d83ed67220d1bc1d421ae44c086a0341ce16d638dd15d0d168",
+  "bytes": 398585672,
+  "discovered": 494,
+  "list_log": "/private/tmp/console-company-signed-binary-discovery-20260920.log",
+  "list_sha256": "1fc13e7c39894b15814ee8088190bf8fec9cb0b1aa2275ec2dd8965f11cc3dd6",
+  "head": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+  "source_lock": "/private/tmp/console-company-signed-implementation-source-lock-20260920.json"
+}

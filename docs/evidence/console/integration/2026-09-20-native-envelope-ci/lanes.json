@@ -1,0 +1,62 @@
+[
+  {
+    "lane": "native-envelope-ci-execution",
+    "owner": "/root",
+    "base_sha": "97ce38b9864b0b4577c5f81ec8b8957d5b099c5d",
+    "immutable_target": "Generated and actualCI execution of the three reviewed pure native error-envelope tests",
+    "allowed_paths": [
+      "tools/buck/gen_first_party.py",
+      "backend/crates/platform/request-context/BUCK",
+      ".github/workflows/ci.yml",
+      "scripts/check-ci-preflight.mjs",
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "probe": "node scripts/check-executed-tests.mjs",
+    "mechanical_guide": "Approved5file wiring only; new integration resource.none; canonical generator onlyrequestcontextBUCK; dedicated locked unfiltered target+check_status; update exactparsedscriptdigest; baseline onlyrequestcontext30\u219231 andnewtarget3. Generatedcleanliness requires reviewedgeneratedcommit before finalprobe.",
+    "reviewer": "/root/integration_tests",
+    "design_manifest": "78216d4f2fdf868f071c7fca1ea1e583320442ccd142bbe5c87c78d67e550454",
+    "pre_mortem": "Generatedtargetwithoutactualinvocation, accidentalremovedcollector or wrongresource",
+    "blast_radius": "Five build/CI records; no product/DB/schema/dependencychange",
+    "detection": "Existingactualgenerator/reachability/preflightgates,3runtimeleavesalreadygreen,exactdiff",
+    "rollback": "Revert boundedmetadata/generated/CI bindings together;preservehistoricaltests",
+    "stop_conditions": [
+      "Othergenerateddeltas",
+      "Newratchetdarkexemption",
+      "Testweakening"
+    ],
+    "remaining_holds": [
+      "Assembledrelease",
+      "HostedCIexecution"
+    ]
+  },
+  {
+    "lane": "native-envelope-generated-target",
+    "owner": "/root",
+    "base_sha": "97ce38b9864b0b4577c5f81ec8b8957d5b099c5d",
+    "immutable_target": "Generated and actualCI execution of the three reviewed pure native error-envelope tests",
+    "allowed_paths": [
+      "tools/buck/gen_first_party.py",
+      "backend/crates/platform/request-context/BUCK",
+      ".github/workflows/ci.yml",
+      "scripts/check-ci-preflight.mjs",
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_generation_is_clean_for_all_first_party_buck_faces",
+    "mechanical_guide": "Approved5file wiring only; new integration resource.none; canonical generator onlyrequestcontextBUCK; dedicated locked unfiltered target+check_status; update exactparsedscriptdigest; baseline onlyrequestcontext30\u219231 andnewtarget3. Generatedcleanliness requires reviewedgeneratedcommit before finalprobe.",
+    "reviewer": "/root/integration_tests",
+    "design_manifest": "78216d4f2fdf868f071c7fca1ea1e583320442ccd142bbe5c87c78d67e550454",
+    "pre_mortem": "Generatedtargetwithoutactualinvocation, accidentalremovedcollector or wrongresource",
+    "blast_radius": "Five build/CI records; no product/DB/schema/dependencychange",
+    "detection": "Existingactualgenerator/reachability/preflightgates,3runtimeleavesalreadygreen,exactdiff",
+    "rollback": "Revert boundedmetadata/generated/CI bindings together;preservehistoricaltests",
+    "stop_conditions": [
+      "Othergenerateddeltas",
+      "Newratchetdarkexemption",
+      "Testweakening"
+    ],
+    "remaining_holds": [
+      "Assembledrelease",
+      "HostedCIexecution"
+    ]
+  }
+]

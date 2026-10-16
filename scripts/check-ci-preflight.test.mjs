@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
   copyFileSync,
+  chmodSync,
+  existsSync,
+  realpathSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -9,6 +12,7 @@ import {
   readdirSync,
   readlinkSync,
   rmSync,
+  symlinkSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -90,6 +94,45 @@ const npmCiIf = "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}";
 const npmCiPrIf = "${{ !cancelled() && steps.derive.outcome == 'success' && steps.npm-ci.outcome == 'success' && github.event_name == 'pull_request' }}";
 const pythonFanoutProofName = "Python lane fan-out harness regression";
 const pythonFanoutProofCommand = "python3 tools/lanes/fanout.test.py";
+
+const censusReadinessIf = "${{ steps.path_class.outcome == 'success' && steps.path_class.outputs.path_class != '' && (steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false') }}";
+const censusLeafIf = "${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}";
+const censusPostsubmitIf = "${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}";
+const censusNonEvaluationIf = "${{ needs.preflight.outputs.classification_ready != 'true' }}";
+const censusThinIf = "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'false' }}";
+const censusLiveIf = "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'true' }}";
+const censusPresubmitLeaves = ["repo-gates", "api-contract", "kubernetes-manifests", "postgres-reachability-app", "postgres-reachability-platform", "postgres-reachability-ontology", "postgres-reachability-domain-a", "postgres-reachability-domain-b"];
+const censusPostsubmitLeaves = ["domain-unit", "company-conformance", "generated-face-authority", "backend", "migration-expand-contract"];
+
+function independentCensusWorkflow() {
+  let source = replaceJob(workflow, "preflight", (block) => {
+    const output = `      classification_ready: ${censusReadinessIf}`;
+    return /^      classification_ready:/m.test(block)
+      ? block.replace(/^      classification_ready:.*$/m, output)
+      : block.replace("    outputs:\n", `    outputs:\n${output}\n`);
+  });
+  for (const job of [...censusPresubmitLeaves, ...censusPostsubmitLeaves]) {
+    source = replaceJob(source, job, (block) => {
+      const condition = `    if: ${censusPostsubmitLeaves.includes(job) ? censusPostsubmitIf : censusLeafIf}`;
+      return /^    if:/m.test(block)
+        ? block.replace(/^    if:.*$/m, condition)
+        : block.replace("    needs: preflight\n", `    needs: preflight\n${condition}\n`);
+    });
+  }
+  return replaceJob(source, "postgres-domain-reachability", (block) => block
+    .replace("${{ needs.preflight.result != 'success' }}", censusNonEvaluationIf)
+    .replace("${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}", censusThinIf)
+    .replace("${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}", censusLiveIf));
+}
+
+// An unimplemented positive fixture must not make every mutant appear rejected.
+function expectCensusMutationFailure(source, label) {
+  const positive = independentCensusWorkflow();
+  assert.notEqual(source, positive, `${label}: mutation changed no source`);
+  const baseline = new Set(evaluateCiPreflight(positive).failures);
+  const added = evaluateCiPreflight(source).failures.filter((failure) => !baseline.has(failure));
+  assert.ok(added.length > 0, `${label}: no independent rejection beyond ${baseline.size} positive-fixture contract failures`);
+}
 
 function expectFailure(
   source,
@@ -174,7 +217,7 @@ function addUnexpectedActionInput(step) {
 
 function mutateActionInput(step, input, replacement) {
   const escaped = input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`^          ${escaped}: .*\\n`, "m");
+  const pattern = new RegExp(`^          ${escaped}: [^\\n]*\\n(?:^            [^\\n]*\\n)*`, "m");
   assert.match(step, pattern, `missing action input ${input}`);
   return step.replace(pattern, replacement === null
     ? ""
@@ -911,13 +954,15 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
-  it("requires both native authz unit and Cedar SDK identity suites", () => {
+  it("requires native authz, provisioning, cipher, SDK and complete People UI suites", () => {
     const unit = "//backend/crates/platform/authz:console-platform-authz-unit";
+    const provisioning = "//backend/crates/platform/provisioning:console-platform-provisioning-unit";
+    const cipher = "//backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit";
     const sdk = "//backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity";
-    const source = workflow.replace(
-      `        run: env -u DATABASE_URL tools/buck2 test ${unit}\n`,
-      `        run: env -u DATABASE_URL tools/buck2 test ${unit} ${sdk}\n`,
-    );
+    const people = "//backend/crates/payroll/ui:console-payroll-ui-itest-react_people";
+    const parser = "//backend/crates/identity/application:console-identity-application-itest-native_hr_policy_parser_contract";
+    const bootstrap = "//backend/crates/platform/authz:console-platform-authz-itest-native_hr_bootstrap_cedar_contract";
+    const source = workflow;
     const steps = yaml.load(source).jobs.backend.steps.filter((step) =>
       step.name === "Buck2 platform-authz unit suite");
     assert.equal(steps.length, 1);
@@ -926,10 +971,16 @@ describe("CI preflight contract", () => {
       id: "authz-unit",
       if: backendBuckAppLegIf,
       "working-directory": ".",
-      run: `env -u DATABASE_URL tools/buck2 test ${unit} ${sdk}`,
+      run: [
+        "env -u DATABASE_URL tools/buck2 test \\",
+        `  ${unit} \\`,
+        `  ${provisioning} \\`,
+        `  ${cipher} ${sdk} ${people} ${parser} ${bootstrap}`,
+        "",
+      ].join("\n"),
     });
     assert.deepEqual(evaluateCiPreflight(source).failures, []);
-    for (const target of [unit, sdk]) {
+    for (const target of [unit, sdk, provisioning, cipher, people, parser, bootstrap]) {
       expectFailure(
         mutateNamedStep(source, "backend", "Buck2 platform-authz unit suite", (step) => {
           assert.equal(step.split(target).length, 2);
@@ -1031,40 +1082,24 @@ describe("CI preflight contract", () => {
     }
   });
 
-  it("keeps PostgreSQL reachability non-evaluated when preflight fails", () => {
-    const model = yaml.load(workflow);
-    const aggregate = model.jobs["postgres-domain-reachability"];
+  it("keeps PostgreSQL reachability gated by classification readiness rather than unrelated preflight failure", () => {
+    const source = independentCensusWorkflow();
+    const aggregate = yaml.load(source).jobs["postgres-domain-reachability"];
     assert.equal(aggregate.if, "${{ always() }}");
     assert.deepEqual(
       aggregate.steps.map((step) => ({ name: step.name, if: step.if })),
       [
-        {
-          name: "Preflight failure non-evaluation",
-          if: "${{ needs.preflight.result != 'success' }}",
-        },
-        {
-          name: "Path-class skip proof",
-          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}",
-        },
-        {
-          name: "Require all PostgreSQL reachability facets",
-          if: "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}",
-        },
+        { name: "Preflight failure non-evaluation", if: censusNonEvaluationIf },
+        { name: "Path-class skip proof", if: censusThinIf },
+        { name: "Require all PostgreSQL reachability facets", if: censusLiveIf },
       ],
     );
-    assert.match(
-      aggregate.steps[0].run,
-      /PostgreSQL reachability not evaluated because preflight result=/,
-    );
-
-    for (const condition of [
-      "${{ needs.preflight.result != 'success' }}",
-      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}",
-      "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}",
-    ]) {
-      expectFailure(
-        workflow.replace(`        if: ${condition}\n`, "        if: ${{ always() }}\n"),
-        "PostgreSQL aggregate must distinguish preflight failure, thin skip, and heavy facets",
+    assert.match(aggregate.steps[0].run, /PostgreSQL reachability not evaluated because preflight result=/);
+    for (const step of aggregate.steps) {
+      expectCensusMutationFailure(
+        mutateNamedStep(source, "postgres-domain-reachability", step.name, (block) =>
+          block.replace(`        if: ${step.if}\n`, "        if: ${{ always() }}\n")),
+        `${step.name} must retain its readiness state`,
       );
     }
   });
@@ -1074,7 +1109,7 @@ describe("CI preflight contract", () => {
       preflight: 34,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
-      backend: 25,
+      backend: 31,
       "migration-expand-contract": 5,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
@@ -1148,9 +1183,9 @@ describe("CI preflight contract", () => {
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
     // +1 required Python lane-harness proof; every old run step remains covered.
-    assert.equal(runStepCount, 133, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 133*3 = 399.
-    assert.equal(mutationCount, 399, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 139, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 139*3 = 417.
+    assert.equal(mutationCount, 417, "exhaustive bypass matrix must not shrink");
   });
 
   it("runs the Python lane harness beside JavaScript in required preflight", () => {
@@ -1215,7 +1250,7 @@ describe("CI preflight contract", () => {
     const requiredActionStepCounts = {
       preflight: 3,
       "domain-unit": 3,
-      backend: 3,
+      backend: 4,
       "migration-expand-contract": 3,
       "kubernetes-manifests": 1,
       "repo-gates": 2,
@@ -1261,9 +1296,9 @@ describe("CI preflight contract", () => {
     // 2026-08-18: -7, exactly the Free runner disk steps removed from ci.yml
     // (5 postgres shards + backend + company-conformance) and no more.
     // 2026-08-28: +2 rust-fmt setup actions (checkout + rust-toolchain).
-    assert.equal(actionStepCount, 40, "required and planned job setup-action coverage must not shrink");
-    // 40 actions x 2 bypass mutations = 80.
-    assert.equal(mutationCount, 80, "setup-action bypass matrix must not shrink");
+    assert.equal(actionStepCount, 41, "required and planned job setup-action coverage must not shrink");
+    // One retained-evidence action adds2 bypasses:41 actions x2 =82.
+    assert.equal(mutationCount, 82, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -1360,7 +1395,8 @@ describe("CI preflight contract", () => {
     // re-proves it on the runner with RUSTUP_TOOLCHAIN unset, failing if rustup
     // still has anything to download. Lower this number only with the same
     // accounting.
-    assert.equal(mutationCount, 236, "setup-action identity/input/interleaving matrix must not shrink");
+    // Upload adds3 identity +10 input +1 action-order mutations.
+    assert.equal(mutationCount, 250, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the setup-rust action body, which is now the only namer of a Rust version", () => {
@@ -1517,10 +1553,7 @@ describe("CI preflight contract", () => {
 
   it("rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation", () => {
     expectFailure(
-      workflow.replace(
-        `      - name: Install pinned DotSlash runtime\n        id: dotslash\n        if: ${preflightCheckoutHeavyIf}\n        run: tools/buck/install_dotslash.sh\n`,
-        "",
-      ),
+      mutateNamedStep(workflow, "preflight", "Install pinned DotSlash runtime", () => ""),
       "preflight must install pinned DotSlash before Buck2",
     );
   });
@@ -2009,22 +2042,19 @@ describe("CI preflight contract", () => {
     }
   });
 
-  it("rejects failure-insensitive job-level conditions on protected jobs", () => {
-    const postsubmitIf =
-      "    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}\n";
-    expectFailure(
-      replaceJob(workflow, "backend", (block) => block.replace(postsubmitIf, "    if: always()\n")),
-      "backend must run only on push/workflow_dispatch when run_heavy",
-    );
-    expectFailure(workflow.replace("  repo-gates:\n", "  repo-gates:\n    if: ${{ !cancelled() }}\n"), "repo-gates must not define job-level if");
-    expectFailure(
-      replaceJob(workflow, "company-conformance", (block) => block.replace(postsubmitIf, "    if: false\n")),
-      "company-conformance must run only on push/workflow_dispatch when run_heavy",
-    );
-    expectFailure(
-      replaceJob(workflow, "migration-expand-contract", (block) => block.replace(postsubmitIf, "    if: false\n")),
-      "migration-expand-contract must run only on push/workflow_dispatch when run_heavy",
-    );
+  it("rejects job-level conditions without classification readiness and event guards", () => {
+    const source = independentCensusWorkflow();
+    for (const [job, condition] of [
+      ["backend", "always()"],
+      ["repo-gates", "${{ !cancelled() }}"],
+      ["company-conformance", "false"],
+      ["migration-expand-contract", "false"],
+    ]) {
+      expectCensusMutationFailure(
+        replaceJob(source, job, (block) => block.replace(/^    if:.*$/m, `    if: ${condition}`)),
+        `${job} must retain readiness, cancellation and its event scope`,
+      );
+    }
     for (const job of ["backend", "api-contract", "company-conformance", "migration-expand-contract", "rust-fmt"]) {
       expectFailure(
         workflow.replace(`  ${job}:\n`, `  ${job}:\n    continue-on-error: true\n`),
@@ -2394,7 +2424,7 @@ describe("CI preflight contract", () => {
     // silently returns its tests to executing nowhere.
     expectFailure(
       workflow.replace(" -p console-platform-audit-chain", ""),
-      "domain-unit must run -p console-platform-audit-chain",
+      "domain-unit must execute the locked Cargo test commands directly when run_heavy",
     );
     expectFailure(
       workflow.replace(" --test location_consent_fsm", ""),
@@ -2653,6 +2683,41 @@ describe("CI preflight contract", () => {
     );
   });
 
+  it("requires both native platform authorization and topology codec unit suites", () => {
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+    for (const target of [
+      "//backend/crates/platform/authz:console-platform-authz-unit",
+      "//backend/crates/platform/provisioning:console-platform-provisioning-unit",
+    ]) {
+      expectFailure(
+        mutateNamedStep(workflow, "backend", "Buck2 platform-authz unit suite", (step) => {
+          assert.equal(step.split(target).length, 2);
+          return step.replace(target, "");
+        }),
+        "backend must preserve the locked fail-fast step multiset and failure semantics",
+      );
+    }
+  });
+
+  it("requires the native credential cipher unit suite in the existing protected platform step", () => {
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+    const steps = yaml.load(workflow).jobs.backend.steps.filter((step) =>
+      step.name === "Buck2 platform-authz unit suite");
+    assert.equal(steps.length, 1);
+    assert.equal(steps[0].id, "authz-unit");
+    assert.equal(steps[0].if, backendBuckAppLegIf);
+    assert.equal(steps[0]["working-directory"], ".");
+    const target = "//backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit";
+    expectFailure(
+      mutateNamedStep(workflow, "backend", "Buck2 platform-authz unit suite", (step) => {
+        assert.equal(step.split(target).length, 2);
+        return step.replace(target, "");
+      }),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
+  });
+
+
   it("keeps protected backend steps fail-slow and runs PR 473 contract tests before topology", () => {
     expectFailure(
       workflow.replace(
@@ -2825,5 +2890,1594 @@ describe("CI preflight contract", () => {
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
+  });
+});
+
+// Exact V3 design e084a1fe…; independent frozen test data, never imported from a producer.
+const inheritedBrowserStepName = "Native inherited browser histories";
+const inheritedBrowserGuard = "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
+const inheritedCompanyPictures = Object.freeze([
+  "01-public.png", "02-terms.png", "03-account-enrolled.png",
+  "04-company-created.png", "company-workspace-desktop.png", "05-company-workspace.png",
+]);
+const inheritedPolicyPictures = Object.freeze([
+  ...inheritedCompanyPictures,
+  "06-policy-install-preflight.png", "policy-before-grant.png", "policy-grant-reopened.png",
+  "policy-active-320.png", "policy-revoked-reopened.png", "payroll-navigation-receipt-320.png",
+  "payroll-navigation-workspace-320.png", "payroll-navigation-workspace-desktop.png", "payroll_read.png",
+  "payroll_reopened.png", "payroll_denied.png", "policy-administration-retained.png",
+]);
+const inheritedPeoplePictures = Object.freeze([
+  ...inheritedPolicyPictures,
+  "people-directory-320.png", "people-workspace-next-task.png", "people-workspace-next-task-320.png",
+  "people-registration-desktop.png", "people-pending-320.png", "people-detail-desktop.png",
+  "people-detail-320.png", "people-search-match-320.png", "people-search-miss-320.png",
+  "react-people-delayed-ime-input-320.png", "react-people-delayed-scroll-320.png", "react-people-precommit-focus-320.png",
+  "react-people-failed-load-320.png", "react-people-failed-render-320.png", "react-people-decoder-registration-unmodified-320.png",
+  "react-people-decoder-registration-invalid-json-320.png", "react-people-decoder-registration-unknown-version-320.png", "react-people-decoder-registration-extra-envelope-field-320.png",
+  "react-people-decoder-registration-unknown-page-kind-320.png", "react-people-decoder-registration-extra-page-field-320.png", "react-people-decoder-registration-extra-scope-field-320.png",
+  "react-people-decoder-registration-invalid-scope-boolean-320.png", "react-people-decoder-registration-malformed-company-id-320.png", "react-people-decoder-registration-nil-company-id-320.png",
+  "react-people-decoder-registration-uppercase-company-id-320.png", "react-people-decoder-registration-malformed-command-id-320.png", "react-people-decoder-registration-malformed-expectation-id-320.png",
+  "react-people-decoder-registration-numeric-revision-320.png", "react-people-decoder-registration-noncanonical-revision-320.png", "react-people-decoder-registration-large-revision-string-320.png",
+  "react-people-decoder-registration-unicode-scalar-boundary-320.png", "react-people-decoder-registration-unicode-scalar-overflow-320.png", "react-people-decoder-registration-oversized-name-320.png",
+  "react-people-decoder-registration-oversized-number-320.png", "react-people-decoder-registration-extra-form-field-320.png", "react-people-decoder-registration-extra-expectation-field-320.png",
+  "react-people-decoder-registration-invalid-nullable-field-320.png", "react-people-decoder-registration-invalid-proof-type-320.png", "react-people-decoder-registration-registration-conflict-valid-320.png",
+  "react-people-decoder-registration-registration-conflict-extra-field-320.png", "react-people-decoder-registration-request-not-visible-valid-320.png", "react-people-decoder-registration-request-not-visible-extra-field-320.png",
+  "react-people-decoder-registration-uncertain-valid-320.png", "react-people-decoder-registration-uncertain-extra-field-320.png", "react-people-decoder-registration-hostile-text-320.png",
+  "react-people-decoder-terminal-unmodified-320.png", "react-people-decoder-terminal-unknown-outcome-kind-320.png", "react-people-decoder-terminal-extra-terminal-field-320.png",
+  "react-people-decoder-terminal-terminal-proof-injection-320.png", "react-people-decoder-terminal-rejected-valid-320.png", "react-people-decoder-terminal-rejected-proof-injection-320.png",
+  "react-people-decoder-terminal-conflicting-valid-320.png", "react-people-decoder-terminal-conflicting-proof-injection-320.png", "react-people-decoder-terminal-cancelled-valid-320.png",
+  "react-people-decoder-terminal-cancelled-proof-injection-320.png", "react-people-decoder-terminal-expired-valid-320.png", "react-people-decoder-terminal-expired-proof-injection-320.png",
+  "react-people-decoder-terminal-malformed-terminal-id-320.png", "react-people-decoder-directory-unmodified-320.png", "react-people-decoder-directory-nullable-record-fields-320.png",
+  "react-people-decoder-directory-oversized-record-collection-320.png", "react-people-decoder-directory-malformed-record-id-320.png", "react-people-decoder-directory-extra-record-field-320.png",
+  "react-people-decoder-directory-numeric-record-revision-320.png", "react-people-decoder-directory-invalid-record-nullable-field-320.png", "react-people-decoder-directory-invalid-after-cursor-320.png",
+  "react-people-decoder-directory-unsafe-next-href-320.png", "react-people-decoder-directory-detail-valid-320.png", "react-people-decoder-directory-detail-extra-field-320.png",
+]);
+const inheritedHandoffPictures = Object.freeze([
+  "01-own-account-reference.png", "02-selected-administrator.png", "03-operator-creation-history.png",
+  "04-administrator-company-reopened.png",
+]);
+const inheritedGroupPictures = Object.freeze([
+  ...inheritedCompanyPictures,
+  "company-policy-root-320.png", "company-policy-root-desktop.png",
+]);
+function inheritedCase(tag, exact_leaf, actual_output_basename, public_output_variable, pictures, declared = pictures) {
+  return Object.freeze({tag, exact_leaf, actual_output_basename, public_output_variable, public_files: ["result.json", "owner-receipt.json", ...pictures], result_declared_screenshots: declared});
+}
+const inheritedBrowserCases = Object.freeze([
+  inheritedCase("people", "account_browser::deployment_operator_designation::company_setup::native_people_real_browser_register_reopen_and_revoke", "requested", "CONSOLE_INHERITED_PEOPLE_OUTPUT", inheritedPeoplePictures),
+  inheritedCase("policy", "account_browser::deployment_operator_designation::company_setup::native_company_real_browser_policy_grant_payroll_reopen_revoke", "requested", "CONSOLE_INHERITED_POLICY_OUTPUT", inheritedPolicyPictures),
+  inheritedCase("policy-startup", "account_browser::deployment_operator_designation::company_setup::native_policy_startup_tests::native_policy_verified_startup_drives_browser_current_reader_after_epoch_advance", "requested", "CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT", inheritedPolicyPictures),
+  inheritedCase("account-controller", "account_browser::deployment_operator_designation::company_setup::native_account_controller_browser::real_browser_account_controller_promotion_and_frozen_administrator", "account-controller", "CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT", [...inheritedHandoffPictures, "controller-native-first.png", "controller-react-first.png", "controller-keyboard-before-react.png", "controller-autofill-before-react.png", "controller-eventless-value-before-react.png", "controller-ime-before-react.png", "controller-preclaim-focus.png", "controller-partial-bind-rollback.png", "controller-capability-denied.png", "controller-freeze-at-csrf.png"], inheritedHandoffPictures),
+  inheritedCase("account-handoff", "account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_own_reference_selects_independent_company_administrator", "account-company-handoff", "CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT", inheritedHandoffPictures),
+  inheritedCase("company-manager", "account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_company_information_manager_current_uses_actual_nonoperator_manager_without_effects", "company-information-manager-current", "CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT", inheritedHandoffPictures),
+  inheritedCase("group-process", "account_browser::deployment_operator_designation::company_setup::native_group_process_real_browser_adopt_reopen_suspend_replace", "requested", "CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT", [...inheritedGroupPictures, "group-process-adopt-320.png", "group-process-adopt-desktop.png", "group-process-adopted.png", "group-process-suspended.png", "group-process-replacement-320.png", "group-process-replaced.png", "group-process-own-receipt-after-revoke.png"]),
+  inheritedCase("group-correction", "account_browser::deployment_operator_designation::company_setup::native_group_invalid_form_real_browser_correct_same_command_and_reopen", "requested", "CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT", [...inheritedGroupPictures, "group-correction-invalid-320.png", "group-correction-focused-320.png", "group-correction-corrected-320.png", "group-correction-adopted.png", "group-correction-own-receipt-after-revoke.png"]),
+  inheritedCase("group-held", "account_browser::deployment_operator_designation::company_setup::native_group_navigation_held_real_browser_transport_fence", "requested", "CONSOLE_INHERITED_GROUP_HELD_OUTPUT", [...inheritedGroupPictures, "group-held-form-before-correction-320.png", "group-held-form-submission-interrupted.png"]),
+]);
+const inheritedPureRustControls = Object.freeze(["account_browser::deployment_operator_designation::company_setup::policy_audit_oracle_rejects_missing_extra_wrong_fields_and_sql_json_null_confusion", "account_browser::deployment_operator_designation::company_setup::policy_participant_content_oracle_rejects_same_cardinality_corruption", "account_browser::deployment_operator_designation::company_setup::policy_browser_wire_expectation_matches_independent_frozen_vectors", "account_browser::deployment_operator_designation::company_setup::native_people_browser::people_effect_census_requires_every_effect_and_preserves_unrelated_history", "account_browser::deployment_operator_designation::company_setup::native_people_browser::native_directory_shape_oracle_rejects_employment_facts_and_false_provenance", "account_browser::deployment_operator_designation::company_setup::native_people_browser::native_receipt_linkage_oracle_rejects_same_count_wrong_identity_or_digest", "account_browser::deployment_operator_designation::company_setup::native_people_browser::people_action_oracle_uses_actual_dispatch_target_column", "account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_projection_rejects_noncanonical_or_mismatched_values"]);
+const inheritedWireControl = "account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_wire_matches_exact_postgresql_json_text";
+const inheritedNodeSuites = Object.freeze([
+  "tools/browser/account-controller.test.cjs", "tools/browser/account-company-handoff.test.cjs",
+  "tools/browser/account-company-handoff-protocol.test.cjs", "tools/browser/company-information-manager-current.test.cjs",
+  "tools/browser/group-invalid-form.test.cjs", "tools/browser/people-journey.test.cjs",
+]);
+function inheritedUploadExpressions() {
+  return inheritedBrowserCases.flatMap(row => row.public_files.map(file =>
+    "${{ env." + row.public_output_variable + " && format('{0}/" + file + "', env." + row.public_output_variable + ") || '' }}"));
+}
+
+// Retention qualification is separate from browser/product correctness.
+describe("native browser evidence retention", () => {
+  const families = [
+    ["Native Account browser", "CONSOLE_BROWSER_JOURNEY_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-sign-in.png", "05-account-returned.png"]],
+    ["Native Company creation browser", "CONSOLE_COMPANY_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-created.png", "05-company-workspace.png"]],
+    ["Native Company preview browser", "CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-preview-input-preserved.png"]],
+    ["Native payroll hydration browser", "CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "authorized-before.png", "authorized-filter-1.png", "authorized-filter-2.png", "authorized-filter-3.png"]],
+  ];
+
+  it("preserves original26 entries and retains exactly227 public files in one pinned action", () => {
+    const model = yaml.load(workflow);
+    const steps = model.jobs.backend.steps;
+    assert.equal(Object.keys(model.jobs).length, 17);
+    const uploads = steps.filter((step) => step.uses?.startsWith("actions/upload-artifact@"));
+    assert.equal(uploads.length, 1);
+    const step = uploads[0];
+    assert.equal(steps.indexOf(step), 33);
+    assert.equal(steps[31].name, "Native payroll hydration browser");
+    assert.equal(steps[32].name, inheritedBrowserStepName);
+    assert.equal(steps[34].name, "Collect failures");
+    assert.equal(step.id, "native-browser-evidence");
+    assert.equal(step.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+    assert.equal(step.if, "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}");
+    const paths = families.flatMap(([, variable, files]) => files.map((file) => `\${{ env.${variable} }}/${file}`));
+    assert.equal(paths.length, 26);
+    assert.equal(new Set(paths).size, 26);
+    const additional = inheritedUploadExpressions();
+    assert.equal(additional.length, 201);
+    const expanded = [...paths, ...additional];
+    assert.equal(expanded.length, 227);
+    assert.equal(new Set(expanded).size, 227);
+    assert.equal(step.with.path.slice(0, paths.join("\n").length + 1), paths.join("\n") + "\n");
+    const groupedAdditional = groupedInheritedUploadExpressions();
+    assert.equal(groupedAdditional.length, 9);
+    assert.deepEqual(step.with, {
+      name: "native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}",
+      path: [...paths, ...groupedAdditional].join("\n") + "\n",
+      "if-no-files-found": "error",
+      "retention-days": 7,
+      "include-hidden-files": false,
+    });
+    assert.ok(!Object.hasOwn(step, "continue-on-error"));
+    for (const replacement of ["${{ runner.temp }}/**", "${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/../runtime/**", "${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/*.json"]) {
+      const changed = mutateNamedStep(workflow, "backend", step.name, (source) => source.replace(paths[0], replacement));
+      const { failures } = evaluateCiPreflight(changed);
+      assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
+    }
+    for (const [first, second] of [
+      ["Native payroll hydration browser", step.name],
+      [step.name, "Collect failures"],
+    ]) {
+      const changed = swapNamedSteps(workflow, "backend", first, second);
+      assert.doesNotThrow(() => yaml.load(changed));
+      const { failures } = evaluateCiPreflight(changed);
+      assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
+    }
+    for (const replacement of [null, '"changed-path"']) {
+      const changed = mutateNamedStep(workflow, "backend", step.name, (source) => mutateActionInput(source, "path", replacement));
+      // A deleted/changed multiline input must remain parseable: stale child
+      // lines cannot make malformed YAML masquerade as action-lock coverage.
+      assert.doesNotThrow(() => yaml.load(changed));
+      const { failures } = evaluateCiPreflight(changed);
+      assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
+    }
+  });
+
+  it("fails every successful-leaf evidence guard on a missing empty or symlinked allowlisted file", () => {
+    const directory = mkdtempSync(join(tmpdir(), "console-browser-retention-"));
+    const steps = yaml.load(workflow).jobs.backend.steps;
+    let executions = 0;
+    try {
+      for (const [name, variable, files] of families) {
+        const step = steps.find((item) => item.name === name);
+        const marker = "# Require the retained evidence from a successful browser leaf.";
+        assert.equal(step.run.split(marker).length, 2);
+        const guard = step.run.slice(step.run.indexOf(marker));
+        const output = join(directory, variable + " path with spaces");
+        mkdirSync(output);
+        for (const file of files) writeFileSync(join(output, file), "synthetic public fixture\n");
+        const run = () => {
+          executions += 1;
+          return spawnSync("/bin/bash", ["-eu", "-c", guard], {
+            env: { PATH: process.env.PATH, [variable]: output }, encoding: "utf8",
+          });
+        };
+        assert.equal(run().status, 0, name + " complete evidence must pass");
+        const target = join(directory, "symlink-target-" + variable);
+        writeFileSync(target, "synthetic nonempty target\n");
+        for (const file of files) {
+          const path = join(output, file);
+          unlinkSync(path);
+          assert.equal(run().status, 1, name + " missing " + file);
+          writeFileSync(path, "");
+          assert.equal(run().status, 1, name + " empty " + file);
+          unlinkSync(path);
+          symlinkSync(target, path);
+          assert.equal(run().status, 1, name + " symlink " + file);
+          unlinkSync(path);
+          writeFileSync(path, "synthetic public fixture\n");
+        }
+      }
+      assert.equal(executions, 82, "4positive plus26each missing/empty/symlink probes");
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+});
+
+// Machinery execution is additive to the unchanged actual browser/owner leaf.
+it("requires Company preview machinery execution in its protected browser step", () => {
+  const command = "node --test tools/browser/company-preview.test.cjs";
+  const line = `          ${command}\n`;
+  const step = yaml.load(workflow).jobs.backend.steps.find(
+    (entry) => entry.name === "Native Company preview browser",
+  );
+  assert.equal(step.run.split("\n")[0], command);
+  assert.equal(workflow.split(line).length - 1, 1);
+  assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+  for (const replacement of [
+    "",
+    `          # ${command}\n`,
+    `          ${command} || true\n`,
+    "          node --test tools/browser/company.test.cjs\n",
+  ]) {
+    const mutated = workflow.replace(line, replacement);
+    assert.notEqual(mutated, workflow);
+    expectFailure(
+      mutated,
+      "must preserve its exact name, command, condition, and execution semantics",
+    );
+  }
+});
+
+
+// Preserve the complete DB-backed Identity REST unit binary on its existing
+// native PostgreSQL wrapper, outside the database-free Domain Cargo sweep.
+import {
+  executableWorkflowCommands as identityUnitWorkflowCommands,
+  allWorkflowCommands as identityUnitAllCommands,
+  directExecutable as identityUnitExecutable,
+} from "./lib/ci-workflow-executables.mjs";
+
+function assertCompleteIdentityUnitScheduling(source) {
+  const parsed = yaml.load(source);
+  const pureSteps = parsed.jobs["domain-unit"].steps.filter(
+    (step) => step.name === "Domain crate unit tests",
+  );
+  assert.equal(pureSteps.length, 1, "one actual database-free unit step required");
+  const pure = pureSteps[0];
+  assert.ok(pure && typeof pure.run === "string");
+  // Reuse the repository's command/quote/continuation/segment extraction.
+  // Cargo package options are a narrow argv grammar, not a shell interpreter.
+  for (const entry of identityUnitAllCommands(source).filter((item) => item.job === "domain-unit")) {
+    const executable = identityUnitExecutable(entry.tokens);
+    assert.equal(entry.malformed || executable.malformed, false,
+      "database-free unit commands must have unambiguous executable arguments");
+    const command = executable.tokens;
+    if (command[0] !== "cargo" || command[1] !== "test") continue;
+    const argumentsEnd = command.indexOf("--", 2);
+    const argumentsOnly = command.slice(2, argumentsEnd < 0 ? undefined : argumentsEnd);
+    for (let index = 0; index < argumentsOnly.length; index += 1) {
+      const argument = argumentsOnly[index];
+      const selected = argument === "-p" || argument === "--package" ? argumentsOnly[index + 1]
+        : argument.startsWith("--package=") ? argument.slice("--package=".length)
+          : argument.startsWith("-p") ? argument.slice(2).replace(/^=/, "") : null;
+      assert.notEqual(selected, "console-identity-rest",
+        "the SQLx unit test must not run without its database");
+    }
+  }
+  const admitted = identityUnitWorkflowCommands(source).filter((entry) => {
+    const executable = identityUnitExecutable(entry.tokens);
+    const command = executable.tokens;
+    return entry.job === "backend" && !entry.malformed && !entry.controlFlow
+      && !executable.malformed && command[0] === "tools/buck/test_needs_postgres.sh"
+      && command.includes("//tools/buck:identity-rest-unit-pg");
+  });
+  assert.equal(admitted.length, 1,
+    "exactly one real native PostgreSQL command must run the complete unit binary");
+  // Decode the actual admitted raw step, bind it to the exact unique parsed
+  // canonical step, then inspect that executing step's effective environment.
+  const executing = yaml.load("      - " + admitted[0].step)[0];
+  const canonical = parsed.jobs.backend.steps.filter((item) => item.id === "app-inline-pg");
+  assert.equal(canonical.length, 1, "one unique canonical app-inline-pg step required");
+  assert.equal(executing.id, "app-inline-pg",
+    "the admitted command must execute in the canonical app-inline-pg step");
+  assert.deepEqual(executing, canonical[0], "admitted and inspected step identities must match");
+  assert.equal(executing.name, "Buck2 console-app inline PostgreSQL suites");
+  const step = executing;
+  assert.ok(step && typeof step.run === "string");
+  for (const environment of [parsed.env, parsed.jobs.backend.env, step.env]) {
+    for (const selector of ["CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT", "CONSOLE_BUCK_RUST_TEST_EXACT"]) {
+      assert.ok(!Object.hasOwn(environment ?? {}, selector),
+        "effective workflow/job/step environment must not filter the moved unit binary");
+    }
+  }
+  // Inspect pre-strip tokens and the actual script: directExecutable removes
+  // shell/env assignments, including the wrapper's exact-case selector.
+  for (const raw of [admitted[0].tokens.join(" "), step.run]) {
+    assert.doesNotMatch(raw,
+      /CONSOLE_BUCK_(?:NEEDS_POSTGRES_TEST|RUST_TEST)_EXACT|--(?:exact|skip|ignored|include-ignored|list|test-filter|test-name-pattern)\b/,
+      "the moved unit binary must retain all 67 cases without filtering");
+  }
+}
+
+it("identity REST complete unit binary uses the native PostgreSQL prerequisite", () => {
+  assertCompleteIdentityUnitScheduling(workflow);
+});
+
+it("identity REST scheduling oracle rejects selectors and nonexecuting wrapper claims", () => {
+  const original = yaml.load(workflow);
+  const control = structuredClone(original);
+  const pure = control.jobs["domain-unit"].steps.find((step) => step.name === "Domain crate unit tests");
+  pure.run = pure.run.replace(/\s+-p\s+console-identity-rest\b/g, "");
+  const target = "//tools/buck:identity-rest-unit-pg";
+  const command = "tools/buck/test_needs_postgres.sh --num-threads=1 " + target;
+  const step = control.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+  step.run = command;
+  assertCompleteIdentityUnitScheduling(yaml.dump(control));
+  for (const altered of [
+    "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one " + command,
+    "env CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one " + command,
+    "CONSOLE_BUCK_RUST_TEST_EXACT=one " + command,
+    "export CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one\n" + command,
+    command + " --test-filter one",
+    "echo " + command,
+    "# " + command,
+  ]) {
+    const changed = structuredClone(control);
+    changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run = altered;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      undefined, "corruption must not claim complete binary execution: " + altered);
+  }
+  for (const level of ["workflow", "job", "step"]) {
+    for (const selector of ["CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT", "CONSOLE_BUCK_RUST_TEST_EXACT"]) {
+      const changed = structuredClone(control);
+      const holder = level === "workflow" ? changed : level === "job" ? changed.jobs.backend
+        : changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+      holder.env = { ...holder.env, [selector]: "one" };
+      assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+        /must not filter/, "effective " + level + " selector must be rejected");
+    }
+  }
+});
+
+
+it("identity REST scheduling oracle binds executing step identity and Cargo aliases and refuses list", () => {
+  const original = yaml.load(workflow);
+  const control = structuredClone(original);
+  const pure = control.jobs["domain-unit"].steps.find((step) => step.name === "Domain crate unit tests");
+  pure.run = pure.run.replace(/\s+-p\s+console-identity-rest\b/g, "");
+  const command = "tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:identity-rest-unit-pg";
+  const step = control.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+  step.run = command;
+  assertCompleteIdentityUnitScheduling(yaml.dump(control));
+  let controls = 0;
+  for (const selector of [null, "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT", "CONSOLE_BUCK_RUST_TEST_EXACT"]) {
+    const changed = structuredClone(control);
+    const canonical = changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+    const actual = structuredClone(canonical);
+    actual.id = "identity-rest-filtered";
+    if (selector) actual.env = { ...actual.env, [selector]: "one" };
+    canonical.run = original.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run
+      .replace("//tools/buck:identity-rest-unit-pg", "");
+    changed.jobs.backend.steps.push(actual);
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /canonical app-inline-pg/, "same display name must not substitute for actual step identity");
+    controls += 1;
+  }
+  {
+    const changed = structuredClone(control);
+    const duplicate = structuredClone(changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg"));
+    duplicate.run = "echo canonical step clone";
+    changed.jobs.backend.steps.push(duplicate);
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /unique canonical/, "duplicate canonical IDs are ambiguous");
+    controls += 1;
+  }
+  for (const alias of [
+    "--package console-identity-rest", "--package=console-identity-rest",
+    "-p=console-identity-rest", '-p "console-identity-rest"',
+    "-p 'console-identity-rest'", '"-p" console-identity-rest', "-pconsole-identity-rest",
+  ]) {
+    const changed = structuredClone(control);
+    changed.jobs["domain-unit"].steps.find((item) => item.name === "Domain crate unit tests").run =
+      "cargo test --manifest-path backend/Cargo.toml --lib " + alias;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /without its database/, "database-free Cargo alias must retain package selection: " + alias);
+    controls += 1;
+  }
+  for (const altered of [command + " --list", command + " -- --list"]) {
+    const changed = structuredClone(control);
+    changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg").run = altered;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /without filtering/, "enumeration is not complete unit execution");
+    controls += 1;
+  }
+  for (const claim of ["duplicate", "omitted", "quoted", "disabled"]) {
+    const changed = structuredClone(control);
+    const altered = changed.jobs.backend.steps.find((item) => item.id === "app-inline-pg");
+    if (claim === "duplicate") altered.run = command + "\n" + command;
+    if (claim === "omitted") altered.run = "echo identity binary omitted";
+    if (claim === "quoted") altered.run = 'printf "%s\\n" "' + command + '"';
+    if (claim === "disabled") altered.if = false;
+    assert.throws(() => assertCompleteIdentityUnitScheduling(yaml.dump(changed)),
+      /exactly one real native PostgreSQL command/, "nonexecuting or duplicate claim refused: " + claim);
+    controls += 1;
+  }
+  assert.equal(controls, 17, "four step identities, seven Cargo aliases, two list and four execution controls");
+});
+
+// Navigation V2 machinery is additive to the retained native Company owner leaf.
+// Synthetic workflow/runtime inputs below qualify the scheduling oracle only.
+const navV2Executables = await import("./lib/ci-workflow-executables.mjs");
+const navV2Vm = await import("node:vm");
+const navV2Path = await import("node:path");
+const navV2SuitePaths = [
+  "tools/browser/native-header-sections.test.cjs",
+  "tools/browser/company-navigation.test.cjs",
+  "tools/browser/people-journey.test.cjs",
+];
+const navV2MachineryCommand = "node --test " + navV2SuitePaths.join(" ");
+const navV2PreviewName = "Native Company preview browser";
+const navV2PrerequisiteName = "Install pinned native browser prerequisites";
+const navV2BrowserIf = "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}";
+const navV2PrerequisiteIf = "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}";
+const navV2OriginalPreviewRun = "node --test tools/browser/company-preview.test.cjs\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-preview-input-preserved.png; do\n  evidence_path=\"${CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT:?}/${evidence_file}\"\n  if [[ ! -f \"${evidence_path}\" || ! -s \"${evidence_path}\" || -L \"${evidence_path}\" ]]; then\n    echo \"native browser: required retained evidence missing or invalid\" >&2\n    exit 1\n  fi\ndone\n";
+const navV2ExpectedRun = navV2OriginalPreviewRun.replace(
+  "node --test tools/browser/company-preview.test.cjs\n",
+  "node --test tools/browser/company-preview.test.cjs\n" + navV2MachineryCommand + "\n",
+);
+const navV2BootstrapSource = readFileSync(new URL("../tools/browser/prepare_native_browser.sh", import.meta.url), "utf8");
+const navV2PackageSource = JSON.parse(readFileSync(new URL(
+  "../docs/evidence/console/integration/2026-09-19-root-entry-browser/playwright-package.json", import.meta.url,
+), "utf8"));
+const navV2LockSource = JSON.parse(readFileSync(new URL(
+  "../docs/evidence/console/integration/2026-09-19-root-entry-browser/playwright-package-lock.json", import.meta.url,
+), "utf8"));
+
+function navV2AssertProtectedScheduling(source) {
+  const model = yaml.load(source);
+  const backend = model.jobs.backend;
+  const steps = backend.steps;
+  const preview = steps.filter(entry => entry.id === "company-preview-browser" || entry.name === navV2PreviewName);
+  assert.equal(preview.length, 1, "one canonical Navigation machinery executor required");
+  assert.deepEqual(preview[0], {
+    name: navV2PreviewName, id: "company-preview-browser", if: navV2BrowserIf,
+    "working-directory": ".", run: navV2ExpectedRun,
+  }, "Navigation V2 machinery must execute between retained preview machinery and real owner leaf");
+  const prerequisites = steps.filter(entry => entry.id === "browser-prerequisites" || entry.name === navV2PrerequisiteName);
+  assert.equal(prerequisites.length, 1, "one canonical pinned runtime prerequisite required");
+  assert.deepEqual(prerequisites[0], {
+    name: navV2PrerequisiteName, id: "browser-prerequisites", if: navV2PrerequisiteIf,
+    "working-directory": ".", run: "tools/browser/prepare_native_browser.sh",
+  }, "Navigation machinery requires the existing pinned runtime installer");
+  assert.ok(steps.indexOf(prerequisites[0]) < steps.indexOf(preview[0]), "staged runtime must be published before execution");
+  for (const owner of [model, backend, prerequisites[0], preview[0]]) {
+    for (const selector of ["CONSOLE_COMPANY_BROWSER_DRIVER", "CONSOLE_NAVIGATION_DRIVER", "NODE_OPTIONS", "NODE_PATH", "BASH_ENV", "ENV"]) {
+      assert.ok(!Object.hasOwn(owner.env ?? {}, selector), "protected executor cannot override " + selector);
+    }
+  }
+  const entries = navV2Executables.allWorkflowCommands(source).filter(
+    entry => entry.tokens.some(token => navV2SuitePaths.includes(token)),
+  );
+  const navigationTokens = ["node", "--test", ...navV2SuitePaths];
+  const navigation = entries.filter(entry => entry.tokens.length === navigationTokens.length &&
+    entry.tokens.every((token, index) => token === navigationTokens[index]));
+  assert.equal(navigation.length, 1, "one complete executable Navigation suite command required");
+  const overlap = entries.filter(entry => entry !== navigation[0]);
+  const inherited = steps.filter(step => step.name === inheritedBrowserStepName);
+  assert.ok(inherited.length <= 1, "at most one protected inherited executor may overlap Navigation");
+  assert.equal(overlap.length, inherited.length, "only the protected inherited executor may overlap Navigation");
+  const protectedEntries = [[navigation[0], preview[0], navigationTokens]];
+  if (inherited.length === 1) {
+    const step = inherited[0], tokens = ["node", "--test", ...inheritedNodeSuites];
+    assert.deepEqual(Object.keys(step).sort(), ["if", "name", "run", "working-directory"],
+      "inherited overlap cannot add unreviewed execution inputs");
+    assert.equal(step.if, inheritedBrowserGuard);
+    assert.equal(step["working-directory"], ".");
+    assert.equal(steps.indexOf(step), 32, "inherited overlap retains its approved backend position");
+    assert.ok(step.run.startsWith("set -euo pipefail\numask 077\n" + tokens.join(" ") + "\n"),
+      "inherited overlap retains the exact fail-fast six-suite executor");
+    protectedEntries.push([overlap[0], step, tokens]);
+  }
+  for (const [entry, step, tokens] of protectedEntries) {
+    const actualStep = yaml.load("      - " + entry.step)[0];
+    assert.equal(entry.job, "backend");
+    assert.deepEqual(actualStep, step, "the actual executor must be the protected step");
+    assert.equal(entry.gating, true, "Navigation failures must gate the job");
+    assert.equal(entry.controlFlow, false, "Navigation failures cannot be swallowed");
+    assert.equal(entry.malformed, false);
+    assert.equal(entry.shell, null, "retain the runner's fail-fast default shell");
+    assert.deepEqual(entry.tokens, tokens, "only the exact approved executor may overlap Navigation");
+    const direct = navV2Executables.directExecutable(entry.tokens);
+    assert.equal(direct.malformed, false);
+    assert.deepEqual(direct.tokens, tokens, "complete suites must execute directly under Node");
+  }
+}
+
+function navV2ScheduledWorkflow() {
+  const step = yaml.load(workflow).jobs.backend.steps.find(entry => entry.name === navV2PreviewName);
+  if (step.run === navV2ExpectedRun) return workflow;
+  assert.equal(step.run, navV2OriginalPreviewRun, "source fixture must be the exact admitted preimage or intended repair");
+  return mutateNamedStep(workflow, "backend", navV2PreviewName, source => source.replace(
+    "          node --test tools/browser/company-preview.test.cjs\n",
+    "          node --test tools/browser/company-preview.test.cjs\n          " + navV2MachineryCommand + "\n",
+  ));
+}
+
+function navV2SchedulingCorruptions(scheduled) {
+  const line = "          " + navV2MachineryCommand + "\n";
+  const changePreview = mutate => mutateNamedStep(scheduled, "backend", navV2PreviewName, mutate);
+  const changePrerequisite = mutate => mutateNamedStep(scheduled, "backend", navV2PrerequisiteName, mutate);
+  const cases = [
+    ["omitted command", changePreview(s => s.replace(line, ""))],
+    ["commented command", changePreview(s => s.replace(line, "          # " + navV2MachineryCommand + "\n"))],
+    ["echoed command", changePreview(s => s.replace(line, "          echo " + navV2MachineryCommand + "\n"))],
+    ["quoted inert command", changePreview(s => s.replace(line, "          printf '%s\\n' '" + navV2MachineryCommand + "'\n"))],
+    ["swallowed failure", changePreview(s => s.replace(line, line.trimEnd() + " || true\n"))],
+    ["listed suites", changePreview(s => s.replace(line, line.replace("node --test ", "node --test --list ")))],
+    ["wrong executor", changePreview(s => s.replace(line, line.replace("node --test ", "npm exec --test ")))],
+    ["duplicated command", changePreview(s => s.replace(line, line + line))],
+    ["wrong suite", changePreview(s => s.replace(navV2SuitePaths[2], "tools/browser/account.test.cjs"))],
+    ["disabled executor", changePreview(addFalseCondition)],
+    ["continue on failure", changePreview(addContinueOnError)],
+    ["early successful exit", changePreview(addRetainedTextEarlyExit)],
+    ["disabled errexit", changePreview(s => s.replace(line, "          set +e\n" + line))],
+    ["missing runtime success guard", changePreview(s => s.replace(" && steps.browser-prerequisites.outcome == 'success'", ""))],
+    ["missing topology guard", changePreview(s => s.replace(" && steps.topology.outcome == 'success'", ""))],
+    ["wrong matrix leg", changePreview(s => s.replace("matrix.leg == 'buck-app'", "matrix.leg == 'cargo'"))],
+    ["wrong directory", changePreview(s => s.replace('working-directory: "."', 'working-directory: "backend"'))],
+    ["non-failing shell", changePreview(s => s.replace('        working-directory: "."\n', '        working-directory: "."\n        shell: bash {0}\n'))],
+    ["driver override", changePreview(s => s.replace("        run: |\n", "        env:\n          CONSOLE_COMPANY_BROWSER_DRIVER: /tmp/unpinned.cjs\n        run: |\n"))],
+    ["wrong step ID", changePreview(s => s.replace('id: "company-preview-browser"', 'id: "unprotected-preview"'))],
+    ["disabled prerequisite", changePrerequisite(addFalseCondition)],
+    ["non-failing prerequisite", changePrerequisite(addContinueOnError)],
+    ["wrong installer", changePrerequisite(s => s.replace("tools/browser/prepare_native_browser.sh", "tools/browser/not-the-reviewed-installer.sh"))],
+    ["missing prerequisite", changePrerequisite(() => "")],
+    ["late prerequisite", swapNamedSteps(scheduled, "backend", navV2PrerequisiteName, navV2PreviewName)],
+    ["job driver override", replaceJob(scheduled, "backend", s => s.replace(/^    env:\n/m, "    env:\n      CONSOLE_NAVIGATION_DRIVER: /tmp/unpinned.cjs\n"))],
+    ["job failure ignored", replaceJob(scheduled, "backend", s => s.replace("    timeout-minutes: 90\n", "    timeout-minutes: 90\n    continue-on-error: true\n"))],
+    ["workflow Node preload", scheduled.replace("jobs:\n", "env:\n  NODE_OPTIONS: --require=/tmp/unpinned.cjs\njobs:\n")],
+  ];
+  for (const path of navV2SuitePaths) cases.push([
+    "omitted suite " + path, changePreview(s => s.replace(line, line.replace(" " + path, ""))),
+  ]);
+  assert.equal(cases.length, 31, "all calibrated workflow corruptions must remain present");
+  return cases;
+}
+
+// Execute only the actual publisher's Node source against isolated test-tool I/O.
+// This is not a bootstrap, browser, server, database, or business execution receipt.
+function navV2AssertPinnedRuntimePublisher(bootstrap, packageSource, lockSource) {
+  assert.equal(packageSource.dependencies.playwright, "1.63.0");
+  assert.equal(lockSource.packages[""].dependencies.playwright, "1.63.0");
+  for (const name of ["playwright", "playwright-core"]) {
+    assert.equal(lockSource.packages["node_modules/" + name].version, "1.63.0");
+  }
+  const publishers = [...bootstrap.matchAll(/^node - "\$\{stage\}" "\$\{GITHUB_ENV\}" "\$\(npm --version\)" "\$\(openssl version\)" <<'NODE'\n([\s\S]*?)^NODE$/gm)];
+  assert.equal(publishers.length, 1, "existing actual staged-runtime publisher required");
+  for (const [pkgVersion, coreVersion] of [["1.63.0", "1.63.0"], ["1.62.0", "1.63.0"], ["1.63.0", "1.62.0"]]) {
+    const writes = [], appends = [];
+    const stage = "/synthetic-test-tool-stage";
+    const envFile = "/synthetic-test-tool-env";
+    const fs = {
+      readFileSync(path) {
+        if (path === stage + "/runtime/node_modules/playwright/package.json") return JSON.stringify({version: pkgVersion});
+        if (path === stage + "/runtime/node_modules/playwright-core/package.json") return JSON.stringify({version: coreVersion});
+        return Buffer.from("synthetic test-tool bytes");
+      },
+      writeFileSync(...args) { writes.push(args); },
+      appendFileSync(...args) { appends.push(args); },
+    };
+    const invoke = () => navV2Vm.runInNewContext(publishers[0][1], {
+      require(name) {
+        if (name === "node:fs") return fs;
+        if (name === "node:path") return navV2Path;
+        if (name === "node:crypto") return {createHash};
+        throw Error("unexpected runtime publisher import " + name);
+      },
+      process: {argv: ["node", "-", stage, envFile, "synthetic-npm", "synthetic-openssl"], version: "synthetic-node"},
+    }, {timeout: 1000});
+    if (pkgVersion === "1.63.0" && coreVersion === "1.63.0") {
+      invoke();
+      assert.equal(writes.length, 1);
+      assert.equal(appends.length, 1);
+      assert.equal(appends[0][0], envFile);
+      assert.ok(appends[0][1].split("\n").includes("CONSOLE_COMPANY_BROWSER_DRIVER=" + stage + "/company.cjs"));
+    } else {
+      assert.throws(invoke, /pinned package version mismatch/);
+      assert.equal(writes.length, 0, "wrong version cannot publish prerequisite receipt");
+      assert.equal(appends.length, 0, "wrong version cannot publish runtime environment");
+    }
+  }
+}
+
+it("Navigation V2 CI scheduling oracle accepts only the complete live protected command", () => {
+  const scheduled = navV2ScheduledWorkflow();
+  navV2AssertProtectedScheduling(scheduled);
+  for (const [label, changed] of navV2SchedulingCorruptions(scheduled)) {
+    assert.notEqual(changed, scheduled, label + " must mutate source");
+    assert.doesNotThrow(() => yaml.load(changed), label + " must remain valid YAML");
+    assert.throws(() => navV2AssertProtectedScheduling(changed), undefined, label + " must be refused");
+  }
+});
+
+it("Navigation V2 permits only the exact protected inherited People-suite overlap", () => {
+  let scheduled = navV2ScheduledWorkflow();
+  if (yaml.load(scheduled).jobs.backend.steps.some(step => step.name === inheritedBrowserStepName)) {
+    scheduled = mutateNamedStep(scheduled, "backend", inheritedBrowserStepName, () => "");
+  }
+  // Synthetic scheduling calibration; the nine real histories remain independently required below.
+  const command = "node --test " + inheritedNodeSuites.join(" ");
+  const step = "      - name: " + inheritedBrowserStepName + "\n" +
+    "        if: \"" + inheritedBrowserGuard + "\"\n        working-directory: .\n        run: |\n" +
+    "          set -euo pipefail\n          umask 077\n          " + command + "\n\n";
+  const anchor = "      - name: Retain sanitized native browser evidence\n";
+  const allowed = replaceJob(scheduled, "backend", body => body.replace(anchor, step + anchor));
+  navV2AssertProtectedScheduling(scheduled);
+  navV2AssertProtectedScheduling(allowed);
+  const change = mutate => mutateNamedStep(allowed, "backend", inheritedBrowserStepName, mutate);
+  const cases = [
+    ["partial People executor", change(s => s.replace(command, "node --test " + navV2SuitePaths[2]))],
+    ["wrong suite order", change(s => s.replace(command, "node --test " + [...inheritedNodeSuites].reverse().join(" ")))],
+    ["duplicate inherited executor", change(s => s.replace("          " + command + "\n", "          " + command + "\n          " + command + "\n"))],
+    ["unprotected step", change(s => s.replace(inheritedBrowserStepName, "Unprotected People executor"))],
+    ["extra step ID", change(s => s.replace("        run: |\n", "        id: unreviewed-overlap\n        run: |\n"))],
+    ["wrong guard", change(addFalseCondition)],
+    ["failure ignored", change(addContinueOnError)],
+    ["unreviewed shell", change(s => s.replace("        run: |\n", "        shell: bash {0}\n        run: |\n"))],
+    ["Node preload", change(s => s.replace("        run: |\n", "        env:\n          NODE_OPTIONS: --require=/tmp/unpinned.cjs\n        run: |\n"))],
+    ["inline Node preload", change(s => s.replace(command, "NODE_OPTIONS=--require=/tmp/unpinned.cjs " + command))],
+    ["alternate executor wrapper", change(s => s.replace(command, "command " + command))],
+    ["malformed executor", change(s => s.replace(command, command + " '"))],
+    ["wrong directory", change(s => s.replace("working-directory: .", "working-directory: backend"))],
+    ["missing fail-fast prefix", change(s => s.replace("          set -euo pipefail\n", ""))],
+    ["inert command after exit", change(addRetainedTextEarlyExit)],
+    ["wrong protected position", swapNamedSteps(allowed, "backend", "Native payroll hydration browser", inheritedBrowserStepName)],
+    ["extra partial executor", replaceJob(allowed, "backend", body => body.replace(anchor,
+      "      - name: Extra People executor\n        run: node --test " + navV2SuitePaths[2] + "\n\n" + anchor))],
+    ["extra complete Navigation executor", replaceJob(allowed, "backend", body => body.replace(anchor,
+      "      - name: Extra Navigation executor\n        run: " + navV2MachineryCommand + "\n\n" + anchor))],
+  ];
+  assert.equal(cases.length, 18, "all unauthorized overlap controls must remain present");
+  for (const [label, changed] of cases) {
+    assert.notEqual(changed, allowed, label + " must mutate source");
+    assert.doesNotThrow(() => yaml.load(changed), label + " must remain valid YAML");
+    assert.throws(() => navV2AssertProtectedScheduling(changed), undefined, label + " must be refused");
+  }
+});
+
+it("Navigation V2 CI scheduling oracle requires the existing pinned staged runtime", () => {
+  navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, navV2PackageSource, navV2LockSource);
+  const runtimeCorruptions = [
+    ["commented publisher", navV2BootstrapSource.replace('node - "${stage}"', '# node - "${stage}"')],
+    ["removed version check", navV2BootstrapSource.replace(/^if \(pkg.version !== '1\.63\.0'.*\n/m, "")],
+    ["removed Company driver", navV2BootstrapSource.replace("  CONSOLE_COMPANY_BROWSER: 'company',\n", "")],
+    ["unpublished environment", navV2BootstrapSource.replace("fs.appendFileSync(envFile, settings.join('\\n') + '\\n');", "// withheld runtime environment")],
+  ];
+  assert.equal(runtimeCorruptions.length, 4);
+  for (const [label, changed] of runtimeCorruptions) {
+    assert.notEqual(changed, navV2BootstrapSource);
+    assert.throws(() => navV2AssertPinnedRuntimePublisher(changed, navV2PackageSource, navV2LockSource), undefined, label + " must be refused");
+  }
+  const changedPackage = structuredClone(navV2PackageSource);
+  changedPackage.dependencies.playwright = "1.62.0";
+  assert.throws(() => navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, changedPackage, navV2LockSource));
+  const changedLock = structuredClone(navV2LockSource);
+  changedLock.packages["node_modules/playwright-core"].version = "1.62.0";
+  assert.throws(() => navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, navV2PackageSource, changedLock));
+});
+
+it("Navigation V2 machinery executes in CI with the existing pinned browser prerequisite", () => {
+  navV2AssertProtectedScheduling(workflow);
+  navV2AssertPinnedRuntimePublisher(navV2BootstrapSource, navV2PackageSource, navV2LockSource);
+  assert.deepEqual(evaluateCiPreflight(workflow).failures, [], "the repaired exact proof body must pass");
+  const proofLabels = new Set(["omitted command", "commented command", "echoed command",
+    "swallowed failure", "wrong executor", "missing runtime success guard", "wrong suite", "listed suites",
+    ...navV2SuitePaths.map(path => "omitted suite " + path)]);
+  const proofCorruptions = navV2SchedulingCorruptions(workflow).filter(([label]) => proofLabels.has(label));
+  assert.equal(proofCorruptions.length, 11, "exact existing proof-body/condition corruptions must remain present");
+  for (const [label, changed] of proofCorruptions) {
+    const {failures} = evaluateCiPreflight(changed);
+    assert.ok(failures.length > 0, "preflight must reject " + label);
+  }
+});
+
+
+// These fixtures qualify CI scheduling/retention machinery only, never the mocked owners.
+function inheritedStep(source = workflow) {
+  const steps = yaml.load(source).jobs.backend.steps;
+  const matches = steps.filter(step => step.name === inheritedBrowserStepName);
+  assert.equal(matches.length, 1, "NINE_INHERITED_BROWSER_HISTORIES_NOT_SCHEDULED");
+  assert.equal(matches[0].if, inheritedBrowserGuard);
+  assert.equal(matches[0]["working-directory"], ".");
+  assert.ok(!Object.hasOwn(matches[0], "continue-on-error"));
+  return matches[0];
+}
+function groupedInheritedUploadExpressions() {
+  return inheritedBrowserCases.map(row =>
+    "${{ env." + row.public_output_variable + " && format('"
+    + row.public_files.map(file => "{0}/" + file).join("\n")
+    + "', env." + row.public_output_variable + ") || '' }}");
+}
+function guardedInheritedUploads(source, values) {
+  const action = yaml.load(source).jobs.backend.steps.find(step => step.id === "native-browser-evidence");
+  const lines = action.with.path.trimEnd().split("\n");
+  const refusal = "INHERITED_UPLOAD_MUST_CONDITION_THE_WHOLE_PATH";
+  assert.equal(lines.length, 227, refusal + ": exact227 literal lines required");
+  const suffix = lines.slice(26).join("\n");
+  assert.ok(suffix === inheritedUploadExpressions().join("\n")
+    || suffix === groupedInheritedUploadExpressions().join("\n"),
+    refusal + ": exact closed per-file or whole-history conditional suffix required");
+  // Preserve201 semantic slots and every old absence/partial-failure assertion.
+  // Real grouped output has fewer blank LF lines; eligible paths stay exact.
+  return inheritedBrowserCases.flatMap(row => row.public_files.map(file =>
+    values[row.public_output_variable] ? values[row.public_output_variable] + "/" + file : ""));
+}
+function inheritedEvidenceGuard(step) {
+  const begin = "# Begin inherited evidence guard", end = "# End inherited evidence guard";
+  assert.equal(step.run.split(begin).length, 2);
+  assert.equal(step.run.split(end).length, 2);
+  const source = step.run.slice(step.run.indexOf(begin) + begin.length, step.run.indexOf(end));
+  assert.match(source, /require_inherited_browser_evidence\s*\(\s*\)/);
+  return source;
+}
+function readInheritedSettings(file) {
+  return Object.fromEntries(readFileSync(file, "utf8").trimEnd().split("\n").map(line => {
+    const separator = line.indexOf("="); assert.ok(separator > 0);
+    return [line.slice(0, separator), line.slice(separator + 1)];
+  }));
+}
+function makeInheritedFixture() {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), "console-inherited-ci-")));
+  const stage = mkdtempSync(join(root, "console-native-browser."));
+  mkdirSync(join(stage, "outputs")); mkdirSync(join(root, "tools")); mkdirSync(join(root, "tools", "buck"));
+  mkdirSync(join(root, "tools", "browser")); mkdirSync(join(root, "bin"));
+  const envFile = join(root, "github.env"), events = join(root, "events.jsonl");
+  writeFileSync(events, "");
+  const original = [
+    ["CONSOLE_BROWSER_JOURNEY_OUTPUT", ["result.json","owner-receipt.json","01-public.png","02-terms.png","03-account-enrolled.png","04-sign-in.png","05-account-returned.png"]],
+    ["CONSOLE_COMPANY_BROWSER_OUTPUT", ["result.json","owner-receipt.json","01-public.png","02-terms.png","03-account-enrolled.png","04-company-created.png","05-company-workspace.png"]],
+    ["CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT", ["result.json","owner-receipt.json","01-public.png","02-terms.png","03-account-enrolled.png","04-company-preview-input-preserved.png"]],
+    ["CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json","owner-receipt.json","authorized-before.png","authorized-filter-1.png","authorized-filter-2.png","authorized-filter-3.png"]],
+  ];
+  const originalValues = {};
+  for (const [variable, files] of original) {
+    const output = join(stage, "outputs", variable); mkdirSync(output); originalValues[variable] = output;
+    for (const file of files) writeFileSync(join(output, file), "public guard fixture\n");
+  }
+  writeFileSync(envFile, Object.entries(originalValues).map(([key,value]) => key + "=" + value).join("\n") + "\n");
+  copyFileSync(new URL("../tools/browser/company.cjs", import.meta.url), join(stage, "company.cjs"));
+  const helper = new URL("../tools/browser/publish-history-output.cjs", import.meta.url);
+  if (existsSync(helper)) copyFileSync(helper, join(root, "tools/browser/publish-history-output.cjs"));
+  const fixtureData = join(root, "fixture.json");
+  writeFileSync(fixtureData, JSON.stringify({histories: inheritedBrowserCases, pure: inheritedPureRustControls, wire: inheritedWireControl}));
+  const mock = join(root, "mock.cjs");
+  writeFileSync(mock, String.raw`
+const fs=require('node:fs'),path=require('node:path'),{spawnSync}=require('node:child_process');
+const [kind,...args]=process.argv.slice(2), data=JSON.parse(fs.readFileSync(process.env.INHERITED_FIXTURE_DATA));
+const event=value=>fs.appendFileSync(process.env.INHERITED_FIXTURE_EVENTS,JSON.stringify(value)+'\n');
+if(kind==='node') {
+  if(args[0]==='--test') {event({kind:'node-controls',suites:args.slice(1)});process.exit(process.env.INHERITED_FIXTURE_FAILURE==='node-control'?31:0);}
+  const result=spawnSync(process.execPath,args,{env:process.env,stdio:'inherit'});process.exit(result.status??99);
+}
+const leaf=kind==='wrapper'?process.env.CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT:args.at(-1);
+if(kind==='buck'&&args.includes('--list')) {
+  event({kind:'discovery',leaf});
+  if(process.env.INHERITED_FIXTURE_FAILURE==='zero-discovery') {process.stdout.write('0 tests, 0 benchmarks\n');process.exit(0);}
+  process.stdout.write(leaf+': test\n\n1 test, 0 benchmarks\n');process.exit(0);
+}
+if(kind==='buck') {event({kind:'pure-control',leaf,database_exposed:Object.hasOwn(process.env,'DATABASE_URL')});process.exit(process.env.INHERITED_FIXTURE_FAILURE==='rust-control'?32:0);}
+const row=data.histories.find(row=>row.exact_leaf===leaf);
+event({kind:'postgres',leaf,target:args.at(-1),requested:process.env.CONSOLE_COMPANY_BROWSER_OUTPUT});
+if(!row) {if(leaf!==data.wire)process.exit(34);process.exit(0);}
+const requested=process.env.CONSOLE_COMPANY_BROWSER_OUTPUT;
+const output=path.join(path.dirname(requested),row.actual_output_basename);
+if(fs.existsSync(output)||fs.existsSync(requested))process.exit(35);
+fs.mkdirSync(output,{mode:0o700});
+if(process.env.INHERITED_FIXTURE_FAILURE==='first-history') {fs.writeFileSync(path.join(output,'result.json'),'public partial guard fixture\n');process.exit(33);}
+const result={status:'BROWSER_LEAF_PASSED',screenshots:[...row.result_declared_screenshots],cleanup:{confirmed:true},controller:{records:['native-first','react-first','keyboard-before-react','autofill-before-react','eventless-value-before-react','ime-before-react','preclaim-focus','partial-bind-rollback','capability-denied','freeze-at-csrf'].map(name=>({name}))}};
+const failure=process.env.INHERITED_FIXTURE_FAILURE;
+if(row.tag==='people') {
+  if(failure==='wrong-status')result.status='BROWSER_LEAF_FAILED';
+  if(failure==='cleanup-false')result.cleanup.confirmed=false;
+  if(failure==='cleanup-missing')delete result.cleanup;
+  if(failure==='screenshots-missing')result.screenshots.pop();
+  if(failure==='screenshots-duplicate')result.screenshots[1]=result.screenshots[0];
+  if(failure==='screenshots-extra')result.screenshots.push('private-unlisted.png');
+  if(failure==='screenshots-wrong-type')result.screenshots='not-an-array';
+}
+if(row.tag==='account-controller') {
+  if(failure==='controller-missing')result.controller.records.pop();
+  if(failure==='controller-duplicate')result.controller.records[1]=result.controller.records[0];
+  if(failure==='controller-wrong-name')result.controller.records[0].name='unreviewed';
+  if(failure==='controller-wrong-type')result.controller.records='not-an-array';
+}
+for(const file of row.public_files) fs.writeFileSync(path.join(output,file),file==='result.json'?(failure==='malformed-result'&&row.tag==='people'?'not-json':JSON.stringify(result)):'public guard fixture\n');
+process.exit(0);
+`);
+  const quote = value => "'" + value.replaceAll("'", "'\\''") + "'";
+  for (const [file, kind] of [["bin/node", "node"], ["tools/buck2", "buck"], ["tools/buck/test_needs_postgres.sh", "wrapper"]]) {
+    const destination = join(root, file);
+    writeFileSync(destination, "#!/bin/sh\nexec " + quote(process.execPath) + " " + quote(mock) + " " + quote(kind) + ' "$@"\n');
+    chmodSync(destination, 0o700);
+  }
+  const env = {PATH: join(root,"bin") + ":" + process.env.PATH, RUNNER_TEMP:root, GITHUB_ENV:envFile,
+    CONSOLE_COMPANY_BROWSER_DRIVER:join(stage,"company.cjs"), ...originalValues,
+    DATABASE_URL:'postgres://guard-fixture.invalid/not-a-product-database',
+    INHERITED_FIXTURE_DATA:fixtureData, INHERITED_FIXTURE_EVENTS:events};
+  return {root,stage,envFile,events,env,originalValues,
+    run: (body, failure="") => spawnSync("/bin/bash", ["-euo", "pipefail", "-c", body], {
+      cwd:root, env:{...env, INHERITED_FIXTURE_FAILURE:failure}, encoding:"utf8", timeout:20000}),
+    dispose: () => rmSync(root,{recursive:true,force:true})};
+}
+
+describe("inherited browser coverage and safe failure retention", () => {
+  it("requires all nine inherited browser histories with fresh evidence", () => {
+    const step = inheritedStep(), fixture = makeInheritedFixture();
+    try {
+      const result = fixture.run(step.run);
+      assert.equal(result.status,0,result.stderr);
+      const events = readFileSync(fixture.events,"utf8").trimEnd().split("\n").map(JSON.parse);
+      const discovered = events.filter(row=>row.kind==='discovery').map(row=>row.leaf);
+      assert.deepEqual(discovered.filter(leaf=>inheritedPureRustControls.includes(leaf)),inheritedPureRustControls);
+      for (const leaf of [...inheritedPureRustControls,inheritedWireControl,...inheritedBrowserCases.map(row=>row.exact_leaf)])
+        assert.equal(discovered.filter(value=>value===leaf).length,1,"exact one-case discovery required");
+      assert.deepEqual(events.filter(row=>row.kind==='pure-control').map(row=>row.leaf),inheritedPureRustControls);
+      assert.ok(events.filter(row=>row.kind==='pure-control').every(row=>!row.database_exposed),
+        'database-free controls cannot receive database credentials');
+      const postgres = events.filter(row=>row.kind==='postgres');
+      assert.deepEqual(postgres.map(row=>row.leaf),[inheritedWireControl,...inheritedBrowserCases.map(row=>row.exact_leaf)]);
+      assert.ok(postgres.every(row=>row.target==='//tools/buck:app-auth-rest-browser-pg'));
+      assert.deepEqual(events.filter(row=>row.kind==='node-controls').flatMap(row=>row.suites),inheritedNodeSuites);
+      const values = readInheritedSettings(fixture.envFile);
+      assert.equal(new Set(inheritedBrowserCases.map(row=>values[row.public_output_variable])).size,9);
+      for (const row of inheritedBrowserCases) {
+        const output=values[row.public_output_variable]; assert.ok(output.startsWith(fixture.stage+'/outputs/'));
+        assert.ok(output.endsWith('/'+row.actual_output_basename));
+        for (const file of row.public_files) assert.ok(lstatSync(join(output,file)).isFile());
+      }
+      assert.equal(guardedInheritedUploads(workflow,values).filter(Boolean).length,201);
+    } finally {fixture.dispose();}
+  });
+
+  it("keeps original evidence safe after early Node Rust and first-history failures", () => {
+    const step=inheritedStep();
+    for(const failure of ['node-control','rust-control','first-history','zero-discovery']) {
+      const fixture=makeInheritedFixture();
+      try {
+        const result=fixture.run(step.run,failure); assert.notEqual(result.status,0,failure);
+        const values=readInheritedSettings(fixture.envFile);
+        for(const [variable,original] of Object.entries(fixture.originalValues)) assert.equal(values[variable],original);
+        const paths=guardedInheritedUploads(workflow,values).filter(Boolean);
+        if(failure==='first-history') {
+          assert.equal(paths.length,inheritedBrowserCases[0].public_files.length);
+          assert.ok(paths.every(value=>value.startsWith(fixture.stage+'/outputs/')));
+          for(const row of inheritedBrowserCases.slice(1)) assert.equal(values[row.public_output_variable],undefined);
+        } else assert.deepEqual(paths,[],failure+' must publish no upload roots');
+        assert.ok(paths.every(value=>value!== '/result.json'&&value!== '/owner-receipt.json'));
+      } finally {fixture.dispose();}
+    }
+  });
+
+  it("rejects completed histories with corrupt status screenshots controller records or cleanup", () => {
+    const step=inheritedStep();
+    const failures=['wrong-status','cleanup-false','cleanup-missing','screenshots-missing',
+      'screenshots-duplicate','screenshots-extra','screenshots-wrong-type','malformed-result',
+      'controller-missing','controller-duplicate','controller-wrong-name','controller-wrong-type'];
+    for(const failure of failures) {
+      const fixture=makeInheritedFixture();
+      try {
+        const result=fixture.run(step.run,failure); assert.notEqual(result.status,0,failure);
+        const values=readInheritedSettings(fixture.envFile);
+        const failedTag=failure.startsWith('controller-')?'account-controller':'people';
+        const failedIndex=inheritedBrowserCases.findIndex(row=>row.tag===failedTag);
+        assert.ok(values[inheritedBrowserCases[failedIndex].public_output_variable],failure+' executes the corrupt history');
+        for(const row of inheritedBrowserCases.slice(failedIndex+1))
+          assert.equal(values[row.public_output_variable],undefined,failure+' cannot publish later histories');
+      } finally {fixture.dispose();}
+    }
+  });
+
+  it("renders an unset history root empty and rejects an external filename suffix", () => {
+    inheritedStep();
+    const values=Object.fromEntries(inheritedBrowserCases.map(row=>[row.public_output_variable,'/owned/'+row.tag]));
+    for(const row of inheritedBrowserCases) {
+      const absent={...values}; delete absent[row.public_output_variable];
+      const expanded=guardedInheritedUploads(workflow,absent);
+      assert.equal(expanded.filter(value=>value==='').length,row.public_files.length);
+      const action=yaml.load(workflow).jobs.backend.steps.find(step=>step.id==='native-browser-evidence');
+      const perFile=inheritedUploadExpressions().find(value=>value.includes(row.public_output_variable));
+      const wholeHistory=groupedInheritedUploadExpressions()[inheritedBrowserCases.indexOf(row)];
+      const marker=action.with.path.includes(perFile)?perFile:wholeHistory;
+      assert.ok(action.with.path.includes(marker),'negative mutation must reach an actual guarded path');
+      const changedPath=action.with.path.replace(marker,'${{ env.'+row.public_output_variable+' }}/result.json');
+      const bad=mutateNamedStep(workflow,'backend',action.name,
+        source=>mutateActionInput(source,'path',JSON.stringify(changedPath)));
+      assert.equal(yaml.load(bad).jobs.backend.steps.find(step=>step.id==='native-browser-evidence').with.path,changedPath);
+      assert.notEqual(bad,workflow);
+      assert.throws(()=>guardedInheritedUploads(bad,absent),/CONDITION_THE_WHOLE_PATH/);
+      assert.ok(evaluateCiPreflight(bad).failures.length>0);
+    }
+  });
+
+  it("executes every added evidence guard against missing empty and symlinked files", () => {
+    const guard=inheritedEvidenceGuard(inheritedStep()), fixture=makeInheritedFixture();
+    let executions=0;
+    try {
+      const target=join(fixture.root,'target'); writeFileSync(target,'public guard target\n');
+      for(const row of inheritedBrowserCases) {
+        const output=join(fixture.stage,'outputs',row.tag); mkdirSync(output);
+        for(const name of row.public_files) writeFileSync(join(output,name),'public guard fixture\n');
+        const run=()=>{executions++;return spawnSync('/bin/bash',['-euo','pipefail','-c',guard+'\nrequire_inherited_browser_evidence "$@"','guard',output,...row.public_files],{env:{PATH:process.env.PATH},encoding:'utf8'});};
+        assert.equal(run().status,0,row.tag+' complete');
+        for(const file of row.public_files) {
+          const path=join(output,file); unlinkSync(path); assert.notEqual(run().status,0,row.tag+' missing '+file);
+          writeFileSync(path,''); assert.notEqual(run().status,0,row.tag+' empty '+file);
+          unlinkSync(path); symlinkSync(target,path); assert.notEqual(run().status,0,row.tag+' symlink '+file);
+          unlinkSync(path); writeFileSync(path,'public guard fixture\n');
+        }
+      }
+      assert.equal(executions,612,'9 positives plus201each missing/empty/symlink');
+    } finally {fixture.dispose();}
+  });
+
+  it("binds the actual publisher to canonical fresh stage roots and rejects malformed inputs", () => {
+    inheritedStep();
+    const fixture=makeInheritedFixture(), helper=join(fixture.root,'tools/browser/publish-history-output.cjs');
+    try {
+      assert.ok(existsSync(helper),'reviewed publisher prerequisite required after schedule exists');
+      for(const row of inheritedBrowserCases) {
+        const parent=mkdtempSync(join(fixture.stage,'outputs','inherited-'+row.tag+'.'));
+        const before=readFileSync(fixture.envFile);
+        const invoke=(tag=row.tag,stage=fixture.stage,selected=parent)=>spawnSync(process.execPath,[helper,tag,stage,selected,fixture.envFile],{env:{PATH:process.env.PATH},encoding:'utf8'});
+        const corruptions=[['unknown-tag',fixture.stage,parent], [row.tag,fixture.stage,''], [row.tag,fixture.stage,'relative'], [row.tag,fixture.stage,'/'], [row.tag,fixture.stage,fixture.root], [row.tag,fixture.stage,parent+'/../'+parent.split('/').at(-1)], [row.tag,fixture.stage,parent+'\nINJECTED=value']];
+        const symlink=parent+'-symlink'; symlinkSync(parent,symlink); corruptions.push([row.tag,fixture.stage,symlink]);
+        const stageLink=parent+'-stage-link'; symlinkSync(fixture.stage,stageLink);
+        corruptions.push([row.tag,stageLink,join(stageLink,'outputs',parent.split('/').at(-1))]);
+        const wrongPrefix=mkdtempSync(join(fixture.stage,'outputs','wrong-'+row.tag+'.'));
+        const publicParent=mkdtempSync(join(fixture.stage,'outputs','inherited-'+row.tag+'.')); chmodSync(publicParent,0o777);
+        const fileParent=parent+'-file'; writeFileSync(fileParent,'not-a-directory');
+        corruptions.push([row.tag,fixture.stage,wrongPrefix], [row.tag,fixture.stage,publicParent],
+          [row.tag,fixture.stage,fileParent], [row.tag,'relative-stage',parent],
+          [row.tag,fixture.stage,join(fixture.stage,'outputs')]);
+        for(const args of corruptions) {assert.notEqual(invoke(...args).status,0);assert.deepEqual(readFileSync(fixture.envFile),before);}
+        const requested=join(parent,'requested'); mkdirSync(requested);
+        assert.notEqual(invoke().status,0); assert.deepEqual(readFileSync(fixture.envFile),before); rmSync(requested,{recursive:true});
+        const output=join(parent,row.actual_output_basename); mkdirSync(output);
+        assert.notEqual(invoke().status,0); assert.deepEqual(readFileSync(fixture.envFile),before); rmSync(output,{recursive:true});
+        assert.equal(invoke().status,0);
+        const after=readFileSync(fixture.envFile); assert.notEqual(invoke().status,0,'duplicate setting'); assert.deepEqual(readFileSync(fixture.envFile),after);
+        assert.equal(readInheritedSettings(fixture.envFile)[row.public_output_variable],output);
+      }
+    } finally {fixture.dispose();}
+  });
+
+  it("rejects omitted duplicated altered skipped and swallowed history execution", () => {
+    inheritedStep();
+    for(const row of inheritedBrowserCases) {
+      const identifier=row.exact_leaf.split('::').at(-1);
+      for(const replacement of ['',identifier+'-wrong',identifier+' '+identifier]) {
+        const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,source=>source.replace(identifier,replacement));
+        assert.ok(evaluateCiPreflight(changed).failures.length>0);
+      }
+    }
+    for(const mutate of [addFalseCondition,addContinueOnError,addRetainedTextEarlyExit]) {
+      const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,mutate);
+      assert.ok(evaluateCiPreflight(changed).failures.length>0);
+    }
+    for (const identifier of [...inheritedPureRustControls.map(leaf=>leaf.split('::').at(-1)), inheritedWireControl.split('::').at(-1), ...inheritedNodeSuites]) {
+      const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,source=>source.replace(identifier,''));
+      assert.ok(evaluateCiPreflight(changed).failures.length>0,'omitted control '+identifier);
+    }
+    for(const selected of ['//tools/buck:app-auth-rest-browser-pg','--list','--exact']) {
+      const changed=mutateNamedStep(workflow,'backend',inheritedBrowserStepName,source=>source.replace(selected,selected+'-wrong'));
+      assert.ok(evaluateCiPreflight(changed).failures.length>0);
+    }
+  });
+});
+
+
+it("inherited guard fixture preserves exact discovery bytes and isolated execution events", () => {
+  const fixture=makeInheritedFixture(), leaf=inheritedPureRustControls[0];
+  const discovery='tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact '+leaf;
+  const pure='tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact '+leaf;
+  const wire='CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT='+inheritedWireControl+
+    ' tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg';
+  try {
+    const listed=fixture.run(discovery); assert.equal(listed.status,0,listed.stderr);
+    assert.equal(listed.stdout,leaf+': test\n\n1 test, 0 benchmarks\n');
+    assert.equal(fixture.run(pure).status,0);
+    assert.equal(fixture.run(wire).status,0);
+    assert.equal(fixture.run('node --test '+inheritedNodeSuites.join(' ')).status,0);
+    const events=readFileSync(fixture.events,'utf8').trimEnd().split('\n').map(JSON.parse);
+    assert.deepEqual(events.map(row=>row.kind),['discovery','pure-control','postgres','node-controls']);
+    assert.equal(events[0].leaf,leaf); assert.equal(events[1].leaf,leaf);
+    assert.equal(events[1].database_exposed,true,'fixture detects inherited database environment');
+    assert.equal(events[2].leaf,inheritedWireControl);
+    assert.deepEqual(events[3].suites,inheritedNodeSuites);
+    assert.equal(fixture.run('env -u DATABASE_URL '+pure).status,0);
+    const withoutDatabase=JSON.parse(readFileSync(fixture.events,'utf8').trimEnd().split('\n').at(-1));
+    assert.equal(withoutDatabase.database_exposed,false,'fixture detects removal before execution');
+    assert.equal(fixture.run(pure,'rust-control').status,32);
+    assert.equal(fixture.run('node --test '+inheritedNodeSuites.join(' '),'node-control').status,31);
+    assert.equal(fixture.run(discovery,'zero-discovery').stdout,'0 tests, 0 benchmarks\n');
+  } finally {fixture.dispose();}
+});
+
+it("whole-path upload oracle rejects root-relative suffixes and preserves complete vectors", () => {
+  const retained = Array.from({length:26},(_,index)=>"retained-original-"+index);
+  const source=yaml.dump({jobs:{backend:{steps:[{id:"native-browser-evidence",with:{path:[...retained,...inheritedUploadExpressions()].join("\n")+"\n"}}]}}}, {lineWidth: -1});
+  const roots=Object.fromEntries(inheritedBrowserCases.map(row=>[row.public_output_variable,"/owned-stage/outputs/"+row.tag+"/"+row.actual_output_basename]));
+  const expected=inheritedBrowserCases.flatMap(row=>row.public_files.map(file=>roots[row.public_output_variable]+"/"+file));
+  assert.deepEqual(guardedInheritedUploads(source,roots),expected);
+  assert.deepEqual(guardedInheritedUploads(source,{}),Array(201).fill(""));
+  for(const row of inheritedBrowserCases) {
+    const missing={...roots};delete missing[row.public_output_variable];
+    assert.equal(guardedInheritedUploads(source,missing).filter(value=>value==="").length,row.public_files.length);
+  }
+  const bad=source.replace(inheritedUploadExpressions()[0],"${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT }}/result.json");
+  assert.notEqual(bad,source);
+  assert.throws(()=>guardedInheritedUploads(bad,{}),/CONDITION_THE_WHOLE_PATH/);
+});
+
+const inheritedGeneratorSelectors = Object.freeze([
+  "tools.buck.impact.test_plan",
+  "tools.buck.test_gen_first_party.GeneratorCliTests",
+  "tools.buck.test_gen_first_party.GeneratorContractsResourceTests",
+  "tools.buck.test_gen_first_party.BrowserIntegrationVariantsTests",
+]);
+const inheritedGeneratorCommand = "python3 -m unittest -v " + inheritedGeneratorSelectors.join(" ");
+const inheritedGeneratorMirror = readFileSync(new URL("./check-ci-preflight.mjs", import.meta.url), "utf8");
+const inheritedGeneratorMirrorPattern = /^const buckImpactPlannerTestCommand = ("[^\n]*");$/gm;
+
+function assertInheritedGeneratorScheduling(source, mirror) {
+  const model = yaml.load(source), steps = model.jobs.preflight.steps;
+  const matches = steps.map((step, index) => ({step, index})).filter(({step}) =>
+    step.name === "Buck impact planner regression" || step.id === "buck-impact-planner");
+  assert.equal(matches.length, 1, "one original protected Buck regression step required");
+  const {step, index} = matches[0];
+  assert.equal(index, 16, "original preflight position must remain unchanged");
+  assert.equal(steps[index - 1].id, "ci-preflight-tests");
+  assert.equal(steps[index + 1].id, "route-inventory");
+  assert.deepEqual(step, {
+    name: "Buck impact planner regression", id: "buck-impact-planner",
+    if: "${{ !cancelled() && steps.npm-ci.outcome == 'success' }}",
+    run: inheritedGeneratorCommand,
+  }, "BROWSER_GENERATOR_CLASS_MUST_EXECUTE_WITH_ALL_ORIGINAL_SELECTORS");
+  const entries = navV2Executables.allWorkflowCommands(source).filter(entry =>
+    entry.tokens.includes(inheritedGeneratorSelectors.at(-1)));
+  assert.equal(entries.length, 1, "exactly one actual complete class executor required");
+  const entry = entries[0], actualStep = yaml.load("      - " + entry.step)[0];
+  assert.equal(entry.job, "preflight");
+  assert.deepEqual(actualStep, step, "executing and inspected step must be identical");
+  assert.equal(entry.gating, true); assert.equal(entry.controlFlow, false);
+  assert.equal(entry.malformed, false); assert.equal(entry.shell, null);
+  const executable = navV2Executables.directExecutable(entry.tokens);
+  assert.equal(executable.malformed, false);
+  assert.deepEqual(executable.tokens, ["python3", "-m", "unittest", "-v", ...inheritedGeneratorSelectors]);
+  const commands = [...mirror.matchAll(inheritedGeneratorMirrorPattern)];
+  assert.equal(commands.length, 1, "one literal exact mirror required");
+  assert.equal(JSON.parse(commands[0][1]), inheritedGeneratorCommand, "CI mirror must retain all selectors exactly");
+}
+
+it("BrowserIntegrationVariantsTests executes in the existing protected Buck regression command", () => {
+  assertInheritedGeneratorScheduling(workflow, inheritedGeneratorMirror);
+});
+
+it("BrowserIntegrationVariantsTests scheduling oracle rejects dark duplicated reordered disabled and inert execution", () => {
+  const original = "python3 -m unittest -v " + inheritedGeneratorSelectors.slice(0, -1).join(" ");
+  const withRun = (source, command) => {
+    const model = yaml.load(source);
+    const matches = model.jobs.preflight.steps.filter(step => step.name === "Buck impact planner regression");
+    assert.equal(matches.length, 1, "one original protected Buck regression step required");
+    matches[0].run = command;
+    return yaml.dump(model, {lineWidth: -1});
+  };
+  const withMirror = (source, command) => source.replace(inheritedGeneratorMirrorPattern,
+    "const buckImpactPlannerTestCommand = " + JSON.stringify(command) + ";");
+  const red = withRun(workflow, original), green = withRun(workflow, inheritedGeneratorCommand);
+  const scheduled = withRun(red, inheritedGeneratorCommand);
+  assert.equal(withRun(green, inheritedGeneratorCommand), scheduled, "RED and GREEN fixtures must converge");
+  assert.equal(withRun(scheduled, inheritedGeneratorCommand), scheduled, "construction must be idempotent");
+  const redMirror = withMirror(inheritedGeneratorMirror, original);
+  const greenMirror = withMirror(inheritedGeneratorMirror, inheritedGeneratorCommand);
+  const mirror = withMirror(redMirror, inheritedGeneratorCommand);
+  assert.equal(withMirror(greenMirror, inheritedGeneratorCommand), mirror, "RED and GREEN mirrors must converge");
+  assert.equal(withMirror(mirror, inheritedGeneratorCommand), mirror, "mirror construction must be idempotent");
+  assert.throws(() => assertInheritedGeneratorScheduling(red, redMirror));
+  assertInheritedGeneratorScheduling(scheduled, mirror);
+  assertInheritedGeneratorScheduling(green, greenMirror);
+  const changeRun = mutate => mutateNamedStep(scheduled, "preflight", "Buck impact planner regression", mutate);
+  const corruptions = [
+    ...inheritedGeneratorSelectors.map(selector => changeRun(source => source.replace(" " + selector, ""))),
+    changeRun(source => source.replace(inheritedGeneratorCommand, inheritedGeneratorCommand + " " + inheritedGeneratorSelectors.at(-1))),
+    changeRun(source => source.replace(inheritedGeneratorCommand, "python3 -m unittest -v " + [...inheritedGeneratorSelectors].reverse().join(" "))),
+    changeRun(source => source.replace(inheritedGeneratorSelectors.at(-1), "tools.buck.test_gen_first_party.NativeHydrationGenerationTests")),
+    changeRun(source => source.replace("run: " + inheritedGeneratorCommand, "run: echo " + inheritedGeneratorCommand)),
+    changeRun(addFalseCondition), changeRun(addContinueOnError), changeRun(addRetainedTextEarlyExit),
+    changeRun(source => source + source),
+    swapNamedSteps(scheduled, "preflight", "Buck impact planner regression", "Console route inventory regression"),
+    changeRun(source => source.replace("id: buck-impact-planner", "id: unprotected-buck")),
+    changeRun(source => source.replace("steps.npm-ci.outcome == 'success'", "true")),
+  ];
+  assert.equal(corruptions.length, 15);
+  for (const source of corruptions) {
+    assert.notEqual(source, scheduled, "mutation must affect actual workflow bytes");
+    assert.throws(() => assertInheritedGeneratorScheduling(source, mirror));
+  }
+  for (const selector of inheritedGeneratorSelectors) {
+    const bad = mirror.replace(" " + selector, "");
+    assert.notEqual(bad, mirror); assert.throws(() => assertInheritedGeneratorScheduling(scheduled, bad));
+  }
+  assert.throws(() => assertInheritedGeneratorScheduling(scheduled, mirror + "\n" +
+    "const buckImpactPlannerTestCommand = " + JSON.stringify(inheritedGeneratorCommand) + ";\n"));
+});
+
+
+// Additive regression: hosted run38191289769 rejected the mixed path scalar
+// before any job. This closed model is source proof, not a GitHub runner clone.
+describe("native browser upload scalar expression contract", () => {
+  const limit = 21000;
+  const originalFamilies = [
+    ["CONSOLE_BROWSER_JOURNEY_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-sign-in.png", "05-account-returned.png"]],
+    ["CONSOLE_COMPANY_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-created.png", "05-company-workspace.png"]],
+    ["CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-preview-input-preserved.png"]],
+    ["CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "authorized-before.png", "authorized-filter-1.png", "authorized-filter-2.png", "authorized-filter-3.png"]],
+  ];
+  const roots = new Set([...originalFamilies.map(([root]) => root), ...inheritedBrowserCases.map(row => row.public_output_variable)]);
+  const original = originalFamilies.flatMap(([root, files]) => files.map(file => "${{ env." + root + " }}/" + file));
+
+  // Parse only this reviewed string-expression language. No eval, arbitrary
+  // functions, secret contexts, operators or property lookup are accepted.
+  function expression(source) {
+    let position = 0;
+    let next;
+    function advance() {
+      while (/\s/.test(source[position] ?? "") && position < source.length) position += 1;
+      if (position === source.length) return next = { kind: "end" };
+      const start = position;
+      const char = source[position++];
+      if (char === "'") {
+        let value = "";
+        while (position < source.length) {
+          const char = source[position++];
+          if (char !== "'") value += char;
+          else if (source[position] === "'") { value += "'"; position += 1; }
+          else return next = { kind: "string", value };
+        }
+        throw new Error("unterminated expression string");
+      }
+      if ("(),.".includes(char)) return next = { kind: char };
+      if ((char === "&" || char === "|") && source[position] === char) {
+        position += 1; return next = { kind: char + char };
+      }
+      if (/[A-Za-z_]/.test(char)) {
+        while (/[A-Za-z0-9_]/.test(source[position] ?? "") && position < source.length) position += 1;
+        return next = { kind: "identifier", value: source.slice(start, position) };
+      }
+      throw new Error("unsupported expression token");
+    }
+    function take(kind) {
+      assert.equal(next.kind, kind, "closed expression grammar");
+      const token = next; advance(); return token;
+    }
+    function primary() {
+      if (next.kind === "string") return { kind: "string", value: take("string").value };
+      if (next.kind === "(") { take("("); const inner = or(); take(")"); return inner; }
+      const name = take("identifier").value;
+      if (name === "env") {
+        take("."); const root = take("identifier").value;
+        assert.ok(roots.has(root), "only approved output-root contexts are permitted");
+        return { kind: "env", root };
+      }
+      assert.equal(name, "format", "only standard format is admitted");
+      take("("); const args = [or()];
+      while (next.kind === ",") { take(","); args.push(or()); }
+      take(")"); assert.ok(args.length >= 2);
+      return { kind: "format", args };
+    }
+    function and() {
+      let left = primary();
+      while (next.kind === "&&") { take("&&"); left = { kind: "and", left, right: primary() }; }
+      return left;
+    }
+    function or() {
+      let left = and();
+      while (next.kind === "||") { take("||"); left = { kind: "or", left, right: and() }; }
+      return left;
+    }
+    advance(); const ast = or(); take("end"); return ast;
+  }
+
+  function format(template, args) {
+    let output = "";
+    for (let index = 0; index < template.length;) {
+      const char = template[index++];
+      if (char === "{" && template[index] === "{") { output += "{"; index += 1; continue; }
+      if (char === "}" && template[index] === "}") { output += "}"; index += 1; continue; }
+      if (char === "{") {
+        const start = index;
+        while (/[0-9]/.test(template[index] ?? "") && index < template.length) index += 1;
+        assert.ok(index > start && template[index++] === "}", "invalid format placeholder");
+        const arg = Number(template.slice(start, index - 1));
+        assert.ok(arg < args.length, "missing format argument");
+        output += args[arg]; continue;
+      }
+      assert.notEqual(char, "}", "unescaped closing format brace");
+      output += char;
+    }
+    return output;
+  }
+
+  function evaluate(ast, env) {
+    if (ast.kind === "string") return ast.value;
+    if (ast.kind === "env") {
+      const value = Object.hasOwn(env, ast.root) ? env[ast.root] : "";
+      assert.equal(typeof value, "string", "output env values are strings");
+      return value;
+    }
+    if (ast.kind === "and") return evaluate(ast.left, env) ? evaluate(ast.right, env) : "";
+    if (ast.kind === "or") return evaluate(ast.left, env) || evaluate(ast.right, env);
+    assert.equal(ast.kind, "format");
+    const [template, ...args] = ast.args.map(arg => evaluate(arg, env));
+    return format(template, args);
+  }
+
+  function template(scalar) {
+    const parts = [];
+    let position = 0;
+    while (position < scalar.length) {
+      const start = scalar.indexOf("${{", position);
+      if (start < 0) { parts.push({ literal: scalar.slice(position) }); break; }
+      if (start > position) parts.push({ literal: scalar.slice(position, start) });
+      let end = start + 3;
+      let quoted = false;
+      for (; end < scalar.length; end += 1) {
+        if (scalar[end] === "'") {
+          if (quoted && scalar[end + 1] === "'") { end += 1; continue; }
+          quoted = !quoted;
+        } else if (!quoted && scalar.slice(end, end + 2) === "}}") break;
+      }
+      assert.ok(!quoted && end < scalar.length, "unterminated template expression");
+      const source = scalar.slice(start + 3, end).trim();
+      parts.push({ source, ast: expression(source) });
+      position = end + 2;
+    }
+    const expressions = parts.filter(part => Object.hasOwn(part, "source"));
+    // The single-expression case stays an expression token. Mixed scalar
+    // interpolation synthesizes one outer format: length is UTF-16 source
+    // characters, not individual inner lengths, UTF-8 bytes or YAML lines.
+    let compiled = "";
+    if (parts.length === 1 && expressions.length === 1) compiled = expressions[0].source;
+    else if (expressions.length) {
+      let literal = "";
+      let arg = 0;
+      for (const part of parts) literal += Object.hasOwn(part, "literal")
+        ? part.literal.replaceAll("'", "''").replaceAll("{", "{{").replaceAll("}", "}}")
+        : "{" + arg++ + "}";
+      compiled = "format('" + literal + "', " + expressions.map(part => part.source).join(", ") + ")";
+      expression(compiled);
+    }
+    return { parts, compiled, expressions };
+  }
+
+  function render(parsed, env) {
+    return parsed.parts.map(part => Object.hasOwn(part, "literal") ? part.literal : evaluate(part.ast, env)).join("");
+  }
+  function eligible(value) { return value.split("\n").filter(Boolean); }
+  function underLimit(scalar) {
+    const parsed = template(scalar);
+    assert.ok(parsed.compiled.length <= limit,
+      "GitHub compiled upload path expression exceeds 21000: " + parsed.compiled.length);
+    return parsed;
+  }
+  function grouped(separator = "\n") {
+    return original.join("\n") + "\n" + inheritedBrowserCases.map(row =>
+      "${{ env." + row.public_output_variable + " && format('"
+      + row.public_files.map(file => "{0}/" + file).join(separator)
+      + "', env." + row.public_output_variable + ") || '' }}").join("\n") + "\n";
+  }
+  function expected(env) {
+    return [
+      ...originalFamilies.flatMap(([root, files]) => files.map(file => (env[root] ?? "") + "/" + file)),
+      ...inheritedBrowserCases.flatMap(row => env[row.public_output_variable]
+        ? row.public_files.map(file => env[row.public_output_variable] + "/" + file) : []),
+    ];
+  }
+  function allRootStates(scalar) {
+    const parsed = template(scalar);
+    assert.equal(original.length, 26);
+    assert.deepEqual(inheritedBrowserCases.map(row => row.public_files.length), [89,20,20,16,6,6,17,15,12]);
+    let states = 0;
+    for (let mask = 0; mask < 512; mask += 1) {
+      const env = Object.fromEntries(originalFamilies.map(([root], index) => [root, "/original-prefix-" + index]));
+      inheritedBrowserCases.forEach((row, index) => {
+        if (mask & (1 << index)) env[row.public_output_variable] = "/history-prefix-" + index + " path with spaces";
+        else if (index % 2) env[row.public_output_variable] = ""; // both absent and explicit empty
+      });
+      const paths = eligible(render(parsed, env));
+      assert.deepEqual(paths, expected(env), "exact ordered whitelist/absent-root semantics mask=" + mask);
+      assert.equal(new Set(paths).size, paths.length, "duplicate eligible path");
+      states += 1;
+    }
+    assert.equal(states, 512);
+    return parsed;
+  }
+  function upload(source = workflow) {
+    const model = yaml.load(source);
+    const uploads = model.jobs.backend.steps.filter(step => step.uses?.startsWith("actions/upload-artifact@"));
+    assert.equal(uploads.length, 1);
+    assert.equal(uploads[0].id, "native-browser-evidence");
+    assert.equal(typeof uploads[0].with.path, "string");
+    return uploads[0];
+  }
+  function replacement(scalar) {
+    const step = upload();
+    const changed = mutateNamedStep(workflow, "backend", step.name,
+      source => mutateActionInput(source, "path", JSON.stringify(scalar)));
+    assert.equal(upload(changed).with.path, scalar, "mutation must reach typed YAML path");
+    return changed;
+  }
+  function budgetFailure(failures) {
+    return failures.some(failure => /expression/i.test(failure) && failure.includes("21000"));
+  }
+  function boundary(length) {
+    const shell = "${{ format('{0}', env.CONSOLE_BROWSER_JOURNEY_OUTPUT) }}";
+    const padding = "p".repeat(length - template(shell).compiled.length);
+    const scalar = shell.replace("'{0}'", "'" + padding + "{0}'");
+    assert.equal(template(scalar).compiled.length, length);
+    return scalar;
+  }
+
+  it("keeps the actual mixed upload path within GitHub's compiled expression limit", () => {
+    underLimit(upload().with.path);
+  });
+
+  it("makes the named production preflight gate diagnose an overlong compiled path", () => {
+    const actualLength = template(upload().with.path).compiled.length;
+    const observed = [["actual", actualLength, budgetFailure(evaluateCiPreflight(workflow).failures)]];
+    for (const length of [20999, 21000, 21001, 22000]) {
+      const source = replacement(boundary(length));
+      observed.push(["mutation", length, budgetFailure(evaluateCiPreflight(source).failures)]);
+    }
+    assert.deepEqual(observed, observed.map(([kind, length]) => [kind, length, length > limit]),
+      "production gate must diagnose the actual and synthetic compiled scalar budget; unrelated exact-path lock failures do not count");
+  });
+
+  it("accepts near-bound expressions and rejects greater than21000 using compiled UTF16 source length", () => {
+    for (const length of [20999,21000]) assert.doesNotThrow(() => underLimit(boundary(length)));
+    for (const length of [21001,22000]) assert.throws(() => underLimit(boundary(length)), /21000/);
+    const unicode = "${{ format('🧪{0}', env.CONSOLE_BROWSER_JOURNEY_OUTPUT) }}";
+    assert.equal(template(unicode).compiled.length, template(unicode.replace("🧪", "pp")).compiled.length);
+    assert.ok(Buffer.byteLength(template(unicode).compiled, "utf8") > template(unicode).compiled.length);
+  });
+
+  it("preserves all227 actual ordered paths and omits absent histories across512 mixed-prefix states", () => {
+    const scalar = upload().with.path;
+    assert.equal(scalar.slice(0, original.join("\n").length + 1), original.join("\n") + "\n");
+    allRootStates(scalar);
+  });
+
+  it("qualifies whole-history grouping with real LF and the same closed path semantics", () => {
+    const scalar = grouped();
+    const parsed = underLimit(scalar);
+    assert.equal(parsed.expressions.length, 35);
+    assert.equal(parsed.compiled.length, 10654, "source projection is pinned, not hosted parser evidence");
+    assert.equal(scalar.length, 10689);
+    allRootStates(scalar);
+  });
+
+  it("keeps the existing partial-failure upload caller's201 semantic slots for old and grouped inputs", () => {
+    const values = Object.fromEntries(inheritedBrowserCases.map(row => [row.public_output_variable, "/caller-prefix/" + row.tag]));
+    const expectedPaths = inheritedBrowserCases.flatMap(row => row.public_files.map(file => values[row.public_output_variable] + "/" + file));
+    for (const scalar of [original.join("\n") + "\n" + inheritedUploadExpressions().join("\n") + "\n", grouped()]) {
+      const source = replacement(scalar);
+      assert.deepEqual(guardedInheritedUploads(source, values), expectedPaths);
+      assert.deepEqual(guardedInheritedUploads(source, {}), Array(201).fill(""));
+      for (const row of inheritedBrowserCases) {
+        const missing = { ...values }; delete missing[row.public_output_variable];
+        const slots = guardedInheritedUploads(source, missing);
+        assert.equal(slots.length, 201);
+        assert.equal(slots.filter(value => value === "").length, row.public_files.length);
+        assert.deepEqual(slots.filter(Boolean), expectedPaths.filter(path => !path.startsWith(values[row.public_output_variable] + "/")));
+      }
+    }
+  });
+
+  it("rejects literal backslash-n, missing root guards, reordered files and private or wildcard additions", () => {
+    assert.throws(() => allRootStates(grouped("\\n")));
+    const scalar = grouped();
+    const first = inheritedBrowserCases[0].public_output_variable;
+    for (const changed of [
+      scalar.replace("env." + first + " && ", ""),
+      scalar.replace("{0}/result.json\n{0}/owner-receipt.json", "{0}/owner-receipt.json\n{0}/result.json"),
+      scalar.replace("{0}/result.json", "{0}/runtime/private.json"),
+      scalar.replace("{0}/result.json", "{0}/**"),
+      scalar + "${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT }}/runtime/**\n",
+    ]) { assert.notEqual(changed, scalar); assert.throws(() => allRootStates(changed)); }
+  });
+
+  it("parses quotes braces precedence and string roots without arbitrary context or function fallback", () => {
+    const root = "CONSOLE_INHERITED_PEOPLE_OUTPUT";
+    const value = "${{ env." + root + " && format('{0}/a''b{{literal}}.png', env." + root + ") || '' }}";
+    const parsed = template(value);
+    assert.equal(render(parsed, {}), "");
+    for (const prefix of ["0", "false", "/opaque/'quote'/{braces}/🧪"])
+      assert.equal(render(parsed, { [root]: prefix }), prefix + "/a'b{literal}.png");
+    for (const source of [
+      "${{ secrets.PRIVATE_ROOT }}", "${{ env.PRIVATE_OUTPUT }}", "${{ join('unsafe', 'value') }}",
+      "${{ env." + root + " & 'value' }}", "${{ format('unterminated, env." + root + ") }}",
+      "${{ format('{1}', env." + root + ") }}", "${{ format('{0}', env." + root + ") }",
+    ]) assert.throws(() => render(template(source), { [root]: "/root" }));
+  });
+});
+
+
+describe("preflight native metadata bootstrap", () => {
+  const installer = readFileSync(new URL("../tools/buck/install_dotslash.sh", import.meta.url), "utf8");
+  const checkoutReadyIf = "${{ !cancelled() && steps.checkout.outcome == 'success' }}";
+  const publishPath = "printf '%s\\n' \"${bin_dir}\" >>\"${GITHUB_PATH}\"";
+
+  function requireBootstrap(model, installerSource = installer) {
+    const preflight = model.jobs.preflight;
+    const steps = preflight.steps;
+    const bootstraps = steps.filter((step) => step.run === "tools/buck/install_dotslash.sh");
+    assert.equal(bootstraps.length, 1, "preflight must invoke the pinned DotSlash installer exactly once");
+    const bootstrap = bootstraps[0];
+    assert.equal(bootstrap.id, "dotslash");
+    assert.equal(
+      bootstrap.if,
+      checkoutReadyIf,
+      "DotSlash must cover every checkout-ready preflight, including thin paths",
+    );
+    assert.equal(bootstrap["continue-on-error"], undefined, "DotSlash bootstrap must fail closed");
+    const installedAt = steps.indexOf(bootstrap);
+    for (const command of [ciPreflightTests, "npm run check:ci-preflight"]) {
+      const gates = steps.filter((step) => step.run === command);
+      assert.equal(gates.length, 1, `the existing protected preflight must remain: ${command}`);
+      assert.equal(gates[0].if, npmCiIf, "preflight must retain its all-class fail-slow condition");
+      const gateAt = steps.indexOf(gates[0]);
+      assert.ok(installedAt < gateAt, "DotSlash must install before every protected preflight caller");
+      assert.equal(preflight.env?.PATH, undefined, "job PATH must retain the installed runtime");
+      for (const step of steps.slice(installedAt, gateAt + 1)) {
+        assert.equal(step.env?.PATH, undefined, "step PATH must retain the installed runtime");
+      }
+    }
+    assert.match(installerSource, /^version="v0\.5\.7"$/m, "the installed runtime must remain pinned");
+    assert.ok(installerSource.includes(publishPath), "the pinned installer must publish its bin directory through GITHUB_PATH");
+    const versionCheck = installerSource.indexOf('if [[ "${actual_version}" != "DotSlash ${version#v}" ]]');
+    assert.ok(versionCheck >= 0 && versionCheck < installerSource.indexOf(publishPath), "verify the pinned runtime before publishing PATH");
+  }
+
+  for (const [pathClass, paths] of [
+    ["docs-only", ["docs/program/bootstrap-probe.md"]],
+    ["release-metadata-only", [".release-please-manifest.json", "CHANGELOG.md"]],
+  ]) {
+    it(`installs the native metadata runtime for ${pathClass} preflight`, () => {
+      const classified = classifyChangedPaths(paths);
+      assert.equal(classified.pathClass, pathClass);
+      assert.equal(classified.runHeavy, false, "the control must exercise a real thin path class");
+      requireBootstrap(yaml.load(workflow));
+    });
+  }
+
+  it("accepts the same pinned installer before preflight for every checkout-ready path class", () => {
+    const model = yaml.load(workflow);
+    model.jobs.preflight.steps.find((step) => step.id === "dotslash").if = checkoutReadyIf;
+    requireBootstrap(model);
+    assert.equal(classifyChangedPaths(["backend/app/src/lib.rs"]).runHeavy, true);
+  });
+
+  it("refuses omitted, late, disabled or unpublished runtime prerequisites", () => {
+    const ready = yaml.load(workflow);
+    ready.jobs.preflight.steps.find((step) => step.id === "dotslash").if = checkoutReadyIf;
+    for (const fault of ["omitted", "late", "disabled"]) {
+      const model = structuredClone(ready);
+      const steps = model.jobs.preflight.steps;
+      const at = steps.findIndex((step) => step.id === "dotslash");
+      if (fault === "omitted") steps.splice(at, 1);
+      if (fault === "late") steps.push(...steps.splice(at, 1));
+      if (fault === "disabled") steps[at].if = false;
+      assert.throws(() => requireBootstrap(model), /DotSlash|pinned/, fault);
+    }
+    assert.ok(installer.includes(publishPath), "the PATH corruption must change the real installer");
+    assert.throws(
+      () => requireBootstrap(ready, installer.replace(publishPath, "")),
+      /GITHUB_PATH/,
+      "an installed binary without retained PATH must refuse",
+    );
+  });
+});
+
+describe("Independent hosted job census", () => {
+  const source = independentCensusWorkflow();
+  const candidate = yaml.load(source);
+  const current = yaml.load(workflow);
+  const leaves = [...censusPresubmitLeaves, ...censusPostsubmitLeaves];
+
+  it("accepts ready-classified independent jobs after an unrelated preflight gate fails", () => {
+    assert.deepEqual(evaluateCiPreflight(source).failures, []);
+  });
+
+  it("requires the real workflow to adopt the complete classification-ready boundary", () => {
+    assert.equal(current.jobs.preflight.outputs.classification_ready, censusReadinessIf);
+    for (const job of leaves) {
+      assert.equal(current.jobs[job].if, censusPostsubmitLeaves.includes(job) ? censusPostsubmitIf : censusLeafIf, job);
+    }
+    assert.deepEqual(current.jobs["postgres-domain-reachability"].steps.map((step) => step.if),
+      [censusNonEvaluationIf, censusThinIf, censusLiveIf]);
+  });
+
+  it("preserves all owned setup, topology/browser dependencies, event scopes and matrix behavior", () => {
+    for (const job of leaves) {
+      const { if: originalIf, ...original } = current.jobs[job];
+      const { if: nextIf, ...next } = candidate.jobs[job];
+      assert.deepEqual(next, original, job);
+      assert.equal(candidate.jobs[job].needs, "preflight", job);
+    }
+    const { classification_ready: originalReady, ...originalOutputs } = current.jobs.preflight.outputs;
+    const { classification_ready: nextReady, ...nextOutputs } = candidate.jobs.preflight.outputs;
+    assert.deepEqual(nextOutputs, originalOutputs);
+    assert.equal(candidate.jobs.backend.strategy["fail-fast"], false);
+    assert.deepEqual(candidate.jobs["required-ci"], current.jobs["required-ci"]);
+    assert.deepEqual(candidate.jobs["rust-fmt"], current.jobs["rust-fmt"]);
+  });
+
+  const readinessMutations = [
+    ["missing readiness output", (block) => block.replace(/^      classification_ready:.*\n/m, "")],
+    ["constant true readiness", (block) => block.replace(censusReadinessIf, "${{ true }}")],
+    ["constant false readiness", (block) => block.replace(censusReadinessIf, "${{ false }}")],
+    ["failed/skipped classifier accepted", (block) => block.replace("steps.path_class.outcome == 'success'", "steps.path_class.outcome != 'cancelled'")],
+    ["missing classifier-success prerequisite", (block) => block.replace("steps.path_class.outcome == 'success' && ", "")],
+    ["missing path-class prerequisite", (block) => block.replace("steps.path_class.outputs.path_class != '' && ", "")],
+    ["missing heavy-output validation", (block) => block.replace("(steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && ", "")],
+    ["missing live-output validation", (block) => block.replace(" && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false')", "")],
+    ["empty heavy value treated as false", (block) => block.replace("steps.path_class.outputs.run_heavy == 'false'", "steps.path_class.outputs.run_heavy != 'true'")],
+    ["empty live value treated as false", (block) => block.replace("steps.path_class.outputs.run_live_postgres == 'false'", "steps.path_class.outputs.run_live_postgres != 'true'")],
+    ["remapped heavy output", (block) => block.replace("run_heavy: ${{ steps.path_class.outputs.run_heavy }}", "run_heavy: ${{ false }}")],
+    ["remapped live output", (block) => block.replace("run_live_postgres: ${{ steps.path_class.outputs.run_live_postgres }}", "run_live_postgres: ${{ false }}")],
+    ["missing mapped class output", (block) => block.replace(/^      path_class:.*\n/m, "")],
+    ["missing mapped heavy output", (block) => block.replace(/^      run_heavy:.*\n/m, "")],
+    ["missing mapped live output", (block) => block.replace(/^      run_live_postgres:.*\n/m, "")],
+  ];
+  for (const [label, mutate] of readinessMutations) {
+    it(`rejects ${label} before any classified-dependent leaf starts`, () => {
+      expectCensusMutationFailure(replaceJob(source, "preflight", mutate), label);
+    });
+  }
+
+  for (const job of leaves) {
+    for (const [label, mutate] of [
+      ["missing job guard", (block) => block.replace(/^    if:.*\n/m, "")],
+      ["bare always", (block) => block.replace(/^    if:.*$/m, "    if: ${{ always() }}")],
+      ["missing readiness", (block) => block.replace("needs.preflight.outputs.classification_ready == 'true'", "true")],
+      ["false readiness", (block) => block.replace("classification_ready == 'true'", "classification_ready == 'false'")],
+      ["string truthiness for missing/false readiness", (block) => block.replace("classification_ready == 'true'", "classification_ready")],
+      ["missing cancellation guard", (block) => block.replace("!cancelled() && ", "")],
+      ["global success suppression", (block) => block.replace("!cancelled() && ", "!cancelled() && needs.preflight.result == 'success' && ")],
+      ["missing direct prerequisite", (block) => block.replace("    needs: preflight\n", "    needs: []\n")],
+    ]) {
+      it(`rejects ${job}: ${label}`, () => {
+        expectCensusMutationFailure(replaceJob(source, job, mutate), `${job}: ${label}`);
+      });
+    }
+  }
+
+  for (const job of censusPostsubmitLeaves) {
+    for (const [label, mutate] of [
+      ["event guard removed", (block) => block.replace(" && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')", "")],
+      ["pull_request admitted", (block) => block.replace("github.event_name == 'workflow_dispatch')", "github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request')")],
+      ["heavy requirement removed", (block) => block.replace(" && needs.preflight.outputs.run_heavy == 'true'", "")],
+    ]) {
+      it(`rejects ${job}: ${label}`, () => {
+        expectCensusMutationFailure(replaceJob(source, job, mutate), `${job}: ${label}`);
+      });
+    }
+  }
+
+  for (const [name, before, after] of [
+    ["Preflight failure non-evaluation", censusNonEvaluationIf, "${{ needs.preflight.result != 'success' }}"],
+    ["Path-class skip proof", censusThinIf, "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres != 'true' }}"],
+    ["Require all PostgreSQL reachability facets", censusLiveIf, "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}"],
+    ["Require all PostgreSQL reachability facets", censusLiveIf, "${{ needs.preflight.outputs.run_live_postgres == 'true' }}"],
+  ]) {
+    it(`rejects aggregate ${name}: ${after}`, () => {
+      expectCensusMutationFailure(mutateNamedStep(source, "postgres-domain-reachability", name,
+        (block) => block.replace(before, after)), name);
+    });
+  }
+
+  const facets = ["app", "platform", "ontology", "domain-a", "domain-b"].map((id) => `postgres-reachability-${id}`);
+  const fanIn = candidate.jobs["postgres-domain-reachability"].steps[2].run;
+  for (const [failedJob, result] of [[null, "success"], ...facets.flatMap((job) => ["failure", "skipped", "cancelled"].map((result) => [job, result]))]) {
+    it(`executes the real PostgreSQL fan-in: ${failedJob ?? "all facets"}=${result}`, () => {
+      const command = fanIn.replace(/\$\{\{ needs\.([\w-]+)\.result \}\}/g,
+        (_, job) => job === failedJob ? result : "success");
+      assert.doesNotMatch(command, /\$\{\{/);
+      const outcome = spawnSync("bash", ["-e", "-c", command], { encoding: "utf8" });
+      assert.equal(outcome.status, failedJob ? 1 : 0, outcome.stderr);
+    });
+  }
+
+  it("executes Required / CI's real preflight failure even when every independent proof succeeds", () => {
+    const command = candidate.jobs["required-ci"].steps[0].run.replace(/\$\{\{ needs\.([\w-]+)\.result \}\}/g,
+      (_, job) => job === "preflight" ? "failure" : "success");
+    assert.doesNotMatch(command, /\$\{\{/);
+    const outcome = spawnSync("bash", ["-e", "-c", command], { encoding: "utf8" });
+    assert.equal(outcome.status, 1, outcome.stderr);
+    expectCensusMutationFailure(mutateNamedStep(source, "required-ci", "Require every CI proof to succeed",
+      (block) => block.replace('          test "${{ needs.preflight.result }}" = success &&\n', "")),
+    "Required / CI cannot discard the preflight failure");
   });
 });

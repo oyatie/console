@@ -8,7 +8,7 @@ use console_governance_domain::{GateChainConfig, GateEvidence, evaluate_gate_cha
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, ErrorKind, KernelError, TraceContext, UserId,
 };
-use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_auth::{PasskeyAuthenticationCredential, PasskeyService, SessionVerification};
 use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationRequest, AuthorizationResource, Feature,
     PermissionLevel, Principal, RlsScopeProof, authorize_org_wide, permission_for,
@@ -287,16 +287,16 @@ const APPROVAL_TEMPLATES: &[ApprovalTemplate] = &[
 #[derive(Clone)]
 pub struct WorkflowStudioState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
 }
 
 impl WorkflowStudioState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
         Self {
             pool,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
         }
     }
@@ -309,7 +309,7 @@ impl WorkflowStudioState {
 }
 
 pub fn router(state: WorkflowStudioState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(WORKFLOW_STUDIO_CATALOG_PATH, get(get_catalog))
@@ -7636,7 +7636,13 @@ async fn verify_workflow_step_up(
     })?;
     verifier
         .verify_step_up_for_user(
-            &state.pool,
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| {
+                    WorkflowStudioError::unavailable("authentication storage unavailable")
+                })?
+                .auth_pool(),
             step_up.ceremony_id,
             step_up.credential,
             *principal.user_id.as_uuid(),

@@ -1,0 +1,355 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_32057" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_32057, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[33mwarning[0m[1m: unused workspace dependency `console-attendance-application`[0m
+   [1m[94m--> [0mCargo.toml:200:1
+    [1m[94m|[0m
+[1m[94m200[0m [1m[94m|[0m console-attendance-application = { path = "crates/attendance/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: `cargo::unused_workspace_dependencies` is set to `warn` by default
+[1m[96mhelp[0m: consider removing the workspace dependency `console-attendance-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-attendance-domain`[0m
+   [1m[94m--> [0mCargo.toml:199:1
+    [1m[94m|[0m
+[1m[94m199[0m [1m[94m|[0m console-attendance-domain = { path = "crates/attendance/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-attendance-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-comms-mailbox`[0m
+   [1m[94m--> [0mCargo.toml:300:1
+    [1m[94m|[0m
+[1m[94m300[0m [1m[94m|[0m console-comms-mailbox = { path = "crates/comms/mailbox" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-comms-mailbox`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-finance-gl-application`[0m
+   [1m[94m--> [0mCargo.toml:216:1
+    [1m[94m|[0m
+[1m[94m216[0m [1m[94m|[0m console-finance-gl-application = { path = "crates/finance-gl/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-finance-gl-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-finance-gl-domain`[0m
+   [1m[94m--> [0mCargo.toml:215:1
+    [1m[94m|[0m
+[1m[94m215[0m [1m[94m|[0m console-finance-gl-domain = { path = "crates/finance-gl/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-finance-gl-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-inspection-application`[0m
+   [1m[94m--> [0mCargo.toml:224:1
+    [1m[94m|[0m
+[1m[94m224[0m [1m[94m|[0m console-inspection-application = { path = "crates/inspection/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-inspection-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-inspection-domain`[0m
+   [1m[94m--> [0mCargo.toml:223:1
+    [1m[94m|[0m
+[1m[94m223[0m [1m[94m|[0m console-inspection-domain = { path = "crates/inspection/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-inspection-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-logistics-application`[0m
+   [1m[94m--> [0mCargo.toml:232:1
+    [1m[94m|[0m
+[1m[94m232[0m [1m[94m|[0m console-logistics-application = { path = "crates/logistics/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-logistics-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-ontology-application`[0m
+   [1m[94m--> [0mCargo.toml:321:1
+    [1m[94m|[0m
+[1m[94m321[0m [1m[94m|[0m console-ontology-application = { path = "crates/ontology/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-ontology-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-ontology-domain`[0m
+   [1m[94m--> [0mCargo.toml:320:1
+    [1m[94m|[0m
+[1m[94m320[0m [1m[94m|[0m console-ontology-domain = { path = "crates/ontology/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-ontology-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-orgchange-domain`[0m
+   [1m[94m--> [0mCargo.toml:328:1
+    [1m[94m|[0m
+[1m[94m328[0m [1m[94m|[0m console-orgchange-domain = { path = "crates/orgchange/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-orgchange-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-policy-adapter-postgres`[0m
+   [1m[94m--> [0mCargo.toml:308:1
+    [1m[94m|[0m
+[1m[94m308[0m [1m[94m|[0m console-policy-adapter-postgres = { path = "crates/policy/adapter-postgres" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-policy-adapter-postgres`
+[1m[33mwarning[0m: workspace (manifest) generated 12 warnings
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "persona_ess_http") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workorder_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_people_create_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_resolve_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_context_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "finance_gl_voucher_sod") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "router_layers") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notif_routing_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "dispatch_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "platform_onboarding_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "intelligence_bind") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_kind_dynamics") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "health_readiness") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "benefit_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "search_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notifications_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workbench_native_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "equipment_3r_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "purchase_request_collection_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "logistics_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "consulting_engagement_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_run_read_surface") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_manager_scope") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "board_ack_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "submittable_definitions_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_graph_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "evaluation_cycle_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "action_inbox_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "realtime_ws") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_finalize_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_self_read") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "tenant_context_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_links_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "facilities_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "attendance_persona_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "recruiting_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "maintenance_chain_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_kill_switch") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "org_change_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_instance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_ingest_checklist_gate") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "well_known") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_ontology_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_four_eyes_publish") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "field_visit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "audit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "registry_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "mobile_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_route_telemetry") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.92s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: attribute-derive-macro v0.10.5, proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m unittests src/lib.rs (backend/target/debug/build/console-app/7b21beb1926f63ed/out/console_app-7b21beb1926f63ed)
+[1m[92m  Executable[0m unittests src/main.rs (backend/target/debug/build/console-app/9d39042157f787e6/out/console_app-9d39042157f787e6)
+[1m[92m  Executable[0m unittests src/bin/console_cedar_parity_report.rs (backend/target/debug/build/console-app/a33a1bf1d12729b7/out/console_cedar_parity_report-a33a1bf1d12729b7)
+[1m[92m  Executable[0m unittests src/bin/console_deployment_operator.rs (backend/target/debug/build/console-app/0a3927f46f34dedc/out/console_deployment_operator-0a3927f46f34dedc)
+[1m[92m  Executable[0m tests/account_migration.rs (backend/target/debug/build/console-app/094ae53e1e14b91d/out/account_migration-094ae53e1e14b91d)
+[1m[92m  Executable[0m tests/action_inbox_api.rs (backend/target/debug/build/console-app/827fc4da9a7567c7/out/action_inbox_api-827fc4da9a7567c7)
+[1m[92m  Executable[0m tests/attendance_persona_api.rs (backend/target/debug/build/console-app/a68ca6e82a875801/out/attendance_persona_api-a68ca6e82a875801)
+[1m[92m  Executable[0m tests/audit_api.rs (backend/target/debug/build/console-app/250185a510c056f2/out/audit_api-250185a510c056f2)
+[1m[92m  Executable[0m tests/auth_rest.rs (backend/target/debug/build/console-app/978748b4017c2c03/out/auth_rest-978748b4017c2c03)
+[1m[92m  Executable[0m tests/benefit_catalog_api.rs (backend/target/debug/build/console-app/005dfeb4b2549f01/out/benefit_catalog_api-005dfeb4b2549f01)
+[1m[92m  Executable[0m tests/board_ack_api.rs (backend/target/debug/build/console-app/e1c588bbd6699683/out/board_ack_api-e1c588bbd6699683)
+[1m[92m  Executable[0m tests/cedar_freshness_mint.rs (backend/target/debug/build/console-app/1f99a4a42a60e99c/out/cedar_freshness_mint-1f99a4a42a60e99c)
+[1m[92m  Executable[0m tests/cedar_parity_shadow.rs (backend/target/debug/build/console-app/2ffd5d3bcea6075a/out/cedar_parity_shadow-2ffd5d3bcea6075a)
+[1m[92m  Executable[0m tests/cedar_shadow_role_manage.rs (backend/target/debug/build/console-app/3058abcd94ea4ee3/out/cedar_shadow_role_manage-3058abcd94ea4ee3)
+[1m[92m  Executable[0m tests/compliance_api.rs (backend/target/debug/build/console-app/f0cc54c68cbdaf0e/out/compliance_api-f0cc54c68cbdaf0e)
+[1m[92m  Executable[0m tests/compliance_catalog_api.rs (backend/target/debug/build/console-app/d478995650f1216f/out/compliance_catalog_api-d478995650f1216f)
+[1m[92m  Executable[0m tests/config.rs (backend/target/debug/build/console-app/b9b2473009497928/out/config-b9b2473009497928)
+[1m[92m  Executable[0m tests/console_kill_switch.rs (backend/target/debug/build/console-app/e00a4769dc1044f8/out/console_kill_switch-e00a4769dc1044f8)
+[1m[92m  Executable[0m tests/console_route_telemetry.rs (backend/target/debug/build/console-app/754a7907dbb2c2d6/out/console_route_telemetry-754a7907dbb2c2d6)
+[1m[92m  Executable[0m tests/consulting_engagement_api.rs (backend/target/debug/build/console-app/db807bf8e621649a/out/consulting_engagement_api-db807bf8e621649a)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard.rs (backend/target/debug/build/console-app/fd80d0cd6963d41a/out/dev_auth_persona_guard-fd80d0cd6963d41a)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard_feature.rs (backend/target/debug/build/console-app/7cf2ba8d36be9ed2/out/dev_auth_persona_guard_feature-7cf2ba8d36be9ed2)
+[1m[92m  Executable[0m tests/dev_seed_notification_links.rs (backend/target/debug/build/console-app/bf2dedca0987c438/out/dev_seed_notification_links-bf2dedca0987c438)
+[1m[92m  Executable[0m tests/dispatch_pipeline_api.rs (backend/target/debug/build/console-app/7e11c2dce25e45d8/out/dispatch_pipeline_api-7e11c2dce25e45d8)
+[1m[92m  Executable[0m tests/equipment_3r_api.rs (backend/target/debug/build/console-app/f24e831127dc1397/out/equipment_3r_api-f24e831127dc1397)
+[1m[92m  Executable[0m tests/evaluation_cycle_api.rs (backend/target/debug/build/console-app/37c8899760117eab/out/evaluation_cycle_api-37c8899760117eab)
+[1m[92m  Executable[0m tests/facilities_pilot_story.rs (backend/target/debug/build/console-app/7bfee3c37c9be41b/out/facilities_pilot_story-7bfee3c37c9be41b)
+[1m[92m  Executable[0m tests/field_visit_api.rs (backend/target/debug/build/console-app/e04355d0e74e9038/out/field_visit_api-e04355d0e74e9038)
+[1m[92m  Executable[0m tests/finance_gl_voucher_sod.rs (backend/target/debug/build/console-app/aa547486bfd830d2/out/finance_gl_voucher_sod-aa547486bfd830d2)
+[1m[92m  Executable[0m tests/health_readiness.rs (backend/target/debug/build/console-app/6e040cbda0ad72bd/out/health_readiness-6e040cbda0ad72bd)
+[1m[92m  Executable[0m tests/hr_attendance_manager_scope.rs (backend/target/debug/build/console-app/ad7f52a9e6c2c4b7/out/hr_attendance_manager_scope-ad7f52a9e6c2c4b7)
+[1m[92m  Executable[0m tests/hr_attendance_self_read.rs (backend/target/debug/build/console-app/1bfe311002f53e16/out/hr_attendance_self_read-1bfe311002f53e16)
+[1m[92m  Executable[0m tests/hr_ingest_checklist_gate.rs (backend/target/debug/build/console-app/e7a4f03f1873e669/out/hr_ingest_checklist_gate-e7a4f03f1873e669)
+[1m[92m  Executable[0m tests/hr_people_create_api.rs (backend/target/debug/build/console-app/f1ab3608f30e6c31/out/hr_people_create_api-f1ab3608f30e6c31)
+[1m[92m  Executable[0m tests/intelligence_bind.rs (backend/target/debug/build/console-app/ed6d34cac9bd19bc/out/intelligence_bind-ed6d34cac9bd19bc)
+[1m[92m  Executable[0m tests/logistics_pilot_story.rs (backend/target/debug/build/console-app/241984311bde70d7/out/logistics_pilot_story-241984311bde70d7)
+[1m[92m  Executable[0m tests/m2_real_engine_drive.rs (backend/target/debug/build/console-app/e1608940e07c3bb3/out/m2_real_engine_drive-e1608940e07c3bb3)
+[1m[92m  Executable[0m tests/maintenance_chain_api.rs (backend/target/debug/build/console-app/044a82bc7a3be74c/out/maintenance_chain_api-044a82bc7a3be74c)
+[1m[92m  Executable[0m tests/mobile_api.rs (backend/target/debug/build/console-app/ed39e3976cad8a95/out/mobile_api-ed39e3976cad8a95)
+[1m[92m  Executable[0m tests/notif_routing_api.rs (backend/target/debug/build/console-app/7b0d514b3a7161de/out/notif_routing_api-7b0d514b3a7161de)
+[1m[92m  Executable[0m tests/notifications_api.rs (backend/target/debug/build/console-app/4448220a62cbb944/out/notifications_api-4448220a62cbb944)
+[1m[92m  Executable[0m tests/object_graph_api.rs (backend/target/debug/build/console-app/cde010acf32e1dba/out/object_graph_api-cde010acf32e1dba)
+[1m[92m  Executable[0m tests/object_links_api.rs (backend/target/debug/build/console-app/ee9b100748ad85b6/out/object_links_api-ee9b100748ad85b6)
+[1m[92m  Executable[0m tests/object_ontology_api.rs (backend/target/debug/build/console-app/b5ef83bfa61c07d9/out/object_ontology_api-b5ef83bfa61c07d9)
+[1m[92m  Executable[0m tests/object_resolve_api.rs (backend/target/debug/build/console-app/0732bf9ec80e4781/out/object_resolve_api-0732bf9ec80e4781)
+[1m[92m  Executable[0m tests/office_versions.rs (backend/target/debug/build/console-app/eb0521f66fafc57d/out/office_versions-eb0521f66fafc57d)
+[1m[92m  Executable[0m tests/openapi_drift.rs (backend/target/debug/build/console-app/bb9ce7ff73040ade/out/openapi_drift-bb9ce7ff73040ade)
+[1m[92m  Executable[0m tests/openslo_files.rs (backend/target/debug/build/console-app/58c2578dffc6a85b/out/openslo_files-58c2578dffc6a85b)
+[1m[92m  Executable[0m tests/org_change_api.rs (backend/target/debug/build/console-app/4f66f4c7a6bd76e3/out/org_change_api-4f66f4c7a6bd76e3)
+[1m[92m  Executable[0m tests/persona_ess_http.rs (backend/target/debug/build/console-app/18a337c5b79cded0/out/persona_ess_http-18a337c5b79cded0)
+[1m[92m  Executable[0m tests/platform_onboarding_e2e.rs (backend/target/debug/build/console-app/993b67d9415b166c/out/platform_onboarding_e2e-993b67d9415b166c)
+[1m[92m  Executable[0m tests/purchase_request_collection_api.rs (backend/target/debug/build/console-app/c8efbde7182eaa3f/out/purchase_request_collection_api-c8efbde7182eaa3f)
+[1m[92m  Executable[0m tests/realtime_ws.rs (backend/target/debug/build/console-app/09a1b5bc828759d8/out/realtime_ws-09a1b5bc828759d8)
+[1m[92m  Executable[0m tests/recruiting_pipeline_api.rs (backend/target/debug/build/console-app/5060c74da8b9d15a/out/recruiting_pipeline_api-5060c74da8b9d15a)
+[1m[92m  Executable[0m tests/registry_api.rs (backend/target/debug/build/console-app/e7e57d7c04b957f1/out/registry_api-e7e57d7c04b957f1)
+[1m[92m  Executable[0m tests/router_layers.rs (backend/target/debug/build/console-app/f43459f1c7099373/out/router_layers-f43459f1c7099373)
+[1m[92m  Executable[0m tests/search_api.rs (backend/target/debug/build/console-app/3c00597341631c6d/out/search_api-3c00597341631c6d)
+[1m[92m  Executable[0m tests/submittable_definitions_api.rs (backend/target/debug/build/console-app/f07e61fc0b6994df/out/submittable_definitions_api-f07e61fc0b6994df)
+[1m[92m  Executable[0m tests/tenant_context_e2e.rs (backend/target/debug/build/console-app/8b6dd0dc9d344131/out/tenant_context_e2e-8b6dd0dc9d344131)
+[1m[92m  Executable[0m tests/well_known.rs (backend/target/debug/build/console-app/2a4ab7b78a7f8c2a/out/well_known-2a4ab7b78a7f8c2a)
+[1m[92m  Executable[0m tests/workbench_api.rs (backend/target/debug/build/console-app/89e416c46e531df3/out/workbench_api-89e416c46e531df3)
+[1m[92m  Executable[0m tests/workbench_native_api.rs (backend/target/debug/build/console-app/552b7bfa718ef2a7/out/workbench_native_api-552b7bfa718ef2a7)
+[1m[92m  Executable[0m tests/workflow_automation_triggers.rs (backend/target/debug/build/console-app/7b1a71c80b17b73c/out/workflow_automation_triggers-7b1a71c80b17b73c)
+[1m[92m  Executable[0m tests/workflow_dynamics_branch.rs (backend/target/debug/build/console-app/8d6071a32f859ef3/out/workflow_dynamics_branch-8d6071a32f859ef3)
+[1m[92m  Executable[0m tests/workflow_four_eyes_publish.rs (backend/target/debug/build/console-app/03f01d223334f9ca/out/workflow_four_eyes_publish-03f01d223334f9ca)
+[1m[92m  Executable[0m tests/workflow_object_context_api.rs (backend/target/debug/build/console-app/23ded602696ee5b4/out/workflow_object_context_api-23ded602696ee5b4)
+[1m[92m  Executable[0m tests/workflow_object_kind_dynamics.rs (backend/target/debug/build/console-app/b19cfd21c5684ebf/out/workflow_object_kind_dynamics-b19cfd21c5684ebf)
+[1m[92m  Executable[0m tests/workflow_run_read_surface.rs (backend/target/debug/build/console-app/3705aa2679000600/out/workflow_run_read_surface-3705aa2679000600)
+[1m[92m  Executable[0m tests/workflow_runtime_finalize_api.rs (backend/target/debug/build/console-app/ab7b7bce4792d4d5/out/workflow_runtime_finalize_api-ab7b7bce4792d4d5)
+[1m[92m  Executable[0m tests/workflow_runtime_instance_api.rs (backend/target/debug/build/console-app/ad57cdcbb1d79330/out/workflow_runtime_instance_api-ad57cdcbb1d79330)
+[1m[92m  Executable[0m tests/workorder_api.rs (backend/target/debug/build/console-app/1c417630afae2bbf/out/workorder_api-1c417630afae2bbf)
+cargo-postgres: === app-auth-rest-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity -- --test-threads=1 --exact
+[1m[33mwarning[0m[1m: unused workspace dependency `console-attendance-application`[0m
+   [1m[94m--> [0mCargo.toml:200:1
+    [1m[94m|[0m
+[1m[94m200[0m [1m[94m|[0m console-attendance-application = { path = "crates/attendance/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+    [1m[94m= [0m[1mnote[0m: `cargo::unused_workspace_dependencies` is set to `warn` by default
+[1m[96mhelp[0m: consider removing the workspace dependency `console-attendance-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-attendance-domain`[0m
+   [1m[94m--> [0mCargo.toml:199:1
+    [1m[94m|[0m
+[1m[94m199[0m [1m[94m|[0m console-attendance-domain = { path = "crates/attendance/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-attendance-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-comms-mailbox`[0m
+   [1m[94m--> [0mCargo.toml:300:1
+    [1m[94m|[0m
+[1m[94m300[0m [1m[94m|[0m console-comms-mailbox = { path = "crates/comms/mailbox" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-comms-mailbox`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-finance-gl-application`[0m
+   [1m[94m--> [0mCargo.toml:216:1
+    [1m[94m|[0m
+[1m[94m216[0m [1m[94m|[0m console-finance-gl-application = { path = "crates/finance-gl/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-finance-gl-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-finance-gl-domain`[0m
+   [1m[94m--> [0mCargo.toml:215:1
+    [1m[94m|[0m
+[1m[94m215[0m [1m[94m|[0m console-finance-gl-domain = { path = "crates/finance-gl/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-finance-gl-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-inspection-application`[0m
+   [1m[94m--> [0mCargo.toml:224:1
+    [1m[94m|[0m
+[1m[94m224[0m [1m[94m|[0m console-inspection-application = { path = "crates/inspection/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-inspection-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-inspection-domain`[0m
+   [1m[94m--> [0mCargo.toml:223:1
+    [1m[94m|[0m
+[1m[94m223[0m [1m[94m|[0m console-inspection-domain = { path = "crates/inspection/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-inspection-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-logistics-application`[0m
+   [1m[94m--> [0mCargo.toml:232:1
+    [1m[94m|[0m
+[1m[94m232[0m [1m[94m|[0m console-logistics-application = { path = "crates/logistics/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-logistics-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-ontology-application`[0m
+   [1m[94m--> [0mCargo.toml:321:1
+    [1m[94m|[0m
+[1m[94m321[0m [1m[94m|[0m console-ontology-application = { path = "crates/ontology/application" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-ontology-application`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-ontology-domain`[0m
+   [1m[94m--> [0mCargo.toml:320:1
+    [1m[94m|[0m
+[1m[94m320[0m [1m[94m|[0m console-ontology-domain = { path = "crates/ontology/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-ontology-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-orgchange-domain`[0m
+   [1m[94m--> [0mCargo.toml:328:1
+    [1m[94m|[0m
+[1m[94m328[0m [1m[94m|[0m console-orgchange-domain = { path = "crates/orgchange/domain" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-orgchange-domain`
+[1m[33mwarning[0m[1m: unused workspace dependency `console-policy-adapter-postgres`[0m
+   [1m[94m--> [0mCargo.toml:308:1
+    [1m[94m|[0m
+[1m[94m308[0m [1m[94m|[0m console-policy-adapter-postgres = { path = "crates/policy/adapter-postgres" }
+    [1m[94m|[0m [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+    [1m[94m|[0m
+[1m[96mhelp[0m: consider removing the workspace dependency `console-policy-adapter-postgres`
+[1m[33mwarning[0m: workspace (manifest) generated 12 warnings
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.36s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: attribute-derive-macro v0.10.5, proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (backend/target/debug/build/console-app/978748b4017c2c03/out/auth_rest-978748b4017c2c03)
+
+running 1 test
+test account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity ... FAILED
+
+failures:
+
+---- account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity stdout ----
+
+thread 'account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity' (64745171) panicked at app/tests/auth_rest/native_company_setup.rs:385:9:
+NATIVE_COMPANY_ENTRY: current designated Account cannot discover actual setup
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 352 filtered out; finished in 7.14s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`
+cargo-postgres-timing: {"name": "app-auth-rest-pg", "package": "console-app", "seconds": 7.614, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-auth-rest-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

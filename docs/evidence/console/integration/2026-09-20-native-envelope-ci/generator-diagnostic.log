@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py", line 2115, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py", line 1781, in main
+    validate_resource_metadata(discovered)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py", line 1351, in validate_resource_metadata
+    raise ValueError("test resource metadata must match generated targets: " + "; ".join(parts))
+ValueError: test resource metadata must match generated targets: missing [('console-platform-request-context', 'test.integration', 'tests/native_error_envelope.rs')]

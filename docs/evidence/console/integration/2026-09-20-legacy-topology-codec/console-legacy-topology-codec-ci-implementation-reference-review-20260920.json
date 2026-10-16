@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "decision": "APPROVE_EXACT_CI_PIN_SUCCESSOR_SOURCE",
+  "base": "d1d84d43cffb3e0ed01876e57041df558daf1c1d",
+  "files": {
+    "scripts/check-ci-preflight.mjs": "93035998f4c000710c2e6b1412a0e0ce9872eb0f4c42d83dcd7d1b4b5f5117d1",
+    "scripts/check-ci-preflight.test.mjs": "587691d052ee1951f3ce40c47c9ea6598eeaba5216ce4d17206fec5461c65321",
+    ".github/workflows/ci.yml": "4f5734aa7c8a8f0f86cc4f7072e370c4f5c017707495e175f19d27a96aa4aef8"
+  },
+  "findings": [],
+  "checks": [
+    "Only two exact checker command literals changed. Raw YAML command retains indentation/continuations/terminal newline; normalized ordered-step literal retains continuations and trims line indentation/trailing newline as existing runCommand requires.",
+    "Native authz target remains required; provisioning unit target is additionally required. No modification to parser, comparisons, run conditions, working directory, error handling, step count/order or exemptions.",
+    "Committed test addition equals previously approved35adef45 packet inserted once; no existing test bytes changed. Positive control plus two explicit target-removal controls retained."
+  ],
+  "limits": [
+    "Source approval only. Root owns final full CI suite, RED and targeted green records; reviewer executed no tests."
+  ]
+}

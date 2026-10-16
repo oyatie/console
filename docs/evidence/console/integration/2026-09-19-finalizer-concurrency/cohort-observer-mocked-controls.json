@@ -1,0 +1,69 @@
+{
+  "kind": "observer-mocked-boundary-controls",
+  "original_script_sha256": "d00d6a143cfc886153133332d48f18b14240b7f5e9eee53372fee73b1376b9dc",
+  "passed": 10,
+  "failed": 0,
+  "cases": [
+    {
+      "case": "success",
+      "status": "passed",
+      "cargo_invocations": 2,
+      "wrapper_exit": 0
+    },
+    {
+      "case": "cold_failure",
+      "status": "passed",
+      "cargo_invocations": 2,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "warm_failure",
+      "status": "passed",
+      "cargo_invocations": 2,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "cold_present",
+      "status": "passed",
+      "cargo_invocations": 0,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "warm_absent",
+      "status": "passed",
+      "cargo_invocations": 1,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "missing_summary",
+      "status": "passed",
+      "cargo_invocations": 2,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "corrupt_counts",
+      "status": "passed",
+      "cargo_invocations": 2,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "changed_cluster",
+      "status": "passed",
+      "cargo_invocations": 1,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "wrong_options",
+      "status": "passed",
+      "cargo_invocations": 0,
+      "wrapper_exit": 1
+    },
+    {
+      "case": "forward",
+      "status": "passed",
+      "cargo_invocations": 1,
+      "wrapper_exit": 7
+    }
+  ],
+  "method": "Temporary copies replaced only real Cargo/psql absolute constants with local fake executable paths. Mock psql independently asserted exact SQLx-to-libpq URI/PGOPTIONS translation and absence of credentials from argv. Original script unchanged; no network, PostgreSQL or actual Cargo invoked."
+}

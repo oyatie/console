@@ -1,0 +1,50 @@
+✖ Media catalogue rejects changed reference rate units (166.117375ms)
+✖ Media catalogue rejects changed reference rate (132.609667ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 352.884417
+
+✖ failing tests:
+
+test at scripts/console/validate-console-truth-ledger.test.mjs:1842:3
+✖ Media catalogue rejects changed reference rate units (166.117375ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: N10 variant 1: actual owning validator rejects
+      at assertMediaRejection (file:///private/tmp/console-client-release-20260919/scripts/console/validate-console-truth-ledger.test.mjs:1658:10)
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/console/validate-console-truth-ledger.test.mjs:1843:56)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /release inventory.*Media/i,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at scripts/console/validate-console-truth-ledger.test.mjs:1842:3
+✖ Media catalogue rejects changed reference rate (132.609667ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception: N16 variant 1: actual owning validator rejects
+      at assertMediaRejection (file:///private/tmp/console-client-release-20260919/scripts/console/validate-console-truth-ledger.test.mjs:1658:10)
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/console/validate-console-truth-ledger.test.mjs:1843:56)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at node:internal/test_runner/test:1300:31
+      at node:internal/process/task_queues:151:7
+      at AsyncResource.runInAsyncScope (node:async_hooks:226:14)
+      at AsyncResource.runMicrotask (node:internal/process/task_queues:148:8) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /release inventory.*Media/i,
+    operator: 'throws',
+    diff: 'simple'
+  }

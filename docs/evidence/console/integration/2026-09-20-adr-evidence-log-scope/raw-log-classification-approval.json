@@ -1,0 +1,14 @@
+{
+  "decision": "user-approved raw-log classification",
+  "user_authorization": "Approve the raw-log classification",
+  "base_sha": "f53af9070693f7f41d3e23205de28e14f5ed0f71",
+  "original_path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/tests.patch",
+  "retained_path": "docs/evidence/console/integration/2026-09-20-adr-evidence-log-scope/tests.patch.log",
+  "sha256": "34784b6b126fd4a1e5e1211ac4ee8ba3f6679f74529564d04c1b575080833e27",
+  "byte_length": 4399,
+  "bytes_preserved": true,
+  "historical_manifest": "manifest.json is preserved and records the original artifact name; this receipt maps its new raw-log name",
+  "canonical_tests_changed": false,
+  "checker_changed": false,
+  "scope": "Only the explicitly approved archived raw diff is renamed; checker implementation of the previously reviewed evidence .log rule remains pending in a separate admitted change."
+}

@@ -1,0 +1,15 @@
+type: object
+additionalProperties: false
+required:
+- ceremony_id
+- assertion
+properties:
+  ceremony_id:
+    type: string
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    not:
+      const: 00000000-0000-0000-0000-000000000000
+    description: Canonical lowercase hyphenated, non-nil UUID.
+  assertion:
+    $ref: '#/components/schemas/NativeWebAuthnAuthenticationCredential'

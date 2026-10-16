@@ -1,0 +1,231 @@
+{
+  "kind": "REAL_AUTHORIZED_HYDRATION_ARTIFACT_PROOF",
+  "cases": [
+    {
+      "name": "anonymous",
+      "document_requests": 1,
+      "document_responses": 1,
+      "status": 200,
+      "exact_url": true,
+      "envelope": true,
+      "credentials_absent": true,
+      "expected_rows": true,
+      "omission": true,
+      "requests": [
+        {
+          "path": "/payroll",
+          "method": "GET",
+          "resource": "document"
+        }
+      ]
+    },
+    {
+      "name": "member",
+      "document_requests": 1,
+      "document_responses": 1,
+      "status": 200,
+      "exact_url": true,
+      "envelope": true,
+      "credentials_absent": true,
+      "expected_rows": true,
+      "omission": true,
+      "requests": [
+        {
+          "path": "/payroll",
+          "method": "GET",
+          "resource": "document"
+        }
+      ]
+    },
+    {
+      "name": "foreign-empty",
+      "document_requests": 1,
+      "document_responses": 1,
+      "status": 200,
+      "exact_url": true,
+      "envelope": true,
+      "credentials_absent": true,
+      "expected_rows": true,
+      "omission": true,
+      "requests": [
+        {
+          "path": "/payroll",
+          "method": "GET",
+          "resource": "document"
+        }
+      ]
+    },
+    {
+      "name": "authorized-js-off",
+      "document_requests": 1,
+      "document_responses": 1,
+      "status": 200,
+      "exact_url": true,
+      "envelope": true,
+      "credentials_absent": true,
+      "expected_rows": true,
+      "omission": true,
+      "requests": [
+        {
+          "path": "/payroll",
+          "method": "GET",
+          "resource": "document"
+        },
+        {
+          "path": "/pkg/console_payroll_ui_bg.wasm",
+          "method": "GET",
+          "resource": "other"
+        },
+        {
+          "path": "/pkg/console_payroll_ui.js",
+          "method": "GET",
+          "resource": "script"
+        }
+      ]
+    },
+    {
+      "name": "authorized",
+      "document_requests": 1,
+      "document_responses": 1,
+      "status": 200,
+      "exact_url": true,
+      "envelope": true,
+      "credentials_absent": true,
+      "expected_rows": true,
+      "omission": true,
+      "requests": [
+        {
+          "path": "/payroll",
+          "method": "GET",
+          "resource": "document"
+        },
+        {
+          "path": "/pkg/console_payroll_ui.js",
+          "method": "GET",
+          "resource": "script"
+        },
+        {
+          "path": "/pkg/console_payroll_ui_bg.wasm",
+          "method": "GET",
+          "resource": "other"
+        }
+      ]
+    }
+  ],
+  "fixture_statuses": [
+    "BLOCKED_LEGAL_GATE",
+    "CALCULATED"
+  ],
+  "filters": [
+    {
+      "status": "BLOCKED_LEGAL_GATE",
+      "correct_visibility": true,
+      "same_nodes": true,
+      "no_requests": true
+    },
+    {
+      "status": "CALCULATED",
+      "correct_visibility": true,
+      "same_nodes": true,
+      "no_requests": true
+    },
+    {
+      "status": "",
+      "correct_visibility": true,
+      "same_nodes": true,
+      "no_requests": true
+    }
+  ],
+  "screenshots": [
+    "authorized-before.png",
+    "authorized-filter-1.png",
+    "authorized-filter-2.png",
+    "authorized-filter-3.png"
+  ],
+  "assets": {
+    "js": true,
+    "wasm": true
+  },
+  "external_requests": 0,
+  "unexpected_mutations": 0,
+  "page_errors": 0,
+  "console_errors": 0,
+  "request_failures": 1,
+  "request_diagnostics": [
+    {
+      "case": "anonymous",
+      "failed": [],
+      "inflight_at_close": [],
+      "inflight_after_close": []
+    },
+    {
+      "case": "member",
+      "failed": [],
+      "inflight_at_close": [],
+      "inflight_after_close": []
+    },
+    {
+      "case": "foreign-empty",
+      "failed": [],
+      "inflight_at_close": [],
+      "inflight_after_close": []
+    },
+    {
+      "case": "authorized-js-off",
+      "failed": [
+        {
+          "ordinal": 3,
+          "path": "/pkg/console_payroll_ui.js",
+          "method": "GET",
+          "resource": "script",
+          "started_phase": "navigation",
+          "error": "csp",
+          "phase": "navigation"
+        }
+      ],
+      "inflight_at_close": [],
+      "inflight_after_close": []
+    },
+    {
+      "case": "authorized",
+      "failed": [],
+      "inflight_at_close": [],
+      "inflight_after_close": []
+    }
+  ],
+  "interception_failures": 0,
+  "url_disclosures": 0,
+  "redirect_control": {
+    "source_302": true,
+    "foreign_hop_blocked": true
+  },
+  "cleanup": {
+    "confirmed": true
+  },
+  "limits": [
+    "Fixture Bearer navigation only; not native Account entry acceptance.",
+    "TEST_ONLY second run status supplies presentation data, not accepted payroll lifecycle.",
+    "Isolated SQLx/current authorization and loopback HTTP; no production TLS, screen-reader, IME or representative-user qualification."
+  ],
+  "browser_version": "153.0.8010.12",
+  "js_off_unfiltered": true,
+  "asset_responses": [
+    {
+      "url": "http://127.0.0.1:63436/pkg/console_payroll_ui.js",
+      "status": 200,
+      "document": false,
+      "mime": "text/javascript; charset=utf-8",
+      "sha256": "98950409e6b616abab0ea90f074115bab26870c6e9a0bd54a8d80a48dddde43d",
+      "credential_echo": false
+    },
+    {
+      "url": "http://127.0.0.1:63436/pkg/console_payroll_ui_bg.wasm",
+      "status": 200,
+      "document": false,
+      "mime": "application/wasm",
+      "sha256": "21a79442f6d473f212c3c86249f6f16f3f055eb2653c0c726378e2f1a5a8a79c",
+      "credential_echo": false
+    }
+  ],
+  "status": "PASSED"
+}

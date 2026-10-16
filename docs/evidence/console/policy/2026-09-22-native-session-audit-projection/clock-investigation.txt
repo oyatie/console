@@ -1,0 +1,30 @@
+# Auth helper prerequisite failure investigation
+
+Read-only source investigation; no production files, tests, assertions, build inputs, or runtime databases changed by this reviewer.
+
+## Observed evidence
+
+The original `native_form_helpers_reject_expired_signed_proof_and_accept_current_control.log` records 1 executed, 0 passed, 1 failed, 523 filtered, 7.90 seconds. The existing `auth_rest.rs:4801` projection assertion failed. Its log records neither the actual expiry nor either host clock value.
+
+The unchanged exact rerun in `native_form_expired-round2.log` records 1 passed, 0 failed, 523 filtered, 7.25 seconds. A passing rerun is not a repair.
+
+Root captured three host-before / Docker-date / host-after samples in `docker-clock-samples.json`. All Docker timestamps exceed host-after. Skew lower bounds are +0.064564, +1.742280, +1.098866 milliseconds, and upper bounds are 76.256564, 90.603280, 77.643866 milliseconds. These establish positive VM-versus-host skew at sampling, not the PostgreSQL timestamp during the failed request.
+
+## Verified source path
+
+Integration root: `/private/tmp/console-mvp-dev-integrate-20260921`.
+
+- `backend/app/tests/auth_rest/native_business_session.rs`: the test calls `enrolled(&app)` before constructing the expired negative proof.
+- `backend/app/tests/auth_rest.rs`: `enrolled` calls actual registration start/finish, then `session`, then `projection`. The failed assertion requires expiry later than host now and no later than a second host-now read plus 15 minutes.
+- `backend/crates/platform/provisioning/src/account.rs:231`: registration signs an access token with `issued_at: account_now_in_tx(tx).await?`.
+- `backend/crates/platform/auth/src/account.rs:421`: owner time comes from PostgreSQL `clock_timestamp()`.
+- `backend/crates/platform/auth/src/jwt/account.rs:283`: issuance caps lifetime at 900 seconds and floors expiry to Unix seconds.
+- `backend/crates/platform/auth-rest/src/account_browser.rs`: registration resolves the actual live signed session, checks freshness against DB time, and copies signed expiry into the response.
+
+The new helper and expired negative vector were not reached in the failing execution.
+
+## Mechanism and limitation
+
+The existing oracle compares DB-derived expiry with host time without a shared clock. Positive DB-versus-host skew can violate the upper bound when skew exceeds the second-floor remainder plus intervening response latency. The observed positive VM skew supports this mechanism, but the failed execution lacks the values needed to prove that this particular comparison branch caused the failure. A backwards host clock step or other cross-clock changes also cannot be retrospectively excluded.
+
+Disposition: unresolved harness cross-clock sensitivity. Preserve the original failure and unchanged successful rerun. No claim that a flaky test was fixed, and no tolerance increase, quarantine, skipped check, or weakened assertion. Any future oracle/diagnostic change requires exact proposed tests and independent review; same-clock DB bracketing is preferable to arbitrary host-clock tolerance.

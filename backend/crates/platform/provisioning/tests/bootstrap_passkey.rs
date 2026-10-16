@@ -2,14 +2,19 @@
 //!
 //! The OTP is a one-time SIGN-IN, not signup: the user row is pre-provisioned
 //! by the admin (or seeded for the cold-start admin), and a successful redeem
-//! consumes the credential atomically and resolves the owning user so the caller
-//! can mint a session. There is deliberately NO per-OTP attempt cap (it would
-//! enable a targeted lockout DoS); the controls are single-use-on-success, the
-//! short configurable TTL, and the REST-layer rate limit.
+//! verifies without consuming and resolves the owning user so the caller can
+//! mint a session; registration consumes the credential atomically.
+//! There is deliberately NO per-OTP attempt cap (it would enable a targeted
+//! lockout DoS); the controls are single-use-on-registration, the
+//! short configurable TTL, and the REST-layer rate limit. Actual business entry
+//! uses console_rt; proof/consumption uses console_auth_rt after real finalization.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use console_kernel_core::OrgId;
 use console_platform_provisioning::BootstrapCredentialStore;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 
@@ -28,12 +33,14 @@ async fn seed_user(pool: &PgPool) -> uuid::Uuid {
 
 /// Issued OTP format: exactly 8 characters over the documented alphanumeric +
 /// special alphabet.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn issued_otp_is_eight_char_alphanumeric_special(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
     let user_id = seed_user(&pool).await;
     let now = OffsetDateTime::now_utc();
     let issue = BootstrapCredentialStore
-        .issue_for_zero_credential_user(&pool, user_id, OrgId::knl(), now, Duration::hours(24))
+        .issue_for_zero_credential_user(&business, user_id, OrgId::knl(), now, Duration::hours(24))
         .await
         .unwrap();
 
@@ -62,19 +69,22 @@ async fn issued_otp_is_eight_char_alphanumeric_special(pool: PgPool) {
 /// failed enrollment can't lock the user out — the code stays usable until a passkey
 /// is actually registered. consume_open_credentials_tx (driven by passkey
 /// registration) is the single point of consumption; after it the code is dead.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn redeem_verifies_without_consuming_then_registration_consumes(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
     let issue = store
-        .issue_for_zero_credential_user(&pool, user_id, OrgId::knl(), now, Duration::hours(24))
+        .issue_for_zero_credential_user(&business, user_id, OrgId::knl(), now, Duration::hours(24))
         .await
         .unwrap();
 
     let redemption = store
-        .redeem_otp(&pool, issue.token.as_str(), now)
+        .redeem_otp(&auth, issue.token.as_str(), now)
         .await
         .unwrap();
     assert_eq!(redemption.user_id, user_id);
@@ -94,14 +104,14 @@ async fn redeem_verifies_without_consuming_then_registration_consumes(pool: PgPo
     // A second redeem before registration STILL succeeds (no lockout).
     assert!(
         store
-            .redeem_otp(&pool, issue.token.as_str(), now)
+            .redeem_otp(&auth, issue.token.as_str(), now)
             .await
             .is_ok(),
         "the code stays redeemable until a passkey is registered"
     );
 
     // Registration consumes it atomically (here exercised directly).
-    let mut tx = pool.begin().await.unwrap();
+    let mut tx = auth.begin().await.unwrap();
     store
         .consume_open_credentials_tx(&mut tx, OrgId::knl(), user_id, now)
         .await
@@ -119,29 +129,32 @@ async fn redeem_verifies_without_consuming_then_registration_consumes(pool: PgPo
     // Once consumed, a redeem is rejected.
     assert!(
         store
-            .redeem_otp(&pool, issue.token.as_str(), now)
+            .redeem_otp(&auth, issue.token.as_str(), now)
             .await
             .is_err(),
         "a consumed code must not redeem again"
     );
 }
 
-/// A WRONG guess must NOT consume or invalidate a legitimate user's OTP: only a
-/// correct redemption consumes it.
-#[sqlx::test(migrations = "../db/migrations")]
+/// A WRONG guess must NOT consume or invalidate a legitimate user's OTP:
+/// registration is the only point of consumption.
+#[sqlx::test(migrations = false)]
 async fn wrong_guess_does_not_consume_the_otp(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
     let issue = store
-        .issue_for_zero_credential_user(&pool, user_id, OrgId::knl(), now, Duration::hours(24))
+        .issue_for_zero_credential_user(&business, user_id, OrgId::knl(), now, Duration::hours(24))
         .await
         .unwrap();
 
     // Several wrong guesses.
     for guess in ["wrongone", "????????", "00000000"] {
-        let result = store.redeem_otp(&pool, guess, now).await;
+        let result = store.redeem_otp(&auth, guess, now).await;
         assert!(result.is_err(), "a wrong guess must be rejected");
     }
 
@@ -158,21 +171,24 @@ async fn wrong_guess_does_not_consume_the_otp(pool: PgPool) {
     );
 
     let redemption = store
-        .redeem_otp(&pool, issue.token.as_str(), now)
+        .redeem_otp(&auth, issue.token.as_str(), now)
         .await
         .unwrap();
     assert_eq!(redemption.user_id, user_id);
 }
 
 /// The default-24h OTP works inside its window and is rejected after expiry.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn otp_expiry_is_enforced_on_redeem(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
     let issue = store
-        .issue_for_zero_credential_user(&pool, user_id, OrgId::knl(), now, Duration::hours(24))
+        .issue_for_zero_credential_user(&business, user_id, OrgId::knl(), now, Duration::hours(24))
         .await
         .unwrap();
     assert_eq!(issue.expires_at, now + Duration::hours(24));
@@ -180,7 +196,7 @@ async fn otp_expiry_is_enforced_on_redeem(pool: PgPool) {
     // Within the window (just before expiry): redeem succeeds.
     let within = issue.expires_at - Duration::minutes(1);
     let redemption = store
-        .redeem_otp(&pool, issue.token.as_str(), within)
+        .redeem_otp(&auth, issue.token.as_str(), within)
         .await
         .unwrap();
     assert_eq!(redemption.user_id, user_id);
@@ -197,12 +213,12 @@ async fn otp_expiry_is_enforced_on_redeem(pool: PgPool) {
     .await
     .unwrap();
     let issue2 = store
-        .issue_for_zero_credential_user(&pool, user2, OrgId::knl(), now, Duration::hours(1))
+        .issue_for_zero_credential_user(&business, user2, OrgId::knl(), now, Duration::hours(1))
         .await
         .unwrap();
     let after_expiry = issue2.expires_at + Duration::seconds(1);
     let expired = store
-        .redeem_otp(&pool, issue2.token.as_str(), after_expiry)
+        .redeem_otp(&auth, issue2.token.as_str(), after_expiry)
         .await;
     assert!(expired.is_err(), "an expired OTP must be rejected");
 
@@ -224,8 +240,11 @@ async fn otp_expiry_is_enforced_on_redeem(pool: PgPool) {
 /// `seed_cold_start_credential`. Once seeded it signs the cold admin in; a redeem
 /// does not consume it (so a failed first-boot enrollment can't brick cold start);
 /// it is consumed — and dead — once the admin registers a passkey.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn cold_start_otp_seeded_at_boot_signs_in_then_dies_on_passkey_registration(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
@@ -238,13 +257,13 @@ async fn cold_start_otp_seeded_at_boot_signs_in_then_dies_on_passkey_registratio
     .unwrap();
     // ...but the fixed seed is revoked: coss0000 must NOT redeem until re-seeded.
     assert!(
-        store.redeem_otp(&pool, "coss0000", now).await.is_err(),
+        store.redeem_otp(&auth, "coss0000", now).await.is_err(),
         "the committed coss0000 seed must be revoked by migration 0023"
     );
 
     // Boot-time seeding with the deploy-time secret.
     let seeded = store
-        .seed_cold_start_credential(&pool, "coss0000", Duration::hours(1), now)
+        .seed_cold_start_credential(&business, "coss0000", Duration::hours(1), now)
         .await
         .unwrap();
     assert!(
@@ -252,25 +271,26 @@ async fn cold_start_otp_seeded_at_boot_signs_in_then_dies_on_passkey_registratio
         "the cold admin has no passkey/open credential -> seeded"
     );
 
-    let redemption = store.redeem_otp(&pool, "coss0000", now).await.unwrap();
+    let redemption = store.redeem_otp(&auth, "coss0000", now).await.unwrap();
     assert_eq!(redemption.user_id, admin_id);
+    assert_eq!(redemption.org_id, OrgId::platform());
     assert!(redemption.requires_passkey_setup);
 
     // Redeem does NOT consume — coss0000 stays usable until the admin enrolls a passkey.
     assert!(
-        store.redeem_otp(&pool, "coss0000", now).await.is_ok(),
+        store.redeem_otp(&auth, "coss0000", now).await.is_ok(),
         "coss0000 stays redeemable until the admin registers a passkey"
     );
 
     // Passkey registration consumes it; afterwards it is dead.
-    let mut tx = pool.begin().await.unwrap();
+    let mut tx = auth.begin().await.unwrap();
     store
-        .consume_open_credentials_tx(&mut tx, OrgId::knl(), admin_id, now)
+        .consume_open_credentials_tx(&mut tx, OrgId::platform(), admin_id, now)
         .await
         .unwrap();
     tx.commit().await.unwrap();
     assert!(
-        store.redeem_otp(&pool, "coss0000", now).await.is_err(),
+        store.redeem_otp(&auth, "coss0000", now).await.is_err(),
         "coss0000 is dead once the admin has a passkey"
     );
 }
@@ -279,8 +299,11 @@ async fn cold_start_otp_seeded_at_boot_signs_in_then_dies_on_passkey_registratio
 /// cold admin has neither a passkey nor an open credential, returns the seeded OTP
 /// as redeemable, and skips (returns false) once a credential is already open or a
 /// passkey exists.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn seed_cold_start_credential_is_gated_and_idempotent(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
@@ -293,18 +316,19 @@ async fn seed_cold_start_credential_is_gated_and_idempotent(pool: PgPool) {
 
     // First seed succeeds (no passkey, no open credential after 0023's revoke).
     let first = store
-        .seed_cold_start_credential(&pool, "secret-otp", Duration::hours(1), now)
+        .seed_cold_start_credential(&business, "secret-otp", Duration::hours(1), now)
         .await
         .unwrap();
     assert!(first, "first seed must insert a credential");
 
     // The seeded token redeems via redeem_otp for the cold admin.
-    let redemption = store.redeem_otp(&pool, "secret-otp", now).await.unwrap();
+    let redemption = store.redeem_otp(&auth, "secret-otp", now).await.unwrap();
     assert_eq!(redemption.user_id, admin_id);
+    assert_eq!(redemption.org_id, OrgId::platform());
 
     // A second seed is a no-op: an open credential already exists.
     let second = store
-        .seed_cold_start_credential(&pool, "another-otp", Duration::hours(1), now)
+        .seed_cold_start_credential(&business, "another-otp", Duration::hours(1), now)
         .await
         .unwrap();
     assert!(!second, "a second seed must skip when a credential is open");
@@ -331,9 +355,9 @@ async fn seed_cold_start_credential_is_gated_and_idempotent(pool: PgPool) {
 
     // Consume the open credential (simulating passkey registration), then a seed
     // still skips because the admin now has a passkey.
-    let mut tx = pool.begin().await.unwrap();
+    let mut tx = auth.begin().await.unwrap();
     store
-        .consume_open_credentials_tx(&mut tx, OrgId::knl(), admin_id, now)
+        .consume_open_credentials_tx(&mut tx, OrgId::platform(), admin_id, now)
         .await
         .unwrap();
     tx.commit().await.unwrap();
@@ -348,13 +372,13 @@ async fn seed_cold_start_credential_is_gated_and_idempotent(pool: PgPool) {
     .bind(serde_json::json!({}))
     // The Cold Start Admin is the PLATFORM admin, re-homed to the platform
     // sentinel org by migration 0036; its passkey must carry that same org to
-    // satisfy the (user_id, org_id) composite FK to `users`.
+    // preserve the real legacy provenance after Auth7 moves the FK to Account.
     .bind(*OrgId::platform().as_uuid())
     .execute(&pool)
     .await
     .unwrap();
     let third = store
-        .seed_cold_start_credential(&pool, "third-otp", Duration::hours(1), now)
+        .seed_cold_start_credential(&business, "third-otp", Duration::hours(1), now)
         .await
         .unwrap();
     assert!(!third, "a seed must skip once the admin has a passkey");
@@ -363,14 +387,17 @@ async fn seed_cold_start_credential_is_gated_and_idempotent(pool: PgPool) {
 /// An EXPIRED open cold-start credential must not wedge cold-start: a later boot
 /// re-seeds (revives the expired row) so the operator gets a fresh redeemable
 /// window. Regression for the seeder's expiry-blind "open credential" gate.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn seed_cold_start_credential_reseeds_after_expiry(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
     // Seed a short-lived credential.
     let first = store
-        .seed_cold_start_credential(&pool, "expiring-otp", Duration::hours(1), now)
+        .seed_cold_start_credential(&business, "expiring-otp", Duration::hours(1), now)
         .await
         .unwrap();
     assert!(first, "first seed must insert");
@@ -379,7 +406,7 @@ async fn seed_cold_start_credential_reseeds_after_expiry(pool: PgPool) {
     let later = now + Duration::hours(2);
     assert!(
         store
-            .redeem_otp(&pool, "expiring-otp", later)
+            .redeem_otp(&auth, "expiring-otp", later)
             .await
             .is_err(),
         "the credential must be expired at `later`"
@@ -387,7 +414,7 @@ async fn seed_cold_start_credential_reseeds_after_expiry(pool: PgPool) {
 
     // A boot at `later` must RE-SEED (revive the expired row), not skip.
     let reseeded = store
-        .seed_cold_start_credential(&pool, "expiring-otp", Duration::hours(1), later)
+        .seed_cold_start_credential(&business, "expiring-otp", Duration::hours(1), later)
         .await
         .unwrap();
     assert!(
@@ -397,7 +424,7 @@ async fn seed_cold_start_credential_reseeds_after_expiry(pool: PgPool) {
 
     // ...and the refreshed credential redeems again at `later`.
     let redemption = store
-        .redeem_otp(&pool, "expiring-otp", later)
+        .redeem_otp(&auth, "expiring-otp", later)
         .await
         .unwrap();
     let admin_id: uuid::Uuid = sqlx::query_scalar(

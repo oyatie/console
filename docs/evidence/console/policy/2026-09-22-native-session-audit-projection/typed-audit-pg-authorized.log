@@ -1,0 +1,30 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-22T00:03:47.672-04:00] Build ID: 0a13c2af-9cef-420f-9597-d9ed1adebf86
+[2026-09-22T00:03:55.413-04:00] Waiting on root//third-party/rust:or_poisoned-0.1.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write or_poisoned-0.1.0.crate_unpack.sh), and 845 other actions
+[2026-09-22T00:04:03.074-04:00] Waiting on root//backend/crates/recruiting/domain:console-recruiting-domain (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/console_recruiting_domain-metadata-full-diag.args), and 692 other actions
+[2026-09-22T00:04:10.473-04:00] Waiting on root//third-party/rust:_wasm-bindgen-macro-0.2 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json MPPL-depslink-symlinked_dirs.json), and 355 other actions
+[2026-09-22T00:04:17.674-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-22T00:04:24.774-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-22T00:04:31.774-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-22T00:04:38.873-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-22T00:04:42.228-04:00] Cache hits: 0%
+[2026-09-22T00:04:42.228-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-22T00:04:42.228-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-22T00:04:42.263-04:00] Build ID: f3c6ba53-4528-4329-8c6b-691b9d71ccb9
+[2026-09-22T00:04:42.266-04:00] File changed (since mergebase): root//backend/crates/platform/authz/src/native_company_policy_unit_tests.rs
+[2026-09-22T00:04:42.266-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:04:49.364-04:00] Waiting on root//third-party/rust:crc-3 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 716 other actions
+[2026-09-22T00:04:55.979-04:00] 2026-09-22T04:04:55.227395Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-wasm32-unknown-unknown.tar.xz after 2 seconds.
+[2026-09-22T00:05:03.164-04:00] Waiting on root//third-party/rust:futures-util-0.3 (prelude//platforms:default#11a256c53bf8083e) -- action (write LPPF/futures_util-metadata-full-diag.args), and 251 other actions
+[2026-09-22T00:05:10.264-04:00] Waiting on root//backend/crates/platform/authz:console-platform-authz (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute]
+[2026-09-22T00:05:17.364-04:00] Waiting on root//backend/crates/consulting/rest:console-consulting-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 81 other actions
+[2026-09-22T00:05:24.463-04:00] Waiting on root//backend/crates/sales/adapter-postgres:console-sales-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 77 other actions
+[2026-09-22T00:05:28.391-04:00] Cache hits: 0%
+[2026-09-22T00:05:28.391-04:00] Commands: 25 (cached: 0, remote: 0, local: 25)
+[2026-09-22T00:05:28.391-04:00] Network: Up: 0B  Down: 0B
+The evaluation of this key was cancelled: Rejected
+1 BUILDS FAILED
+Tests finished: Pass 0. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. [mBuild failure 1[m
+NO TESTS RAN

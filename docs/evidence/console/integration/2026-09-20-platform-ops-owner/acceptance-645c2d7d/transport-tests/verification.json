@@ -1,0 +1,10 @@
+{
+  "depends_on_packet_A": "036033e304d76bee15d4b4fbea13cb29acc4cd37718599fa70974133892da257",
+  "sqlx_leaves": 4,
+  "tokio_leaves": 1,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 edition2024 passed",
+  "shared_helper_change": "one additional pub(super) prefix on no_raw_input_echo; body and prior tests unchanged",
+  "histories_unavailable_unchanged": true
+}

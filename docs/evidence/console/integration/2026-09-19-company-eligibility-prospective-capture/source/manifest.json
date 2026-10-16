@@ -1,0 +1,9 @@
+{
+  "files": {
+    "snapshot-addition.py": "83dbb32f5f56aad9924de0521d811bc9f8cfec27ff59fab4eab2c5f9f81f6349",
+    "source-custody.json": "d4a59c6f8a607232dc18e9c2c5b2b85ce0bf7cb9e8e8f487d64c5aa899ddcf0b",
+    "install.sql": "4209d4ed37cd725eddcce9fc8a26b582e030081205718020fa534345a60f9d87",
+    "snapshot.sql": "30926503535a2ca60199c14548d1d78faaaa0967b45ca96a2ea9ee1b003c687c",
+    "proposal.md": "25565a8151b0d07a9dd26ad6c8faf49abb64612051dc4868b6e9aff07a314089"
+  }
+}

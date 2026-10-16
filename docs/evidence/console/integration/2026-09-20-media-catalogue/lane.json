@@ -1,0 +1,35 @@
+[
+  {
+    "lane": "media-reference-catalogue",
+    "owner": "/root",
+    "base_sha": "9fc8b80bdf3766ab9295a5d7e2c3ce925b277495",
+    "immutable_target": "Append exact reviewed44row Media catalogue and reject changed tuples at existing release inventory validator; no leaf state advancement",
+    "probe": "node --test --test-name-pattern='^Media catalogue rejects changed reference rate$' scripts/console/validate-console-truth-ledger.test.mjs",
+    "allowed_paths": [
+      "docs/program/console-capability-registry.json",
+      "scripts/console/validate-console-truth-ledger.mjs"
+    ],
+    "mechanical_guide": "Reuse existing catalogueKeys,binding,canonicalJsonDigest,leaves and shared bindings; exact approved prospective row,44record fixedpin,43 required sharedbindings and soleVLMexclusion; preserve old registry values and tests",
+    "design_sha256": "637bfad1291c85539eb19f5593b24c5c2592dff72e8a0a155da30ee881c2aafd",
+    "test_sha256": "e1f0a269c2679c50004be55c478cf44eb2d0403b54b8c341e0a472dfd4f13f59",
+    "pre_mortem": "Source rates mistaken for Console performance; incomplete list or VLMpromotion; omitted keys evade attestation",
+    "blast_radius": "One reference matrix entry and its existing owning validation",
+    "detection": "Same exact probe green,207 owner and29 planner tests,exact full preimage preservation and source review",
+    "rollback": "Revert only additive row and validator block, preserve historical source and accepted tests",
+    "stop_conditions": [
+      "Sourcepreimage mismatch",
+      "Failed positive prerequisites",
+      "Changed historical evidence",
+      "Unreviewed semantics",
+      "Competing writer"
+    ],
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "Media runtime semantics unqualified",
+      "Entire release remains incomplete"
+    ]
+  }
+]

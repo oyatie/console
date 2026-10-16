@@ -1,0 +1,6 @@
+# This pinned closure selects non-fips on Linux/Darwin. build.rs has no Rust
+# code generation; skipping it also skips feature-conflict validation, test cfgs,
+# Windows CRT flags, check-cfg registration and C include metadata re-export.
+# Reindeer cannot propagate links metadata. The aws-lc-sys script still runs.
+# Re-review before changing features, adding Windows or C metadata consumers.
+buildscript.run = false

@@ -1,0 +1,38 @@
+{
+  "status": "DORMANT_SOURCE_ADOPTION_CANDIDATE_PENDING_INDEPENDENT_REVIEW",
+  "base": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "original_three_leaves_preserved_verbatim": true,
+  "adoption_scope": [
+    "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs"
+  ],
+  "module_registration_at_adoption": false,
+  "pure_authored": 3,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "files": [
+    {
+      "path": "DEPENDENCIES.md",
+      "sha256": "116905cdb38063961bc753593683ebf0e64824fc06a79fb417526c863c292035"
+    },
+    {
+      "path": "INTERFACES.md",
+      "sha256": "2a1361bfd7790d75228f8759007f2ec57452d191ab38dae227a92409f9122449"
+    },
+    {
+      "path": "adoption-only.patch",
+      "sha256": "71400dba67bc0b0d2629316a4e0191d4d6c211cf91e35ba59c44bc2c32851152"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "sha256": "049c190a95794710dbb630de9ff5936f552bac39d50080e29f40d84a50a6e51e"
+    },
+    {
+      "path": "future-company-policy-module.rs.fragment",
+      "sha256": "1739cb7e13990c6f5a9d17b7e81978aba2b2ca325f65e3b6c65a044640c640c8"
+    },
+    {
+      "path": "source-locks.json",
+      "sha256": "1ba54da96c32b7ad39057a756b91448dfdefd7b87dd88c67c84dcc6b2b852941"
+    }
+  ]
+}

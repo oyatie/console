@@ -1,0 +1,25 @@
+{
+  "status": "APPROVE_FOR_EXACT_TEST_AUTHORING",
+  "reviewer": "/root/reference_inventory",
+  "round": 3,
+  "design_sha256": "5880a91c4ad3481af2986277a08badbabbbe7817704c70681bebf4f5fa355135",
+  "test_revisions_sha256": "a7984d65c1fad7742b067ce67c7ff04fcede182ff7f3b9c91f647a6f13d4b810",
+  "recorded_utc": "2026-09-20T01:23:14.063711+00:00",
+  "provenance": "Persisted from this agent's prior round3 conversation verdict; exact retained design and test-revisions hashes rechecked at persistence. No retrospective implementation acceptance.",
+  "accepted_design": [
+    "Only inspected historical shared-role write is conditional CREATE console_credential_owner; corresponding owner-object and ACL enumeration is database-local.",
+    "Savepoint rollback releases warm anchor without resetting configuration established before savepoint; cold path retains lock through commit or rollback.",
+    "Stable preprovisioned topology and isolation of uncooperative role mutation remain prerequisites."
+  ],
+  "required_test_refinement_before_exact_test_approval": [
+    "Deterministically start waiter while credential role absent, observe anchor blocking, commit creator, then observe waiter blocked on its own accounts relation; third NOWAIT anchor acquisition must succeed. This proves post-wait presence recheck and rejects authoritative pre-wait absence; two successful cold helpers alone may miss needless serialization."
+  ],
+  "remaining_gates": [
+    "Independently reviewed exact semantic test bytes and lane admission.",
+    "Warm progress, cold failure/retry, complete classifiers, cleanup, fresh first creation and unchanged15-case workload.",
+    "Unchanged5s lock and60s statement deadlines; actual timeout rejects candidate."
+  ],
+  "runtime_executed": 0,
+  "repository_edits": 0,
+  "implementation_accepted": false
+}

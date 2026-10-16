@@ -1,0 +1,13 @@
+{
+  "reviewer": "/root",
+  "verdict": "approve",
+  "manifest_sha256": "0b06cd931f6e9ce88cd7a9e62693e721baebaa70233f36bf755321750a34e6d4",
+  "candidate_sha256": "14e17a51766f6bbe4d946a054da6cf81b9a80f3a7ce1e8194bfbee34cbcf21e9",
+  "checks": [
+    "exact prior tests unchanged",
+    "actual enumerable key-count-preserving fault",
+    "digest-visible canonical loss of command",
+    "real owner rejection and same outer object restoration/revalidation"
+  ],
+  "runtime_executed": 0
+}

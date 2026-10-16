@@ -1,0 +1,32 @@
+type: object
+additionalProperties: false
+required: [command_id, group_id, slug, name, administrative_account_id]
+properties:
+  command_id:
+    type: string
+    format: uuid
+    minLength: 36
+    maxLength: 36
+    pattern: '^(?!00000000-0000-0000-0000-000000000000$)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    description: Non-nil canonical lowercase hyphenated UUID; this command identifies replay and recovery.
+  group_id:
+    type: 'null'
+    description: Must be explicit null. Group-of-one is minted by the Company owner; joining an existing Group is unavailable.
+  slug:
+    type: string
+    minLength: 1
+    maxLength: 63
+    pattern: '^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?![\s\S])'
+  name:
+    type: string
+    minLength: 1
+    maxLength: 256
+    description: Non-blank Company name, at most 256 UTF-8 bytes, without control characters.
+  administrative_account_id:
+    type: string
+    format: uuid
+    minLength: 36
+    maxLength: 36
+    pattern: '^(?!00000000-0000-0000-0000-000000000000$)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    description: Non-nil canonical Account UUID; verified session and designation establish authority.
+description: Closed v1 input. Unknown or duplicate members and bodies above 4096 bytes are refused.

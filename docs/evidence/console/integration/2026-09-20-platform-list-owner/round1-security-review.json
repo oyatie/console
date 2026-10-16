@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_INDEPENDENT_DESIGN_ROUND_1_OWNER_API_SCOPE_ONLY",
+  "packet_manifest_sha256": "dd407b6654d083a4a06312b708899d07c503f061e75f1a86ee77314381629b75",
+  "design_sha256": "d0e6118f6f0d095130dd626a01a256b859d3db32196838c667528124c20ea7b7",
+  "scope": "First of four independent design review rounds; not approval of new SQL privileges, migration, tests or implementation.",
+  "decisions": [
+    "Actual actor-only public list_tenants bypass must be removed, sole human caller converted, and source guard plus finite TenantList decision retained in the same Business transaction through result and audit commit.",
+    "Raw presented credential verified inside Auth, private source facts rather than public constructed principal, current role/fence reads and exact family are appropriate ownership boundaries.",
+    "Auth returns current facts and locks; pure Cedar evaluates actual TenantList/Companies/ReadProjection. No generic resolver shortcut or Auth dependency on policy SDK.",
+    "Bounded application-owner acceptance can precede later raw SQL grant closure, because the other five raw-function consumers do not call list_tenants. Those grants, four machine callers and view-as conversion remain release HOLDs.",
+    "Collection shape and required audit remain exact; no arbitrary Company data or mutation authority is introduced. No actor-only unchecked overload remains."
+  ],
+  "source_census": "Independently confirmed one Rust list_tenants caller and six runtime raw projection consumers at actual sources.",
+  "next_round_requirements": [
+    "Freeze bridge SQL columns and exact ACL/custody successor, real role checks and source lock order; current design explicitly does not approve these yet.",
+    "Clarify root wiring: PlatformRestState currently has no config/verifier/policy fields. The existing AppState configured refresh-family TTL must be explicitly composed into the new state seam, without a default or source authority in App.",
+    "Packet legacy.rs custody hash predates the just-reviewed passkey primitive. Rebase custody for next immutable packet; unchanged existing guard body was read at current af1722074e362b58568233053eff3b8547655bbfe3611d2f31a463d12a90848a.",
+    "Then review lifetime/error/composite-policy/privacy/audit details and actual RED/corruption/runtime histories in rounds 3 and 4."
+  ],
+  "tests_executed": 0,
+  "repository_writes": 0
+}

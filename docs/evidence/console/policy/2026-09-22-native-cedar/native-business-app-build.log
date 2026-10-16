@@ -1,0 +1,38 @@
+[2026-09-22T00:26:46.012-04:00] Build ID: a1cc519d-c58f-496c-91ab-f755f411cd17
+[2026-09-22T00:26:53.313-04:00] Waiting on root//third-party/rust:_leptos_macro-0.9 (prelude//platforms:default#11a256c53bf8083e) -- action (write MPPL/__leptos_macro-link_linker_args.txt), and 951 other actions
+[2026-09-22T00:27:00.612-04:00] Waiting on root//backend/crates/workorder/application:console-workorder-application (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 780 other actions
+[2026-09-22T00:27:04.816-04:00] 2026-09-22T04:27:04.657614Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://static.rust-lang.org/dist/2026-09-03/rust-std-1.98.1-wasm32-unknown-unknown.tar.xz after 5 seconds.
+[2026-09-22T00:27:12.313-04:00] Waiting on root//backend/crates/platform/authz:console-platform-authz (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 8 other actions
+[2026-09-22T00:27:19.313-04:00] Waiting on root//backend/crates/analytics-quant/rest:console-analytics-quant-rest (prelude//platforms:default#39893c7e49283da4) -- action (deps 7) [local_execute], and 35 other actions
+[2026-09-22T00:27:26.314-04:00] Waiting on root//backend/crates/platform/platform-rest:console-platform-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 138 other actions
+[2026-09-22T00:27:33.413-04:00] Waiting on root//backend/crates/workorder/adapter-postgres:console-workorder-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 118 other actions
+[2026-09-22T00:27:40.513-04:00] Waiting on root//backend/crates/platform/storage:console-platform-storage (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 88 other actions
+[2026-09-22T00:27:47.613-04:00] Waiting on root//backend/crates/orgchange/adapter-postgres:console-orgchange-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 78 other actions
+[2026-09-22T00:27:54.613-04:00] Waiting on root//backend/crates/sales/adapter-postgres:console-sales-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 62 other actions
+[2026-09-22T00:28:01.614-04:00] Waiting on root//backend/crates/consulting/rest:console-consulting-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 56 other actions
+[2026-09-22T00:28:08.713-04:00] Waiting on root//backend/crates/platform/auth-rest:console-platform-auth-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 54 other actions
+[2026-09-22T00:28:13.047-04:00] Action failed: root//backend/crates/payroll/ui:console-payroll-ui-validated-bundle (prelude//platforms:default#39893c7e49283da4) (hydration_validate)
+[2026-09-22T00:28:13.047-04:00] Local command returned non-zero exit code 1
+[2026-09-22T00:28:13.047-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/ebf0ffff98a9acf4/hydration_validate' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/root/39893c7e49283da4/tools/ui/__hydration-wasm_bundle.py__/hydration-wasm_bundle.py validate --inputs buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-validated-bundle__/inputs.json --manifest backend/crates/payroll/ui/bundle.lock.json --js backend/crates/payroll/ui/pkg/console_payroll_ui.js --wasm backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm --candidate buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-wasm-bundle__/bundle --out-dir buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-validated-bundle__/validated
+[2026-09-22T00:28:13.047-04:00] Stdout: <empty>
+[2026-09-22T00:28:13.047-04:00] Stderr:
+Committed hydration bundle is stale:
+- tools/buck/gen_first_party.py has changed since the bundle was built. Rebuild with: bash tools/ui/build-payroll-wasm.sh
+
+[2026-09-22T00:28:13.054-04:00] Cache hits: 0%
+[2026-09-22T00:28:13.054-04:00] Commands: 243 (cached: 0, remote: 0, local: 243)
+[2026-09-22T00:28:13.054-04:00] Network: Up: 0B  Down: 0B
+[2026-09-22T00:28:13.054-04:00]
+[2026-09-22T00:28:13.054-04:00] BUILD ERRORS (1)
+[2026-09-22T00:28:13.054-04:00] The following actions failed during the execution of this command:
+[2026-09-22T00:28:13.054-04:00] Action failed: root//backend/crates/payroll/ui:console-payroll-ui-validated-bundle (prelude//platforms:default#39893c7e49283da4) (hydration_validate)
+[2026-09-22T00:28:13.054-04:00] Local command returned non-zero exit code 1
+[2026-09-22T00:28:13.054-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/ebf0ffff98a9acf4/hydration_validate' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/root/39893c7e49283da4/tools/ui/__hydration-wasm_bundle.py__/hydration-wasm_bundle.py validate --inputs buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-validated-bundle__/inputs.json --manifest backend/crates/payroll/ui/bundle.lock.json --js backend/crates/payroll/ui/pkg/console_payroll_ui.js --wasm backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm --candidate buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-wasm-bundle__/bundle --out-dir buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-validated-bundle__/validated
+[2026-09-22T00:28:13.054-04:00] Stdout: <empty>
+[2026-09-22T00:28:13.054-04:00] Stderr:
+Committed hydration bundle is stale:
+- tools/buck/gen_first_party.py has changed since the bundle was built. Rebuild with: bash tools/ui/build-payroll-wasm.sh
+
+[2026-09-22T00:28:13.054-04:00]
+BUILD FAILED
+Failed to build 'root//backend/crates/payroll/ui:console-payroll-ui-validated-bundle (prelude//platforms:default#39893c7e49283da4)'

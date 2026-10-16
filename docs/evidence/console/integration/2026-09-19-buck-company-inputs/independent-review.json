@@ -1,0 +1,45 @@
+{
+  "kind": "independent-generated-buck-input-repair-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T02:56:17.510262+00:00",
+  "base_sha": "c613626e6dcab9c7c9ce8e4f479576d8ca0e20f7",
+  "decision": "APPROVE_GENERATED_ONLY_REPAIR_AND_EXACT_OWNER_VERIFICATION",
+  "candidate": {
+    "changed_lines": 67,
+    "added_paths": [
+      "tests/auth_rest/native_company_browser.rs",
+      "tests/auth_rest/native_company_eligibility.rs",
+      "tests/auth_rest/native_company_setup.rs"
+    ],
+    "source_sha256": {
+      "tests/auth_rest/native_company_browser.rs": "c7782959d55ccd0d7f205e96e232b6379b9c00ac1c3d0ef87f7f711829866e1d",
+      "tests/auth_rest/native_company_eligibility.rs": "c25a58ee1b8f4760d3b9ad3a8cc8ab4817b7b271fe0f7413941cd7fa0f17294d",
+      "tests/auth_rest/native_company_setup.rs": "41c3af6900cab5d8de0fe905d7b37df875abb3918e6f3073e285b5ac053189be"
+    },
+    "buck_sha256": "9b7051cd33eacaa1e7e4162753a92a4ab6079356f0e532516b234519b1a879cb",
+    "generator_sha256": "0e68ebd0502ea608b58928893d42a4fef8c1e1328b24f820b036ad4680859f0f",
+    "generator_test_sha256": "3ed2f4b81d27c5c46e2682dd86f8428771f4de749485061939914504b9d7e7e5"
+  },
+  "evidence_sha256": {
+    "lane.json": "d556df227c6175ca1b70da68682023ca1ad8ec06f23b6c00d5c2578ceef97015",
+    "red-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "red.log": "25ed93ff44c720ee0e19ac1a28858ffdfe573893ae67834faa091a8b3808ab7b",
+    "generated.patch": "61e12e35de360acca0f814b57139b4b8688487447e88defa26087235275850a1",
+    "green.log": "e73de90403c1b7dd1e9bc04d51b2534b310f29bb0117aa9f8c8c5815034a17c7",
+    "generator-tests-staged.log": "2e9cfdf7b4f90fa5f41ac6f6a523b6386d4854405c2713d7976dc23b6a6085c7"
+  },
+  "checks": {
+    "only_repository_delta": "backend/app/BUCK",
+    "exact_diff": "Removing only three retained nested source strings from all67 mapped_srcs lines reproduces exact base bytes; no other edits.",
+    "retained_sources_generator_and_tests_byte_identical": true,
+    "design": "Existing nested-source discovery already owns inclusion; unchanged generator is sufficient. No new semantic tests or generator changes necessary.",
+    "red": "Actual compiler missing native_company_setup.rs; zero runtime executions. Proper prerequisite RED, not Company behavior RED.",
+    "generator_suite": "Initial unstaged output triggers existing index-diff fixture; staging exact generated delta gives unchanged59/59. Failure retained by root.",
+    "actual_buck_owner": "1 passed,0 failed,0 ignored,352 filtered,4.60s; no skipped/fatal/infra failures"
+  },
+  "limits": [
+    "No Company workflow acceptance",
+    "No whole-release qualification",
+    "Execution logs collected by root; independent reviewer readback and exact source/delta verification"
+  ]
+}

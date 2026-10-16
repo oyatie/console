@@ -1,0 +1,33 @@
+{
+  "owner": "/root",
+  "predecessor": "writer root/resource lane admitted f1895e62; native rootGREEN357,10unitGREEN,51integrationGREEN4integrationRED at existing>100 census",
+  "problem": "DirEntry.file_type skips Buck mapped source directory and manifest symlinks. Independently inspected actual __srcs:src andCargo.toml symlink, linked lib.rs regular. Existing4 census tests scanned0. Same blind spot applies to ordinary linked Rust module source.",
+  "implementation": "Follow fs::metadata filetypes; active canonical-directory recursion set refuses cycles with InvalidData, removed on successful unwind. Preserve logical paths for crate attribution; do not global-dedup shared physicalsource. Existing exclusions/SQLparser/ratchets unchanged.",
+  "test_candidate_sha256": "0e46543d4048a54a62f6b82ae38e4d573b6cbd42edc843d52ff56f12cd37bb2a",
+  "source_candidate_sha256": "82612475a49557c06c3af5c8f170581fdd086c08fd40930b59ae39afa28015a2",
+  "tests": [
+    "Linked directory+file+manifest and shared bytes under canonicalowner+twointruders:6logical files,2exactviolations",
+    "Ancestor cycle explicitly InvalidData,never partial success",
+    "Dangling source explicit NotFound,never skipped"
+  ],
+  "platform": "New symlink-specific tests cfg(unix) reflect declared Mac/Linux Rust hosts. Existing55integration tests remain byte-identical; no new ignore/filter.",
+  "red_probe": "tools/buck2 run //backend/ci/gates/writer-ownership:console-gate-writer-ownership-itest-gate_detects_violation -- --exact linked_source_paths_keep_every_crate_owner",
+  "verification": [
+    "Actual same exact new native testRED\u2192GREEN",
+    "All58integration tests+10unit tests unfiltered",
+    "Actual runtime gate positive source census",
+    "Generator71 retained tests"
+  ],
+  "pre_mortem": "Global dedup hides differentlogicalwriters; uncheckedlinks loop or missingfiles vanish; tests cover all3failures",
+  "blast_radius": "Static writer verification traversal only; no product/auth/business/SQL/history changes",
+  "rollback": "Revert traversal successor but preserve approved tests and failures; no release-gate bypass",
+  "stop": [
+    "Any weakened exclusion/ratchet/assertion",
+    "Prerequisite/build failure presented as semanticRED",
+    "Cycle scan hangs or source counts shrink"
+  ],
+  "remaining_holds": [
+    "Existing static checker residual shapes remain",
+    "Full business browser/MVP/release qualification"
+  ]
+}

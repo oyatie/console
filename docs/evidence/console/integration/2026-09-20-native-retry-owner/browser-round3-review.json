@@ -1,0 +1,16 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact round3 retry browser successor only",
+  "manifest_sha256": "340fa1e2519377028a3bec2ce1d1a40d18d996926b92c6dfd48fc5f23b6c96ae",
+  "script_sha256": "0bfc6759b5e9ba3e2aac1b3e4f2bdaf44cbfdfaedf91fcde7ce69cb03af0ab4a",
+  "previous_review_sha256": "6102640e1bd441be37c189166db0cbfe22ca3eba500e2c13f9fb476f509557e4",
+  "resolved_finding": "Parent identified initial redirect could substitute wrong route before retrybaseline. Successor checks initialsettledURL AND responseURL against requestedorigin/path/query and initialrequestdirectGET/no redirectedFrom.",
+  "evidence": [
+    "Independently inspected exactround2\u21923 diff; onlyinitialdestinationguards added. Round2bug/race/privacy fixes retained.",
+    "Allmanifesthashes checked, node --check0."
+  ],
+  "limits": [
+    "No runtime/browser execution yet; precedingbounded noDB/scope/cleanup limitations remain.",
+    "Only this exactsuccessor should run; earlierproposalssaved as history."
+  ]
+}

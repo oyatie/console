@@ -1,0 +1,56 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_EVIDENCE_ARCHIVAL",
+  "archives": [
+    {
+      "path": "/private/tmp/console-verifier-and-census-archive-preparation-20260920",
+      "receipt_sha256": "45d7aaabaad2f3a93287b291ba36b0b8c994b2265ba1682e02395c97aaf0648f",
+      "members": 29
+    },
+    {
+      "path": "/private/tmp/console-mvp-prerequisite-evidence-20260920",
+      "receipt_sha256": "a88b91ce324f1a4f47f4cf385e8c3baa34dd32aeaa192763b17797450a8a704b",
+      "members": 65
+    }
+  ],
+  "findings": [],
+  "integrity": [
+    "All94member stored hashes verified; compressed entries decompressed to exact original hashes, lengths and bytes; original paths independently reread.",
+    "All member paths unique within their archive; obsolete pending receipt was not used.",
+    "Final candidate847045f7 git blobs match all10 reviewed verifier/classifier/helper source hashes. Three helper before hashes also match their exact4d645183 base.",
+    "Historical failed candidates, obsolete approvals/corrected successors and original logs are preserved without changing their outcomes."
+  ],
+  "final_fast_verifier": {
+    "head": "847045f7a20091c63e6e7cccccc86361d9f4688c",
+    "execution_receipt_sha256": "43964375124f60cc007326399129cd5a05a46be08b02bd97701c152515d4f37f",
+    "command": [
+      "npm",
+      "run",
+      "verify"
+    ],
+    "exit": 0,
+    "seconds": 907.46,
+    "log_sha256": "1cbbd191f4796166096429fcccc6aed433ed885f76f502b34b97b59edbcf413d",
+    "evidence": "Root execution receipt supplies head/exit/duration; independently matched log hash and inspected final verify(fast) passed marker, 74stage headers and16/0gate sweep. Duration was not independently timed."
+  },
+  "count_observations": {
+    "path": "/private/tmp/console-final-fast-verifier-count-observations-integration-tests-20260920.json",
+    "sha256": "7344ee28bd3d4497558d989806d8fa843ea461ce7d126c56c04f3e22dcc59186",
+    "summary": "74fast stages;27Node summaries report1458passing invocation cases;334Rust summaries including11timestamp-prefixed native summaries report1813passes/0fail/5ignored,175zero-executed summaries;4Python summaries13/19/19/16 withOK;4Buck summaries report8/1/1/1passed targets. These overlap and are not unique tests.",
+    "archived_older_counts": "console-company-guards-fast-verify-counts-20260920.json explicitly describes earlier failed round2 log; do not relabel as final847045f7 counts."
+  },
+  "retained_failure_review": [
+    "Original mirror failure names5unclassified CI steps; focused17testRED/GREEN retained.",
+    "Broader old verify retains missing native wrapper classification and strict Clippy too_many_arguments/type_complexity errors.",
+    "Original map candidate retains actual9>7ceiling failure; successor maintains7legacy plus2native.",
+    "Wrong Python class retains2loader errors/0actual tests; corrected output runs2real cases withOK.",
+    "First classifier preflight log retains15/1domain-unit source-resolution failures; corrected output records16/0. The git-metadata permission cause is root-reported in its receipt, not directly printed by that failure log."
+  ],
+  "limits": [
+    "Archive placement under docs/evidence/console/integration is evidence retention only, not a fourth normative authority.",
+    "Fast tier retains transitional Cargo checks, observed ignored/zero-test summaries and22not-locally-mirrored CI step occurrences; not full Buck-native qualification.",
+    "Read-only database census and3focused native helper tests do not qualify the complete Company workflow or assembled release.",
+    "No browser/db-workflow, current-policy, MVP or full release acceptance is granted.",
+    "Reviewer executed no product tests/builds/Buck/SQL/browser operations and made no repository writes."
+  ]
+}

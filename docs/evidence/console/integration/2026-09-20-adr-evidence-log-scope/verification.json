@@ -1,0 +1,20 @@
+{
+  "scope": "Private proposal only; no repository writes, Cargo, database or browser",
+  "node_tests": {
+    "discovered": 33,
+    "executed": 33,
+    "passed": 31,
+    "failed": 2,
+    "skipped": 0,
+    "existing_passed": 29,
+    "new_scope_red": 2,
+    "new_retained_coverage_passed": 2,
+    "expected_injected_findings": 64
+  },
+  "actual_repository_owner": {
+    "command": "node scripts/check-adrs.mjs",
+    "exit": 1,
+    "findings": 3
+  },
+  "candidate_checker_implementation": false
+}

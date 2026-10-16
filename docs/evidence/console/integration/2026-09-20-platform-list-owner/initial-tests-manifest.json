@@ -1,0 +1,12 @@
+{
+  "kind": "platform-list-existing-mounted-owner-initial-test-proposal",
+  "files_sha256": {
+    "README.md": "56ba5dd244113a276360525d75994246560bc3d5e075d81e42cadd18c6d5982f",
+    "auth_rest.rs": "0f30cd64c5811204a7ced422dac5bfa3a721f77b23b858d45e06a9ebf1feb1e2",
+    "auth_rest.rs.preimage": "b860feb1a78f3f53b7e44d2254e6c79043266d04d4227cc38678071f0cb47a40",
+    "legacy_platform_list_reads.rs": "cccc81874e54abcc0eb0d11a558e8566dbfdd8d77990c7586728faecd4131595",
+    "source-custody.json": "ff6b87b74be2f22ae43c6df4f0ac3dae6f870688cf51acbb756d222b8a12422a",
+    "tests.patch": "4fd18a5f7777ed0c0d83fd750d9ee43d4de3340c0e5886681873ca4348bc83d0",
+    "verification.json": "168f2703927c5636ac9c296d0332727ee7586fe1623f9570dbf4c4a1413591b5"
+  }
+}

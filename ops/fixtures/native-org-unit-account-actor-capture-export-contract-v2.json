@@ -1,0 +1,16 @@
+{
+  "schema": "console.native_org_unit.account_actor_capture_export_contract.v2",
+  "design_sha256": "c0c96a5d6c69fdb8b26a2d4c23666d46106ccb0cb54b8b171b995812b53ef1fc",
+  "predecessor_source_sha256": "f31c27207f3a9a5c7b1bf8c81149f679f2eec9abd5a14c1e72ca70a5b87f2eb9",
+  "predecessor_oracle_sha256": "71223f87d2c3e6283e90ee1c20f63099faccc8876f2171dd9f8c012512170660",
+  "source": "ops/native-org-unit/account-actor-custody-capture-v2.sql",
+  "output": "ops/postgres-capture-native-org-unit-account-actor-v2-custody.sql",
+  "source_sha256": "b1c42b426644e80597200ae1b38179cf5ca41a6e88714a8927f67d5ed042d6a2",
+  "source_bytes": 360212,
+  "snapshot_schema": "console.native_org_unit.account_actor_complete_capture.v2",
+  "status": "unregistered_finite_positive_column_repair_full_TOAST_qualification_pending",
+  "phase_hashes_registered": false,
+  "database_owner_accepted": false,
+  "source_release_accepted": false,
+  "MVP_accepted": false
+}

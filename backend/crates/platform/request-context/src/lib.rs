@@ -21,6 +21,8 @@
 //! tables must re-enter the scope, e.g. `CURRENT_ORG.scope(org, async { .. })`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod account;
+
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
@@ -33,7 +35,7 @@ use console_kernel_core::{
     AccessScope, AuditRequestContext, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use console_platform_auth::{JwtVerifier, TenantAccessContext};
+use console_platform_auth::{LegacySessionContextError, SessionVerification, TenantAccessContext};
 use console_platform_authz::{
     PlatformPrincipal, Principal, Role, SubjectFreshness, effective_branch_scope_for_tenant,
     resolve_branch_scope_in_org, resolve_effective_feature_grants_in_org,
@@ -209,6 +211,10 @@ pub enum RequestContextError {
     #[error("invalid bearer token")]
     InvalidToken,
 
+    /// A cryptographically valid legacy session belongs to an Account-fenced subject.
+    #[error("invalid bearer token")]
+    LegacySessionRejected,
+
     /// A claim in an otherwise-valid token did not parse (subject, role, or org).
     #[error("token claim is invalid: {0}")]
     InvalidClaim(&'static str),
@@ -216,6 +222,15 @@ pub enum RequestContextError {
     /// JWT verification is not configured for this deployment.
     #[error("jwt verification is not configured")]
     VerifierUnavailable,
+
+    /// Current session verification could not read its mandatory Auth dependency.
+    #[error("session verification unavailable")]
+    SessionVerificationUnavailable,
+
+    /// Verified legacy credentials cannot yet be classified by the current
+    /// Company provenance owner. No tenant projection may precede this check.
+    #[error("legacy Company provenance is unavailable")]
+    LegacyProvenanceUnavailable,
 
     /// Resolving the live branch scope from the database failed.
     #[error("failed to resolve branch scope: {0}")]
@@ -291,11 +306,12 @@ fn bearer_token(headers: &HeaderMap) -> Result<&str, RequestContextError> {
 /// 2. verify it (the verifier already rejects a token whose `org` claim is not a
 ///    valid UUID),
 /// 3. parse subject and roles,
-/// 4. take the tenant from the verified `org` claim,
+/// 4. take the tenant from the verified `org` claim and refuse fenced subjects
+///    through the mandatory Auth projection,
 /// 5. re-resolve the live branch scope from the database rather than trusting the
 ///    token's `branches` claim, so a membership revocation takes effect at once.
 pub async fn resolve_principal(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     pool: &PgPool,
     headers: &HeaderMap,
 ) -> Result<Principal, RequestContextError> {
@@ -308,13 +324,15 @@ pub async fn resolve_principal(
 /// Realtime WebSocket handshakes may carry the token in `Sec-WebSocket-Protocol`
 /// rather than `Authorization`, but the security path after extraction must be
 /// identical: verify, reject platform tier, parse roles/org/access scope,
-/// re-resolve live branch memberships, and narrow by [`AccessScope`].
+/// check the Auth projection, re-resolve live branch memberships, and narrow by
+/// [`AccessScope`].
 pub async fn resolve_principal_from_bearer_token(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     pool: &PgPool,
     token: &str,
 ) -> Result<Principal, RequestContextError> {
     let claims = verifier
+        .token_verifier()
         .verify_access_token(token)
         .map_err(|_| RequestContextError::InvalidToken)?;
 
@@ -332,13 +350,12 @@ pub async fn resolve_principal_from_bearer_token(
     let access_scope = claims
         .access_scope()
         .map_err(|_| RequestContextError::InvalidClaim("access scope is invalid"))?;
-    let roles = claims
-        .roles
-        .iter()
-        .map(|role| {
-            Role::from_str(role).map_err(|_| RequestContextError::InvalidClaim("unknown role"))
-        })
-        .collect::<Result<BTreeSet<_>, _>>()?;
+    let roles = parse_current_roles(&claims.roles)?;
+
+    // JWT validation already checked the GroupAdmin claim constraints. Fence
+    // before either principal path can perform a live Business lookup.
+    ensure_session_subject(verifier, user_id).await?;
+    ensure_legacy_company_provenance(verifier, pool).await?;
 
     // Subject authorization freshness snapshot carried by the verified token
     // (Cedar/PBAC activation, ADR-0021). Absent claims default to 0 (the
@@ -365,6 +382,41 @@ pub async fn resolve_principal_from_bearer_token(
         .await;
     }
 
+    let no_group_context = claims.tenant_context.is_none()
+        && claims.group_context_id.is_none()
+        && claims.actor_home_org.is_none()
+        && claims.group_roles.is_empty();
+    let roles = if claims.view_as || claims.read_only {
+        if !claims.view_as
+            || !claims.read_only
+            || claims.roles.len() != 1
+            || !no_group_context
+            || org_id == OrgId::platform()
+        {
+            return Err(RequestContextError::LegacySessionRejected);
+        }
+        current_legacy_roles(verifier, OrgId::platform(), user_id).await?;
+        roles
+    } else {
+        match verifier
+            .legacy_session_context(org_id, *user_id.as_uuid())
+            .await
+        {
+            Ok(current) => parse_current_roles(&current.roles)?,
+            Err(LegacySessionContextError::NotFound)
+                if claims.roles.as_slice() == ["SUPER_ADMIN"]
+                    && no_group_context
+                    && org_id != OrgId::platform() =>
+            {
+                // Existing writable platform contexts have no marker. A missing
+                // target is never authority: prove the same subject's live home.
+                current_legacy_roles(verifier, OrgId::platform(), user_id).await?;
+                roles
+            }
+            Err(error) => return Err(legacy_context_error(error)),
+        }
+    };
+
     let role_vec = roles.iter().copied().collect::<Vec<_>>();
     let live_branch_scope = resolve_branch_scope_in_org(pool, org_id, user_id, &role_vec)
         .await
@@ -380,6 +432,129 @@ pub async fn resolve_principal_from_bearer_token(
         .with_access_scope(access_scope)
         .with_effective_feature_grants(effective_feature_grants)
         .with_authz_freshness(authz_freshness))
+}
+
+enum CompanyProvenanceSourceObservation {
+    Absent,
+    Malformed,
+    PresentUnqualified,
+}
+
+/// Observe the exact declared ABI through the explicitly admitted Business
+/// transport. No owner function is executed. Presence and header compatibility
+/// cannot attest the body, custody ledger, or its dependent source identities.
+async fn observe_company_provenance_source(
+    business_pool: &PgPool,
+) -> Result<CompanyProvenanceSourceObservation, sqlx::Error> {
+    let compatible_header: Option<bool> = sqlx::query_scalar(
+        r#"
+        SELECT p.prokind = 'f'
+           AND p.pronargs = 1
+           AND p.pronargdefaults = 0
+           AND p.proargnames = ARRAY['p_company']::text[]
+           AND p.proargmodes IS NULL
+           AND p.prorettype = 'pg_catalog.text'::pg_catalog.regtype
+           AND NOT p.proretset
+           AND NOT p.proisstrict
+           AND language.lanname = 'plpgsql'
+           AND owner.rolname = 'console_account_owner'
+           AND p.prosecdef
+           AND p.provolatile = 'v'
+           AND p.proparallel = 'u'
+           AND p.proconfig @> ARRAY[
+               'search_path=pg_catalog, pg_temp',
+               'row_security=on'
+           ]::text[]
+           AND pg_catalog.cardinality(p.proconfig) = 2
+           AND p.proacl IS NOT NULL
+        FROM pg_catalog.pg_proc AS p
+        JOIN pg_catalog.pg_language AS language ON language.oid = p.prolang
+        JOIN pg_catalog.pg_roles AS owner ON owner.oid = p.proowner
+        WHERE p.oid = pg_catalog.to_regprocedure(
+            'public.account_company_provenance_v1(pg_catalog.uuid)'
+        )
+        "#,
+    )
+    // rls-arming: ok source ABI catalog metadata contains no Company rows
+    .fetch_optional(business_pool)
+    .await?;
+    Ok(match compatible_header {
+        None => CompanyProvenanceSourceObservation::Absent,
+        Some(false) => CompanyProvenanceSourceObservation::Malformed,
+        Some(true) => CompanyProvenanceSourceObservation::PresentUnqualified,
+    })
+}
+
+/// Shared negative admission for the verified People predecessor bridge.
+/// Call only after credential/tier/claims/current-subject validation and before
+/// Company projections or Group member enumeration. Historical constructors
+/// retain their existing behavior; they are not qualified bridge admission.
+pub async fn ensure_legacy_company_provenance(
+    verifier: &SessionVerification,
+    business_pool: &PgPool,
+) -> Result<(), RequestContextError> {
+    if !verifier.requires_current_company_provenance() {
+        return Ok(());
+    }
+    let observation = observe_company_provenance_source(business_pool)
+        .await
+        .map_err(|_| RequestContextError::LegacyProvenanceUnavailable)?;
+    // This binary has no independently qualified owner-body/custody contract.
+    // Even a matching header stays closed; a successor source and reader must
+    // be separately admitted before any positive classification is executable.
+    match observation {
+        CompanyProvenanceSourceObservation::Absent
+        | CompanyProvenanceSourceObservation::Malformed
+        | CompanyProvenanceSourceObservation::PresentUnqualified => {
+            Err(RequestContextError::LegacyProvenanceUnavailable)
+        }
+    }
+}
+
+fn parse_current_roles(values: &[String]) -> Result<BTreeSet<Role>, RequestContextError> {
+    if values.is_empty() {
+        return Err(RequestContextError::LegacySessionRejected);
+    }
+    values
+        .iter()
+        .map(|role| {
+            Role::from_str(role).map_err(|_| RequestContextError::InvalidClaim("unknown role"))
+        })
+        .collect()
+}
+
+fn legacy_context_error(error: LegacySessionContextError) -> RequestContextError {
+    match error {
+        LegacySessionContextError::Unavailable => {
+            RequestContextError::SessionVerificationUnavailable
+        }
+        LegacySessionContextError::NotFound
+        | LegacySessionContextError::Inactive
+        | LegacySessionContextError::Fenced => RequestContextError::LegacySessionRejected,
+    }
+}
+
+async fn current_legacy_roles(
+    verifier: &SessionVerification,
+    org: OrgId,
+    subject: UserId,
+) -> Result<BTreeSet<Role>, RequestContextError> {
+    let current = verifier
+        .legacy_session_context(org, *subject.as_uuid())
+        .await
+        .map_err(legacy_context_error)?;
+    parse_current_roles(&current.roles)
+}
+
+async fn ensure_session_subject(
+    verifier: &SessionVerification,
+    user_id: UserId,
+) -> Result<(), RequestContextError> {
+    match verifier.legacy_subject_is_fenced(*user_id.as_uuid()).await {
+        Ok(false) => Ok(()),
+        Ok(true) => Err(RequestContextError::LegacySessionRejected),
+        Err(_) => Err(RequestContextError::SessionVerificationUnavailable),
+    }
 }
 
 async fn resolve_group_admin_tenant_context_principal(
@@ -451,11 +626,12 @@ async fn resolve_group_admin_tenant_context_principal(
 /// Fail-closed: a request that cannot be resolved to a principal is rejected
 /// before any handler runs, so no tenant-scoped query can execute without an org.
 ///
-/// Pass the router's own `jwt_verifier` and a clone of its `pool`. Do NOT apply
-/// it to pre-auth routes (login/refresh) or the realtime WS upgrade.
+/// Pass the router's session verification binding and a clone of its Business
+/// `pool`. Do NOT apply it to pre-auth routes (login/refresh) or the realtime WS
+/// upgrade.
 pub fn with_request_context<S>(
     router: axum::Router<S>,
-    verifier: Option<JwtVerifier>,
+    verifier: Option<SessionVerification>,
     pool: PgPool,
 ) -> axum::Router<S>
 where
@@ -467,10 +643,8 @@ where
             let pool = pool.clone();
             async move {
                 let Some(verifier) = verifier.as_ref() else {
-                    return error_response(
-                        StatusCode::SERVICE_UNAVAILABLE,
-                        "service_unavailable",
-                        "JWT verification is not configured",
+                    return error_response_for(
+                        &RequestContextError::SessionVerificationUnavailable,
                     );
                 };
                 let principal = match resolve_principal(verifier, &pool, request.headers()).await {
@@ -587,56 +761,105 @@ fn error_response(status: StatusCode, code: &'static str, message: &str) -> Resp
         .into_response()
 }
 
-fn error_response_for(err: &RequestContextError) -> Response {
-    let (status, code, message) = match err {
-        RequestContextError::VerifierUnavailable => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "service_unavailable",
-            "JWT verification is not configured",
-        ),
-        RequestContextError::BranchScope(_) | RequestContextError::EffectivePolicy(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "internal",
-            "internal server error",
-        ),
-        RequestContextError::AccessScope(error) if error.kind == ErrorKind::Forbidden => {
-            (StatusCode::FORBIDDEN, "forbidden", "forbidden")
+impl RequestContextError {
+    /// Stable, sanitized transport diagnostics; dependency details stay private.
+    pub fn http_error_parts(&self) -> (StatusCode, &'static str, &'static str) {
+        match self {
+            RequestContextError::LegacyProvenanceUnavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "legacy_provenance_unavailable",
+                "legacy Company provenance is unavailable",
+            ),
+            RequestContextError::SessionVerificationUnavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "service_unavailable",
+                "session verification is unavailable",
+            ),
+            RequestContextError::VerifierUnavailable => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "service_unavailable",
+                "JWT verification is not configured",
+            ),
+            RequestContextError::BranchScope(_) | RequestContextError::EffectivePolicy(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "internal",
+                "internal server error",
+            ),
+            RequestContextError::AccessScope(error) if error.kind == ErrorKind::Forbidden => {
+                (StatusCode::FORBIDDEN, "forbidden", "forbidden")
+            }
+            RequestContextError::AccessScope(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "internal",
+                "internal server error",
+            ),
+            // A valid token presented to the wrong tier is an authorization failure,
+            // not an authentication one: the caller IS authenticated, just not for
+            // this route. 403 keeps it distinct from "no/invalid token" (401).
+            RequestContextError::WrongTokenTier => (
+                StatusCode::FORBIDDEN,
+                "forbidden",
+                "token tier is not valid for this route",
+            ),
+            RequestContextError::MissingBearer => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "missing or malformed bearer token",
+            ),
+            RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "invalid bearer token",
+            ),
+            RequestContextError::InvalidClaim(_) => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "token claim is invalid",
+            ),
+            RequestContextError::MissingOrg => (
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "no tenant context is bound to the current request",
+            ),
         }
-        RequestContextError::AccessScope(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "internal",
-            "internal server error",
-        ),
-        // A valid token presented to the wrong tier is an authorization failure,
-        // not an authentication one: the caller IS authenticated, just not for
-        // this route. 403 keeps it distinct from "no/invalid token" (401).
-        RequestContextError::WrongTokenTier => (
-            StatusCode::FORBIDDEN,
-            "forbidden",
-            "token tier is not valid for this route",
-        ),
-        RequestContextError::MissingBearer => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "missing or malformed bearer token",
-        ),
-        RequestContextError::InvalidToken => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "invalid bearer token",
-        ),
-        RequestContextError::InvalidClaim(_) => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "token claim is invalid",
-        ),
-        RequestContextError::MissingOrg => (
-            StatusCode::UNAUTHORIZED,
-            "unauthorized",
-            "no tenant context is bound to the current request",
-        ),
-    };
+    }
+}
+
+fn error_response_for(err: &RequestContextError) -> Response {
+    let (status, code, message) = err.http_error_parts();
     error_response(status, code, message)
+}
+
+impl IntoResponse for RequestContextError {
+    fn into_response(self) -> Response {
+        error_response_for(&self)
+    }
+}
+
+#[derive(Clone)]
+struct NativeHtmlError;
+
+/// Mark an already-rendered, server-owned native error document for preservation.
+/// This response-only marker carries no identity or authorization and cannot be
+/// constructed from request headers, paths, or Accept preferences.
+pub fn preserve_native_html_error(mut response: Response) -> Response {
+    response.extensions_mut().insert(NativeHtmlError);
+    response
+}
+
+fn content_type_is_single_html(response: &Response) -> bool {
+    let mut values = response.headers().get_all(header::CONTENT_TYPE).iter();
+    match (values.next(), values.next()) {
+        (Some(value), None) => value.to_str().is_ok_and(|value| {
+            value
+                .split(';')
+                .next()
+                .unwrap_or(value)
+                .trim()
+                .eq_ignore_ascii_case("text/html")
+        }),
+        _ => false,
+    }
 }
 
 fn content_type_is_json(response: &Response) -> bool {
@@ -672,6 +895,12 @@ async fn http_error_envelope(request: Request, next: Next) -> Response {
             "request_timeout",
             "request timed out",
         ),
+        StatusCode::PAYLOAD_TOO_LARGE
+            if response.extensions().get::<NativeHtmlError>().is_some()
+                && content_type_is_single_html(&response) =>
+        {
+            response
+        }
         StatusCode::PAYLOAD_TOO_LARGE if !content_type_is_json(&response) => error_response(
             StatusCode::PAYLOAD_TOO_LARGE,
             "payload_too_large",
@@ -683,7 +912,10 @@ async fn http_error_envelope(request: Request, next: Next) -> Response {
                     .headers_mut()
                     .insert(header::RETRY_AFTER, RETRY_AFTER_SECONDS);
             }
-            if content_type_is_json(&response) {
+            if content_type_is_json(&response)
+                || (response.extensions().get::<NativeHtmlError>().is_some()
+                    && content_type_is_single_html(&response))
+            {
                 return response;
             }
             let mut json = error_response(
@@ -710,17 +942,18 @@ async fn http_error_envelope(request: Request, next: Next) -> Response {
 /// 1. parse + verify the bearer token,
 /// 2. REQUIRE `platform = true` — a tenant token is rejected here, so a tenant
 ///    admin can never reach `/api/platform/*`,
-/// 3. parse the subject.
+/// 3. parse the subject and refuse fenced subjects through the Auth projection.
 ///
 /// It deliberately resolves NO tenant org and NO branch scope: a platform
 /// principal is not tenant-scoped, and platform handlers arm the specific
 /// TARGET org themselves per action.
 pub async fn resolve_platform_principal(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     headers: &HeaderMap,
 ) -> Result<PlatformPrincipal, RequestContextError> {
     let token = bearer_token(headers)?;
     let claims = verifier
+        .token_verifier()
         .verify_access_token(token)
         .map_err(|_| RequestContextError::InvalidToken)?;
 
@@ -731,6 +964,14 @@ pub async fn resolve_platform_principal(
 
     let user_id = UserId::from_str(&claims.sub)
         .map_err(|_| RequestContextError::InvalidClaim("subject is not a valid user id"))?;
+    let org = OrgId::from_str(&claims.org)
+        .map_err(|_| RequestContextError::InvalidClaim("org is not a valid uuid"))?;
+    if org != OrgId::platform() {
+        return Err(RequestContextError::LegacySessionRejected);
+    }
+    parse_current_roles(&claims.roles)?;
+    ensure_session_subject(verifier, user_id).await?;
+    current_legacy_roles(verifier, org, user_id).await?;
     Ok(PlatformPrincipal::new(user_id))
 }
 
@@ -745,7 +986,7 @@ pub async fn resolve_platform_principal(
 /// rejected before any handler runs.
 pub fn with_platform_context<S>(
     router: axum::Router<S>,
-    verifier: Option<JwtVerifier>,
+    verifier: Option<SessionVerification>,
 ) -> axum::Router<S>
 where
     S: Clone + Send + Sync + 'static,
@@ -755,10 +996,8 @@ where
             let verifier = verifier.clone();
             async move {
                 let Some(verifier) = verifier.as_ref() else {
-                    return error_response(
-                        StatusCode::SERVICE_UNAVAILABLE,
-                        "service_unavailable",
-                        "JWT verification is not configured",
+                    return error_response_for(
+                        &RequestContextError::SessionVerificationUnavailable,
                     );
                 };
                 let principal = match resolve_platform_principal(verifier, request.headers()).await
@@ -1120,6 +1359,253 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn envelope_preserves_only_trusted_single_html_413_and_existing_json() {
+        #[derive(Clone, Debug, PartialEq, Eq)]
+        struct RetainedExtension;
+        const BODY: &str = r#"{"fixture":"exact preserved response bytes"}"#;
+        fn rendered(
+            status: StatusCode,
+            types: &[&'static str],
+            retry_after: Option<&'static str>,
+        ) -> Response {
+            let mut response = Response::new(Body::from(BODY));
+            *response.status_mut() = status;
+            response.headers_mut().insert(
+                header::CONTENT_LENGTH,
+                HeaderValue::from_str(&BODY.len().to_string()).unwrap(),
+            );
+            for value in types {
+                response
+                    .headers_mut()
+                    .append(header::CONTENT_TYPE, HeaderValue::from_static(value));
+            }
+            response
+                .headers_mut()
+                .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+            response
+                .headers_mut()
+                .insert(header::PRAGMA, HeaderValue::from_static("no-cache"));
+            response
+                .headers_mut()
+                .append(header::VARY, HeaderValue::from_static("Cookie"));
+            response
+                .headers_mut()
+                .append(header::VARY, HeaderValue::from_static("Origin"));
+            response.headers_mut().insert(
+                header::CONTENT_SECURITY_POLICY,
+                HeaderValue::from_static("frame-ancestors 'none'"),
+            );
+            response
+                .headers_mut()
+                .insert("x-original", HeaderValue::from_static("preserve-exactly"));
+            response
+                .headers_mut()
+                .insert("x-console-native-error", HeaderValue::from_static("true"));
+            if let Some(value) = retry_after {
+                response
+                    .headers_mut()
+                    .insert(header::RETRY_AFTER, HeaderValue::from_static(value));
+            }
+            response.extensions_mut().insert(RetainedExtension);
+            response
+        }
+        // Preserve the historical test name and all 413/408 cases. Only the old
+        // marked single-HTML 429 oracle changes: native recovery must survive.
+        for (status, types, preserved, marked, retry_after) in [
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/html; charset=utf-8"],
+                true,
+                true,
+                None,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["Text/Html; charset=utf-8"],
+                true,
+                true,
+                None,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/plain"],
+                false,
+                true,
+                None,
+            ),
+            (StatusCode::PAYLOAD_TOO_LARGE, vec![], false, true, None),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/html", "text/html"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/html", "application/json"],
+                false,
+                true,
+                None,
+            ),
+            // Preserve the prior JSON classifier: first JSON is still JSON.
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["application/json", "text/html"],
+                true,
+                true,
+                None,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["application/json"],
+                true,
+                true,
+                None,
+            ),
+            (
+                StatusCode::REQUEST_TIMEOUT,
+                vec!["text/html"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html"],
+                true,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["Text/Html; charset=utf-8"],
+                true,
+                true,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html"],
+                false,
+                false,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/plain"],
+                false,
+                true,
+                None,
+            ),
+            (StatusCode::TOO_MANY_REQUESTS, vec![], false, true, None),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html", "text/html"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html", "application/json"],
+                false,
+                true,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html, application/json"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["application/json", "text/html"],
+                true,
+                false,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["application/json"],
+                true,
+                false,
+                None,
+            ),
+        ] {
+            let mut expected_headers = rendered(status, &types, retry_after).headers().clone();
+            if status == StatusCode::TOO_MANY_REQUESTS && retry_after.is_none() {
+                expected_headers.insert(header::RETRY_AFTER, HeaderValue::from_static("60"));
+            }
+            let mut app = with_http_error_envelope(axum::Router::new().route(
+                "/",
+                get(move || {
+                    let types = types.clone();
+                    async move {
+                        let response = rendered(status, &types, retry_after);
+                        if marked {
+                            preserve_native_html_error(response)
+                        } else {
+                            response
+                        }
+                    }
+                }),
+            ));
+            let response = Service::call(
+                &mut app,
+                Request::builder()
+                    .uri("/")
+                    .header(header::ACCEPT, "text/html")
+                    .header("x-console-native-error", "true")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+            assert_eq!(response.status(), status);
+            if preserved {
+                assert_eq!(response.headers(), &expected_headers);
+                assert_eq!(
+                    response.extensions().get::<RetainedExtension>(),
+                    Some(&RetainedExtension)
+                );
+                assert_eq!(
+                    axum::body::to_bytes(response.into_body(), 4096)
+                        .await
+                        .unwrap()
+                        .as_ref(),
+                    BODY.as_bytes()
+                );
+            } else {
+                assert_eq!(
+                    response.headers().get(header::CONTENT_TYPE).unwrap(),
+                    "application/json"
+                );
+                assert!(!response.headers().contains_key("x-original"));
+                assert!(response.extensions().get::<RetainedExtension>().is_none());
+                let (code, message) = match status {
+                    StatusCode::REQUEST_TIMEOUT => ("request_timeout", "request timed out"),
+                    StatusCode::TOO_MANY_REQUESTS => {
+                        assert_eq!(response.headers().get(header::RETRY_AFTER).unwrap(), "60");
+                        ("too_many_requests", "too many requests; please retry later")
+                    }
+                    _ => ("payload_too_large", "request body too large"),
+                };
+                let expected = format!(r#"{{"error":{{"code":"{code}","message":"{message}"}}}}"#);
+                assert_eq!(
+                    axum::body::to_bytes(response.into_body(), 4096)
+                        .await
+                        .unwrap()
+                        .as_ref(),
+                    expected.as_bytes()
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
     async fn envelope_rewrites_plain_408_and_413_to_json_error_body() {
         for (status, code, message) in [
             (
@@ -1248,5 +1734,132 @@ mod tests {
             );
             assert_eq!(bearer_token(&headers).expect("bearer"), "access-token");
         }
+    }
+}
+#[cfg(test)]
+mod diagnostic_nondisclosure_tests {
+    // Exercise the real HTTP error boundary. These paired inputs establish
+    // diagnostic-text noninterference only, not SQL origin, timing, or logs.
+    use super::*;
+    use axum::body::to_bytes;
+
+    async fn observe(error: &RequestContextError) -> (StatusCode, HeaderMap, Vec<u8>) {
+        let response = error_response_for(error);
+        let status = response.status();
+        let headers = response.headers().clone();
+        let body = to_bytes(response.into_body(), 4096)
+            .await
+            .expect("error body must be bounded")
+            .to_vec();
+        (status, headers, body)
+    }
+
+    async fn assert_same_public_failure(
+        wrap: fn(String) -> RequestContextError,
+        expected_status: StatusCode,
+    ) {
+        let first = observe(&wrap("PRIVATE-DIAGNOSTIC-A".to_owned())).await;
+        let second = observe(&wrap("PRIVATE-DIAGNOSTIC-B: 급여 20000000".to_owned())).await;
+        assert_eq!(first.0, expected_status);
+        assert_eq!(second.0, expected_status);
+        assert_eq!(
+            first.1, second.1,
+            "private diagnostic must not affect headers"
+        );
+        assert!(
+            first.2 == second.2,
+            "same error class must have diagnostic-independent body bytes"
+        );
+        assert!(
+            !first.2.is_empty(),
+            "failure still needs a public explanation"
+        );
+        assert!(
+            std::str::from_utf8(&first.2).is_ok(),
+            "public explanation is valid UTF-8"
+        );
+        assert!(
+            !first
+                .2
+                .windows(b"PRIVATE-DIAGNOSTIC".len())
+                .any(|bytes| bytes == b"PRIVATE-DIAGNOSTIC")
+        );
+    }
+
+    #[tokio::test]
+    async fn branch_resolution_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            RequestContextError::BranchScope,
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn policy_resolution_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            RequestContextError::EffectivePolicy,
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn internal_access_scope_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            |message| RequestContextError::AccessScope(KernelError::internal(message)),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn forbidden_access_scope_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            |message| RequestContextError::AccessScope(KernelError::forbidden(message)),
+            StatusCode::FORBIDDEN,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn fixed_public_failure_classes_keep_actionable_statuses() {
+        for (error, expected) in [
+            (RequestContextError::InvalidToken, StatusCode::UNAUTHORIZED),
+            (
+                RequestContextError::LegacySessionRejected,
+                StatusCode::UNAUTHORIZED,
+            ),
+            (RequestContextError::WrongTokenTier, StatusCode::FORBIDDEN),
+            (
+                RequestContextError::VerifierUnavailable,
+                StatusCode::SERVICE_UNAVAILABLE,
+            ),
+            (
+                RequestContextError::SessionVerificationUnavailable,
+                StatusCode::SERVICE_UNAVAILABLE,
+            ),
+        ] {
+            let first = observe(&error).await;
+            let second = observe(&error).await;
+            assert_eq!(first.0, expected);
+            assert_eq!(first, second);
+            assert!(!first.2.is_empty());
+        }
+    }
+}
+
+#[cfg(test)]
+mod current_role_tests {
+    use super::*;
+
+    #[test]
+    fn current_roles_reject_empty_and_partially_invalid_sets() {
+        assert!(parse_current_roles(&[]).is_err());
+        assert!(parse_current_roles(&["MEMBER".into(), "UNKNOWN".into()]).is_err());
+        assert_eq!(
+            parse_current_roles(&["MEMBER".into()]).unwrap(),
+            BTreeSet::from([Role::Member])
+        );
     }
 }

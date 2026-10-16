@@ -1,0 +1,65 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE bounded legacy topology codec implementation and recorded verification; enclosing nativeCompany lane remains RED",
+  "base": "d1d84d43cffb3e0ed01876e57041df558daf1c1d",
+  "test_commit": "7043494b394a4f57c9ddf272e67aed2984ba57a9",
+  "verification_sha256": "c8d6e1a994966b25a41f440c9d21b96c748cbaaa61b789f923a9225d8983f1b9",
+  "source_sha256": {
+    ".github/workflows/ci.yml": "4f5734aa7c8a8f0f86cc4f7072e370c4f5c017707495e175f19d27a96aa4aef8",
+    "backend/crates/platform/provisioning/BUCK": "25852059a31b44b5471623244daeeea71b7f6c8f9d9c2bbb9d0ef5051015e7c3",
+    "backend/crates/platform/provisioning/src/lib.rs": "d88e1626a02d5d3bab4920a0e8d3b3e64eec80f9793c1dfe0e93a4878a6716f9",
+    "backend/crates/platform/provisioning/src/legacy_topology.rs": "0bad0fba620c9c2fe026b87990f9422d30545b321636903d151225084e1fa9c5",
+    "backend/crates/platform/provisioning/src/legacy_topology_tests.rs": "9db142f764b308cb0fb064f2b59031307367ff36d71989226c3602226bb793d1",
+    "tools/buck/gen_first_party.py": "2da9cb839498d66e0bd3bbfd5663b30ab35aa0c47e3e097baf55b123e5e3f629",
+    "scripts/check-ci-preflight.mjs": "93035998f4c000710c2e6b1412a0e0ce9872eb0f4c42d83dcd7d1b4b5f5117d1",
+    "scripts/check-ci-preflight.test.mjs": "587691d052ee1951f3ce40c47c9ea6598eeaba5216ce4d17206fec5461c65321",
+    "docs/program/executed-tests-baseline.json": "73518f4dcc1eb7ef67bcd35eb06b90d5695793f5b9de72cf1c91b81a22cf8b02"
+  },
+  "artifact": {
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/crates/platform/provisioning/__console-platform-provisioning-unit__/console_platform_provisioning",
+    "sha256": "db9bb6a79b4bf1a16b84ac844bdbf97021f8a75ba0db15dc757bc1321ec07fa7"
+  },
+  "log_sha256": {
+    "/private/tmp/console-legacy-topology-codec-native-unit-final-20260920.log": "d7568c172b6e1d035fa72713bf86d9b932eb35cae8d30d07e0f391807cd6b813",
+    "/private/tmp/console-legacy-topology-codec-exact-artifact-test-20260920.log": "89aa6f1a448d896de34430875628d9b5aace49e4f0c0f32d196d228064f96443",
+    "/private/tmp/console-legacy-topology-codec-generator-tests-staged-20260920.log": "3562ea47e1344486def76da75a80a9442fa28c0e4673d171b21756533e5533c7",
+    "/private/tmp/console-legacy-topology-codec-ci-tests-final-20260920.log": "5943f983e6a3b787ec901866421cd38004e78d4d1fa2e9c7f23c59dfc4961d3a",
+    "/private/tmp/console-legacy-topology-codec-clippy-final-20260920.log": "ee9c7df87786750ee00dc128c253909f05b5a37ed6d1b9b0608e2fdea721edbe",
+    "/private/tmp/console-legacy-topology-codec-format-final-20260920.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-legacy-topology-codec-gates-final-20260920.log": "7572c6e32603a0a8b3474aa273809d2171e6edd8789f170462ac3759feb303b3",
+    "/private/tmp/console-legacy-topology-codec-enclosing-admit-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  },
+  "findings": [],
+  "source_review": [
+    "Nine explicit kind tags/payload orders;4096byte decode bound; immutable original bytes/digest; strict nil/UTF8/text/status/roles/headcardinality and ordering match frozen design.",
+    "Constructor normalization applies only to new text; decoder rejects noncanonical historical text. ExpectedGroupHead private fields prevent unchecked mutation. Actor/head IDs are data, not authorization.",
+    "Five approved tests and nine external vectors retained. Exact sole semantic-looking test diff is approved equivalent chunks_exact(2) to as_chunks::<2>().0.iter(), no assertion/vector weakening.",
+    "Generated unit target resource.none, generator map and +5baseline only. Existing nativeauthz CI step/id/condition preserved; provisioning target added. Strict checker exact literal successor and positive/two omission controls retained.",
+    "No SQL, migrations, auth/policy/receipt execution, historical command conversion or existing lifecycle caller cutover added."
+  ],
+  "verification": {
+    "distinct_native_tests": 5,
+    "native_discovered": 5,
+    "native_passed": 5,
+    "native_failed": 0,
+    "native_ignored": 0,
+    "native_filtered": 0,
+    "external_vectors": 9,
+    "generator_tests_passed": 68,
+    "ci_tests_passed": 69,
+    "preflight_gates_passed": 16,
+    "strict_clippy_log": "passed",
+    "format_log": "empty success log; root command success attested",
+    "reviewer_tests_executed": 0
+  },
+  "artifact_clarification": "Initial Buck test log11a config and later build398 artifact were not linked by initial packet. Root subsequently hash-checked/executed exact claimed398 binary; supplemental exact-artifact log lists5and passes5/0filtered. Actualartifact SHA independently verified again. Repeated executions are same5distinct leaves, not10.",
+  "remaining_holds": [
+    "Company executor/SQL/HTTP/browser enrollment and legacy caller cutover remain unfinished",
+    "Codec is syntax and historical bytes, not authentication, current policy, topology or receipt execution",
+    "All five MVP workflows and assembled release outstanding; production exposure/payments separately authorized"
+  ],
+  "limits": [
+    "Component approval only. Original authenticatedCompany404vs201 enclosing probe remains RED and lane/workflow/release acceptance is not granted.",
+    "Root owns invocation execution; reviewer inspected sources, exact hashes and logs without product tests/compilation."
+  ]
+}

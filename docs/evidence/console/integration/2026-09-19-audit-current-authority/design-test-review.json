@@ -1,0 +1,49 @@
+{
+  "kind": "audit-current-authority-design-and-test-review",
+  "design_sha": "ed173206f0a67e672a08c782a780312c13c7ce78",
+  "design_sha256": "db66bb952f2850ac6e3560d336ebb34ddc3d4076ca697fff0b251ea6869d9bc0",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "integration_security",
+      "verdict": "approve original design",
+      "sha256": "e7e2863041fe0877b9b90a0413c511b8b7f88b4a959b65cc5c10c63f4e6778bd"
+    },
+    {
+      "round": 2,
+      "reviewer": "reference_inventory",
+      "verdict": "correction required: effective-grant preservation not tested; authored two additional grant histories in revised design"
+    },
+    {
+      "round": 3,
+      "reviewer": "integration_security",
+      "verdict": "approve revised design; grant-required EXECUTIVE covers both handlers without built-in permission masking"
+    },
+    {
+      "round": 4,
+      "reviewer": "audit_review",
+      "verdict": "approve revised design; current authority, whole-scope grant confinement, same-token recovery and failure snapshots"
+    }
+  ],
+  "consensus": "Round2 correction accepted independently in rounds3/4; integration_security read back exact committed final design.",
+  "test_review": {
+    "reviewer": "integration_security",
+    "test_sha256": "fcd2344e1823d0424c7a6d04d2b33fb38cdb6e28851a192ad0b9cf5e2ca246c5",
+    "verdict": "approved exact bytes",
+    "existing_fixture_sha256": "12ed1bf6eb97fa70b1740e18c5f8da984bf0204c65603d09dd30eec37a38f031",
+    "preservation": "All23824 existing bytes retained as exact prefix;5 existing plus5 new SQLx declarations",
+    "new_histories": [
+      "Both handlers current-role demotion/restoration",
+      "Audit-log partial/final branch revocation",
+      "Both handlers current-grant add/revoke/restore"
+    ],
+    "execution": "Not yet executed; actual intended RED required for admission.",
+    "formatted_candidate_sha256": "b326dbf726bde3d1c40952614573bbfee35b97f15f0f5c69c81488d7818f10df",
+    "format_review": "integration_security reproduced rustfmt output from original approved candidate; exact bytes match; original fixture unchanged."
+  },
+  "owner": "root sole repository writer",
+  "remaining": [
+    "Product implementation not admitted by this record.",
+    "No native browser, subscription or release qualification claim."
+  ]
+}

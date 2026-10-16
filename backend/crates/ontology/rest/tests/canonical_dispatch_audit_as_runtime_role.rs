@@ -9,6 +9,8 @@ use std::collections::BTreeSet;
 use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
 
+use console_attendance_adapter_postgres::PgAttendanceStore;
+use console_attendance_application::{CallerScope, CloseMonth};
 use console_governance_adapter_postgres::PgGovernanceStore;
 use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
 use console_ontology_adapter_postgres::instances::PgInstanceStore;
@@ -29,9 +31,12 @@ use console_ontology_canonical_domain::{
 };
 use console_ontology_domain::{ActionDispatch, BackingKind, InstanceId, ObjectTypeId};
 use console_ontology_rest::{ActionCommand, OntologyRestState, ProjectedDispatchRegistry};
+use console_payroll_adapter_postgres::lifecycle::{
+    LifecycleError, calculate_run_in_tx, close_attendance_in_tx,
+};
 use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_platform_authz::{Principal, Role};
-use console_platform_db::{DbError, with_audit};
+use console_platform_db::{DbError, with_audit, with_org_conn};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sqlx::postgres::PgPoolOptions;
@@ -46,18 +51,11 @@ const TRANSFER_AT: OffsetDateTime = datetime!(2026-07-12 12:00 UTC);
 const DISPATCH_TARGET: &str = "company.revise";
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+    console_platform_test_support::login_test_pool(
+        owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    )
+    .await
 }
 
 async fn command_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -1530,6 +1528,195 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
     assert_eq!(after_transfer.org_unit_id, Some(tech_id));
     assert_eq!(after_transfer.job_position_id, Some(lead_id));
 
+    // Keep the two employee rows bound to the original Person; payroll's reviewer
+    // needs a separately bound natural person rather than another user ID.
+    let reviewer_employee_id = Uuid::new_v4();
+    let mut reviewer_tx = rt.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(org_uuid.to_string())
+        .execute(&mut *reviewer_tx)
+        .await
+        .unwrap();
+    insert_employee_record(
+        &mut reviewer_tx,
+        org_uuid,
+        NewEmployeeRecord {
+            employee_id: reviewer_employee_id,
+            company: "ACME",
+            name: "검토자",
+            employee_number: "E-FOUNDARY-REVIEWER",
+            org_unit: &unit_text,
+            position: &position_text,
+            worksite_name: "서울",
+        },
+    )
+    .await
+    .expect("real Business LOGIN must create the reviewer's employee row");
+    reviewer_tx.commit().await.unwrap();
+    let reviewer_person = console_platform_request_context::scope_org(org, async {
+        state
+            .execute_action(
+                &principal,
+                "create_person",
+                ActionCommand {
+                    object_type_id: person_type,
+                    instance_id: None,
+                    title: None,
+                    params: json!({
+                        "employee_id": reviewer_employee_id,
+                        "attributes": { "legal_name": "검토자" }
+                    }),
+                    reason: Some("foundry payroll independent reviewer".to_owned()),
+                    valid_from: Some(AT),
+                    checklist_all_acknowledged: None,
+                    four_eyes_request_ref: None,
+                    command_id: Some(Uuid::new_v4()),
+                    expected_revision: None,
+                },
+            )
+            .await
+    })
+    .await
+    .expect("the Person owner must bind the independent reviewer");
+    let reviewer_person_id: Uuid =
+        reviewer_person.projected.as_ref().unwrap()["result"]["person_id"]
+            .as_str()
+            .unwrap()
+            .parse()
+            .unwrap();
+    assert_eq!(reviewer_person_id, reviewer_employee_id);
+    assert_ne!(reviewer_person_id, person_id);
+    for (user, employee) in [(actor, employee_id), (decider, reviewer_employee_id)] {
+        let bound = sqlx::query("UPDATE users SET employee_id=$1 WHERE org_id=$2 AND id=$3")
+            .bind(employee)
+            .bind(org_uuid)
+            .bind(*user.as_uuid())
+            .execute(&owner_pool)
+            .await
+            .unwrap();
+        assert_eq!(bound.rows_affected(), 1);
+    }
+    let bindings: Vec<(Uuid, Uuid, Uuid)> = sqlx::query_as(
+        "SELECT u.id, u.employee_id, b.person_id FROM users u \
+         JOIN employee_person_bindings b ON b.org_id=u.org_id AND b.employee_id=u.employee_id \
+         WHERE u.org_id=$1 AND u.id=ANY($2::uuid[]) ORDER BY u.id",
+    )
+    .bind(org_uuid)
+    .bind(vec![*actor.as_uuid(), *decider.as_uuid()])
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    let mut expected_bindings = vec![
+        (*actor.as_uuid(), employee_id, person_id),
+        (*decider.as_uuid(), reviewer_employee_id, reviewer_person_id),
+    ];
+    expected_bindings.sort();
+    assert_eq!(bindings, expected_bindings);
+
+    // Lower-boundary source fixtures only: amounts and NTS readiness below are
+    // not native UI inputs or legal/payability qualification.
+    let import_id = Uuid::new_v4();
+    sqlx::query(
+        "INSERT INTO data_import_runs \
+         (id, org_id, entity_type, status, source_filename, source_format, \
+          source_sha256, pay_period_start, pay_period_end) \
+         VALUES ($1,$2,'employee_hr','DRY_RUN','canonical-roster.xlsx','xlsx', \
+                 repeat('a',64),DATE '2026-06-01',DATE '2026-06-30')",
+    )
+    .bind(import_id)
+    .bind(org_uuid)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+    let mut expected_sources = Vec::new();
+    for (index, employee) in [employee_id, reviewer_employee_id].into_iter().enumerate() {
+        let source_key: String =
+            sqlx::query_scalar("SELECT source_key FROM employees WHERE org_id=$1 AND id=$2")
+                .bind(org_uuid)
+                .bind(employee)
+                .fetch_one(&owner_pool)
+                .await
+                .unwrap();
+        let row = i32::try_from(index + 1).unwrap();
+        let source_row_id: Uuid = sqlx::query_scalar(
+            "INSERT INTO data_import_rows \
+             (org_id,run_id,source_sheet,source_row,source_key,row_status,raw_row,canonical_row) \
+             VALUES ($1,$2,'s',$3,$4,'CANDIDATE',$5,$6) RETURNING id",
+        )
+        .bind(org_uuid)
+        .bind(import_id)
+        .bind(row)
+        .bind(format!("filename:canonical-roster.xlsx|sheet:s|row:{row}"))
+        .bind(json!({"기본급":"3000000","소득세":"74350","근무시간":"209"}))
+        .bind(json!({
+            "source_key": source_key,
+            "payroll": {
+                "monthly_gross_pay_won": 3_000_000,
+                "nts_tax_row": {
+                    "table_version": "NTS-간이세액표-fixture-row-v1",
+                    "monthly_income_tax_won": 74_350,
+                    "local_income_tax_won": 7_430
+                }
+            }
+        }))
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+        expected_sources.push((employee, source_key, source_row_id));
+    }
+    expected_sources.sort_by(|first, second| first.1.cmp(&second.1));
+    let mut import_tx = owner_pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL ROLE console_leave_definer")
+        .execute(&mut *import_tx)
+        .await
+        .unwrap();
+    sqlx::query("SELECT set_config('app.current_org',$1,true)")
+        .bind(org_uuid.to_string())
+        .execute(&mut *import_tx)
+        .await
+        .unwrap();
+    let applied = sqlx::query(
+        "UPDATE data_import_runs SET status='APPLIED',applied_by=$3,applied_at=now(),updated_at=now() \
+         WHERE org_id=$1 AND id=$2",
+    )
+    .bind(org_uuid)
+    .bind(import_id)
+    .bind(*actor.as_uuid())
+    .execute(&mut *import_tx)
+    .await
+    .unwrap();
+    assert_eq!(applied.rows_affected(), 1);
+    sqlx::query(
+        "INSERT INTO audit_events \
+         (actor,action,target_type,target_id,before_snap,after_snap,trace_id,span_id,occurred_at,org_id) \
+         VALUES ($1,'data_import.apply','data_import_run',$2,NULL,'{}'::jsonb, \
+                 '0123456789abcdef0123456789abcdef','0123456789abcdef',now(),$3)",
+    )
+    .bind(*actor.as_uuid())
+    .bind(import_id.to_string())
+    .bind(org_uuid)
+    .execute(&mut *import_tx)
+    .await
+    .unwrap();
+    import_tx.commit().await.unwrap();
+    let applied: bool = sqlx::query_scalar(
+        "SELECT r.status='APPLIED' AND r.applied_by=$2 AND r.applied_at IS NOT NULL \
+                AND (SELECT count(*) FROM audit_events a WHERE a.org_id=r.org_id \
+                     AND a.target_id=r.id::text AND a.action='data_import.apply' \
+                     AND a.actor=r.applied_by)=1 \
+         FROM data_import_runs r WHERE r.org_id=$3 AND r.id=$1",
+    )
+    .bind(import_id)
+    .bind(*actor.as_uuid())
+    .bind(org_uuid)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert!(
+        applied,
+        "the guarded period-scoped import must precede CreateRun"
+    );
+
     let run_id = Uuid::new_v4();
     let payroll_outcome = console_platform_request_context::scope_org(org, async {
         state
@@ -1597,14 +1784,144 @@ async fn seeded_org_actions_write_canonical_heads_through_owning_ports(owner_poo
         "a staged run must not be calculation-enabled — this path must not compute won"
     );
 
-    // The port has no calculate dispatch target. Submitting requires CALCULATED,
-    // so the table owner flips status only — no line math, calculation_enabled
-    // stays false.
-    sqlx::query("UPDATE payroll_draft_runs SET status = 'CALCULATED' WHERE id = $1")
-        .bind(draft_run_id)
-        .execute(&owner_pool)
+    let lines = sqlx::query(
+        "SELECT employee_id,employee_source_key,source_data_import_row_ids, \
+                payroll_source_row_count,attendance_source_row_count, \
+                gross_pay_source_present,nts_tax_row_status \
+         FROM payroll_draft_lines WHERE org_id=$1 AND run_id=$2 ORDER BY employee_source_key",
+    )
+    .bind(org_uuid)
+    .bind(draft_run_id)
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(lines.len(), 2);
+    for (line, (employee, source_key, source_row)) in lines.iter().zip(&expected_sources) {
+        assert_eq!(line.get::<Uuid, _>("employee_id"), *employee);
+        assert_eq!(
+            line.get::<String, _>("employee_source_key"),
+            source_key.as_str()
+        );
+        assert_eq!(
+            line.get::<Vec<Uuid>, _>("source_data_import_row_ids"),
+            vec![*source_row]
+        );
+        assert_eq!(line.get::<i32, _>("payroll_source_row_count"), 1);
+        assert_eq!(line.get::<i32, _>("attendance_source_row_count"), 1);
+        assert!(line.get::<bool, _>("gross_pay_source_present"));
+        assert_eq!(
+            line.get::<String, _>("nts_tax_row_status"),
+            "REQUIRED_NOT_SUPPLIED"
+        );
+    }
+    // Fixture readiness assumption, matching the owning lifecycle tests; this
+    // flag is not NTS verification and does not create a calculation or status.
+    let marked = sqlx::query(
+        "UPDATE payroll_draft_lines SET nts_tax_row_status='VERIFIED_SOURCE_ROW' \
+         WHERE org_id=$1 AND run_id=$2",
+    )
+    .bind(org_uuid)
+    .bind(draft_run_id)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(marked.rows_affected(), 2);
+    let close = PgAttendanceStore::new(rt.clone())
+        .close_month(
+            &CallerScope {
+                org_id: org_uuid,
+                user_id: *actor.as_uuid(),
+                branch_ids: vec![],
+                org_wide: true,
+            },
+            CloseMonth {
+                month: "2026-06".to_owned(),
+                branch_scope: None,
+                attest: true,
+            },
+        )
         .await
-        .unwrap();
+        .expect("Attendance owner must close June and retain its payroll period lock");
+    assert_eq!(close.month, time::macros::date!(2026 - 06 - 01));
+    assert_eq!(close.branch_id, None);
+    let lock_id = close
+        .period_lock_id
+        .expect("org-wide close owns a payroll lock");
+    let close_and_lock: bool = sqlx::query_scalar(
+        "SELECT c.org_id=$1 AND c.month=DATE '2026-06-01' AND c.branch_id IS NULL \
+                AND c.checks='{\"open_exceptions\":0,\"pending_leave\":0,\"already_closed\":false}'::jsonb \
+                AND l.id=$3 AND l.org_id=c.org_id AND l.domain='payroll' \
+                AND l.period_start=DATE '2026-06-01' AND l.period_end=DATE '2026-06-30' \
+                AND l.unlocked_at IS NULL \
+         FROM attendance_month_closes c JOIN period_locks l ON l.id=c.period_lock_id WHERE c.id=$2",
+    )
+    .bind(org_uuid)
+    .bind(close.id)
+    .bind(lock_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert!(
+        close_and_lock,
+        "read back the actual committed Attendance close and lock"
+    );
+    let calculation = with_org_conn::<_, _, LifecycleError>(&rt, org, move |tx| {
+        Box::pin(async move {
+            close_attendance_in_tx(
+                tx,
+                draft_run_id,
+                *actor.as_uuid(),
+                OffsetDateTime::now_utc(),
+            )
+            .await?;
+            calculate_run_in_tx(tx, draft_run_id).await
+        })
+    })
+    .await
+    .expect("the payroll owner must close and calculate the complete roster");
+    assert_eq!(calculation.version, 1);
+    assert_eq!(calculation.calculated_lines, 2);
+    assert_eq!(calculation.blocked_lines, 0);
+    assert_eq!(calculation.exceptions_created, 0);
+    let calculated: Vec<(Uuid, Uuid, i32, bool, String, Value)> = sqlx::query_as(
+        "SELECT l.employee_id,b.person_id,c.version,c.payable,l.calculation_status,l.blockers \
+         FROM payroll_draft_lines l \
+         JOIN payroll_line_calculations c ON c.org_id=l.org_id AND c.run_id=l.run_id AND c.line_id=l.id \
+         JOIN employee_person_bindings b ON b.org_id=l.org_id AND b.employee_id=l.employee_id \
+         WHERE l.org_id=$1 AND l.run_id=$2 ORDER BY l.employee_id",
+    )
+    .bind(org_uuid)
+    .bind(draft_run_id)
+    .fetch_all(&owner_pool)
+    .await
+    .unwrap();
+    let mut expected_roster = vec![
+        (employee_id, person_id),
+        (reviewer_employee_id, reviewer_person_id),
+    ];
+    expected_roster.sort();
+    assert_eq!(
+        calculated
+            .iter()
+            .map(|row| (row.0, row.1))
+            .collect::<Vec<_>>(),
+        expected_roster
+    );
+    assert!(
+        calculated
+            .iter()
+            .all(|row| row.2 == 1 && !row.3 && row.4 == "READY_FOR_REVIEW" && row.5 == json!([]))
+    );
+    let effects: (i64, i64) = sqlx::query_as(
+        "SELECT (SELECT count(*) FROM payroll_line_calculations WHERE org_id=$1 AND run_id=$2), \
+                (SELECT count(*) FROM payroll_run_exceptions WHERE org_id=$1 AND run_id=$2)",
+    )
+    .bind(org_uuid)
+    .bind(draft_run_id)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(effects, (2, 0));
 
     let submit_outcome = console_platform_request_context::scope_org(org, async {
         state

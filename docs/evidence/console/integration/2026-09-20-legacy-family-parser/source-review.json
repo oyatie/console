@@ -1,0 +1,68 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_PARSER_ONLY_SOURCE_WITH_CURRENT_GREEN_AND_EXPLICIT_COVERAGE_GAPS",
+  "base_sha": "916083083c226fc5d3fb0b6974fccb73386aa059",
+  "source_sha256": {
+    "backend/crates/platform/auth/src/jwt.rs": {
+      "before": "2062377f372daf61789dd345f7b634d7352bb72293f322078efbe047a2d9a87f",
+      "after": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b"
+    },
+    "backend/crates/platform/auth/src/lib.rs": {
+      "before": "04a94093df23710eaaa085b4bbaaf6349c23129ce87cddf2c8bba9f280205434",
+      "after": "042a668d9eced004c86f008b0f879e7a425de0d57e72a499415b15dae94b68e4"
+    }
+  },
+  "review_scope": "Strict signed legacy binding reader expansion only; no bound production mint/current authority/effect guard acceptance.",
+  "checks": [
+    "Entiretracked diff exactly2authorized source files; no tests/manifests/dependencies/SQL/transport/migration edits. Existing AccessTokenInput and every mint caller unchanged; sole production AccessClaims constructor explicitly None.",
+    "New closed kind enum and nested deny_unknown_fields struct have4mandatorytyped members. Actual present-field decoder requires map and maps onlysuccessfultypeddeserialization toSome; absent defaultsNone, presentnull/nonobject cannot downgrade. Derivedserde catches duplicate known outer/nested members; observed signed duplicate probes pass.",
+    "Shared actualES256 verifier invokes new validation only after existing signature/issuer/audience/org/scope/Account-protocol/Group-role/context checks. Historical absent branch returnsOk without imposing newconstraints; skipNone serialization leaves oldwiremember absent and oldrelativefieldordering unchanged.",
+    "Bound version1/nonzero family/home/target required. Direct exacthome/target/tier and no derived flags/context. Group requires ordinaryhomes/targets, matchingactor_home and nonnilGroupID plus allretained delegatedconstraints.",
+    "Platformderived requires sentinelhome/nonplatformtarget/tenanttier/noGroupcontext-or-roles, exactkind read/view flags and singleactingrole; writableexactSUPER_ADMIN. Existing validation rejects actor_home/groupID withoutGroupcontext.",
+    "View-as role vocabulary remains canonical authz Role: decoder establishes one nonempty signedactingrole, actual request resolver calls strictparse_current_roles before anyprincipalbranch. No duplicatedroleenum or new auth\u2192authz dependency. Unknownrole rejection at that downstream boundary remains required, not supplied by thiscodec.",
+    "Signed correlation struct is not live authority; consumerfamily/revocation/currentparentpolicy/transactionguards remain incomplete and productionboundmint staysdisabled."
+  ],
+  "actual_results_reviewed": {
+    "owner_red": {
+      "executed": 7,
+      "passed": 1,
+      "failed": 6,
+      "seconds": 0.02
+    },
+    "same_owner_green": {
+      "executed": 7,
+      "passed": 7,
+      "failed": 0,
+      "seconds": 0.11
+    },
+    "retained_es256": {
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "seconds": 0.26
+    },
+    "retained_verifier": {
+      "executed": 14,
+      "passed": 14,
+      "failed": 0,
+      "seconds": 0.12
+    }
+  },
+  "proposed_private_supplements_only": [
+    "A fullypopulated positional array [1,validfamily,validhome,direct] mustfail while theequivalentobjectpasses: existingemptyarraynegative doesnot distinguish requiredmap fromSerdepositionalstructfallback. Currentcustommap source handles this, butregressioncoverage ismissing.",
+    "Starting fromgenuinevalid bound Group/view-as/writable claimfixtures, independentlymutate home/target/contextrelationship andsingle/multiple/emptyactingroles/readflag pairs toprove theapprovedclosedkindmatrix; current7tests covervalidshapes andselecteddirectcontradictions, notallnewderivedbranches. Keepthese additive and reuseactualsignedverifiers.",
+    "Preserve existing downstreamunknownRole negatives; anynew boundkindconsumption test mustprove currentfamily/sourcepolicy denial instead ofpromoting decoder acceptance intoauthorization."
+  ],
+  "evidence_sha256": {
+    "console-legacy-family-parser-lane-20260920.json": "45fc7ced279e22acfba782ecbb413f01957d7a322bfa7edbce6c7ed945b4a92f",
+    "console-legacy-family-parser-admission-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-legacy-family-parser-red-20260920.log": "05f6f00b8053b686b7e49976a1e9fa42b772798b6c020a3307d41e0329d5c592",
+    "console-legacy-family-parser-green-20260920.log": "a8293198ca17a1458b7a596258077ebff2adb0b6c0965f96b5d2f31b09bfa51b",
+    "console-legacy-family-parser-retained-20260920.log": "2b82b1a84f39f0ab43fdace855c6145be779b8635e716b78c50afacef696f8c4"
+  },
+  "remaining_holds": [
+    "Supplemental completearray/derivedcontradiction coverage should be independentlyauthored/reviewed before claiming completeclosed-kindparserqualification. No additional code edits requested by this source review.",
+    "Exactlivefamily/currentpolicy/retainedread-effectguards, allissuerconversion/census and boundmintreaderrollout remain separate requireddependencies.",
+    "No fulllegacyplatformjourney or assembledrelease acceptance."
+  ]
+}

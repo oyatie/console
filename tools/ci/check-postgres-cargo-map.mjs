@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SHARD_ORDER, entriesForShard, partitionFailures } from "./postgres-partition.mjs";
@@ -21,6 +22,59 @@ const start = startFacet >= 0 ? startFacet : startLegacy;
 const end = wf.indexOf("\n  company-conformance:", start);
 const block = start >= 0 && end > start ? wf.slice(start, end) : wf;
 const failures = [];
+
+// Count/workflow agreement cannot prove that a wrapper runs the declared binary.
+const canonicalLabel = (label) => typeof label === "string"
+  && /^(?:root)?\/\/[A-Za-z0-9_./-]+(?::[A-Za-z0-9_.-]+)?$/.test(label)
+  ? label.replace(/^root(?=\/\/)/, "") : null;
+const isolation = `postgres-map-gate-${process.pid}`;
+let query;
+try {
+  const inners = [...new Set((map.entries ?? []).map((entry) => entry.buck_inner))];
+  if (inners.some((label) => !canonicalLabel(label))) throw new Error("invalid Rust inner label");
+  query = spawnSync(resolve(root, "tools/buck2"), [
+    "--isolation-dir", isolation, "uquery", "--json", "--output-attribute",
+    "^(buck.type|args|deps|test|labels)$", `set(//tools/buck: ${inners.join(" ")})`,
+  ], { cwd: root, encoding: "utf8", timeout: 30_000, maxBuffer: 8 * 1024 * 1024 });
+  if (query.status !== 0) throw new Error("native inventory query failed");
+  const raw = JSON.parse(query.stdout);
+  if (!raw || Array.isArray(raw) || typeof raw !== "object") throw new Error("invalid native inventory");
+  const inventory = new Map();
+  for (const [label, row] of Object.entries(raw)) {
+    const key = canonicalLabel(label);
+    if (!key || inventory.has(key) || !row || Array.isArray(row) || typeof row !== "object") {
+      const names = (map.entries ?? []).filter((entry) => canonicalLabel(entry.buck_wrapper) === key
+        || canonicalLabel(entry.buck_inner) === key).map((entry) => entry.name);
+      throw new Error(`invalid or ambiguous native inventory label/row: ${names.join(", ") || label}`);
+    }
+    inventory.set(key, row);
+  }
+  for (const entry of map.entries ?? []) {
+    const innerLabel = canonicalLabel(entry.buck_inner);
+    const wrapper = inventory.get(canonicalLabel(entry.buck_wrapper));
+    const inner = inventory.get(innerLabel);
+    const location = Array.isArray(wrapper?.args) && wrapper.args.length === 1
+      && typeof wrapper.args[0] === "string" ? /^\$\(location ([^)]+)\)$/.exec(wrapper.args[0]) : null;
+    if (inner?.["buck.type"] !== "rust_test" || wrapper?.["buck.type"] !== "sh_test"
+        || canonicalLabel(location?.[1]) !== innerLabel
+        || !Array.isArray(wrapper?.deps) || wrapper.deps.length !== 1
+        || canonicalLabel(wrapper.deps[0]) !== innerLabel
+        || canonicalLabel(wrapper?.test) !== "//tools/buck/run_test_with_postgres_env.sh"
+        || !Array.isArray(wrapper?.labels)
+        || !["resource.postgres", "needs-postgres"].every((label) => wrapper.labels.includes(label))) {
+      failures.push(`map entry ${entry.name} has invalid native wrapper/inner/credential-loader binding`);
+    }
+  }
+} catch (error) {
+  failures.push(`native inventory: ${error.message}`);
+} finally {
+  if (query) {
+    const cleanup = spawnSync(resolve(root, "tools/buck2"), ["--isolation-dir", isolation, "kill"], {
+      cwd: root, encoding: "utf8", timeout: 10_000,
+    });
+    if (cleanup.status !== 0) failures.push("native inventory daemon cleanup failed");
+  }
+}
 
 // Package→facet partition must stay complete/disjoint (S0; used by --shard-id).
 for (const msg of partitionFailures(map.entries ?? [], SHARD_ORDER.length)) {
@@ -80,6 +134,7 @@ if (usesCargo) {
   const observed = {
     mapped: (map.entries ?? []).length,
     unmapped: (map.unmapped ?? []).length,
+    native: (map.native ?? []).length,
     workflow_targets: mapped.size,
     workflow_mapped: mapped.size,
     workflow_missing: 0,

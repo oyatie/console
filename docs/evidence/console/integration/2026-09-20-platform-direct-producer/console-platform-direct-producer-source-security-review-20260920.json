@@ -1,0 +1,35 @@
+{
+  "reviewer": "integration_security",
+  "decision": "BOUNDED_SOURCE_DESIGN_GUIDANCE_PENDING_EXACT_TEST_AND_IMPLEMENTATION_CANDIDATE",
+  "observed_head": "48c8f13ef1c7ba30e9fe3c8504fcf389369d5a5c",
+  "sources": {
+    "backend/crates/platform/auth/src/jwt.rs": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b",
+    "backend/crates/platform/auth/src/refresh.rs": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c",
+    "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+    "backend/crates/platform/auth-rest/src/lib.rs": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85",
+    "backend/crates/platform/authz/src/platform_policy.rs": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs": "5e7b95ae648b143c64e70bcaa70261cee03f489eb0fd1a7bfd6ed373d40f92f5",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_reads.rs": "8e0aa6ab499b1b74e68af4d86f85b47985a802242b2322d44a102047acb249ea"
+  },
+  "selected_existing_mechanisms": [
+    "Existing strict LegacySessionBinding{version,family_id,home_org,kind} and validate_legacy_session; no new token namespace needed.",
+    "RefreshTokenIssue carries owner-returned family_id,user_id,org_id; successful issue/rotate already occurs inside Auth transaction.",
+    "Existing finite PlatformPolicy distinguishes bound effects and historical unbound read behavior; binding does not itself grant an operation."
+  ],
+  "required_producer_constraints": [
+    "Derive platform scope from actual loaded User home org sentinel; validate owner-returned subject/org/family nonnil correlation before signing; never choose latest family or caller-provided family.",
+    "Mint new Direct-platform access only after successful actual family issuance/rotation. Preserve same rotation family identity and transactional rollback on signing/correlation failure; return tokens only after successful commit.",
+    "Preserve old public issuer behavior with None binding, old claim parser/historical bytes, ordinary Company and group-role behavior. New issuer branch validates exact binding/flags before encoding.",
+    "Keep current issuer TTL handling and strict final consumers; add no expiration tolerance or native Account authority. A binding proves family correlation, not passkey assurance.",
+    "Shared issuance helper is reached from actual WebAuthn finish,OTP redemption,devicehandoff,and dev-auth. Candidate must enumerate intended platform paths; not claim WebAuthn-only change.",
+    "Use actual same-family current revoked/protocol/subject/home and deadline checks in downstream accepted consumers; token issuance alone does not complete all mutation/revocation boundaries."
+  ],
+  "self_passkey_compatibility": {
+    "current_defect": "read_legacy_self_passkeys rejects any bound platform token, despite product route documenting platform self access; old test explicitly freezes bound refusal.",
+    "narrow_successor": "Remove only claims.platform disjunct from bound Direct-kind check. Retain earlier marker/org equality,view_as/read_only/tenant-context denial,strict binding parser,actual subject/family guards and before/afterprojection time checks.",
+    "required_evidence": "Independently reviewed semantic test successor must show newly issued genuine platform bound token lists actual nonempty own keys and revoked/expired/wrong-family/native-fenced credentials deny; retain historical unbound compatibility. No old test deletion/weakening without exact successor review."
+  },
+  "existing_boundary_limit": "authenticated_user_context only verifies token plus current subject and ignores family for other handlers such as self-passkey deletion. Do not claim this producer/self-read prerequisite fixes those alternate mutation boundaries. They remain separate required owner-integration work.",
+  "tests_executed_by_reviewer": 0,
+  "repository_writes": 0
+}

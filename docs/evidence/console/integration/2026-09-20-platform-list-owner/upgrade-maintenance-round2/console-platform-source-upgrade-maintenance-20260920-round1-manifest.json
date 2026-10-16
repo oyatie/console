@@ -1,0 +1,14 @@
+{
+  "base": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "path": "backend/app/tests/auth_rest/audit_platform_source_transition.rs",
+  "before_sha256": "ed9707e35b506da18cdd4620036d5ed58f6ed7560c322709fa28709c0b3d0f6d",
+  "after_sha256": "324ceb941d76e6aec0a048bc0fb7cd01347b7373b3743b749199edd3c16d8c69",
+  "observed": "full52diagnosticrun3 freshobserver and freshplain only changed public_other_relations[0/271].relpages/reltuples; value-free actual paths retained",
+  "change": "Before upgrade baseline snapshots explicitly complete VACUUM ANALYZE for every public r/p/m relation outside transaction, assert exact relation coverage and every captured index parent, then hold existing SHARE phase locks; all snapshot fields/oracles/pins unchanged. Also mechanical rustfmt of3diagnostic wraps.",
+  "limits": [
+    "maintenance stabilization hypothesis requires runtime",
+    "SHARE locks protect same transaction only, no claimed crosscommit exclusion",
+    "no production settings/schema/serializer/history modifications"
+  ],
+  "runtime": 0
+}

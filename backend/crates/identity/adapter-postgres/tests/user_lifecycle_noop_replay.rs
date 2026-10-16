@@ -18,31 +18,20 @@ use console_identity_adapter_postgres::PgOrgStore;
 use console_identity_application::{ActivateUserCommand, DeactivateUserCommand};
 use console_kernel_core::{ErrorKind, OrgId, TraceContext, UserId};
 use console_platform_request_context::CURRENT_ORG;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
 /// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
-/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
-/// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
+/// Authenticate the actual restricted Business login (NOSUPERUSER, NOBYPASSRLS).
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+    login_test_pool(owner_pool, TestDatabaseLogin::Business).await
 }
-
 /// Seed an organization + one user as the OWNER with `row_security` off.
 /// Returns the seeded user id. `is_active` chooses the starting lifecycle state.
 async fn seed_org_and_user(owner_pool: &PgPool, org: Uuid, is_active: bool) -> Uuid {
@@ -168,8 +157,9 @@ async fn user_is_active(owner_pool: &PgPool, user_id: Uuid) -> bool {
     is_active
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replaying_deactivate_writes_no_second_transition_audit_row(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let org_b = OrgId::from_uuid(ORG_B);
@@ -250,8 +240,9 @@ async fn replaying_deactivate_writes_no_second_transition_audit_row(owner_pool: 
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replaying_deactivate_revokes_a_racing_credential(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), true).await;
@@ -290,8 +281,9 @@ async fn replaying_deactivate_revokes_a_racing_credential(owner_pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replaying_activate_writes_no_second_transition_audit_row(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), false).await;

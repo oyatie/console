@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 1,
+  "decision": "APPROVE bounded direction with explicit acceptance refinement for subsequent design rounds; no test or implementation admission",
+  "manifest_sha256": "87e3bb9a52de7998ff3b73da6ed3e01bd55cad3da4fdaad2ddc4526ef41c59b3",
+  "design_sha256": "c66cd03505ad56950089cf3ecc6693c6989ba0db089a605c12c665cfef295cb9",
+  "base": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "checks": [
+    "All17source pins and3packet members independently verified.",
+    "Sole list_groups production invocation is mounted platform-rest handler; owner accepts detached actor/time, PlatformPrincipal authorize unconditional. MEMBER disclosure remains source-supported hypothesis pending genuine boundary RED.",
+    "Existing finite material tuple and Cedar admit Direct/GroupManage/Groups/ReadProjection/DirectPlatformOwner with currentSUPER_ADMIN; no policy/schema expansion needed.",
+    "Final0225SQL yields exact8Group/4member identities, emptyGroups and sentinel exclusion; retain bare-array/RFC3339 and ordering, original mapping/SQL bytes.",
+    "Closed third private discriminator only; four fresh checks cover actual projection and audit waits; raw verifier/access/serverTTL replace actor/time.",
+    "ExactGETHEAD transport selection extends groups while querystrings work and descendants/writes remain outside wrapper; two old sibling examples require explicit independent semantic test review.",
+    "Actual retained CRUD fixture usesSETROLE and missingauthority setup; narrow genuine-login fixture successor preserves all assertions.",
+    "Raw console_rt EXECUTE, groupaccount reads and mutations remain independent release blockers; this owner conversion cannot claim their closure."
+  ],
+  "acceptance_refinement": [
+    {
+      "id": "GROUP-LIST-DECODE-503",
+      "requirement": "Add explicit real group member JSON decoding failure witness to the infrastructure acceptance matrix. group_from_row uses Json<Vec<GroupMemberSummary>>, so SQL success followed by invalid members JSON must become finite503 with no rows/audit and exact recovery, not escape as generic500. Use isolated reversible test fixture with source/catalog restoration; no production fault seam or historical migration edit.",
+      "reason": "This is a Group-specific mapping boundary absent from the reused flat Company/ops fixtures; design already promises mapping failures\u2192GroupListUnavailable."
+    }
+  ],
+  "remaining_holds": [
+    "Four design rounds and exact consensus remain required before independently reviewed tests.",
+    "Actual owner RED and lane admission remain unexecuted.",
+    "Ops55/retained3 runtime still pending final evidence.",
+    "PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT remains unresolved release reliability HOLD."
+  ]
+}

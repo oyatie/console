@@ -1,0 +1,44 @@
+# Exact source census and dependency recommendation
+
+Observed source HEAD7976d26a3854ec6bb50e5a5e31ae935634ad1cf4. Read-only inspection; no tests, database, build or browser execution. Reasoning lenses selected: source-vs-inference, zero-trust boundaries, operability and contained change. These are conclusions and citations, not runtime acceptance.
+
+## Recommended next owner
+
+GET/HEAD /api/platform/groups → PlatformProvisioner::list_groups is the smallest concrete next integration after Company listing/ops health. It supplies Group topology discovery needed by milestone1; existing source/policy/transaction fixtures support the same bounded read conversion. More dangerous mutation bypasses remain, but their effect/UpgradeRequired, command receipt and failure recovery contracts need distinct review; bundling them into this read conversion would hide that missing work.
+
+Exact runtime caller census (`rg '\.list_groups\(' backend/app backend/crates -g '*.rs'`) finds only platform-rest/src/lib.rs:686. This is an actual mounted HTTP caller, not an inferred future interface. No native Leptos consumer is claimed by this census. Published endpoint support is established by identity/rest/src/openapi.rs:45 and its path document. Generated SDK/HTML are published descriptions, not additional owner invocations.
+
+## Owner-to-wire chain and evidence
+
+All paths below relative to repository root.
+
+- backend/app/src/lib.rs:3759–3780 constructs PlatformRestState from Business pool, session verifier, current PlatformPolicy and configured family TTL and mounts the Platform router. Same composed dependencies already support Company/ops owners.
+- backend/crates/platform/platform-rest/src/lib.rs:251–257 mounts exact groups GET/POST; :675–696 GET list_groups still extracts detached PlatformPrincipal, calls GroupManage authorization then passes optional actor and host now. :368–398 defines exact8Group/4member wire fields and RFC3339 timestamps.
+- backend/crates/platform/request-context/src/lib.rs:431–443 parses nonempty known current roles (MEMBER is valid); :454–464 reads Auth source snapshot; :837–872 platform resolution verifies signed tier/home/fence/current-role parse but discards returned current role set. This is partial current checking, not absence of authentication. It does not retain source/family guard through owner transaction.
+- backend/crates/platform/authz/src/lib.rs:1198–1214 PlatformPrincipal stores only UserId; authorize(feature) unconditionally returnsOk. Therefore GroupManage currently has no current-SUPER_ADMIN decision at that handler.
+- backend/crates/platform/provisioning/src/lib.rs:1420–1453 list_groups begins tx, projects platform_list_groups, maps, appends platform.group.list/groups/list/count using caller actor/time and commits. No original raw token, verifier, familyTTL or policy inputs exist. Only caller is above. :915–935 defines typed Group/member rows; :2395–2408 maps them.
+- backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql:299–357 defines actual final platform_list_groups:8columns, emptyGroups, Company identity members, exact ordering, sentinel Group/Company exclusion; console_rt has direct EXECUTE. This source is immutable for proposed lane. Earlier0062 is historical, not the final projection oracle.
+- backend/crates/platform/auth/src/legacy.rs:449–519 owns original credential verification, direct-only shape, exact binding/current-source bridge and initial DB freshness; :524 onward refreshes strict signed/family time in same transaction. Reuse unchanged.
+- backend/crates/platform/provisioning/src/lib.rs:2731–2843 already centralizes the private two-case Companies/OperationsHealth source-to-policy mapping and finite failures. Proposed third private GroupTopology tuple reuses mapping; old cases/check placement/wire remain unchanged.
+- backend/crates/platform/authz/src/platform_policy.rs:28–35 already defines Groups/Group targets; :155–161 forbids historical unbound effects/mints via UpgradeRequired but permits authorized reads; :341–347 finite admitted GroupManage tuple; platform_policy/legacy-platform-v1.cedar requires currentSUPER_ADMIN and admits group_manage/groups/read. No policy extension required.
+- backend/crates/platform/platform-rest/src/lib.rs:1163 onward final privacy only selects orgs/ops today. Group list extension must be exact GET/HEAD, preserve query handling/error layering, and not accidentally select Group accounts or write methods.
+
+## Existing evidence machinery and prerequisites
+
+- backend/app/tests/auth_rest/legacy_platform_list_histories.rs:23 genuine fixture performs production migration/finalization, real Business/Auth login identities, automaticAccountroot, original OTP→passkey platform login; :124 onward actual3second timeout App composition. Reuse instead of inventing a weaker fixture.
+- backend/app/tests/auth_rest/legacy_platform_ops_reads.rs:414 existing mounted role probe illustrates authorized projection→committedMEMBER→role restoration/recovery, deliberate real-role marker before old-host-clock checks, full audited state checks. It is implemented ops evidence, not proof of groups behavior.
+- Existing list locks/expiry/commit-loss histories and reviewed ops counterparts supply actual role-specific observed lock edges, canonical revocation, selectedfamily, currentconfiguration, exact history/audit, outer timeout and wire acknowledgement loss. Tests for groups must bind actual Group query/audit outputs, not merely rename a filter.
+- backend/crates/platform/platform-rest/tests/platform_groups.rs:191 retains one compound CRUD/grant/topology leaf, including real group list invocation at:298. Current runtime_role_pool(:109) uses owner credentials + SET ROLE; service(:55) injects Auth verifier but not current TTL/policy. Fixture repair is required for the newly governed read. prepare_account_test_database(:192) already finalizes real Account custody. Keep all original assertions and leaf; repair setup via independent test review.
+- backend/crates/platform/provisioning/tests/onboard_mints_group_of_one.rs:69/:142/:187 retain Group-of-one and stale remove invariants; this read conversion does not change their owning mutation APIs or those historical tests.
+- backend/app/tests/auth_rest/legacy_platform_list_credentials.rs:540 and legacy_platform_ops_transport.rs:161 have transport sibling controls whose exact groups GET example will become selected. Reviewed replacement with a Group accounts descendant plus additive positive Group GET/HEAD/query cases preserves isolation coverage. Never silently edit/omit them.
+
+## Other reachable bypasses deliberately still open
+
+- Group account disclosure: platform-rest/src/lib.rs:752 → provisioning/src/lib.rs:1627; detached actor/time owner reads phone, account status/passkey flag and group roles before audit. It is a separate target-Group read with404 semantics and two SQL dependencies, suitable next bounded conversion after topology.
+- Group create/update/assign/remove/grant/revoke: platform-rest/src/lib.rs:699/:724/:780/:818/:844/:869 → provisioning counterparts :1457/:1507/:1682/:1783/:1574/:1846. Same unconditional principal feature check + actor/time APIs. Requires effect-bound authority and command/outcome review, not implicit read-lane closure.
+- Company onboarding/status/removal: platform-rest/src/lib.rs:590/:925/:970 → provisioning :1057/:2060/:1925/:2021. Onboarding seeder currently executes after owner COMMIT(:613–637), so failure can leave durable Company/admin/OTP without seeded config. This is concrete recovery debt, not a finding waived by rarity. Dedicated force-delete pool is an existing capability boundary, not authorization proof.
+- Context mint/exit: platform-rest/src/view_as.rs:185/:319/:352/:447 call the same principal.authorize and own SQL/mint/audit work in REST. They require their own canonical owner and source-bound context contract; no patch to this lane.
+
+## Hypothesized admission probe, not executed RED
+
+Proposed exact future leaf `legacy_platform_list_reads::histories::legacy_platform_group_reads::mounted_group_list_current_member_denies_and_recovers` in existing auth_rest integration binary. Root command after approved test commit: `cargo +1.98.1 test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest legacy_platform_list_reads::histories::legacy_platform_group_reads::mounted_group_list_current_member_denies_and_recovers -- --nocapture --test-threads=1`. At this assessment the leaf does not exist and no command was run. Expected current failure is the original bearer returning topology after committed current MEMBER demotion instead of403. Source evidence supports it; only actual mounted positive/denial/recovery execution with functioning prerequisites can admit implementation. No fabricated red receipt or green/compile-failure admission.

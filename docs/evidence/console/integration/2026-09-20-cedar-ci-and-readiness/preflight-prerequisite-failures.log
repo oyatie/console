@@ -1,0 +1,276 @@
+▶ CI preflight contract
+  ✖ ignores an inherited alternate Git index (144.47975ms)
+  ✔ isolates fixture Git from hostile external repository controls (143.359542ms)
+  ✔ classifies docs-only narrowly and keeps unmapped or product paths heavy (0.639416ms)
+  ✔ path-gates live Postgres like oyatie pg-gate (5.83725ms)
+  ✔ resolves a merge group's diff range, and fails closed without its SHAs (0.271959ms)
+  ✔ classifies only the complete release metadata shape as thin (0.169ms)
+  ✔ empty successful changed-path list keeps runHeavy / non-docs-only (0.05225ms)
+  ✔ lists rename sources so product→docs rename is not docs-only (115.203792ms)
+  ✔ lists deletions so docs edit + product delete is mixed / runHeavy (105.350625ms)
+  ✔ preserves exact Git pathname bytes so whitespace cannot alias a release path (104.511583ms)
+  ✔ fails closed on malformed or non-UTF-8 NUL-delimited Git path output (0.222667ms)
+  ✔ invokes Git with an exact NUL-delimited no-helper path inventory (0.102084ms)
+  ✖ accepts the workflow's cheap preflight and protected expensive jobs (57.274583ms)
+  ✔ locks Required / CI to the oyatie-style presubmit proofs (256.285958ms)
+  ✔ keeps PostgreSQL reachability non-evaluated when preflight fails (58.082ms)
+  ✔ rejects every run-step condition, soft-failure, and retained-text early-exit bypass (7094.143459ms)
+  ✔ rejects every setup-action condition and soft-failure bypass (1378.553125ms)
+  ✔ locks every setup action's identity, inputs, totality, and interleaving (4008.312208ms)
+  ✔ locks the setup-rust action body, which is now the only namer of a Rust version (33.849709ms)
+  ✔ locks the candidate-controlled local free-runner-disk action body (34.078334ms)
+  ✔ locks every required job's complete execution envelope (368.351541ms)
+  ✔ locks the top-level trigger, permission, concurrency, and job-id envelope (66.647167ms)
+  ✔ forbids push and pull-request path filters so every required context is created (67.79525ms)
+  ✔ locks both reasoning-lens steps to one occurrence each, gated on npm ci (68.165042ms)
+  ✔ rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation (16.724583ms)
+  ✔ resolves the backend DotSlash bootstrap from its effective working directory (16.404ms)
+  ✔ requires backend Buck2 commands to run from the repository root (50.731459ms)
+  ✔ rejects CONSOLE_APP_BIN anywhere in the text-only API contract job (67.717459ms)
+  ✔ rejects every GITHUB_ENV handoff surface in the API contract job (49.598625ms)
+  ✔ rejects any build or executable surface added to the text-only API contract job (133.33625ms)
+  ✔ rejects a duplicated platform contract drift gate (17.129292ms)
+  ✖ accepts the text-only API contract surface (17.158292ms)
+  ✔ rejects services and job-level environment on the text-only API contract (33.698416ms)
+  ✔ requires backend DotSlash bootstrap before any Buck or DotSlash invocation (33.199083ms)
+  ✔ rejects a generated-face authority job without the complete closure (16.889542ms)
+  ✔ requires the lock-sourced Reindeer toolchain before the full generated-face closure (99.541167ms)
+  ✔ requires the pinned Rust toolchain before Cargo-dependent preflight tests (17.119916ms)
+  ✔ requires a full-history checkout for fail-closed path classification (16.919792ms)
+  ✔ keeps authority regressions without live C/T/M admission in general CI (102.910208ms)
+  ✔ runs release metadata semantics, custody, and links on the exact thin boundary (118.059667ms)
+  ✔ rejects omission and comment-only reachability regressions (101.9885ms)
+  ✔ rejects conditional and continue-on-error reachability regressions (101.047333ms)
+  ✔ rejects a preflight that does not run npm and Cargo lock consistency gates (33.217584ms)
+  ✔ rejects a dependency missing from Cargo.lock while the clean lock passes (293.942875ms)
+  ✔ rejects a preflight command that appears only in a comment (17.069834ms)
+  ✔ rejects a required preflight step guarded by a condition (17.155459ms)
+  ✔ rejects a required preflight step allowed to continue on error (16.943042ms)
+  ✔ rejects any expensive job without the preflight dependency (84.34525ms)
+  ✔ rejects failure-insensitive job-level conditions on protected jobs (183.211333ms)
+  ✔ rejects job-level preflight failure bypasses (66.69625ms)
+  ✔ rejects workflow-level environment and shell overrides (33.747834ms)
+  ✔ locks exact job-level environment and defaults metadata (83.403292ms)
+  ✔ rejects step environment injection across every protected proof class (151.976833ms)
+  ✔ locks post-preflight Buck2 reachability targets and disallows added run surfaces (2920.134375ms)
+  ✔ keeps both payroll release-gate halves reachable from domain-unit (113.668083ms)
+  ✔ rejects non-executing or non-gating domain-unit command surfaces (150.009041ms)
+  ✔ derives the ordered domain-unit integration inventory and checks its baseline (166.371667ms)
+  ✔ preserves fail-fast backend ordering (33.395792ms)
+  ✔ locks the company-conformance proof and its execution semantics (83.841792ms)
+  ✔ locks the Kubernetes production-hardening proof (66.261542ms)
+  ✔ fails closed when optimized gates or targets are commented, weakened, or duplicated (83.706792ms)
+  ✔ keeps protected backend steps fail-slow and runs PR 473 contract tests before topology (50.47975ms)
+  ✔ locks the documentation manifest gate and its doc-test to doc-link position (167.528834ms)
+  ✔ locks the undeclared-imports gate step in repo-gates (17.538333ms)
+  ✔ locks the request-body-contract gate step in repo-gates (32.788916ms)
+  ✔ locks the console-app OpenAPI drift suite step in backend (49.879083ms)
+✖ CI preflight contract (20041.83475ms)
+✔ every mirrored CI run-step is classified (8.912875ms)
+✔ hosted hardening dependency bootstrap is explicit and lifecycle-script free (0.44425ms)
+✔ local verification mirrors release content proofs without deriving an authority train (0.352208ms)
+✔ a new CI step that nobody classified fails the guard (3.120916ms)
+✔ every CI job is declared mirrored or explicitly not mirrored (2.504875ms)
+✔ Required / CI is orchestration-only while every leaf proof remains classified (2.052917ms)
+✔ a whole new CI job that nobody declared fails the guard (2.001042ms)
+✔ a declared job that CI no longer runs fails the guard (1.803958ms)
+✔ a plan entry whose CI step disappeared fails the guard (1.485542ms)
+✔ domain-unit is part of the local mirror (1.712583ms)
+✔ the reasoning-lens manifest check is a fast-tier local gate (0.075833ms)
+✔ PostgreSQL provisioning keeps generated credentials out of Docker argv (0.463125ms)
+✔ secret-bearing temporary files are private at creation (0.811166ms)
+✔ topology env assembly requires pairwise-distinct role credentials (0.172666ms)
+✔ the topology script rejects duplicate role passwords before DB access (34.238084ms)
+ℹ tests 81
+ℹ suites 1
+ℹ pass 78
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20114.149541
+
+✖ failing tests:
+
+test at scripts/check-ci-preflight.test.mjs:208:3
+✖ ignores an inherited alternate Git index (144.47975ms)
+  AssertionError [ERR_ASSERTION]: 
+  domain-unit proof run step 2 must preserve its exact name, command, condition, and execution semantics
+  domain-unit integration binary console-attendance-application --test attendance_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-compliance-domain --test location_consent_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-compliance-domain --test location_ping_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-authz --test cedar_pbac_readiness_cases must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-authz --test cedar_pbac_legacy_only_observe_and_record must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-authz --test cedar_diagnostic_fail_closed must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-authz --test cedar_sdk_identity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-audit-chain --test ed25519_compatibility must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-provisioning --test account_historical_consent must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-attendance-domain --test range_and_history must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-contracts --test compose must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-todos-rest --test openapi_fragment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-financial-domain --test quote_and_residual must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-registry-domain --test equipment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-messenger-domain --test mentions must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-messenger-domain --test object_code_refs must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-messenger-domain --test parity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-messenger-domain --test thread_kind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-workorder-domain --test approval_and_assignment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-workorder-domain --test serde_roundtrips must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-workorder-domain --test settlement_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-workorder-domain --test workorder_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-auth --test jwt_es256 must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-auth --test jwt_verifier must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-auth --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-excel --test template_fidelity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-excel --test template_fill_engine must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-realtime --test hub must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-platform-realtime --test notify_payload must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-app --test config must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-app --test dev_seed_notification_links must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-app --test openslo_files must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-app --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-app --test workbench_api must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-app --test intelligence_bind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  domain-unit integration binary console-gate-writer-ownership --test gate_detects_violation must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/check-ci-preflight.test.mjs:294:14)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at node:internal/test_runner/test:1887:71
+      at node:internal/per_context/primordials:504:82
+      at new Promise (<anonymous>)
+      at new SafePromise (node:internal/per_context/primordials:478:3)
+      at node:internal/per_context/primordials:504:9
+      at Array.map (<anonymous>) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/check-ci-preflight.test.mjs:826:3
+✖ accepts the workflow's cheap preflight and protected expensive jobs (57.274583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'domain-unit proof run step 2 must preserve its exact name, command, condition, and execution semantics',
+  +   'domain-unit integration binary console-attendance-application --test attendance_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-compliance-domain --test location_consent_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-compliance-domain --test location_ping_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_pbac_readiness_cases must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_pbac_legacy_only_observe_and_record must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_diagnostic_fail_closed must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_sdk_identity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-audit-chain --test ed25519_compatibility must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-provisioning --test account_historical_consent must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-attendance-domain --test range_and_history must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-contracts --test compose must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-todos-rest --test openapi_fragment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-financial-domain --test quote_and_residual must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-registry-domain --test equipment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test mentions must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test object_code_refs must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test parity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test thread_kind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test approval_and_assignment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test serde_roundtrips must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test settlement_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test workorder_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-auth --test jwt_es256 must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-auth --test jwt_verifier must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-auth --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-excel --test template_fidelity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-excel --test template_fill_engine must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-realtime --test hub must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-realtime --test notify_payload must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test config must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test dev_seed_notification_links must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test openslo_files must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test workbench_api must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test intelligence_bind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-gate-writer-ownership --test gate_detects_violation must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/check-ci-preflight.test.mjs:827:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'domain-unit proof run step 2 must preserve its exact name, command, condition, and execution semantics', 'domain-unit integration binary console-attendance-application --test attendance_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-compliance-domain --test location_consent_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-compliance-domain --test location_ping_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_pbac_readiness_cases must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_pbac_legacy_only_observe_and_record must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_diagnostic_fail_closed must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_sdk_identity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-audit-chain --test ed25519_compatibility must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-provisioning --test account_historical_consent must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-attendance-domain --test range_and_history must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-contracts --test compose must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-todos-rest --test openapi_fragment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-financial-domain --test quote_and_residual must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-registry-domain --test equipment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test mentions must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test object_code_refs must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test parity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test thread_kind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test approval_and_assignment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test serde_roundtrips must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test settlement_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test workorder_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-auth --test jwt_es256 must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-auth --test jwt_verifier must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-auth --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-excel --test template_fidelity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-excel --test template_fill_engine must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-realtime --test hub must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-realtime --test notify_payload must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test config must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test dev_seed_notification_links must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test openslo_files must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test workbench_api must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test intelligence_bind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-gate-writer-ownership --test gate_detects_violation must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/check-ci-preflight.test.mjs:1456:3
+✖ accepts the text-only API contract surface (17.158292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'domain-unit proof run step 2 must preserve its exact name, command, condition, and execution semantics',
+  +   'domain-unit integration binary console-attendance-application --test attendance_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-compliance-domain --test location_consent_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-compliance-domain --test location_ping_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_pbac_readiness_cases must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_pbac_legacy_only_observe_and_record must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_diagnostic_fail_closed must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-authz --test cedar_sdk_identity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-audit-chain --test ed25519_compatibility must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-provisioning --test account_historical_consent must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-attendance-domain --test range_and_history must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-contracts --test compose must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-todos-rest --test openapi_fragment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-financial-domain --test quote_and_residual must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-registry-domain --test equipment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test mentions must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test object_code_refs must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test parity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-messenger-domain --test thread_kind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test approval_and_assignment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test serde_roundtrips must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test settlement_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-workorder-domain --test workorder_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-auth --test jwt_es256 must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-auth --test jwt_verifier must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-auth --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-excel --test template_fidelity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-excel --test template_fill_engine must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-realtime --test hub must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-platform-realtime --test notify_payload must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test config must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test dev_seed_notification_links must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test openslo_files must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test workbench_api must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-app --test intelligence_bind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml',
+  +   'domain-unit integration binary console-gate-writer-ownership --test gate_detects_violation must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/check-ci-preflight.test.mjs:1457:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'domain-unit proof run step 2 must preserve its exact name, command, condition, and execution semantics', 'domain-unit integration binary console-attendance-application --test attendance_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-compliance-domain --test location_consent_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-compliance-domain --test location_ping_policy must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_pbac_readiness_cases must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_pbac_legacy_only_observe_and_record must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_diagnostic_fail_closed must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-authz --test cedar_sdk_identity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-audit-chain --test ed25519_compatibility must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-provisioning --test account_historical_consent must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-attendance-domain --test range_and_history must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-contracts --test compose must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-todos-rest --test openapi_fragment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-financial-domain --test quote_and_residual must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-registry-domain --test equipment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test mentions must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test object_code_refs must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test parity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-messenger-domain --test thread_kind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test approval_and_assignment must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test serde_roundtrips must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test settlement_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-workorder-domain --test workorder_fsm must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-auth --test jwt_es256 must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-auth --test jwt_verifier must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-auth --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-excel --test template_fidelity must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-excel --test template_fill_engine must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-realtime --test hub must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-platform-realtime --test notify_payload must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test config must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test dev_seed_notification_links must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test openslo_files must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test well_known must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test workbench_api must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-app --test intelligence_bind must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml', 'domain-unit integration binary console-gate-writer-ownership --test gate_detects_violation must resolve exactly once through docs/program/executed-tests-baseline.json and its owning Cargo.toml' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

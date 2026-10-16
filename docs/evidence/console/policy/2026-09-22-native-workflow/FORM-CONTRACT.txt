@@ -1,0 +1,27 @@
+# Additive native policy form read, for review
+
+Confirmed gap: material27 has current epoch/admin but no actual installed catalog or assignment witness. Payroll11 is recipient-only and returns zero on expired/revoked assignment. Neither can populate an operator's regrant/revoke form correctly. Do not modify those frozen projections.
+
+Proposed single no-write owner accessor:
+
+```
+public.native_company_policy_form_v1(
+ p_account uuid,p_family uuid,p_company uuid,p_command uuid,p_operation smallint)
+RETURNS TABLE(
+ installed_object_type_id uuid,
+ role_id uuid,
+ role_revision bigint,
+ assignment_id uuid,
+ assignment_revision bigint,
+ assignment_state text,
+ assignment_valid_from timestamp with time zone,
+ assignment_valid_until timestamp with time zone)
+```
+
+All eight fields nullable; exactly one row on successful current source acquisition. All NULL means catalog not installed. Installed catalog with no grant has only installed_object_type_id. A granted-ever catalog has all eight actual values, including current REVOKED or expired ACTIVE assignment; role_revision exactly1, assignment_revision positive, assignment_state exactly ACTIVE or REVOKED, finite interval preserved as originally recorded. The fixed role exists only as the first grant effect with its assignment, so partial role/assignment shapes fault. No synthetic revision, expiry renewal, state normalization, fallback to birth assignment, or latest-row-by-sort lookup.
+
+Function uses the same hardened SECURITY DEFINER/owner/ACL/lock/GUC-restoration rules as frozen source functions. It invokes/retains current native material for the exact actor/family/Company/command/operation, then validates fixed catalog and current assignment via canonical owner custody before releasing data. Actor authentication/current designation and original Company/Group source are mandatory; current actor need not equal original administrative recipient. Recipient eligibility is not a blanket acquisition prerequisite (a revoked/ineligible recipient must remain diagnosable by authorized operator); immutable source corruption still faults. Form data does not grant authority. Identity application evaluates existing native bootstrap Cedar for selected Company/operation before invoking this accessor; adapter performs final current Auth/Cedar/time and exact form-proof check before read transaction commit.
+
+Accessor reads historical fields necessary to render consequences and expected assignment; it does not create commands, advance heads, renew intervals or call preflight. Operator can inspect why a requested command is unavailable; prepare's shared operation preflight is still decisive. SQL same shape and strict frozen manifest checks apply; RLS is selected Company only. It may be invoked within already acquired retained source scope; lock acquisition must be idempotent and preserve declared Group-first order. No adapter raw table SELECT is introduced.
+
+Acceptance additions for independent SQL/browser review: absent catalog; installed-before-first-grant; current active; natural expiry; revoke; regrant actual current revision/interval; distinct currently designated operator; foreign Company denial; source corruption; partial-row corruption; source change during wait; lost/current authentication. Verify same complete table inventory before/after every no-write case. Direct owner fixtures prove read protocol only; end-user acceptance continues through existing real browser enrollment/install/grant/revoke routes.

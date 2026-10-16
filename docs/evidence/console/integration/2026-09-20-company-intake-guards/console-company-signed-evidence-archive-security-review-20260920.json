@@ -1,0 +1,27 @@
+{
+  "reviewer": "integration_security",
+  "decision": "ACCEPT_LOCAL_BYTE_PRESERVING_EVIDENCE_ARCHIVE",
+  "archive_receipt": "/private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-20-company-signed-credentials/receipt.json",
+  "archive_receipt_sha256": "283fece247f9b7b614aaaadf46abbeaf36f279012c5e28f58a18e15db14f02bd",
+  "members": 54,
+  "plain_files": 23,
+  "gzip_files": 31,
+  "unlisted_files": 0,
+  "checks": [
+    "All54stored hashes match receipt; all31gzip members decompress to exact original sizes/hashes/bytes; all23plain files match originals.",
+    "Directory contains54listed members plus receipt only.",
+    "Aggregate verification exact SHA2f66022c8672d69dbb648dd6f20a6f54fc9eaa95b4d5c17862e0a5b6f40c543c retained.",
+    "All six source-lock paths match Git28d4cbb; commit has exact approved9bfd94e5parent and four implementation paths.",
+    "Ten successful leaf logs each explicitly record1pass/0fail/0ignored/493filtered. JWT45across2targets, generator67 and preservation1 retained.",
+    "Both earlier positive failures preserve actual57014diagnostic and1executed/1failed (60.52s and59.81s); command-fence failed attempt retains Buck evaluation cancellation Rejected with0tests.",
+    "Immutable design/test packet nonJSON compressed as .log.gz restores exact original bytes; no semantic rewrite or new authority inferred."
+  ],
+  "scope": [
+    "Archive preserves existing bounded private signed-credential evidence only.",
+    "Local archive is not hosted/off-device evidence custody, current runtime rerun, workflow acceptance or release qualification.",
+    "Test binary itself not newly executed or preserved by this archive; prior binary hash/discovery receipts retained."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "sql_executed_by_reviewer": 0,
+  "repository_files_changed_by_reviewer": 0
+}

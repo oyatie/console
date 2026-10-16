@@ -2,6 +2,11 @@
 load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")
 
 export_file(
+    name = "Cargo.toml",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "crate-source-tree",
     src = "src",
     mode = "reference",
@@ -20,6 +25,7 @@ rust_library(
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:time",
+        "//third-party/rust:uuid",
     ],
 )
 
@@ -36,5 +42,6 @@ rust_test(
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:time",
+        "//third-party/rust:uuid",
     ],
 )

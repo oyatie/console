@@ -1,0 +1,24 @@
+{
+  "kind": "independent-session-reader-oracle-review",
+  "reviewer": "/root/integration_tests",
+  "candidate_manifest_sha256": "72695926ca7090bdf7ffc173d0acb805ee4d7a9188a7082d97425a746b485398",
+  "candidate_test_sha256": "93c5aaa322d1226676c380554eb2b45bc24365d2d6fe44954a4b2ea2d72935b7",
+  "status": "APPROVE_EXACT_TEST_ORACLE_CORRECTION",
+  "findings": [],
+  "checks": {
+    "packet_hashes_verified": 4,
+    "source_hashes_verified": 5,
+    "unified_diff_exactly_reproduces_candidate": true,
+    "production_mapper_source_checked": [
+      "request-context/src/lib.rs:683",
+      "auth-rest/src/lib.rs:798 and3199",
+      "realtime/src/lib.rs:1334"
+    ],
+    "preserved_assertions": "Exact status, token secrecy, no Set-Cookie, no token response fields, all fault setup/restoration, row/audit equality, SSR omission, WebSocket transports and recovery unchanged",
+    "shape_change": "Requires retained JSON envelope instead of obsolete plaintext fallback; does not broaden code/message acceptance",
+    "runtime_executed": 0,
+    "repository_edits": 0
+  },
+  "required_next": "Root reproduces exact current RED, integrates this exact reviewed test-only patch, runs all three named leaves and session_reader_contract module; newly exposed owner failures remain failures",
+  "claim": "Test correction only; no runtime/session/security completion or release acceptance"
+}

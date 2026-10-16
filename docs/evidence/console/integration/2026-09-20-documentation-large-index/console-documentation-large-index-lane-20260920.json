@@ -1,0 +1,27 @@
+[
+  {
+    "lane": "documentation-large-index",
+    "base": "ec590f81879dc574a92d532fe5a2230127c54633",
+    "owner": "/root",
+    "probe": "node --test --test-name-pattern='large exact Git index' scripts/check-doc-links.test.mjs > /private/tmp/console-documentation-large-index-red-20260920.log 2>&1",
+    "allow": [
+      "scripts/check-doc-links.mjs",
+      "scripts/console/generate-documentation-manifest.mjs"
+    ],
+    "immutable_target": "Full exact Git tree custody survives >1MiB repository index; classification rejection preserved.",
+    "mechanical_guide": "Only maxBuffer16MiB in both Git helpers. No parser/exclusion/error handling changes.",
+    "pre_mortem": "Larger buffer masks incomplete enumeration",
+    "detection": "Actual >1MiB Git positive and unclassified Markdown negative; full existing suite",
+    "rollback": "Revert2options; evidence remains retained",
+    "stop_conditions": [
+      "Any semantic validation change",
+      "Missing or green probe"
+    ],
+    "reviewers": [
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "Full Company/MVP/release remain incomplete"
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "bash",
+    "tools/buck/test_needs_postgres.sh",
+    "--num-threads=1",
+    "//tools/buck:auth-rest-dev-auth-inline-postgres",
+    "//tools/buck:auth-rest-dev-auth-session-postgres",
+    "//tools/buck:auth-rest-dev-auth-group-admin-postgres",
+    "//tools/buck:platform-auth-rest-dev-auth-absence-pg"
+  ],
+  "head": "de05a945d7041c2004938e0273ab4da2a5c9ad99",
+  "exit": 0,
+  "seconds": 108.57,
+  "log": "/private/tmp/console-platform-direct-native-variants-20260920.log",
+  "log_sha256": "14e867222caf0f2ccf0cd7c5afeac40fd761a166825e20fbb79ef2113c3aeecd"
+}

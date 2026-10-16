@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "author": "/root",
+  "decision": "approved-additive-test-source-only",
+  "manifest_sha256": "d99993db1c56c2421aef2662a2c6cff70af858db10d087640aa0665e720ead79",
+  "candidate_sha256": "0c478ef9a836b55a6edf92c7c9fc16bd60843642bb2b0e93309e5ff53a9dc149",
+  "findings": [],
+  "checks": [
+    "Exact parent and packet hashes independently verified; additive one SQLx leaf, six mounted fault requests and three same-token recovery reads.",
+    "Uses genuine App/OTP/passkey fixture and exact preexisting positive projection/audit oracle.",
+    "Actual source bridge and projection EXECUTE removal confirmed with effective Business privilege checks, not assumed from GRANT text.",
+    "Actual audit INSERT trigger raises exact auth-looking P0002/subject_not_found, requiring operation failure503 rather than bridge401 mapping.",
+    "GET exact finite503 JSON; HEAD empty; shared full private/noecho oracle retained; no internal fault message reflection.",
+    "Complete business/audit rows unchanged; relevant pg_proc rows and canonical ACL entries plus all audit triggers unchanged during requests and restored before outcome assertion.",
+    "Canonical ACL representation retains every grantor/grantee/privilege/grantability; only meaningless ACL order/default representation omitted for this new bounded restoration oracle. Historical metadata comparators untouched.",
+    "No production fault flags, source bodies, policy, historical fixtures/pins or skipped assertions changed."
+  ],
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Integrate additive child under exact parent and root regenerate BUCK; compile/discover1 and execute1 with all six fault requests and three recoveries.",
+    "Mounted503 acceptance finding remains open until actual runtime passes.",
+    "Pool/clock/decode-specific injection and complete unrelated catalog not claimed; linkedSDK evaluator tests remain pure-boundary evidence.",
+    "Final52/full owner suite and immutable candidate binding remain required."
+  ]
+}

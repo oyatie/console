@@ -1,0 +1,13 @@
+type: object
+properties:
+  appid:
+    type:
+    - boolean
+    - 'null'
+  hmac_get_secret:
+    anyOf:
+    - $ref: '#/components/schemas/NativeWebAuthnHmacSecretOutput'
+    - type: 'null'
+description: 'Pinned type has NO rename_all: hmac_get_secret is the recognized wire key. hmacGetSecret
+  is unknown and ignored, not an alias. Both known fields default None and serialize as null when
+  absent.'

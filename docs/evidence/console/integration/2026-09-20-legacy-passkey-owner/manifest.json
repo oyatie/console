@@ -1,0 +1,14 @@
+{
+  "packet": "console-legacy-passkey-consumer-tests-20260920-round3",
+  "predecessor_manifest_sha256": "7eff500e44f51dd0155b0ac0cd943c44c3869098aa6d7c9bcd9197417ce03e2b",
+  "files": {
+    "README.md": "54b3a70e5f31198d76c8553c4497094887fa288d0a479f25a7a42994b026174b",
+    "files/backend/app/tests/auth_rest/account_fence_transport.rs": "ea6fcc28984c4b0367c48df484634c42d838dae75e128e39b42b356782d4fd2f",
+    "files/backend/app/tests/auth_rest/deployment_operator_designation.rs": "665b67a912233f29658f16ef003e98381e897879bf73f0be29b7c3b3820641d9",
+    "files/backend/app/tests/auth_rest/legacy_bound_passkey_reads.rs": "05a0592efad80b7da4f2b2bc9484ee03cda6d41ccbc0d7ca5ca1d85bca3371d9",
+    "files/backend/app/tests/auth_rest/native_company_setup.rs": "9f1466cc04aaedfbe731438cfb813f4c7dd8230c5021b58f31c500037ce7372e",
+    "files/backend/app/tests/auth_rest.rs": "39e0aabea84e2b080e5349e6b0243acae96a91c9cdc77ec5c70c0c44e95ba3f7",
+    "integration.patch": "8375159ed776f765739ba64792eb761199bbd76203e60e292152bd8a28a903b8",
+    "source-custody.json": "4d2e99d786a4bd5b2cfdcc3bac2de629801f4c6ab7187e604160d4ee880723ae"
+  }
+}

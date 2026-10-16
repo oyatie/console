@@ -1,0 +1,14 @@
+{
+  "kind": "retained-company-tests-compiler-discovery",
+  "base_sha": "21934da5b80b605603e81a997fbcfafd31f846d2",
+  "command": "cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest company_setup -- --list",
+  "exit_code": 0,
+  "compiler_discovered": 21,
+  "executed": 0,
+  "optional_browser_discovered": 0,
+  "log_sha256": "434a03f431617f2ec46f3c50fb0822a9d3779ec1c067adf377aba3084092e213",
+  "limits": [
+    "Compilation and discovery only; no Company behavior acceptance.",
+    "Retained exact test bytes; actual owner-bound probes remain required."
+  ]
+}

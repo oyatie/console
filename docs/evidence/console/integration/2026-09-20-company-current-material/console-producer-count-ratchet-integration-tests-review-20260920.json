@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_EXACT_STATIC_COUNT_SUCCESSOR_AND_BOUNDED_REUSE",
+  "base": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "file": "docs/program/executed-tests-baseline.json",
+  "old_sha256": "85ccd20f77a432014aab6011f542dd2d9ecc395af694e94f26f2fa1444ba406f",
+  "successor_sha256": "d0cb909c05447f95081215d1847f33e1558a05663ba631ffabeeff53883daae3",
+  "evidence": {
+    "/private/tmp/console-producer-count-ratchet-green-20260920.log": "e69a6cfb62374cb9a6a02136841bc884b990866b498f32349c960b543177ec91",
+    "/private/tmp/console-producer-count-ratchet-tests-20260920.log": "094e386f347269aa8f0a18a380b7158686d7bccfc573d430b15e683731e9ecf1",
+    "/private/tmp/console-mvp-focus-fast-verify-945dd534-integration-tests-review-20260920.json": "09f20f924b3594c451fa35d954b35ac844f9ccbed79ce0a993356b568a74d3dd"
+  },
+  "exact_delta": "Only platform/auth/src/lib.rs static declared attribute count11to13. Exact byte replacement and parsed JSON equality checked; all deferred sets, source entries and other bytes unchanged.",
+  "findings": [],
+  "counts": {
+    "focused_regression_tests": 40,
+    "passed": 40,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "full_prior_fast_stages": 74,
+    "unaffected_stages_reused": 73
+  },
+  "reuse_assessment": [
+    "945dd534fullfast history remains exit1,925.59s,one failed static-positive count ratchet. Baseline successor does not rewrite or promote that invocation to success.",
+    "Only one declarative count changes. Product code, test implementation, generator, workflow wiring, package/lock and runtime configuration remain identical; existing73unaffected successful fast stages remain valid evidence for unchanged behavior.",
+    "Corrected count represents two already reviewed and natively executed platform issuer tests, not removed coverage, newly accepted dark binaries or changed test semantics.",
+    "Focused log reports388defined388reachable,3111staticattrs,retained named dark1,19Buck-only; no growth-failure output. Root reports named checker exit0. Separate40regressions exercise false-dark controls, reachability and exact-baseline gain/loss behavior, all passed.",
+    "Focused success plus retained73unaffectedstage results supports bounded repaired-candidate acceptance. It is not a new full npm run verify success and should be described as evidence reuse plus focused repair verification."
+  ],
+  "limits": [
+    "Root-owned admission, exact command/exit receipts and final commit binding remain to package. Green checker text alone does not embed process exit; exit0 is root-reported in review request.",
+    "Counts are source attributes unless explicitly identified as runtime tests. No claim that3111attributes or388binaries executed in this focused command.",
+    "No runtime/build/test/SQL/browser execution or repository edits by reviewer. Private receipt only.",
+    "Company test adoption/implementation and assembled release qualification remain separate subsequent work."
+  ]
+}

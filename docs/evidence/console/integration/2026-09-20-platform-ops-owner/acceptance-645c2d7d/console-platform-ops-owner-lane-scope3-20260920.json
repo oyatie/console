@@ -1,0 +1,144 @@
+[
+  {
+    "lane": "guarded-platform-operations-health-owner",
+    "owner": "/root",
+    "base_sha": "10269cc6d5b9841d22869810f6a00fd095a703f8",
+    "immutable_target": "GET/HEAD /api/platform/ops retains original credential current authority through two projections, mapping, audit and COMMIT",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-ops-owner-map-20260920.json --only platform-ops-owner --fail-fast",
+    "allowed_paths": [
+      "backend/crates/platform/provisioning/src/lib.rs",
+      "backend/crates/platform/platform-rest/src/lib.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_current_source.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_expiry_progress.rs",
+      "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_commit_loss.rs",
+      "backend/app/tests/console_route_telemetry.rs",
+      "backend/crates/platform/platform-rest/tests/ops_dashboard.rs",
+      "backend/app/BUCK"
+    ],
+    "forbidden": [
+      "bridge SQL",
+      "historical profiles/codecs/migrations",
+      "other Platform owners",
+      "App SQL/business transition",
+      "original checkout",
+      "production exposure/direct payments"
+    ],
+    "design_manifest": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+    "initial_tests_manifest": "fd184197ded5c49f26bdbb16ebc7a993e1f8b728e8c49f3c4f8c575887536372",
+    "dependency_review_sha256": "e01f39ca845dd210da28bfa48bbb56fa9c5a6931540eaccdb70df4267b89e8e7",
+    "mechanical_guide": "Closed Companies/OperationsHealth discriminator shares existing source-policy mapping. Health receives raw access/verifier/serverTTL/policy, one READ COMMITTED transaction and five fresh checkpoints. Preserve14/6fields and exact audit; finite401/403/503, final GETHEAD privacy selected exactops path. Exhaustive legacy consumer maps new errors to existing unavailable.",
+    "pre_mortem": "detached role remains authority; second projection escapes; SQL failure leaks401; expiry before auditwait; outerHEAD/cache bypass",
+    "blast_radius": "one owner and closed shared list authority helper plus final exactroute selection",
+    "detection": "same mounted roleRED/GREEN, approved fullprojection/audit/state corruption oracles and credentials/waits/failure/commit histories; retained listregression",
+    "rollback": "fence unqualified serving; source revert restores old securitygap and is not acceptance",
+    "stop_conditions": [
+      "nonownerRED or missing prerequisites",
+      "new SQL/profile/migration delta",
+      "unreviewed test semantics",
+      "list behavior regression"
+    ],
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "unexplainedcfd snapshot intermittency remains release reliability HOLD",
+      "raw SQL grants and other Platformowners",
+      "all remaining release qualification"
+    ],
+    "leases": [
+      "root sole repository runtime generated contracts authority writer"
+    ],
+    "acceptance_packets": [
+      {
+        "packet": "console-platform-ops-projection-tests-20260920-round1",
+        "manifest_sha256": "5be5a8a8f754ee792b1a8355c72b92524a3b48078beb34b0d8ab80584bcdeca0",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-credential-tests-20260920-round1",
+        "manifest_sha256": "036033e304d76bee15d4b4fbea13cb29acc4cd37718599fa70974133892da257",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-transport-tests-20260920-round2",
+        "manifest_sha256": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-current-source-tests-20260920-round1",
+        "manifest_sha256": "464e8790860d1009d26b0ec29a67a23bd1c83b2bdf35a5ef11fb95acf7a8253c",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_current_source.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-family-history-tests-20260920-round1",
+        "manifest_sha256": "fec0bf3f5c3bdf19ce43b5a7339f3761b77db35359157e80ebf5d7fcb3d3f6b8",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-expiry-progress-tests-20260920-round1",
+        "manifest_sha256": "3c16ca966e0fd93cf0379efb1541206103f26fdcb6c425e32235a8a6623d814b",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs",
+          "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_expiry_progress.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-commit-loss-tests-20260920-round1",
+        "manifest_sha256": "f9fdd692d4b6caecfda79e1bbb5992417718b2a6d2af5ed5346d0fe906e38b0f",
+        "paths": [
+          "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs",
+          "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+          "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_commit_loss.rs",
+          "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs"
+        ]
+      },
+      {
+        "packet": "console-platform-ops-retained-fixtures-20260920-round1",
+        "manifest_sha256": "f8337558ad6106d00753d412979ba8f56e92ff411bc2a52e100e8f8679aa3027",
+        "paths": [
+          "backend/app/tests/console_route_telemetry.rs",
+          "backend/crates/platform/platform-rest/tests/ops_dashboard.rs"
+        ]
+      }
+    ],
+    "scope_successor_reason": "Exact independently approved additive histories and fixture-only retained test prerequisite repairs; no assertion removed or weakened; source hashes and composition recorded. Existing generator adds only8declaredopshelper source literals; removing these reproduces priorBUCKbytes. Approved ownedobserver borrow fix c167715b; no query/oracle change. Nativeformatter two declarations/reexports only."
+  }
+]

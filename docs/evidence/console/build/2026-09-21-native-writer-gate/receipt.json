@@ -1,0 +1,101 @@
+{
+  "status": "Local native writer gate repair verified; protected integration and release qualification remain pending",
+  "head": "a26a0f6e6f8c1c1b727c3478f7910b3f8fd9d803",
+  "owner": "/root",
+  "reviewer": "/root/integration_tests",
+  "base": "f1895e62eb0af419f344440da3d526633ae48d00",
+  "root_input_checkpoint": "09c512b3f",
+  "scanner_test_base": "1bd3531bf00b079c8a3a5d7847f420ba7e588ac2",
+  "change": "Runtime workspace root and explicit mapped resources; follow linked sources with logical attribution and active-directory cycle rejection",
+  "verification": [
+    {
+      "command": "tools/buck2 run //backend/ci/gates/writer-ownership:console-gate-writer-ownership-itest-gate_detects_violation -- --exact linked_source_paths_keep_every_crate_owner",
+      "red": "console-writer-linked-inputs-red-20260921.log",
+      "green": "console-writer-linked-inputs-probe-20260921.log",
+      "discovered": 58,
+      "executed": 1,
+      "filtered": 57,
+      "ignored": 0,
+      "passed_after_fix": 1
+    },
+    {
+      "command": "tools/buck2 test //backend/ci/gates/writer-ownership:console-gate-writer-ownership-unit //backend/ci/gates/writer-ownership:console-gate-writer-ownership-itest-gate_detects_violation",
+      "log": "console-writer-linked-inputs-retained-20260921.log",
+      "discovered": 68,
+      "executed": 68,
+      "passed": 68,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "python3 tools/buck/test_gen_first_party.py",
+      "log": "console-writer-linked-inputs-generator71-20260921.log",
+      "executed": 71,
+      "passed": 71,
+      "failed": 0
+    },
+    {
+      "command": "cd backend && ../tools/buck2 run //backend/ci/gates/writer-ownership:console-gate-writer-ownership",
+      "log": "console-writer-linked-inputs-runtime-20260921.log",
+      "scanned_sources": 357,
+      "violations": 0
+    }
+  ],
+  "preserved_failures": [
+    {
+      "log": "console-writer-native-retained-tests-20260921.log",
+      "unit_passed": 10,
+      "integration_passed": 51,
+      "integration_failed": 4,
+      "cause": "DirEntry.file_type skipped linked mapped source directories; corrected in scanner successor without test relaxation"
+    }
+  ],
+  "invariants": [
+    "Original55integration tests unchanged;3additive tests",
+    "No SQL/parser/ownership/exclusion/ratchet change",
+    "No product compilation via Cargo",
+    "No historical migrations or command byte changes"
+  ],
+  "pre_mortem": "Global dedup would hide shared source under distinct writers; cycles or broken links could produce incomplete scans",
+  "detection": "Shared physical source under three logical crates, cycle and broken-source tests plus retained census",
+  "blast_radius": "Static ownership verification traversal and native test inputs",
+  "rollback": "Revert bounded implementation, retain regression tests and failed evidence; never bypass gate",
+  "stop_conditions": [
+    "Source counts shrink",
+    "Tests/ratchets/exclusions weaken",
+    "Infrastructure failure reported as semanticRED"
+  ],
+  "remaining_holds": [
+    "Static scanner documented residual shapes",
+    "Separate database census suite not run by this scanner repair",
+    "Protected dev integration",
+    "Complete native business/browser MVP and full release acceptance"
+  ],
+  "state_promotion": "No release-inventory status promoted; no merge/exposure claimed",
+  "evidence_sha256": {
+    "console-writer-native-lanes-20260921.json": "e63342f380eb2a64c8a4c610a29fb9fbec18d8ae9901cf67caec2e8dc1e93c2d",
+    "console-writer-native-admission-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-writer-runtime-red-20260921.log": "4789e9ee5b6851fc6d10ac553c45e8e3a37068955de172601e388ab0f01d91e3",
+    "console-writer-resources-red-20260921.log": "4ca60ee6b675f701c65a899267fe4f96a092608cc438f1a9f19f2d3f3dbd5b06",
+    "console-writer-native-source-manifest-20260921.json": "c1a95b631e79b0d39d0fe6ff1278a62aaa044e08933be8763db44c905f734e9b",
+    "console-writer-native-implementation-integration-review-20260921.json": "2ee8b88cc3cc673ae181058b93644c31f7ad88b55f0e7b08317a140614c3fce4",
+    "console-writer-runtime-green-20260921.log": "f900391dd38e617dd5bac10ab93e98dcc6f484260d283d3675afb7fda4b5276c",
+    "console-writer-generator71-20260921.log": "8a396a93dc2f713e7eb8572e8aff42d337f24e027019fdf6006d11a7472e6f1f",
+    "console-writer-native-retained-tests-20260921.log": "07a5a270f23c20b661314a4f8be8c52066fe703cc04f640c5af65e85fced34d1",
+    "console-writer-linked-inputs-lane-20260921.json": "56b2fa7d41d6a45d089a7d20d56193b803d13290447244af8380e1d334b4e2ce",
+    "console-writer-linked-inputs-admission-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-writer-linked-inputs-integration-review-20260921.json": "58c7618e22cae1ce9fd7767f9c9f0cfe13918ffaee5c558b2320d5626a812734",
+    "console-writer-linked-inputs-red-20260921.log": "a84b8e8d93caf1dde5c18dc255ba9a11f1bad3461d27c4c4d36ee943763beac2",
+    "console-writer-linked-inputs-probe-20260921.log": "67fae90e88c83ec5ce9fd35aa076399d5b69ef4d24e000b79ad537fb5053e893",
+    "console-writer-linked-inputs-retained-20260921.log": "ee81dbaf004f41349df2e8f86c4190a32c9312b8a92ca793f8201dd7a0d5ba5f",
+    "console-writer-linked-inputs-generator71-20260921.log": "72c371513a4fb91657544e26fed2b6a1d23b24db943d82b1c6549572aee6c5cb",
+    "console-writer-linked-inputs-runtime-20260921.log": "3433ae5539d4bc8d69d6dd7df1307e8b338da396505f56bc0cadc3bec23584a6",
+    "linked-design.json": "92a55b5122253adbeb903ee501927bcf99bba80ab1dd17d0c151d52d01264648",
+    "linked-lib.rs.log": "82612475a49557c06c3af5c8f170581fdd086c08fd40930b59ae39afa28015a2",
+    "linked-gate_detects_violation.rs.log": "0e46543d4048a54a62f6b82ae38e4d573b6cbd42edc843d52ff56f12cd37bb2a",
+    "console-native-writer-evidence-integration-review-20260921.json": "ff2fae72fc83ea473e754d9158d6b1795021abb53101f6cabf415fa6b0653cb1",
+    "console-writer-evidence-adrs-20260921.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995"
+  },
+  "evidence_review": "console-native-writer-evidence-integration-review-20260921.json"
+}

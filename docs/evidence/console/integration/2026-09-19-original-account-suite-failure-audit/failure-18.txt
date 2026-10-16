@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::startup_effective_privileges::effective_oracles_detect_public_inheritance_without_direct_startup_grants' (63012623) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent

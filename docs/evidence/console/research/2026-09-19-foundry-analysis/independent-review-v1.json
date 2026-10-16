@@ -1,0 +1,42 @@
+{
+  "kind": "independent-F08-reference-review",
+  "reviewer": "integration_tests",
+  "verdict": "CHANGES_REQUESTED_CATALOG_ALIAS_PRESERVATION",
+  "proposal_sha256": "2f7288f176458795686af2b6f6acb6034073d1d1301ce628f9b1cb26a169e36c",
+  "patch_sha256": "79cb8bc51d1a2079741974846aec915c8791e841f81a80c2768ae9ab25d8246b",
+  "reviewed_utc": "2026-09-20T01:58:16.597359+00:00",
+  "checks": {
+    "errors": [
+      "card operations/index paths order mismatch"
+    ],
+    "manifest_files_verified": 78,
+    "sources_verified": 37,
+    "quote_occurrences_checked": 200,
+    "card_entries_verified": 60,
+    "card_entries_exact": false,
+    "new_leaves": 28,
+    "base_leaves": 211,
+    "current_leaves": 211,
+    "after_transforms_leaves": 245,
+    "rebased_leaves": 273,
+    "current_registry_sha256": "c56885b6a3dc4fc83fcc2515de0c2b1b01dba8b21580d3d1a40df2039198424b",
+    "patch_operations": 155,
+    "no_prior_value_changed": true
+  },
+  "findings": [
+    {
+      "id": "F08-ALIAS-1",
+      "location": "proposal.json analytical_card_catalog / quiver-cards-index-charts capture",
+      "issue": "Captured chart index labels Scatter plot regression and Time series scatter plot both link to /docs/foundry/quiver/card-scatter-plot-regression/. Packet records first but drops second; independent article extraction finds60 index name/path entries versus59 catalog entries.",
+      "requested_change": "Preserve Time series scatter plot as an additional documented label/path alias and explicitly mark duplicate-destination source ambiguity; do not imply unique semantics or silently normalize to59. Regenerate packet hashes and source-binding addition if catalog bindings are part of patch."
+    }
+  ],
+  "passed": [
+    "All78 manifest hashes;37 raw/compressed source captures including2reused and exact existing metadata;200quote occurrences.",
+    "Current211-leaf registry c56885b6a3dc4fc83fcc2515de0c2b1b01dba8b21580d3d1a40df2039198424b -> approved transform patch245 -> analysis273 with no ID/source/path/key collisions or overwritten prior values.",
+    "All proposed59 card label/path entries match captured source; only omission identified.",
+    "New28 leaves planned only/not_bound, graph resolves and acyclic, freeze remains partial. Data disclosure/export restrictions and forecast/interpolation/source-version limitations retained."
+  ],
+  "runtime_tests_executed": 0,
+  "repository_edits": false
+}

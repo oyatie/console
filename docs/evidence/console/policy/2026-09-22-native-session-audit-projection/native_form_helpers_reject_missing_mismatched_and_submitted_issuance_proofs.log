@@ -1,0 +1,8 @@
+HISTORICAL LOG LOCATOR - NOT ORIGINAL TEST OUTPUT
+recovery_commit: 6f15a1671e823293b2025d3b1f72d04034ab7693
+original_path: docs/evidence/console/policy/2026-09-22-native-session-audit-projection/native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs.log
+git_blob_sha: efec6a2bcdd17a9eb259ed7efaf4cd60f2a9036f
+sha256: d6e098e64679ec4db49972102a5bbefd32a77d60563ed158073c392f66447b98
+bytes: 6525
+custody: docs/evidence/console/integration/2026-10-13-historical-download-log-locators/custody.json
+Resolve the exact Git original before assessing historical output.

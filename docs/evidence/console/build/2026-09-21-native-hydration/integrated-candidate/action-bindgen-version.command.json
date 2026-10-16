@@ -1,0 +1,8 @@
+{
+  "argv": [
+    "/private/tmp/console-mvp-dev-integrate-20260921/buck-out/v2/art/toolchains/11a256c53bf8083e/rust/__wasm-bindgen-aarch64-apple-darwin__/wasm-bindgen-aarch64-apple-darwin/wasm-bindgen",
+    "--version"
+  ],
+  "cwd": "/private/tmp/console-mvp-dev-integrate-20260921",
+  "returncode": 0
+}

@@ -1,0 +1,53 @@
+[2026-09-21T13:25:53.621-04:00] Build ID: d159633f-829c-4c3c-9d6e-ff0663f8beff
+[2026-09-21T13:25:53.622-04:00] Directory changed (since mergebase): root//backend/crates/platform/ui
+[2026-09-21T13:25:53.622-04:00] Directory changed (since mergebase): root//backend/crates/platform/ui/src
+[2026-09-21T13:25:53.622-04:00] File changed (since mergebase): root//backend/crates/platform/ui/Cargo.toml
+[2026-09-21T13:25:53.622-04:00] 181 additional file change events (since mergebase)
+[2026-09-21T13:25:53.622-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T13:26:00.637-04:00] ✗ Fail: root//backend/crates/platform/ui:console-platform-ui-unit (0.2s)
+[2026-09-21T13:26:00.637-04:00] ---- STDOUT ----
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] running 3 tests
+[2026-09-21T13:26:00.637-04:00] test tests::people_search_and_unknown_entities_have_truthful_results ... FAILED
+[2026-09-21T13:26:00.637-04:00] test tests::connected_workspace_exposes_task_context_and_all_five_workflows ... FAILED
+[2026-09-21T13:26:00.637-04:00] test tests::employment_preview_preserves_context_inputs_and_distinguishes_comparison_from_commit ... FAILED
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] failures:
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] ---- tests::people_search_and_unknown_entities_have_truthful_results stdout ----
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] thread 'tests::people_search_and_unknown_entities_have_truthful_results' (76216045) panicked at backend/crates/platform/ui/backend/crates/platform/ui/src/lib.rs:477:9:
+[2026-09-21T13:26:00.637-04:00] assertion failed: found.contains("href=\"/people/p-101\"")
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] ---- tests::connected_workspace_exposes_task_context_and_all_five_workflows stdout ----
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] thread 'tests::connected_workspace_exposes_task_context_and_all_five_workflows' (76216043) panicked at backend/crates/platform/ui/backend/crates/platform/ui/src/lib.rs:280:13:
+[2026-09-21T13:26:00.637-04:00] preview truth missing on Work
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] ---- tests::employment_preview_preserves_context_inputs_and_distinguishes_comparison_from_commit stdout ----
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] thread 'tests::employment_preview_preserves_context_inputs_and_distinguishes_comparison_from_commit' (76216044) panicked at backend/crates/platform/ui/backend/crates/platform/ui/src/lib.rs:433:13:
+[2026-09-21T13:26:00.637-04:00] comparison lacks 김민지
+[2026-09-21T13:26:00.637-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] failures:
+[2026-09-21T13:26:00.637-04:00]     tests::connected_workspace_exposes_task_context_and_all_five_workflows
+[2026-09-21T13:26:00.637-04:00]     tests::employment_preview_preserves_context_inputs_and_distinguishes_comparison_from_commit
+[2026-09-21T13:26:00.637-04:00]     tests::people_search_and_unknown_entities_have_truthful_results
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.637-04:00] ---- STDERR ----
+[2026-09-21T13:26:00.637-04:00]
+[2026-09-21T13:26:00.641-04:00] Cache hits: 0%
+[2026-09-21T13:26:00.641-04:00] Commands: 2 (cached: 0, remote: 0, local: 2)
+[2026-09-21T13:26:00.641-04:00] Network: Up: 0B  Down: 0B
+[2026-09-21T13:26:00.642-04:00] Waiting on buck2 daemon d159633f-829c-4c3c-9d6e-ff0663f8beff...
+[2026-09-21T13:26:00.642-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T13:26:00.642-04:00] Resource usage: CPU: 5%
+[2026-09-21T13:26:00.642-04:00] IO: none
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//backend/crates/platform/ui:console-platform-ui-unit

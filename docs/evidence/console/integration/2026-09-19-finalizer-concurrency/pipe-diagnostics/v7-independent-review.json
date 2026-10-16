@@ -1,0 +1,77 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "CONFIRMED_SHARED_PIPE_ENDPOINT_EXPLAINS_OBSERVED_LEAK",
+  "files": {
+    "warm-processes.jsonl": "727d3fad2bfd488294c437a2171dce7af43d02acc1e92296c35adcc7437e8041",
+    "warm-line-times.jsonl": "2b70b73d0465b6f4ff97ecf9c709e870c1d623765ae03e27288cf467c8bc2bf1",
+    "warm.log": "219e0aacc3aee6537f54c4611075e9c64c92278f942c29f8c1e4b735c101865b",
+    "receipt.json": "618689bb11ce9d22bf95bc98a991ed11188b5057fcbe0c87c0addec95f4108d3"
+  },
+  "process_samples": 231,
+  "shared_endpoint_samples": 202,
+  "first_shared": {
+    "time": 726463.494713916,
+    "holders": [
+      {
+        "pid": 94688,
+        "fd": "65",
+        "endpoint": "->0xe13a8e2a75915f38"
+      },
+      {
+        "pid": 94689,
+        "fd": "1",
+        "endpoint": "->0xe13a8e2a75915f38"
+      }
+    ],
+    "audit_test_present": true
+  },
+  "last_shared": {
+    "time": 726484.477748833,
+    "holders": [
+      {
+        "pid": 94688,
+        "fd": "65",
+        "endpoint": "->0xe13a8e2a75915f38"
+      },
+      {
+        "pid": 94689,
+        "fd": "1",
+        "endpoint": "->0xe13a8e2a75915f38"
+      }
+    ],
+    "audit_test_present": true
+  },
+  "first_after_audit_pid_absent": {
+    "time": 726484.579674916,
+    "holders": [
+      {
+        "pid": 94688,
+        "fd": "65",
+        "endpoint": "->0xe13a8e2a75915f38"
+      }
+    ],
+    "audit_test_present": false
+  },
+  "last_sibling_retained": {
+    "time": 726485.705914083,
+    "holders": [
+      {
+        "pid": 94688,
+        "fd": "65",
+        "endpoint": "->0xe13a8e2a75915f38"
+      }
+    ],
+    "audit_test_present": false
+  },
+  "leak_line": {
+    "monotonic": 726484.750494458,
+    "line": "\u001b[33;1m        LEAK\u001b[0m [  21.259s] ( 2/15) \u001b[35;1mconsole-app::audit_api\u001b[0m \u001b[34;1msuper_admin_audit_read_arms_org_and_isolates_cross_org_as_runtime_role\u001b[0m\n"
+  },
+  "conclusion": "The audit test stdout endpoint remains open as fd65 in a sibling evaluation test across the LEAK timestamp. This supports a test-runner/process-launch descriptor inheritance defect rather than a child spawned by the audited application route.",
+  "limitations": [
+    "Passive process metadata observation, not syscall-level attribution of exact pipe creation/dup/spawn cause. Parent is producer of v7 observer; independent review here does not claim independent collection.",
+    "macOS lsof access-mode field is blank; endpoint correlation is exact, write-end inference derives from same endpoint as audit stdout fd1.",
+    "No proposed repair accepted; compiler/runner provenance and source cause require separate evidence.",
+    "16GiB functionalcohort passing doesnotqualify8GiBenvelope or requiredRust1.98.1; current inheritednightlyRust and installednextest buildprovenance remain gaps."
+  ]
+}

@@ -1,0 +1,24 @@
+E
+======================================================================
+ERROR: test_generation_is_clean_for_all_first_party_buck_faces (__main__.FirstPartyBuckGeneratorTests.test_generation_is_clean_for_all_first_party_buck_faces)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-client-release-20260919/tools/buck/test_gen_first_party.py", line 143, in test_generation_is_clean_for_all_first_party_buck_faces
+    subprocess.run(
+    ~~~~~~~~~~~~~~^
+        [sys.executable, str(GENERATOR_PATH)],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        text=True,
+        ^^^^^^^^^^
+    )
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/opt/python@3.14/bin/python3.14', '/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py']' returned non-zero exit status 1.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.095s
+
+FAILED (errors=1)

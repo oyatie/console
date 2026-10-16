@@ -1,0 +1,7 @@
+{
+  "kind": "value-free-transition-failure-diagnostics",
+  "preimage_sha256": "3136975710d53eebda6d72a6dc790f086b67c234518645d7f6c4719f6d693d50",
+  "candidate_sha256": "e3bbf636a48e7952f73a80cf1a1207d85af8289c28fcf7b3cbd43c4d1de0b0a8",
+  "purpose": "Only structural metadata paths and mutation boolean; same exact equality/original classifier assertions; no values, normalization or tolerance",
+  "runtime_executed": 0
+}

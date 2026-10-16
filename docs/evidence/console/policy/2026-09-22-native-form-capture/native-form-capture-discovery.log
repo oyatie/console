@@ -1,0 +1,22 @@
+[2026-09-22T00:54:06.398-04:00] Build ID: ed2a1494-3874-4c19-8942-35f544675967
+[2026-09-22T00:54:06.398-04:00] File changed: root//docs/evidence/console/policy/2026-09-22-native-workflow/review.json
+[2026-09-22T00:54:06.398-04:00] File changed: root//docs/evidence/console/policy/2026-09-22-native-workflow/implementation.json
+[2026-09-22T00:54:06.398-04:00] File changed: root//docs/evidence/console/policy/2026-09-22-native-workflow/native-workflow-authz.log
+[2026-09-22T00:54:06.398-04:00] 24 additional file change events
+[2026-09-22T00:54:13.498-04:00] Waiting on root//third-party/rust:crossbeam-queue-0.3 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 652 other actions
+[2026-09-22T00:54:20.797-04:00] Waiting on root//backend/crates/identity/application:console-identity-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute]
+[2026-09-22T00:54:26.191-04:00] Cache hits: 0%
+[2026-09-22T00:54:26.191-04:00] Commands: 10 (cached: 0, remote: 0, local: 10)
+[2026-09-22T00:54:26.191-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+account_browser::company_credential_capture_tests::company_capture_disabled_auth_fails_closed_without_storage_access: test
+account_browser::company_credential_capture_tests::company_capture_preserves_distinct_api_and_document_grammars: test
+account_browser::company_credential_capture_tests::company_capture_rejects_ambiguity_bounds_and_refresh_fallback: test
+account_browser::company_credential_capture_tests::company_mutation_capture_requires_exact_post_headers_and_bounded_proof: test
+account_browser::company_credential_capture_tests::native_company_form_capture_accepts_real_navigation_and_complete_metadata_absence: test
+account_browser::company_credential_capture_tests::native_company_form_capture_has_one_proof_namespace_and_exact_byte_limit: test
+account_browser::company_credential_capture_tests::native_company_form_capture_rejects_ambiguous_credentials_and_no_refresh_fallback: test
+account_browser::company_credential_capture_tests::native_company_form_capture_rejects_cross_site_fetch_partial_and_duplicate_metadata: test
+account_browser::company_credential_capture_tests::native_company_form_capture_requires_exact_origin_and_form_media: test
+
+9 tests, 0 benchmarks

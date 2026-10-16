@@ -1,0 +1,4 @@
+{
+  "test_needs_postgres.sh": "b1d49ccb3f60d21567d510c2765d4b3c89accbc251e10c84e0719351a8a6c68a",
+  "test_needs_postgres.test.sh": "3132b174e7da1eb9c8a3664dfad1bb25920540600d2b4ad1ee0dfd093553bb95"
+}

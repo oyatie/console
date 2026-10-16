@@ -1,0 +1,8 @@
+type: object
+additionalProperties: false
+required:
+- terms_version
+properties:
+  terms_version:
+    type: string
+    pattern: ^[0-9a-f]{64}$

@@ -1,0 +1,55 @@
+▶ setup-rust reads the whole pin
+  ✔ extracts channel, components and targets from the repository's own pin (20.58425ms)
+  ✔ hands every declared component and target to the installer (0.094125ms)
+  ✔ re-proves on the runner that nothing is left to download (0.051042ms)
+  ✔ takes no inputs, so no job can declare a second toolchain (0.037542ms)
+  ✔ refuses a pin it cannot read, rather than guessing (22.676917ms)
+  ✔ accepts a pin with no components or targets (17.229583ms)
+✔ setup-rust reads the whole pin (61.154708ms)
+▶ the pin gate cannot be walked past
+  ✔ rejects a toolchain: input (25.379ms)
+  ✔ rejects a trailing comment invoking the reindeer carve-out (25.818834ms)
+  ✔ rejects a version reaching rustup through a shell variable (26.58725ms)
+  ✔ rejects rustup install (26.100666ms)
+  ✔ rejects rustup-init --default-toolchain (24.305125ms)
+  ✔ rejects a third-party action pinned to a version (25.725625ms)
+  ✔ rejects RUSTUP_TOOLCHAIN as a literal (26.122375ms)
+  ✔ rejects rustup component add --toolchain (24.502333ms)
+  ✔ rejects a rust: container image (26.121334ms)
+  ✔ allows reindeer's bootstrap, which names no version (27.007917ms)
+  ✔ allows an action pinned to a floating ref (25.807875ms)
+  ✔ allows a container image that is not rust (25.804167ms)
+✔ the pin gate cannot be walked past (309.6485ms)
+▶ the lock cannot drift from the pin
+  ✔ rejects urls pointing at another month (26.184125ms)
+  ✔ rejects a strip_prefix that does not match the archive layout (24.760875ms)
+  ✔ rejects a required artifact removed (25.801792ms)
+  ✔ rejects an artifact the pin does not call for (24.35675ms)
+  ✔ rejects a channel the pin does not declare (24.576959ms)
+  ✔ rejects field indentation, with urls pointing at another month (27.072417ms)
+  ✔ accepts the committed lock unmodified (26.1165ms)
+  ✔ accepts the nightly fixture before corruption (24.641208ms)
+  ✔ accepts a stable lock that names the stable pin (25.611792ms)
+  ✔ rejects a stable lock whose urls name a different patch (26.488583ms)
+✔ the lock cannot drift from the pin (256.073167ms)
+▶ lock-rust-toolchain
+  ✔ requires native compiler artifacts for the ARM Linux CI runner (0.458417ms)
+  ✔ routes a dated nightly to its dated manifest and a stable to its own (0.09975ms)
+  ✔ refuses a floating channel instead of locking a hash that will stop matching (0.153458ms)
+  ✔ derives strip_prefix from the URL rather than rebuilding it from the channel (0.23625ms)
+  ✔ names the inner directory per package: only rust-std carries the triple (0.079625ms)
+  ✔ prefers the xz artifact, because CI pays for every byte (0.085459ms)
+  ✔ treats `available = false` as absent (0.213584ms)
+  ✔ requires rustc, std and every declared component per host, plus std per target (0.106ms)
+  ✔ fails closed when the channel does not publish something the pin declares (0.091958ms)
+  ✔ renders Starlark that carries a hash for every url (0.174041ms)
+  ✔ the committed lock matches the committed pin (0.127041ms)
+✔ lock-rust-toolchain (2.329583ms)
+ℹ tests 39
+ℹ suites 4
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 664.143916

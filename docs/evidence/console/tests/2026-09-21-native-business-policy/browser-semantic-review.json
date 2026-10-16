@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/policy_owner_tests",
+  "verdict": "approve_test_candidate_for_compilation_and_real_RED_probe",
+  "manifest_sha256": "5446d413eb4ecb4e49ace1c10016d51bfa95c9d3ef25456a3aea66f860068ae3",
+  "source_patch_sha256": "41c79f8c9ad201389e565d06fef4f5f557108298b210e40a916d3421800fad03",
+  "rust_source_sha256": "d31822f78911d747328c3c4e06fab60d7ce65133b8ad7459414d654948a15b14",
+  "independent_manifest_file_hashes_verified": 11,
+  "independent_node_controls": {
+    "discovered": 34,
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0
+  },
+  "rust_compilation": false,
+  "actual_browser_database_execution": false,
+  "finding_disposition": {
+    "B1": "Resolved: exact frozen codec reconstructed independently from observed successful controls and actual form action; wire fields are compared to controls. Embedded vectors exactly match frozen vectors.json.",
+    "B2": "Resolved for this journey: exact frozen catalog JSON, mapped eighteen properties, action, installation provenance, policy pointers, one ALLOW/nondelegable clause, role and content digests checked. PostgreSQL JSONB canonicalization is used without owner helper.",
+    "B3": "Resolved in state oracle: each retained grant interval, identity, origin and ceiling fact is compared against exact prior assignment revision before terminal comparison.",
+    "B4": "Resolved: actual Account-to-Company-to-policy navigation after revoke and mandatory ADMIN_REOPENED no-effect census.",
+    "B5": "Resolved: canonical default Payroll page limit100."
+  },
+  "frozen_references": {
+    "catalog_sha256": "1aec31f46dec8d6d3f8d1d8701b9c9e7919788d199a0ce3f186e8038e3d2deca",
+    "vectors_sha256": "aa7fedeb97ebba94c382d28a26fc7a56f97314c48d1969551a5d49d327ae6975"
+  },
+  "scope_limits": [
+    "Approval is test-oracle review, not lane admission or successful product acceptance. The real named probe must compile and establish semantic RED after existing Company prerequisites pass.",
+    "No Buck, Rust test, PostgreSQL or real-browser execution performed by this reviewer; integration owner holds runtime lease.",
+    "Rust corruption controls were read but not compiled or executed. Participant corruption exercises the shared subset comparison, not a complete populated-state or matched-terminal/revision corruption injection.",
+    "This journey does not prove dropped responses, regrant, rejected-command transitions, revoked policy administrator, owner trigger behavior, populated migrations, all security leaves or UI production polish.",
+    "Any semantic repairs during compilation or execution require a new exact candidate and independent review."
+  ]
+}

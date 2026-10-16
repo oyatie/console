@@ -1,0 +1,28 @@
+{
+  "base": "9f2fb85307b28911d4bdc17813496df5b195f26f",
+  "files": [
+    {
+      "path": "backend/Cargo.lock",
+      "sha256": "5c43d5243616c71e861d442d82b746e924cd038d95b6a74a17a678b843b86df6"
+    },
+    {
+      "path": "backend/crates/payroll/ui/bundle.lock.json",
+      "sha256": "4be57c0f6752bb5e16f473f813f74f4dec1a32a74c36e274a85d33faf5b622b7"
+    },
+    {
+      "path": "third-party/rust/hydrate/input-lock.json",
+      "sha256": "cc6da557f7ca1386e58667c024f3c0b490afc726f10ef568caca3ea42571e68f"
+    },
+    {
+      "path": "backend/crates/payroll/ui/pkg/console_payroll_ui.js",
+      "sha256": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429"
+    },
+    {
+      "path": "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm",
+      "sha256": "b9068d7a4a94dbe87485d01fb7d0f25e4cf316b4febdc60c0b2bea0c069f90aa"
+    }
+  ],
+  "producer_build": "c4f2a421-eb07-45cb-b013-b8c8f5648ef5",
+  "cargo_product_compilation": false,
+  "executed_local_actions": 3
+}

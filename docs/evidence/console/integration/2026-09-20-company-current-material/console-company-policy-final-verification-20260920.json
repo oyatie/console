@@ -1,0 +1,52 @@
+{
+  "head": "8cb1e65ee3a65bbddc48a5b8c9d1ad8b14848c3d",
+  "results": [
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-identity-domain",
+        "-p",
+        "console-identity-application",
+        "-p",
+        "console-platform-authz",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 1.24,
+      "log": "/private/tmp/console-company-policy-final-0-20260920.log",
+      "log_sha256": "f21a1283f9b807b9739aabe3ea54e9a4085549d7019899c6d54e4254c610d666"
+    },
+    {
+      "command": [
+        "tools/buck2",
+        "test",
+        "//backend/crates/platform/authz:console-platform-authz-unit",
+        "//backend/crates/identity/application:console-identity-application-unit",
+        "//backend/crates/identity/domain:console-identity-domain-unit"
+      ],
+      "exit": 0,
+      "seconds": 16.04,
+      "log": "/private/tmp/console-company-policy-final-1-20260920.log",
+      "log_sha256": "c9579e8c4e2c9cb81df70c7599fa10e61c045028d6ef95656b8d2de35bef508f"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-executed-tests.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.25,
+      "log": "/private/tmp/console-company-policy-final-2-20260920.log",
+      "log_sha256": "0b3638877ffb66d9602f2c813714db32b87fe6be19535dee9a86a2500d006bc6"
+    }
+  ]
+}

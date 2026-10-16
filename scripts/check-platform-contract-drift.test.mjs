@@ -7,7 +7,7 @@
  * the gate while disagreeing with the server.
  */
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
@@ -176,6 +176,43 @@ describe("fail-closed inputs", () => {
       /examine zero subjects|no \/api\/ operations/i,
     );
   });
+
+  it("ignores a resolved non-API document route using any while keeping API coverage", () => {
+    const root = fixture({
+      "routes.rs": `fn router() -> Router {
+    Router::new()
+        .route("/companies/{org_id}/payroll", any(document))
+        .route("/api/x", get(handler))
+        .route("/api/v1/dev-auth/session", post(dev_auth))
+        .route("/api/v1/mail/mox/webhook", post(mox))
+}
+`,
+      "openapi.yaml": openApi(["GET /api/x"]),
+    });
+    const result = checkOpenApiRouteDrift({
+      openApiPath: join(root, "openapi.yaml"),
+      routeSourceFiles: [join(root, "routes.rs")],
+    });
+    assert.equal(result.backendOperations.has("GET /api/x"), true);
+    assert.equal(result.backendOperations.size, 3);
+  });
+
+  it("still refuses an API route whose method cannot be recognized", () => {
+    const root = fixture({
+      "routes.rs": `fn router() -> Router {
+    Router::new().route("/api/ambiguous", any(handler))
+}
+`,
+      "openapi.yaml": openApi(["GET /api/ambiguous"]),
+    });
+    assert.throws(
+      () => checkOpenApiRouteDrift({
+        openApiPath: join(root, "openapi.yaml"),
+        routeSourceFiles: [join(root, "routes.rs")],
+      }),
+      /route \/api\/ambiguous has no recognized HTTP method/,
+    );
+  });
 });
 
 describe("real tree", () => {
@@ -186,5 +223,97 @@ describe("real tree", () => {
     });
     assert.equal(run.status, 0, run.stderr || run.stdout);
     assert.match(run.stdout, /OpenAPI route drift gate passed \(\d+ backend \/api\/ operations/);
+  });
+});
+
+function trackedRouteFixture({ testName, parentName, moduleName = "timeout_tests", guarded = true, extraInclude = false, rogue = false, testApiRoute = true }) {
+  assert.ok(["timeout_tests", "transport_tests"].includes(moduleName), "fixture module must be a known test module");
+  const files = {
+    "scripts/check-platform-contract-drift.mjs": readFileSync(cli, "utf8"),
+    "backend/openapi/openapi.yaml": openApi(["GET /api/x"]),
+    "backend/app/src/registered.rs": `fn router() -> Router {
+    Router::new()
+        .route("/api/x", get(handler))
+        .route("/api/v1/dev-auth/session", post(dev_auth))
+        .route("/api/v1/mail/mox/webhook", post(mox))
+}
+`,
+    [`backend/app/src/${parentName}`]: `${guarded ? "#[cfg(test)]\n" : ""}#[path = "${testName}"]\nmod ${moduleName};\n`,
+    [`backend/app/src/${testName}`]: `fn router() -> Router {
+    Router::new().route("${testApiRoute ? "/api/test-only" : "/internal/test-only"}", ${testApiRoute ? "any" : "get"}(handler))
+}
+`,
+  };
+  if (extraInclude) {
+    files["backend/app/src/extra.rs"] = `include!("${testName}");\n`;
+    files["backend/app/src/lib.rs"] = "mod extra;\n";
+  }
+  if (rogue) {
+    files["backend/app/src/unguarded_tests.rs"] = `fn router() -> Router {
+    Router::new().route("/api/rogue", get(handler))
+}
+`;
+  }
+  const root = realpathSync(fixture(files));
+  const init = spawnSync("git", ["init", "-q", root], { encoding: "utf8" });
+  assert.equal(init.status, 0, init.stderr);
+  const add = spawnSync("git", ["-C", root, "add", "-A"], { encoding: "utf8" });
+  assert.equal(add.status, 0, add.stderr);
+  return spawnSync(process.execPath, [join(root, "scripts/check-platform-contract-drift.mjs")], {
+    cwd: root,
+    encoding: "utf8",
+  });
+}
+
+describe("production route harvest", () => {
+  for (const [testName, parentName, moduleName = "timeout_tests"] of [
+    ["native_payroll_timeout_tests.rs", "native_payroll.rs"],
+    ["native_people_timeout_tests.rs", "native_people.rs"],
+    ["native_group_process_transport_tests.rs", "native_group_process.rs", "transport_tests"],
+  ]) {
+    const isGroup = moduleName === "transport_tests";
+    const inclusionDiagnostic = `backend/app/src/${testName}: test-only route source inclusion is not solely cfg(test)`;
+    it(`excludes ${testName} while its sole inclusion is cfg(test)`, () => {
+      const guarded = trackedRouteFixture({ testName, parentName, moduleName });
+      assert.equal(guarded.status, 0, guarded.stderr || guarded.stdout);
+      // The fixture has one documented route and two checked exemptions.
+      assert.match(guarded.stdout, /3 backend \/api\/ operations across 1 route sources/);
+    });
+
+    it(`counts ${testName} when its cfg(test) guard is removed`, () => {
+      const unguarded = trackedRouteFixture({ testName, parentName, moduleName, guarded: false, testApiRoute: !isGroup });
+      assert.notEqual(unguarded.status, 0, "removing cfg(test) must fail closed");
+      if (isGroup) assert.equal(unguarded.stderr.trim(), inclusionDiagnostic);
+      else assert.match(unguarded.stderr, /test-only|recognized HTTP method|inclusion/i);
+    });
+
+    it(`counts ${testName} when production includes it too`, () => {
+      const extra = trackedRouteFixture({ testName, parentName, moduleName, extraInclude: true, testApiRoute: !isGroup });
+      assert.notEqual(extra.status, 0, "an extra production inclusion must fail closed");
+      if (isGroup) assert.equal(extra.stderr.trim(), inclusionDiagnostic);
+      else assert.match(extra.stderr, /test-only|recognized HTTP method|inclusion/i);
+    });
+  }
+
+  it("rejects the Group transport source when included under the wrong test module", () => {
+    const result = trackedRouteFixture({
+      testName: "native_group_process_transport_tests.rs",
+      parentName: "native_group_process.rs",
+      moduleName: "timeout_tests",
+      testApiRoute: false,
+    });
+    assert.notEqual(result.status, 0, "an incorrect test module must fail closed");
+    assert.equal(result.stderr.trim(), "backend/app/src/native_group_process_transport_tests.rs: test-only route source inclusion is not solely cfg(test)");
+  });
+
+  it("still counts an unguarded new _tests.rs API router", () => {
+    const result = trackedRouteFixture({
+      testName: "native_payroll_timeout_tests.rs",
+      parentName: "native_payroll.rs",
+      rogue: true,
+      testApiRoute: false,
+    });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /GET \/api\/rogue/);
   });
 });

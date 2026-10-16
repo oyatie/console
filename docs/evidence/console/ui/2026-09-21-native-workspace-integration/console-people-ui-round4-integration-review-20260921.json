@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/integration_tests",
+  "round": 4,
+  "reviewed_manifest": "/private/tmp/console-people-ui-candidate-round3-20260921/manifest.json",
+  "reviewed_manifest_sha256": "9f38628c52fe047ac1a85b575ac0c0c77a282914789bbe001377e08dedf104e2",
+  "candidate_hashes_match": {
+    "DESIGN.md": true,
+    "people_tests.rs": true,
+    "tests.patch": true
+  },
+  "design_verdict": "APPROVED_BOUNDED_PEOPLE_SSR_DESIGN",
+  "test_verdict": "APPROVED_SIX_RENDERER_TEST_CANDIDATE_FOR_EXECUTABLE_ADMISSION",
+  "resolved_findings": [
+    "P1: balanced native details helper scopes Employment relation to actual Person inspector, rejects OTHER namesake relation and wrong reverse Person link.",
+    "P2: reverse People Failure plus Employment Rows has own leaf and section-local retry. Both denied directions and Rows(empty) normalization covered."
+  ],
+  "retained_contract_checks": [
+    "Existing public render_screens/DTO types only; source inspection demonstrates real swallowed-failure RED.",
+    "All existing Person/Employment schema attrs, safe object source links and exact effective instant retained; original13 regressions remain necessary.",
+    "Fixtures cfg(test) only, no product fixture route or fake command.",
+    "No new island/client-side authority; module design receives only existing authorized closed projections.",
+    "Typed form implementation waits exact mounted owner bridge; directory completion is not People lifecycle/release completion."
+  ],
+  "discovery_requirement": "Before semantic RED, exact leaf discovery must equal1; full module discovery6. Missing compile/tool or zero tests is prerequisite failure.",
+  "not_verified": [
+    "No compilation/execution",
+    "No actual UI/browser/reflow/keyboard evidence",
+    "No owner-bound workflow acceptance"
+  ],
+  "remaining_blockers_to_implementation": [
+    "Parent executable lane admission on exact clean candidate and compiler lease"
+  ],
+  "tests_run": 0,
+  "repo_edits": 0
+}

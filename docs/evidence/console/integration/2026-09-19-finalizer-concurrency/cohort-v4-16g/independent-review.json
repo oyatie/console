@@ -1,0 +1,78 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-finalizer-local-functional-evidence-with-separate-cleanup-HOLD",
+  "source_sha256": "bb4ace9c9864db932253ae3013114e9aac9681da72192c1058ff7de6b57f414c",
+  "test_sha256": "c8479e9a9624a5c22d19a9049b79ed3ed3093c9e7c870244337900dc75699ef1",
+  "positive_history_reviews": [
+    {
+      "path": "/private/tmp/console-finalizer-savepoint-independent-lane-review.json",
+      "sha256": "d2a619d9dd55ae5a07be9e936cfe0e26741c389fa9ad2dd8c241803604511140"
+    },
+    {
+      "path": "/private/tmp/console-finalizer-savepoint-independent-v3-addendum.json",
+      "sha256": "5f449bd3c4fcafed0ad4474b512a03bb45cfea1d533ced04f91ff36f31592db0"
+    }
+  ],
+  "v4_evidence": {
+    "receipt.json": "270d1c06a2f8a554e75bfe63e92276936daaef526fef9ed6c0bc7c090d7bc81d",
+    "cold.log": "dc5a15f66c06af33b859b4cc96731a3f42d9c4578e6bc8cc769fb61445d32897",
+    "warm.log": "bf052ed4873322f6e354340000b393d659e34b54b46aff823e20c0d86572e256",
+    "postgres-server.log": "5ce49c79cec2c290282f114cb1ce322065c5cec5a8611873b6b9f00e6339b7b3",
+    "postgres-diagnostics.json": "7b3753be054321af02f6a00058317e3630e5d7da042ef5ee6dfe597cc133689b",
+    "postgres-memory-samples.jsonl": "a65432b033ec4b9afbd051227fc5a199486ea7d4afbb265aec5c56f9528037b2"
+  },
+  "functional_counts": {
+    "cold": {
+      "executed": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "leaky": 1
+    },
+    "warm": {
+      "executed": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "leaky": 0
+    }
+  },
+  "same_cluster_marked_admin_cold_absent_warm_present": true,
+  "resource_observation": {
+    "reported_profile": "dedicated16GiB4CPU perroot; noVMprofile changes by reviewer",
+    "measured_vm_memtotal_KiB": 16341232,
+    "samples": 57,
+    "failed_samples": 0,
+    "sampled_max_memory_current_bytes": 10007138304,
+    "cgroup_memory_peak_bytes": 10040786944,
+    "max_sampled_postgres_process_rss_KiB": 685304,
+    "oom_kill_values": [
+      0
+    ],
+    "cpu_limit": "Not independently encoded by sampler; container NanoCpus0 means no containerCPUlimit, not proof ofVMCPUcount."
+  },
+  "accepted_scope": [
+    "Exact savepoint synchronization source conforms to reviewed cold-retain/warm-release/postwait-refresh design.",
+    "Previously independently reviewed6helper+1coldfailure+1firstcreation+28lifecycle positives and5reconstructed source corruption controls retained.",
+    "Unchanged15-case ordinary cohort now reaches/passes functional assertions cold and warm on recorded enlargedresource envelope, with same original argv digest and unchangedSQL/deadlines/concurrency."
+  ],
+  "remaining_holds": [
+    {
+      "finding": "nextest LEAK",
+      "test": "console-app::evaluation_cycle_api::evaluation_routes_are_mounted_by_the_authenticated_app_router",
+      "phase": "cold",
+      "detail": "Functional pass has1leaky annotation. Cause not established by this review; do not call process/resource cleanup or operational qualification clean."
+    },
+    {
+      "finding": "original8GiB envelope fails",
+      "detail": "Prior cold/warm OOM evidence is immutable. Passing with measured~9.35GiB cgrouppeak does not qualify8GiBCI/VM; supported prerequisite resource envelope must be recorded and reproducible."
+    },
+    {
+      "finding": "observer acceptance is count/status-only",
+      "detail": "Current receipt accepted:true checks15pass/0skip/exit0 but does not reject nextest leaky annotation. This review overrides any inference of cleanqualification. A later observer should record leakycount and distinguish assertionpass from cleanupacceptance, with positiveleak control."
+    }
+  ],
+  "release_qualification": false,
+  "repository_edits": 0,
+  "authorship_disclosure": "Reviewer authored observer;root independently reviewed exactobserver beforeuse. No claim of independent observer authorship."
+}

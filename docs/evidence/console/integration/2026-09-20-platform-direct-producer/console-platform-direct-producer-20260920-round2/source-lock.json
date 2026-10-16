@@ -1,0 +1,10 @@
+{
+  "backend/crates/platform/auth/src/jwt.rs": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b",
+  "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+  "backend/crates/platform/auth/src/refresh.rs": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c",
+  "backend/crates/platform/auth-rest/src/lib.rs": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85",
+  "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs": "5e7b95ae648b143c64e70bcaa70261cee03f489eb0fd1a7bfd6ed373d40f92f5",
+  "backend/app/tests/auth_rest/legacy_platform_list_reads.rs": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145",
+  "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "f3bdc2e5ceb6d0c3e069655077c36d813fb381abb27c75312679ca3d5163314b",
+  "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "2949c236fb98c54f51c759b237b08d1fbdd19a8b66a7d69e33da9a197d738c48"
+}

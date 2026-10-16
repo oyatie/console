@@ -1,0 +1,59 @@
+{
+  "status": "reviewed browser test successor implemented locally; actual Company browser and workflow acceptance pending",
+  "head_sha": "019b32db4b3076122672e9f3eb938ff872a45bfd",
+  "owner": "/root",
+  "base_sha": "799464d166cdb134b8141cf4cb4003ad03189d1d",
+  "mechanical_guide": "Replace invalid Company-name link expectation with exact h2 Company identity and actual named workspace CTA on initial display/reload/fresh reopen; update only two matching driver pins. No product code changes.",
+  "reason": "Frozen Company result renders name as h2 and separate workspace link; old test demanded a nonexistent name link.",
+  "files": {
+    "tools/browser/company.cjs": "9edab0630df042767ccd4da092b79d6b6f34b566f1bc1c2d9dd5df493187f7cd",
+    "tools/browser/prepare_native_browser.sh": "bb31d8aa628639066ac9015e2ac73ba4b1c1ebbb96213eb5f1c689e850973dcd",
+    "tools/browser/test_prepare_native_browser.py": "f50e8fa6a4bc72ee132476cc230dfbf4fdd87a6b1bfb8e5a205101bc9dbf16dd"
+  },
+  "reviews": {
+    "root-review.json": "84162f542aff6440633a07b4ffd2a349d67f1c57db96c08061280004f7352d2d",
+    "security-review.json": "959c5dc74d70a7f729adb56f2bf3283673143261e7fb985550abc7111369a939"
+  },
+  "verification": [
+    {
+      "command": "node --check tools/browser/company.cjs",
+      "exit_code": 0,
+      "tests_executed": 0
+    },
+    {
+      "command": "node /private/tmp/console-company-browser-result-security-controls-round2-20260921.cjs",
+      "scope": "Source-extracted predicate controls, independently rerun by root; no DOM/browser/database",
+      "discovered": 25,
+      "executed": 25,
+      "passed": 25,
+      "failed": 0
+    },
+    {
+      "command": "CONSOLE_BROWSER_INSTALL_TEST_ARCHIVE=/private/tmp/console-browser-linux-custody-integration-tests-20260920/chrome-headless-shell-linux64.zip python3 tools/browser/test_prepare_native_browser.py",
+      "discovered": 6,
+      "executed": 6,
+      "passed": 6,
+      "failed": 0,
+      "seconds": 15.044,
+      "scope": "Existing actual staging suite with retained official archive and mocked download/npm transport; no browser execution"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "pre_mortem": "A wrong or hidden Company result could appear accepted after reopening.",
+  "blast_radius": "Company browser oracle plus its staging integrity pins only",
+  "detection": "Source-extracted controls reject missing/duplicate result members, wrong href and hidden members; real Company browser command remains workflow acceptance gate.",
+  "rollback": "Revert this bounded successor and matching current pins together; preserve evidence.",
+  "stop_conditions": [
+    "Unexpected driver/runtime pin changes",
+    "Request/checkpoint/security/completion predicate removal",
+    "Claiming Company browser success without actual execution"
+  ],
+  "holds": [
+    "Company full graph/HTTP/custody integration and real browser test remain pending",
+    "No workflow/inventory state promoted",
+    "No screen-reader, optical visibility, human usability, production or release acceptance"
+  ]
+}

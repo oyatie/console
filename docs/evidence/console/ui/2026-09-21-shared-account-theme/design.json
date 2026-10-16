@@ -1,0 +1,58 @@
+{
+  "base": "171018a37bd905cefb0319155d55330262182f76",
+  "owner": "/root",
+  "outcome": "Account entry and real workspace use one light theme without changing controls, actions, authorization or page layouts",
+  "references": [
+    "docs/design/oyatie-console/tokens/colors.css",
+    "docs/design/oyatie-console/tokens/typography.css",
+    "backend/crates/payroll/ui/src/lib.rs:20",
+    "backend/crates/payroll/ui/src/native_account.css"
+  ],
+  "adopt": "Prototype semantic color roles and Korean-readable typography; preserve the already reviewed workspace palette and readable native controls",
+  "adapt": "Use installed system/Korean font stack, no external font fetch or prototype tiny text; prototype --muted names a surface, preserve current workspace --muted text role instead of copying mismatched variable names.",
+  "implementation": [
+    "Extract existing workspace root palette, body font/background/ink, anchor and focus base into native UI theme.css",
+    "Compose STYLE with concat(include_str theme.css, existing workspace CSS); preserve inline workspace CSS and existing deny-by-omission rules",
+    "Compose existing /assets/native-account.css handler response from same theme.css plus account layout CSS; preserve cache/CSP/content-type and route",
+    "Replace native blue hardcoded semantic colors with shared tokens; retain form controls, disabled and live-status state handlers, min44px controls, responsive layout and visible focus",
+    "Add theme.css to existing explicit UI resource list in generator; regenerate only native UI BUCK. No lock/third-party graph changes.",
+    "Use shared --control-border:#7c887e for text inputs/selects (3.70:1 vs white); decorative --line remains. Footer uses --muted (5.64:1 vs bg). Preserve current focus #2364aa as --focus."
+  ],
+  "allowed": [
+    "backend/crates/payroll/ui/src/lib.rs",
+    "backend/crates/payroll/ui/src/native_account.css",
+    "backend/crates/payroll/ui/src/theme.css",
+    "backend/crates/payroll/ui/BUCK",
+    "tools/buck/gen_first_party.py"
+  ],
+  "forbidden": [
+    "native_account.js",
+    "native_account.rs",
+    "application/auth/Company behavior",
+    "migrations",
+    "new browser/product stubs or routes",
+    "external font/dependency downloads"
+  ],
+  "probe": "Add reviewed Rust test at actual stylesheet response plus SSR render: shared critical light-theme semantic values and single definitions; existing differing Account/workspace palette is semantic RED",
+  "verification": [
+    "same native test RED to GREEN",
+    "retained native UI suites and generator consistency",
+    "source contrast ratios for chosen foreground/background pairs",
+    "actual Account browser through existing reviewed driver with screenshots where prerequisites permit; no fixture server or seeded identity"
+  ],
+  "pre_mortem": "Shared globals alter layout or obscure focus; preserve page-specific layouts and positive document/CSP/form controls",
+  "blast_radius": "Visual presentation only, no handlers or owner contracts",
+  "rollback": "Revert bounded stylesheet composition and retain evidence",
+  "stop": [
+    "Changed behavior/selectors or new route",
+    "Generated graph changes outside native UI target",
+    "Unauthenticated shell loads hydration",
+    "Unreviewed test changes or weakened oracle"
+  ],
+  "remaining_holds": [
+    "Genuine populated five-workflow browser acceptance",
+    "Company activation/native business authority",
+    "Native hydration toolchain approval and qualification",
+    "Complete MVP/release"
+  ]
+}

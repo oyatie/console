@@ -19,7 +19,7 @@
     },
     {
       "id": "ci-tools-suites",
-      "run": "node --test tools/ci/cargo-test-runner.test.mjs tools/ci/work-order-request-no-seed.test.mjs tools/ci/check-product-buck-residual.test.mjs tools/ci/check-nextest-config.test.mjs tools/ci/check-postgres-cargo-map.test.mjs tools/ci/ingest-soft-reds.test.mjs scripts/local-admission.test.mjs tools/ci/assess-tip-contention.test.mjs tools/ci/check-mjs-dark-suites.test.mjs tools/ci/classify-ci-failure.test.mjs tools/ci/postgres-timings.test.mjs tools/ci/cargo-needs-postgres-args.test.mjs tools/ci/check-nightly-workflow.test.mjs tools/ci/nextest-filterset.test.mjs tools/ci/postgres-partition.test.mjs tools/ci/hold-release-conditions.test.mjs"
+      "run": "node --test tools/ci/cargo-test-runner.test.mjs tools/ci/work-order-request-no-seed.test.mjs tools/ci/check-product-buck-residual.test.mjs tools/ci/check-nextest-config.test.mjs tools/ci/check-postgres-cargo-map.test.mjs tools/ci/ingest-soft-reds.test.mjs scripts/local-admission.test.mjs tools/ci/assess-tip-contention.test.mjs tools/ci/check-mjs-dark-suites.test.mjs tools/ci/classify-ci-failure.test.mjs tools/ci/postgres-timings.test.mjs tools/ci/cargo-needs-postgres-args.test.mjs tools/ci/check-nightly-workflow.test.mjs tools/ci/nextest-filterset.test.mjs tools/ci/postgres-partition.test.mjs tools/ci/hold-release-conditions.test.mjs scripts/hr-policy-parser/command-budget.test.mjs scripts/hr-policy-parser/literal-dependency-response.test.mjs scripts/hr-policy-parser/observed-source-custody.test.mjs scripts/hr-policy-parser/supervisor-controls.test.mjs scripts/hr-policy-parser/hosted-binding.test.mjs"
     },
     {
       "id": "check-product-buck-residual",

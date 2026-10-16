@@ -1,0 +1,21 @@
+{
+  "base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "source": {
+    "file": "legacy_platform_list_unavailable.rs",
+    "sha256": "b1195b7fea5b8738cfc8159f6c4c1e77d8b74da6d36f448c489e676514b06d8d"
+  },
+  "integration": "Add path module declaration to legacy_platform_list_histories.rs; root regenerates App BUCK",
+  "parent": {
+    "path": "backend/app/tests/auth_rest/legacy_platform_list_histories.rs",
+    "sha256": "1fb70485b4cc8e4478d7d4b309e2f3c292205dd023218a0682f330df540bcca3"
+  },
+  "cases": {
+    "sqlx_tests": 1,
+    "mounted_attempts": 6,
+    "recovery_reads": 3
+  },
+  "limits": "Exact affected function metadata, canonical ACLs, audit trigger catalog and all business/audit rows; does not claim full unrelated catalog or pool/clock/decode injection.",
+  "runtime_tests": 0,
+  "prior_manifest_sha256": "d99993db1c56c2421aef2662a2c6cff70af858db10d087640aa0665e720ead79",
+  "successor_reason": "Keep exact equality while removing value-bearing debug output on recovery failure. No oracle/fixture changes."
+}

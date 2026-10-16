@@ -1,0 +1,35 @@
+{
+  "kind": "independent-company-eligibility-transition-test-review-round2",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:10:13.898901+00:00",
+  "status": "APPROVE_EXACT_ADDITIVE_TRANSITION_TESTS_AND_BOUNDED_PARENT_ORACLE_COMPOSITION",
+  "manifest_sha256": "02fe345a3f7167ed3c8fcef71ad4d313ee1d215768bce303ced907614ad4738e",
+  "test_sha256": "cb4f9de86d0004c2b85b3f790cc28a1a938c6540504150d3bcd605693a417263",
+  "parent_sha256": "db3d148190f9f29ae2be0157f372ae24a0e2578aa66271f88fa4fc04cf0e34e1",
+  "prior_review_sha256": "936ee18e5ac324e5720d37ef468beaffac5887a5583e6628b6f866cb3a161bd4",
+  "resolved": {
+    "ET1": "GRANT event-trigger checks actual helper Account owner/config and exact two-entry ACL, advances independent nontransactional sequence, raises exact marker before successor validation. Inner rollback preserves predecessor and witness proves one reached boundary.",
+    "ET2": "After committed helper inverse and current startup refusal, genuine Business login executes unchanged live_account_session_in_tx with original signed Account/family; commits, closes and drains before reapply. Subsequent complete metadata/data equality remains."
+  },
+  "checks": {
+    "candidate_files_sha256_and_size": 10,
+    "current_source_bindings": 5,
+    "frozen_fixture_source_byte_pairs": 5,
+    "parent_patch_and_frozen_inputs_unchanged_since_round1": true,
+    "retained11eligibility_tests_byte_identical": true,
+    "new_sqlx_source_count": 5,
+    "new_pure_source_count": 1,
+    "rustfmt_1_98_1_check_exit": 0,
+    "compiled": 0,
+    "runtime_executed": 0,
+    "reviewer_repository_edits": 0
+  },
+  "approval_scope": "Root may integrate exactly new child, five frozen fixtures and parent patch; serialize existing Buck generator output; compile/discover and obtain meaningful actual owner RED before implementation. Test semantic amendment explicitly approved: vet/subtract only third helper then run unchanged two-helper historical comparator; dependent inverse removes vetted helper before original two-helper inverse. All old comparator assertions/control tests preserved.",
+  "remaining_holds": [
+    "No production helper source or source-bound dual-variant new fingerprint constants reviewed yet.",
+    "Actual compile/discovery/new6leaves plus retained11 and relevant transition regressions required.",
+    "Atomic witness, restored-trigger corruption and committed inverse are proposed executable tests, not runtime proof until executed.",
+    "Disposable operator-locked inverse demonstrates recovery only; shipping rollback procedure and Company lifecycle recovery remain separate.",
+    "No Company/release/production acceptance."
+  ]
+}

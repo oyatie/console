@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-ops-transport-acceptance-source-only",
+  "manifest_sha256": "7fdd4642f2437f9850fc53d269a13c80e831cf5e475eafd12f6fc82ad7422f47",
+  "candidate_transport_sha256": "c2caa8538cee61fbb5c74adef4b94c3349d640e4764fceab62f6f7b9e6f4f4c4",
+  "checks": [
+    "All eight packet hashes verified; preimages exactly approved packetA. Single pub(super) raw-byte oracle prefix and additive child declaration preserve prior bodies/tests/includes.",
+    "Thirteen actual malformed-header forms execute GET/HEAD, raw Authorization/Cookie byte no-echo checks, finite401 or emptyHEAD, private headers and exact no effects; genuine bearer querypositive validates projection/audit.",
+    "Pure transport selection distinguishes exact ops/orgs routes including query from trailing slash/sibling/nonread methods; no pure test claimed as real authorization.",
+    "Four real isolatedDB failures cover source, both projections and auth-looking audit exception; exact privilege/census prerequisite,503wire/privacy and allrows/catalog preservation/restoration plus same-token recovery.",
+    "Actual3second App timeout observes owning health query/blocker and pending task, keeps barrier through408, cleans owned transactions then validates no effects and recovery for GET/HEAD.",
+    "Dedicated preacquired observer and bounded task completion reused; no production injection/settings/API fault framework added."
+  ],
+  "findings": [],
+  "source_declared_tests": {
+    "sqlx": 4,
+    "tokio": 1
+  },
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Acceptance-only proposed ops API depends on exact admitted implementation; missing APIs/compile errors not lane RED.",
+    "Root must compose current source/includes and run actual5leaves plus retained list transport regression; no executed count inferred from source.",
+    "Source concurrency/fencing/expiry/COMMIT loss still require later packets; no whole ops or release qualification."
+  ]
+}

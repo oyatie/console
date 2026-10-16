@@ -1,0 +1,10 @@
+{
+  "root": {
+    "path": "/private/tmp/console-quiver-card-matrix-design-round1-root-review-20260920.json",
+    "sha256": "f27e3185718649f7c851bd09012f5e36267a30ce9242927e9db5dcd3cbc13549"
+  },
+  "security": {
+    "path": "/private/tmp/console-quiver-card-matrix-design-round1-security-review-20260920.json",
+    "sha256": "e41af0baf63f9971b6856ad030fa00adacbec2b3f018690f6f7df7a81c06aa3e"
+  }
+}

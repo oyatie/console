@@ -2,6 +2,9 @@
 
 use console_kernel_core::OrgId;
 use console_platform_auth::{PasskeyRegistrationStart, PasskeyService, WebauthnSettings};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::{PgPool, Row};
 use time::Duration;
 use url::Url;
@@ -54,14 +57,16 @@ fn service() -> PasskeyService {
 /// Register a discoverable passkey, then authenticate WITHOUT supplying a
 /// user_id. The user is resolved from the asserted credential at finish time —
 /// this is the usernameless sign-in path.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn discoverable_passkey_registration_and_usernameless_login(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let service = service();
 
     let registration = service
         .start_registration(
-            &pool,
+            &auth,
             OrgId::knl(),
             PasskeyRegistrationStart {
                 user_id,
@@ -89,7 +94,7 @@ async fn discoverable_passkey_registration_and_usernameless_login(pool: PgPool) 
         .unwrap();
 
     let stored_passkey = service
-        .finish_registration(&pool, OrgId::knl(), registration.ceremony_id, credential)
+        .finish_registration(&auth, OrgId::knl(), registration.ceremony_id, credential)
         .await
         .unwrap();
     assert_eq!(stored_passkey.user_id, user_id);
@@ -106,7 +111,7 @@ async fn discoverable_passkey_registration_and_usernameless_login(pool: PgPool) 
 
     // Usernameless authentication: start carries no user_id; the persisted
     // ceremony has a NULL user_id and an empty allowCredentials challenge.
-    let authentication = service.start_authentication(&pool).await.unwrap();
+    let authentication = service.start_authentication(&auth).await.unwrap();
     let ceremony_user_id: Option<uuid::Uuid> =
         sqlx::query_scalar("SELECT user_id FROM auth_webauthn_ceremonies WHERE id = $1")
             .bind(authentication.ceremony_id)
@@ -125,7 +130,7 @@ async fn discoverable_passkey_registration_and_usernameless_login(pool: PgPool) 
         .unwrap();
 
     let outcome = service
-        .finish_authentication(&pool, authentication.ceremony_id, assertion)
+        .finish_authentication(&auth, authentication.ceremony_id, assertion)
         .await
         .unwrap();
     assert_eq!(
@@ -137,11 +142,13 @@ async fn discoverable_passkey_registration_and_usernameless_login(pool: PgPool) 
 
 /// An assertion for a credential that is not registered must be rejected (the
 /// user cannot be resolved), and the ceremony stays the single-use, atomic kind.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn usernameless_login_rejects_unregistered_credential(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let service = service();
 
-    let authentication = service.start_authentication(&pool).await.unwrap();
+    let authentication = service.start_authentication(&auth).await.unwrap();
 
     // Drive an authenticator that never registered against this service.
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
@@ -154,7 +161,7 @@ async fn usernameless_login_rejects_unregistered_credential(pool: PgPool) {
     // somehow does, finish must still reject because the credential is unknown.
     if let Ok(assertion) = assertion {
         let result = service
-            .finish_authentication(&pool, authentication.ceremony_id, assertion)
+            .finish_authentication(&auth, authentication.ceremony_id, assertion)
             .await;
         assert!(result.is_err(), "unregistered credential must be rejected");
     }

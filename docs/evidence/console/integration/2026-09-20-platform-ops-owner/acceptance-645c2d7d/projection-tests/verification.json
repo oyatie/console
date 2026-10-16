@@ -1,0 +1,18 @@
+{
+  "source_leaves": {
+    "sqlx": 2,
+    "plain": 1
+  },
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "passed1.98.1 edition2024",
+  "parent_bytes_preserved": true,
+  "repository_mutations": false,
+  "dependency_sha256": {
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "2e6af32687931744fc234b070f88b7a77f7af9f37f5bbce4fe0209d112495e2d",
+    "backend/app/tests/auth_rest/fixtures/platform-source-install.sql": "6965be5e8d2b873bcbb4f49d72399850ef3c58dfaabd3c4dfdb56877b178eb2a",
+    "backend/app/tests/auth_rest/fixtures/account-native-deployment228-root-6c884418.sql": "d7b5c26c6e742fdb48c956339420f4761437e52a748a5d5b8c7663807e455cf2",
+    "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql": "64c88d4901d34e304cf9387fda8137891a47917c6ff275683d16dd70bbd669c3",
+    "backend/crates/platform/db/migrations/0145_console_route_telemetry.sql": "dbf68ee8974b2d41f2dec57e46d09a061a25cb45734f6f978a4a8480f2b3bd03"
+  }
+}

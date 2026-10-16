@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_tests",
+  "author": "/root/reference_inventory",
+  "verdict": "APPROVED_SOURCE_TEST_SUCCESSOR_ONLY",
+  "packet": "/private/tmp/console-native-company-schema-generator-tests-20260920-round1",
+  "manifest_sha256": "00748d1707af15289c2340cb2e07289fd0268493c469ae4024515ce9fba7e5e5",
+  "source_head": "f6a2cbf602ea20b154ae120a592eae5712f6fb92",
+  "executed_tests": 0,
+  "repository_writes": false,
+  "checks": [
+    "All manifest files and source-lock preimages verified exact.",
+    "In-memory patches apply exactly; complete preservation-test projection equals patch result.",
+    "All65 existing Buck test methods source-byte-identical; one additive resource method yields66 total.",
+    "Six historical SHA256 constants unchanged and all six existing disk outputs match.",
+    "Existing parser fixedSHA256cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290 matches disk and is added as a frozen predecessor.",
+    "Existing parser function/output/disk equality and CREATE FUNCTION/UNINSTALLED assertions preserved.",
+    "Exact generated output set expands seven to eight solely by new UNINSTALLED schema resource; no wildcard or weakened historical-byte assertion.",
+    "New schema function/output/disk equality requires all three table declarations and excludes them from all seven historical/parser outputs.",
+    "New Buck external-resource mapping and two fixture mappings match approved SQLx include_str paths. Existing general literal fixture test remains unchanged."
+  ],
+  "buck_test_postimage_sha256": "2e1922aef32b4c3dfe3b4b81b68ceea69acc9663478f9afe3d9a43a1f8b798cc",
+  "limits": [
+    "Marker assertions establish generator separation, not SQL safety or production readiness.",
+    "No schema/guard body, runtime generator modification, finalizer installation, migration, profile fingerprint reseal, or serving activation approved by this packet.",
+    "Root must demonstrate real RED/GREEN on the candidate and execute66 Buck-generator methods plus preservation test; reviewer ran only hash/AST/source calculations.",
+    "Existing independently approved SQLx boundary still requires actual execution; profile mismatch must remain.",
+    "Native revision ownership, request/event transitions, authenticated prepare/recovery and full release remain outstanding."
+  ],
+  "risk_controls": {
+    "pre_mortem": "Expanded output set could hide custody changes or missing Buck resources could mask intended owner-bound RED.",
+    "blast_radius": "One existing preservation method and one additive Buck regression.",
+    "detection": "Seven frozen predecessor hashes/disk equality and exact mapping assertions.",
+    "rollback": "Revert prospective generator/resource/test additions together before installation; preserve all historical artifacts.",
+    "stop": "Any historical/parser digest change, unreviewed source drift, missing referenced resources or production activation."
+  }
+}

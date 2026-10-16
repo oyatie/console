@@ -1,0 +1,103 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPTED_BOUNDED_NATIVE_BROWSER_PRODUCER_IMPLEMENTATION_AND_LOCAL_EVIDENCE",
+  "head": "ff785782971d3aaf46a566a56aea643a6a5a6c18",
+  "source_sha256": {
+    "tools/buck/gen_first_party.py": "ac4a1ec444d6588cf0b99e6ed9320e307a394bb3a547874af00e6b37ee6fac36",
+    "tools/buck/test_needs_postgres.sh": "7f8173acc6fbd05d0658336c3bf23fa02498ee2a6483da779be740deb8d32e74",
+    "tools/buck/BUCK": "7285aa961af3125d8510524a99b20c5187a0770a0fc5fbac15cc67db7bce72a7",
+    ".github/workflows/ci.yml": "58328feaf707cdd01a5295e2bc75dacec27c8753c9a86497bf728f984e316d84",
+    "scripts/check-ci-preflight.mjs": "363a98836b8c5af580f2183ca12f947a258f7808a009e8be514e72dbd5388784",
+    "backend/app/BUCK": "69e79ff1038749d54ec883b1c0712aa2d5fea4da7b231b594a6a735c879601e1",
+    "backend/app/tests/auth_rest/native_entry_browser.rs": "0540ddb5aac4aaa77d19125c1644498bdb5406d65424d967f0b96e4888fe31ff",
+    "backend/app/tests/auth_rest/native_company_browser.rs": "5741d4a033be256f3f274726e96379b48ef674e9603d5ab5291beca0afb52018",
+    "backend/app/tests/health_readiness.rs": "0d7ea0d47f304b18f7078eab19de6a6af5ae6ba9ae9d1dac25558c7d00bbf6d8",
+    "tools/browser/account.cjs": "1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664",
+    "tools/browser/company.cjs": "7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57",
+    "tools/browser/company-preview.cjs": "7e52a48f2e851457dba7d55fa0874fc10dc516506bdd5701b086f2fac4ee0ce6",
+    "tools/browser/hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
+    "scripts/check-ci-preflight.test.mjs": "482c9e94181e8faa5a8343e6bdf1ab8d2475446258e595f33c19b672c49835ef",
+    "tools/buck/test_gen_first_party.py": "4c34fe6e3f648fa4871dc1042cae62af24a0939f904bdb6c2b84f205893e222e",
+    "tools/browser/prepare_native_browser.sh": "46e4c2210c73a4bc89f53292b8dd05bc5729a127b48df1208c86be762c0d8cde"
+  },
+  "evidence_logs_sha256": {
+    "console-browser-retention-red-20260920.log": "03a9675c36533b1c9a35396fccdb84fbfde72009c949915d7b649e9990d36f54",
+    "console-browser-retention-ci-green-20260920.log": "7b4ae30d1056344db877b173a0d1f5c717bd5bf461c04969370cb009e6d3cdd5",
+    "console-browser-retention-ci-successor-green-20260920.log": "e157bf0ef394ea4ee8ea97f278df5d56540765ce2c613d06e17e211605eafe18",
+    "console-browser-retention-generator-green-20260920.log": "4a3072e48b28fc69ef9611b48adc4ef7efa84386d82cc6600bb4b2b22473b9f0",
+    "console-browser-retention-ci-gate-20260920.log": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+    "console-native-health-readiness-full-20260920.log": "07f6b34f9ad6bedd90d9ef25780a9e4acec7fe2b683fcb931d974d4db0c681e5"
+  },
+  "inherited_reviews_sha256": {
+    "console-native-browser-producer-source-security-review-20260920.json": "99f0f170403dfe76f427449edad91ba1f0a6d199d815a41abc8adeb46e559d4a",
+    "console-native-browser-installer-final-security-review-20260920.json": "3b1dc26e1245628fca327963ef9e2cf534e74a45b0402187d8e6e6ad38165563",
+    "console-native-browser-local-runtime-security-review-20260920.json": "4af81ee8cb1d438964bf85a7db897f08f6c51a377bb6d6558956e4843d5a23fb",
+    "console-native-health-browser-resources-review-20260920.json": "d01957938639e0d101e5f74a7405b6811c6d3f172510c63d8067dd3182166026",
+    "console-native-browser-retention-round2-security-review-20260920.json": "94ceb7a49511575e8b51db52ca27d71df6b1c6eba9bed7b7e0f6fb62da134f2f",
+    "console-native-browser-retention-order-tests-security-review-20260920.json": "42013506265cd11963b447a510bf4b3038b7a8d27796521174921e0cd774d317"
+  },
+  "findings": [],
+  "checks": [
+    "Every changed or untracked implementation file and both committed test successors independently hash-match the approved candidate, including all five tools/browser files.",
+    "Generated app BUCK AST differs approved prior5149c0c hash in precisely ordinary/browser health_readiness mapped_srcs: local src/lib.rs and two existing source-tree mappings. Every other AST node/target attribute unchanged; compiler-resource correction does not modify Rust assertions.",
+    "Installed retention workflow/gate/Python-test contract match round2 exactly. JS-test source matches independently reviewed chronological ordering successor482c9e9 exactly.",
+    "Retention negative generator probe actually executed3:2pass/1fail at missing guard. Final full generator65/65 includes same three browser methods; all prior methods preserved.",
+    "First full retention CI test run67/68 exposed reviewer-missed swap helper ordering precondition; retained failed log. Reviewed successor keeps helper and both mutants, adds parseability, and rerun68/68 passes. Gate independently reports passed.",
+    "Ordinary health_readiness discovers15, executes14passing, retains1preexisting ignored ADR0042 contract. Source comparison proves ignore annotation unchanged; ignored test is not executed acceptance.",
+    "Retained local browser receipt proves five executions:4pass across3distinct leaves,1Company creation failure;3additional pure oracles pass. Source/runtime/assets/cleanup bound in inherited immutable receipt.",
+    "Installer6/6 mocked tests and fixed supply-chain pins accepted within previous receipt; no production credentials, migration changes or historical custody resealing introduced."
+  ],
+  "counts": {
+    "generator": {
+      "discovered": 65,
+      "executed": 65,
+      "passed": 65
+    },
+    "ci_preflight_successor": {
+      "discovered": 68,
+      "executed": 68,
+      "passed": 68,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ci_preflight_predecessor_retained": {
+      "executed": 68,
+      "passed": 67,
+      "failed": 1
+    },
+    "retention_shell_invocations_within_one_test": 82,
+    "health_readiness": {
+      "discovered": 15,
+      "executed": 14,
+      "passed": 14,
+      "ignored_existing": 1
+    }
+  },
+  "sanitization_scope": [
+    "Exact retention filenames and pinned synthetic producers are approved; this is not a general arbitrary-secret scrubber.",
+    "Hydration request_diagnostics uses closed sanitized path/method/resource labels. cases[].requests separately retains token-filtered request pathname/method/resource; asset_responses retains full exact localhost/loopback test asset URLs. No claim all result fields are closed-roster.",
+    "Inspected current local results contain test loopback asset addresses and safe counters/hashes; no credential leak demonstrated. Raw headers, auth storage, TLS keys, traces and runtime directories are not upload targets."
+  ],
+  "remaining_holds": [
+    "Company creation remains actual failed test: COMPANY_FORM driver and unexpected-wrapper-keys owner panic; zero Company enrollment posts, no commit/reopen/workspace acceptance.",
+    "Historical Company preview no-form oracle needs separately reviewed successor during creation implementation.",
+    "Actual hosted Linux browser runtime, artifact upload/download/readback and assembled CI candidate qualification remain unproved by local macOS tests.",
+    "Current functional database/browser evidence does not qualify production durability, recovery, performance, security coverage, accessibility or representative-user usability.",
+    "No complete milestone, complete release, production exposure or direct payment execution acceptance from this bounded receipt.",
+    "Archive storage byte verification is separate from this source/runtime review; root is still assembling archive."
+  ],
+  "execution": {
+    "reviewer_product_tests": 0,
+    "reviewer_builds": 0,
+    "reviewer_browser": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

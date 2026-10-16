@@ -1,0 +1,33 @@
+▶ hasLiveCfgTestAttribute — false-dark controls
+  ✔ documents the RED substring defect the durable fix replaces (0.287709ms)
+  ✔ does not treat doc-comment-only #[cfg(test)] as live (0.094667ms)
+  ✔ does not treat line- or block-comment-only #[cfg(test)] as live (0.043792ms)
+  ✔ does not treat string-literal-only #[cfg(test)] as live (0.034541ms)
+  ✔ still detects a real #[cfg(test)] attribute (fails closed on live tests) (0.044709ms)
+  ✔ still detects live attribute when a doc comment also mentions it (0.047167ms)
+✔ hasLiveCfgTestAttribute — false-dark controls (0.952708ms)
+▶ unitTestedCrateSrcRoots — inventory + examined-zero
+  ✔ excludes crates whose only hit is a doc comment (0.365833ms)
+  ✔ includes crates with a live #[cfg(test)] under src/ (0.334625ms)
+  ✔ fails closed when examined src inventory is empty (0.17825ms)
+✔ unitTestedCrateSrcRoots — inventory + examined-zero (0.977167ms)
+▶ cargoTestKind — cargo metadata lib aliases
+  ✔ maps default lib and explicit rlib/cdylib to cargo test --lib (0.080583ms)
+  ✔ keeps integration tests and drops bins (0.031334ms)
+✔ cargoTestKind — cargo metadata lib aliases (0.151917ms)
+▶ gate wiring
+  ✔ routes definedBinaries through the comment-aware helper, not raw includes (0.399042ms)
+✔ gate wiring (0.419417ms)
+▶ Cedar SDK identity workflow reachability
+  ✔ domain-unit invokes the complete SDK identity binary and retains the existing Cedar invocations (7.1695ms)
+  ✔ the static attribute baseline records the two existing SDK identity tests (0.386416ms)
+  ✔ rejects nonexecuting and partial workflow claims (0.437542ms)
+✔ Cedar SDK identity workflow reachability (8.049291ms)
+ℹ tests 15
+ℹ suites 5
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47.242958

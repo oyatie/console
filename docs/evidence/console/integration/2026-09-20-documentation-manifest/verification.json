@@ -1,0 +1,59 @@
+{
+  "observed_base_head": "d7b4338e126b8a36b04e6de8b265e53122c6036a",
+  "private_fixture_index_tree": "7a2495737e7fce14af279995cfbd67eee23592c5",
+  "seed_git_blob": "dfc55add42596953ad34c6b207b2ba8766832861",
+  "seed_sha256": "616c760eddbe270b58676622263015df21a2503ffdeac3bbe407369905bc70d2",
+  "candidate_seed_sha256": "d3c107e187b87ffa0c0245ad622d3889c160e7db606480bea3a93cb2fa959f25",
+  "existing_records_preserved": 458,
+  "missing_records_added": 16,
+  "candidate_records": 474,
+  "only_metadata_files_changed": [
+    "docs/documentation-index.json",
+    "docs/documentation-manifest.seed.json"
+  ],
+  "source_evidence_files_modified": false,
+  "source_repository_modified": false,
+  "authorities_transitions_entry_preserved": true,
+  "classification": {
+    "class": "evidence",
+    "status": "frozen",
+    "owner": "repository maintainers",
+    "retention": "retain",
+    "replacement": null,
+    "archive_tag": null
+  },
+  "executed": [
+    {
+      "command": "node /private/tmp/console-client-release-20260919/scripts/console/generate-documentation-manifest.mjs --write",
+      "cwd": "/private/tmp/console-documentation-manifest-repair-20260920/fixture",
+      "exit": 0,
+      "effect": "privatefixtureonly"
+    },
+    {
+      "command": "git add -- docs/documentation-manifest.seed.json docs/documentation-index.json",
+      "cwd": "/private/tmp/console-documentation-manifest-repair-20260920/fixture",
+      "exit": 0,
+      "effect": "privatefixtureonly"
+    },
+    {
+      "command": "node /private/tmp/console-client-release-20260919/scripts/console/generate-documentation-manifest.mjs --check",
+      "cwd": "/private/tmp/console-documentation-manifest-repair-20260920/fixture",
+      "exit": 0,
+      "result": "documentation manifest OK (474 markdown files)",
+      "sandbox_note": "initial default-sandbox attempt failed fresh archive-ref fetch; preserved command-3.log; network-enabled retry verified unchanged existing signed archive"
+    },
+    {
+      "command": "node /private/tmp/console-client-release-20260919/scripts/check-doc-links.mjs /private/tmp/console-documentation-manifest-repair-20260920/fixture",
+      "cwd": "/private/tmp/console-documentation-manifest-repair-20260920/fixture",
+      "exit": 0,
+      "result": "doc links OK (474 markdown files)",
+      "sandbox_note": "network-enabled existing signed archive verification"
+    }
+  ],
+  "local_link_failure_diagnosis": "Supplied verify.log lines127-142 report precisely16missing document records. Checker also traverses links; no missingtarget/escape diagnostic appears. Unchanged checker passes all474files with only repaired metadata in privatefixture.",
+  "remaining_holds": [
+    "Root must apply exact16seedrecords and regenerate currentmetadata using unchangedtool after staging intended docs. Then stage seed/index and run both actualtree checks.",
+    "Later newlytrackedMarkdown requires explicit classification; generated write never invents semantic evidence class.",
+    "No historical evidence content link or archivepin was modified."
+  ]
+}

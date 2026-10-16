@@ -1,0 +1,47 @@
+[2026-09-21T16:52:52.351-04:00] Build ID: 45aa0341-1800-41c5-8875-c72c61678fe2
+[2026-09-21T16:52:52.356-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4424384848
+[2026-09-21T16:52:52.356-04:00] Directory changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4424384848
+[2026-09-21T16:52:52.356-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc
+[2026-09-21T16:52:52.356-04:00] 287 additional file change events (since mergebase)
+[2026-09-21T16:52:52.356-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:52:58.904-04:00] ✓ Pass: root//backend/crates/payroll/ui:console-payroll-ui-unit (0.0s)
+[2026-09-21T16:52:58.904-04:00] ---- STDOUT ----
+[2026-09-21T16:52:58.904-04:00]
+[2026-09-21T16:52:58.904-04:00] running 29 tests
+[2026-09-21T16:52:58.904-04:00] test private_document_tests::ssr_private_frame_oracle_rejects_missing_permissive_and_duplicate_policies ... ok
+[2026-09-21T16:52:58.904-04:00] test private_document_tests::ssr_private_shell_response_preserves_anonymous_document ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::empty_runs_match_unauthenticated_shell ... ok
+[2026-09-21T16:52:58.904-04:00] test people_tests::people_directory_keeps_authorized_empty_states_separate ... ok
+[2026-09-21T16:52:58.904-04:00] test people_tests::empty_rows_normalize_to_authorized_empty_without_dummy_records ... ok
+[2026-09-21T16:52:58.904-04:00] test people_tests::employment_rows_preserve_people_failure_with_its_own_recovery ... ok
+[2026-09-21T16:52:58.904-04:00] test people_tests::people_directory_preserves_independent_failure_next_to_authorized_rows ... ok
+[2026-09-21T16:52:58.904-04:00] test people_tests::people_directory_omits_denied_sections_without_denied_counts_or_actions ... ok
+[2026-09-21T16:52:58.904-04:00] test private_document_tests::ssr_private_runs_response_preserves_empty_and_authorized_documents ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::authorized_runs_island_owns_a_presentation_only_status_filter ... ok
+[2026-09-21T16:52:58.904-04:00] test people_tests::people_directory_has_keyboard_inspectors_and_exact_identity_relationships ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::organization_orders_children_under_known_parents_without_invented_company_links ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::organization_preserves_partial_read_failure_and_offers_real_reload ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::payroll_empty_failure_and_denied_remain_distinct_with_no_unavailable_actions ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::authorized_runs_carry_contract_keys_and_omit_won ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::organization_retains_orphans_and_cycles_once_without_fabricated_ancestors ... ok
+[2026-09-21T16:52:58.904-04:00] test private_document_tests::ssr_private_native_documents_retain_status_bytes_and_restrictive_csp ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::payroll_preserves_one_record_representation_inside_its_working_filter ... ok
+[2026-09-21T16:52:58.904-04:00] test private_document_tests::ssr_private_screens_response_preserves_all_focus_and_disclosure_states ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::payroll_explains_period_review_evidence_and_payment_boundary_without_fake_decisions ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::shipping_screens_empty_matches_unauthenticated_shell ... ok
+[2026-09-21T16:52:58.904-04:00] test workspace_tests::workspace_navigation_never_advertises_denied_or_unimplemented_destinations ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::shipping_screens_focus_keeps_authorized_nav_and_omits_wasm_off_payroll ... ok
+[2026-09-21T16:52:58.904-04:00] test workspace_tests::workspace_focused_pages_have_a_named_main_and_keyboard_navigation ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::shipping_screens_home_composes_authorized_sections_only ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::shipping_screens_organization_is_ssr_contracts_and_omits_wasm ... ok
+[2026-09-21T16:52:58.904-04:00] test ssr::theme_tests::native_account_asset_and_workspace_share_one_light_theme ... ok
+[2026-09-21T16:52:58.904-04:00] test tests::shipping_screens_hr_is_ssr_contracts_and_omits_phone ... ok
+[2026-09-21T16:52:58.904-04:00] test workflow_presentation_tests::organization_duplicate_identity_is_a_conflict_and_deep_chains_remain_bounded ... ok
+[2026-09-21T16:52:58.904-04:00]
+[2026-09-21T16:52:58.904-04:00] test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+[2026-09-21T16:52:58.904-04:00]
+[2026-09-21T16:52:58.904-04:00]
+[2026-09-21T16:52:58.904-04:00] ---- STDERR ----
+[2026-09-21T16:52:58.904-04:00]
+[2026-09-21T16:52:58.910-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

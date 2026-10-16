@@ -1,0 +1,120 @@
+{
+  "reviewer": "integration_security",
+  "decision": "APPROVE_EXACT_FIVE_STAGED_PATHS_BOUNDED_GUARD_SOURCE_AND_RUNTIME",
+  "base": "458fb682eee64bb72af264bfe2b542343d0acff7",
+  "source_lock_sha256": "ea0b3a11e631515eebe98e35432d15219c1f8ac9290183d25f1dd9ae50880fe6",
+  "files": {
+    "backend/app/BUCK": "72ae6c9e19fd3b7842962cc3a96af614d2e7a3f08bd2a8bb93a416c8512fa251",
+    "ops/BUCK": "83b2a44a5166f6b7557f4c29d0696bac2d58c5ab077064f1e0c0cbc95de0a96d",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "ops/postgres-company-enrollment-guards.sql": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a",
+    "tools/buck/gen_first_party.py": "4eeb806a10282f7b4fe6d9d75e9c25295a4e4b8a72f7b3a66217f3f2e571d652"
+  },
+  "test_sources_unchanged_from_base": {
+    "backend/app/tests/auth_rest/native_company_intake_guards.rs": "d088e3e201249a686476383b5bdaed9b66a603b9715014e15ebd1ea15f6a85db",
+    "backend/app/tests/auth_rest/native_company_intake_owner.rs": "73097a7b70b6e1602de7313caa97b750fe91838ec189401a164b37eb4b0335ab"
+  },
+  "source_review": "/private/tmp/console-company-intake-guards-implementation-source-security-review-20260920.json",
+  "source_review_sha256": "4bcd629a9ac4bb042f241d32e746d099e6052c3c59764a5ec18646ca4f722ef4",
+  "results_sha256": "d01a338c64c4d6a16c27d2b30e434b869727a682490d28c6264749151708ae40",
+  "runtime": [
+    {
+      "leaf": "company_intake_guards_catalog_and_real_prepare_cancel_remain_valid",
+      "exit": 0,
+      "log": "/private/tmp/console-company_intake_guards_catalog_and_real_prepare_cancel_remain_valid-native-20260920.log",
+      "sha256": "7c0afc4e8578b70245b63e23145e0fe09c9a4591c8b7061c4e54b3209613251e",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 499,
+      "parent_declared_exact_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_catalog_and_real_prepare_cancel_remain_valid bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+    },
+    {
+      "leaf": "company_intake_guards_owner_rewrites_and_partial_transition_fail",
+      "exit": 0,
+      "log": "/private/tmp/console-company_intake_guards_owner_rewrites_and_partial_transition_fail-native-20260920.log",
+      "sha256": "fd3d99d6b0163a1eb82277b70b5c4c453a9b975c6836f7088bd1d6bb89d19979",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 499,
+      "parent_declared_exact_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_owner_rewrites_and_partial_transition_fail bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+    },
+    {
+      "leaf": "company_intake_guards_missing_event_fails_deferred_forcing_and_commit",
+      "exit": 0,
+      "log": "/private/tmp/console-company_intake_guards_missing_event_fails_deferred_forcing_and_commit-native-20260920.log",
+      "sha256": "9ee56a87e121dfabbf9b0f3ce0209941904b658a1ccc33e91e3c2e50a105c994",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 499,
+      "parent_declared_exact_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_missing_event_fails_deferred_forcing_and_commit bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+    },
+    {
+      "leaf": "company_intake_guards_final_inserted_event_cannot_change_time",
+      "exit": 0,
+      "log": "/private/tmp/console-company_intake_guards_final_inserted_event_cannot_change_time-native-20260920.log",
+      "sha256": "82d9fd64dba582c38bcb6950fcb2e57855f399fe07d91b9e58cfd40d8b56a5ef",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 499,
+      "parent_declared_exact_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_final_inserted_event_cannot_change_time bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+    },
+    {
+      "leaf": "company_intake_guards_nonempty_private_install_is_not_retroactive_acceptance",
+      "exit": 0,
+      "log": "/private/tmp/console-company_intake_guards_nonempty_private_install_is_not_retroactive_acceptance-native-20260920.log",
+      "sha256": "cdb40a317d032b5846767ecbb2e7b3111f6881267e1ca22984faaed1c429f70c",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 499,
+      "parent_declared_exact_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_nonempty_private_install_is_not_retroactive_acceptance bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+    },
+    {
+      "leaf": "company_intake_guards_install_rechecks_empty_after_real_prepare_wait",
+      "exit": 0,
+      "log": "/private/tmp/console-company_intake_guards_install_rechecks_empty_after_real_prepare_wait-native-20260920.log",
+      "sha256": "6391d4af2aaab6f07876080651b98fcb9402f8cba22f71c3263fe44824c61872",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 499,
+      "parent_declared_exact_command": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_install_rechecks_empty_after_real_prepare_wait bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+    }
+  ],
+  "binary_independently_hashed": {
+    "path": "/private/tmp/console-client-release-20260919/buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+    "sha256": "3d292a1f4953b1661499b502d5bd4567d49a1fcda4ce8a385c66309df3494fed",
+    "bytes": 401181800,
+    "discovered": 500,
+    "list_log": "/private/tmp/console-company-guards-binary-discovery-20260920.log",
+    "list_sha256": "94757c708b486315e9c6e9ed0f218f499d61f21b61ee31e6dd2b35b39fb9d3b0",
+    "head": "458fb682eee64bb72af264bfe2b542343d0acff7"
+  },
+  "binary_metadata_sha256": "b92f02e73893d6353fb366a49e315a1231e7b3127071146100142c2743c569a8",
+  "checks": [
+    "Exactly five staged paths and their working bytes still match approved source lock; both guard and owner test files match exact test base.",
+    "Independently hashed actual401181800byte binary; discovery log exact hash and500test entries checked.500is discovery, not executed total.",
+    "Six named leaves each1passed/0failed/0ignored/499filtered; all6completed, including actual in-flight prepare/installerAEXwait/post-wait nonempty refusal.",
+    "Previously source-reviewed generator68passed/preservation1passed and generation check retained.",
+    "No failed native guard attempt reported or present in this six-entry result set."
+  ],
+  "remaining_holds": [
+    "Only private UNINSTALLED empty intake invariants accepted; complete Company effects/HTTP/current context lane remains RED.",
+    "Actual168hour expiry-positive, terminal payload cleanup, populated migration/activation, production/recovery qualification remain outstanding.",
+    "Future adapter must invoke signed guard finish before commit; SQL invariant guards do not authenticate browser caller.",
+    "Not approval to expose service or mark any milestone/full release complete."
+  ],
+  "reviewer_tests_executed": 0,
+  "reviewer_sql_executed": 0,
+  "repository_writes": 0
+}

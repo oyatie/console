@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root",
+  "author": "/root/integration_tests",
+  "verdict": "APPROVE_EXACT_ORACLE_CORRECTION",
+  "manifest_sha256": "6715d5e8004b00ca9ef333c499a1c0ae03ebc72008593338a1b63ef4fa29d678",
+  "checks": [
+    "Exact one-line diff verified against original immutable driver",
+    "Exact full rendered owner paragraph requires singleton",
+    "Strict transport snapshots protocol and all other driver bytes preserved",
+    "Node syntax pass; machinery1 positive12 corruptions pass"
+  ],
+  "runtime_executed": 0,
+  "holds": [
+    "Actual rerun and independent browser/visual acceptance required",
+    "No Company command acceptance"
+  ]
+}

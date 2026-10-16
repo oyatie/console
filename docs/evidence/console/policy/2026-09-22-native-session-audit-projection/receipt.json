@@ -1,0 +1,118 @@
+{
+  "status": "implemented and targeted verification; full browser workflow remains RED, not integration acceptance",
+  "base": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "owner": "/root",
+  "source_sha256": {
+    "backend/app/BUCK": "97c5b21b574295fa1529140219e6129e9e15095e582ee215f1d5f77e5fd2c89e",
+    "backend/app/tests/auth_rest.rs": "f5ff65a94808a70e240c47e1b34b2a96b316fdf743467081afdb5ad58f8e12ae",
+    "backend/app/tests/auth_rest/native_business_session.rs": "1793b32e75ebd1117c09a7daaf210a4feeaef1cc0a52996f6bfeb955140af00f",
+    "backend/crates/identity/application/src/company_policy.rs": "600fe64257cec3ac81663037b34a0db1ed891b6c9ef07151a607720ded526a93",
+    "backend/crates/identity/domain/src/lib.rs": "c59a7a927c6edb5f3d5e97d727652bc161cde7cc193a1d6fc8d7b0f2850220db",
+    "backend/crates/kernel/core/src/audit.rs": "fd63ef68fbe30e21b2dbfb2573f06fb82c62d723579909bc71cf13a78c45fbd9",
+    "backend/crates/kernel/core/src/ids.rs": "f01b6a5754686cde747a3a9673454966b9b2b19747a817240d339e4014c9fc89",
+    "backend/crates/platform/auth/src/account.rs": "7d47fa81d0d77b325180e5cf8bd3cd5d5446efce04e37128dc5c879c4fc1933a",
+    "backend/crates/platform/auth/src/session.rs": "8e202702ab9d92ebea4d8de18ccb8bcb5870bcdcfe1292fb30f523209e508b17",
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "8cb167b088bf6b3c3fefe068b8f7bc3c17e06ceaf5b7aa2ee23e1bd81dfabddd",
+    "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs": "769662d27e803cb21942225de84dfc840fcc966bba90bd9627b9adbfbee25440",
+    "backend/crates/platform/db/src/audit_tx.rs": "9d8b1400ae1fed161762968831d52daba956958c369db03a4a425624db826740",
+    "backend/app/tests/auth_rest/native_account_audit_typed_tests.rs": "aebdf6e2ea61d5d71f2eaebdc9d56ee5d87efbce3a45d85605212350a27eddf6",
+    "backend/crates/identity/domain/src/account_id_compatibility_tests.rs": "b661f2a9ebb84a1bfd348143652dbd5d7a8e0daa69ee54c138c1a544957e675e",
+    "backend/crates/kernel/core/src/audit_account_tests.rs": "58d92b28d134a59b212f2232ffe48ce96a2df1c146546973ca8fb8075f656079",
+    "backend/crates/kernel/core/src/audit_legacy_wire_tests.rs": "ebf377818a036360e581b15856222108edb000f454c2de5d1302bdd0dc0629e2"
+  },
+  "proof": {
+    "kernel_legacy_before": {
+      "executed": 45,
+      "passed": 45
+    },
+    "kernel_after": {
+      "executed": 47,
+      "passed": 47
+    },
+    "identity_domain": {
+      "executed": 8,
+      "passed": 8
+    },
+    "authz": {
+      "executed": 131,
+      "passed": 131
+    },
+    "typed_audit_pg": {
+      "executed": 1,
+      "passed": 1,
+      "filtered": 523
+    },
+    "auth_helpers_pg": {
+      "unique_tests": 4,
+      "executions": 5,
+      "passed": 4,
+      "failed": 1,
+      "filtered_per_execution": 523
+    },
+    "generator": {
+      "executed": 72,
+      "passed": 72,
+      "seconds": 2.239
+    }
+  },
+  "failures": [
+    "First App compile found nonexistent JwtVerifierConfig.private_key_pem in additive test helper; independently reviewed fix uses actual SigningKey. No assertions changed.",
+    "Sandbox daemon/Docker denial executed zero tests; original local logs preserved in stage.",
+    "Concurrent Buck command cancelled first authorized audit test build; zero tests; later serial run passed.",
+    "Expired-proof test first failed in unchanged enrollment session-expiry oracle before new code, then passed unchanged. Positive Docker-host skew measured later; exact failed clock values absent. Harness cross-clock sensitivity remains unresolved.",
+    "Initial index staging denied by sandbox; generator suite then ran72 with1 stale-unstaged-BUCK failure. Authorized staging followed by same72 tests passed; no generated/test relaxation."
+  ],
+  "format": "Only post-test edit wraps shared parser call with rustfmt; tokens and behavior unchanged. Source review names preformat hash.",
+  "invocations": {
+    "units": "env PATH=<pinned-dotslash> tools/buck2 test -j1 -c root//project.ignore=.git,backend/target <target>",
+    "unit_targets": [
+      "//backend/crates/kernel/core:console-kernel-core-unit",
+      "//backend/crates/identity/domain:console-identity-domain-unit",
+      "//backend/crates/platform/authz:console-platform-authz-unit"
+    ],
+    "postgres": "env CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK=<archived buck2-one-action> CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=<full test name in log> PATH=<pinned-dotslash> bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg"
+  },
+  "remaining": [
+    "canonical policy writer/readers/Cedar/forms/payroll authorization integration",
+    "five connected business workflows and production UI",
+    "full release qualification",
+    "unchanged cross-clock test-oracle sensitivity"
+  ],
+  "rollback": "Additive uncommitted Rust changes removable before integration; no new database protocol written, no historical command/audit bytes resealed.",
+  "pre_mortem": "Misattributed Account audit, renewed form proofs or fake Company epochs could undermine later policy commands.",
+  "detection": "Exact legacy serialization controls, actual restricted runtime commit/rollback, four real Auth histories, strict old/new projection corpora.",
+  "blast_radius": "Shared identity type/common audit writer and Auth helper; no SQL text or schema change.",
+  "stop_conditions": [
+    "historical byte drift",
+    "unreviewed semantic test change",
+    "current-source integration mismatch"
+  ],
+  "artifacts_sha256": {
+    "typed-audit-pg-authorized.log": "42cef07fcde17dcab5dee47928a241cbdc8c5d4e5476796b4c4ecc599027427d",
+    "typed-audit-pg.log": "7a32197383dce9db1797df86d8d8d225789f1441b7770a781256fdc78c690900",
+    "auth-tests-round2-review.json": "8fa6a93eda8f42134dd66aa1cf41c1a34ca1982cfc54d1376426158ccf744566",
+    "audit-tests-review.txt": "118b801d036dbe25c546e72063da3a15b1aa26c5cac6c129c497b827e0fcaefb",
+    "auth-review.json": "e3e6e464d94e6644e57d484d9441e86e87401d3ce272c3165079744cef83b758",
+    "clock-investigation.txt": "67757c4e29ae837b46d48f2bbe747e0ef43eb515a9e3d3a02ed9d37dad05250f",
+    "legacy-audit-baseline.log": "e16e040285336a82693b826c028504fb1ceafb975e389d8bdb04e838a7dba20a",
+    "dependency-generator-tests.log": "603a2de12e2e50bfda3055e25a82bd9367a4b47b144de99e20d9af5cc779b191",
+    "audit-review.json": "58bbf8e1c178f71fab2238c66a95e766cdd4d006c8f2803a8d13381eda9ba624",
+    "native_form_expired-round2.log": "8c51e817dff72011cf066008ad8a5fea684c3d0f9a12d4d1a3c07f0f96b14b17",
+    "native_form_helpers_issue_recheck_and_reuse_same_proof_across_transactions.log": "ddfeeab9c5029b3049398612c3d502d91bbb40f4a6088d869792f1a23b4812c7",
+    "dependency-generator-tests-staged.log": "d6beca3e0f09e42a4c4c0c1d408fa11d05a557adff0423fe1f83f47fd5c0b9d6",
+    "typed-audit-pg-round3.log": "585c97e84ae352acc8551b9da26481f21b178d74730dccc1915663eeec8cbb34",
+    "current-projection-authz.log": "5b966f4286468a149ad2e0012be6219ec860c0ed2768c1faa9c1c2e73b5b8c8b",
+    "run-auth-helper-tests.sh": "d92e5d1dd4b0facee4db9a29efed4d5ddea44a6d314a9e29c86b1b021e05a90b",
+    "projection-review.json": "8e74a3d7d307849c716d3ea55b346b7d52baf00e48eaa03db9d0e4feb5125e4a",
+    "auth-fixture-review.json": "2751fe1ec0c568f271a7a9831aec0ba814a187a4233a3c3f6fedb08501821901",
+    "buck2-one-action": "cf590d44b33b5cb326041f49104e3bde9dec96103c2aa14eda2831c4cc6ce939",
+    "auth-tests-review.json": "353c4d3c817a1cfb3d152c56faea6e5710e223749538aa748b46765db6a3181f",
+    "docker-clock-samples.json": "3bd19987113431db46f7dbfee4886e0ff4ea659cc8e0adb56ecf781bea638d84",
+    "native_form_issuer_verifier_mismatch_is_unavailable_without_effects.log": "e38946f43eb82492a3226810e04dd234f301f62f69b8c369320575567c610758",
+    "native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs.log": "d6e098e64679ec4db49972102a5bbefd32a77d60563ed158073c392f66447b98",
+    "projection-tests-review.json": "48178f25039e7deb8158afc3f1648ae1752e52f2a7b2a66d778c1ed62d26e2fa",
+    "native_form_helpers_reject_expired_signed_proof_and_accept_current_control.log": "cf74a0ad119c0ff482bb6efa94efd0dc321c8e47375d0e570b52ad8c939392ea",
+    "typed-audit-kernel.log": "30b848dd0858477f7247524ef0a45dad042cfacfb5c629a59c4e5d09253230ed",
+    "typed-audit-identity-authorized.log": "4c27104d522f3ab83f04199b080f4bdbd265586866b44274115d3957f8c7216f"
+  }
+}

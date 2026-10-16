@@ -1,0 +1,2 @@
+thread 'account_browser::native_entry_public_root_exposes_discoverable_routes' (63304774) panicked at backend/app/backend/app/tests/auth_rest.rs:4136:22:
+called `Option::unwrap()` on a `None` value

@@ -1,0 +1,61 @@
+{
+  "base_sha": "9f2fb85307b28911d4bdc17813496df5b195f26f",
+  "status": "native integrated Company creation/reopening prerequisite passed; local unpublished evidence",
+  "root": "/private/tmp/console-mvp-dev-integrate-20260921",
+  "browser": {
+    "target": "//tools/buck:app-auth-rest-browser-pg",
+    "test": "account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace",
+    "passed": 1,
+    "failed": 0,
+    "filtered": 522,
+    "seconds": 10.42,
+    "checkpoints": 3,
+    "raw_log_sha256": "e0134aa8e5b4b55d604bf7f19d302f30672e4802010fb78068d1dd5f17670471",
+    "log_redaction": "Only transient public GitHub release-asset signed download query strings omitted; original raw log retained at/private/tmp/console-integrated-company-browser-20260921.rrRIPz/run.log"
+  },
+  "hydration": {
+    "generator": "python3 tools/buck/gen_hydrate.py --reindeer /private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/reindeer/bootstrap.sh",
+    "producer": "bash tools/ui/build-payroll-wasm.sh -j2 -c root//project.ignore=.git,backend/target",
+    "producer_build_id": "c4f2a421-eb07-45cb-b013-b8c8f5648ef5",
+    "check": "python3 tools/ui/wasm_bundle.py check:exit0",
+    "js_wasm_bytes_unchanged_from_base": true,
+    "changed_files": [
+      "backend/crates/payroll/ui/bundle.lock.json",
+      "third-party/rust/hydrate/input-lock.json"
+    ],
+    "tool_bootstrap": "Repository-pinned Reindeer bootstrap compiled its tool using its locked toolchain; product JS/WASM produced by native Buck actions"
+  },
+  "tests": {
+    "corrected_command": "python3 -m unittest tools.buck.test_gen_first_party tools.ui.test_wasm_bundle",
+    "passed": 84,
+    "failed": 0,
+    "seconds": 5.129,
+    "prior_invocation": "Invalid nonexistent tools.buck.test_gen_hydrate module produced1import error; failed invocation retained separately, not product failure or pass"
+  },
+  "reviews": [
+    "/root/company_scope_review",
+    "/root"
+  ],
+  "remaining_holds": [
+    "Full policy installation/grant/revoke browser journey and real owner",
+    "Company cancellation, expiry, unknown-response browser histories",
+    "Five working polished MVP workflows",
+    "Full release/security/migration/operational qualification and separate production exposure"
+  ],
+  "artifacts": {
+    "01-public.png": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023",
+    "02-terms.png": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e",
+    "03-account-enrolled.png": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+    "04-company-created.png": "a03e7e9edd30c839e6458074b6e5f0dc655be463d73a1accbdcfdfe3f9319bfe",
+    "05-company-workspace.png": "08af352d2f61b70164c4d29ec6fba7b2e9b1e851551fe83b5b4c1f64de68e39a",
+    "browser.log": "4fa50a1e0b616743b7d5e501ba88fd55be9f6661fa5f0875ebcebd34d4c3a159",
+    "generator-tests-invalid-invocation.log": "4164da638f98c38e6e6a195345ba385ef31ec6a62508ee41484a64da4ab78f28",
+    "generator-tests.log": "327d483411a3646c5043b8a5c48025ce08ec82b13b84f00dbd2aee8ac6ba5894",
+    "hydration-build.log": "f7648b13e7b5c8b5e685b66e862f278e8cfc5db559fc98cda27c13da57566f55",
+    "hydration-source-snapshot.json": "0fca29c712999c68ca2b214a0901af721caeed39678299b229f1a3e6a39fa392",
+    "invocation.sh": "a8376fd05277ae5ece0c4110d06e638cb3186df094e32290bdfcc785bae6baf9",
+    "owner-receipt.json": "6b03c00a8b304db603b38d6b02825de858229fbc147f13e30a2339de47c9632c",
+    "result.json": "1ac78afa560fdec9292fbc17edf12dbda505e2a7871cec84f51f82fd16a968a2",
+    "independent-review.json": "b5ea492c28504827c9fc6f5ce59875e6c46a0d76d5a592827b5c0d3a1f01699e"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_EXACT_MIGRATION_SOURCE_RUNTIME_PENDING",
+  "base": "bb215ee2ac706238d051d75ac623ccf92cc2a90b",
+  "migration_sha256": "f847d19fd72ae6605dc7bbccc96f46fa5ad5d8c03601229a873f9ee233293bcc",
+  "ledger_before_sha256": "736d28bc7b3b5cf15ca4c341fd3622dc76521db9dbf974b75cef7e73eb68fbf5",
+  "ledger_after_sha256": "6a7e45857de4892b314243679a3558b0b6f09122d838d484803dfc0a82455b27",
+  "migration_sha384": "08ece6d6edf558d06eff11297da18184e9a762ff4f5455fab135c84a1b34dbef449b6c957f3d7fce197af113f821a659",
+  "facts": [
+    "Only new0229 comment block plus GRANT UPDATE(employee_id) ON public.employee_person_bindings TO console_rt.",
+    "Ledger exactly original228-line bytes plus229/tab/currentSHA384/newline.",
+    "Every228 historical migration compared byte-for-byte with exact base; unchanged.",
+    "Canonical generator and approved prerequisite test source unchanged.",
+    "Actual native prerequisite RED executed1: expected42501 at actual Business FOR SHARE,17filtered. Admission log confirms same probe red.",
+    "Migration safety gate passed."
+  ],
+  "logs_at_review": {
+    "/private/tmp/console-payrun-binding-lock-red-20260921.log": "d00699761bfa34831013107a82192ddf49d8436d2d3882958268268e4b780532",
+    "/private/tmp/console-payrun-binding-lock-admit-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-payrun-binding-lock-green-20260921.log": "14bdfa1614a5b6e323af32e1f09438ef9219c58cdd27dd5f968b3bb02c68902a",
+    "/private/tmp/console-payrun-binding-lock-migration-gate-20260921.log": "225518840567e0bf57a88e8f9e135b4b15c339afc3f9a3ec282cd785742b09f6"
+  },
+  "runtime_pending": "Focused GREEN log currently ends Buck cancelled Rejected before test execution; no GREEN or full18 acceptance yet.",
+  "limits": [
+    "Review tests/builds/SQL/browser execution0.",
+    "Grant adds only row-lock privilege; all historical affected-row UPDATE denial/forcedRLS assumptions must be verified by successful actual-login test.",
+    "Natural-Person payroll guard and native Account integration remain incomplete."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "kind": "initial-mounted-group-list-owner-red-private-proposal-round2",
+  "base_sha": "95e48111ad23abc1ebec7f1a0bd396b2deca4871",
+  "design_manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "files_sha256": {
+    "README.md": "a18cffa272d0b2dc02a4751bfb3ca7d49555b33cf625530a4299b6a454dad81b",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_group_reads.rs": "3ff0c9dfa0ec1ebb5d60b4ad5b8fa6519eaa4de51b9a03bf7e4dc8d2f3f1026a",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "f3bdc2e5ceb6d0c3e069655077c36d813fb381abb27c75312679ca3d5163314b",
+    "candidate.patch": "fe5a12c5907a3f7cc99e4f27cb9791ae1e67c804e691e9f2918b2feee2eec945",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "5c74247d562a089225e8238cca225d19b25d7273319e8069b4c2f4693e6f3c0f",
+    "revision.json": "27be4010c2e6354984a4a24474f1b4bbf1cde35990c82ebfdccd4c9d8a8f5c8f",
+    "test-roster.json": "39b1dbdc7eaccdd21bed55e928e3dff6691ff503a6b10c2f27465afba3914552"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

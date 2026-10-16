@@ -77,7 +77,12 @@ impl Harness {
         }
     }
 
-    fn service(&self) -> Router {
+    async fn service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -90,7 +95,10 @@ impl Harness {
         router(
             PlatformRestState::new(
                 self.rt_pool.clone(),
-                Some(verifier),
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
                 PlatformProvisioner::new(Duration::minutes(15)),
             )
             .with_tenant_config_seeder(Some(seeder(
@@ -232,12 +240,13 @@ async fn published_object_types(owner_pool: &PgPool, org_id: Uuid) -> Vec<String
 // ---------------------------------------------------------------------------
 // Onboarding seeds the standard governed-config catalog, org-scoped + isolated.
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn onboarding_seeds_governed_config_object_types(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let token = harness.platform_token(admin);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_a = onboard(&service, &token, "acme").await;
     let org_b = onboard(&service, &token, "beta").await;

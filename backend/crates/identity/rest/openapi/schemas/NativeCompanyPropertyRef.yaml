@@ -1,0 +1,8 @@
+type: object
+additionalProperties: false
+required: [org_id, object_type_id, property_id, schema_revision]
+properties:
+  org_id: {type: string, format: uuid}
+  object_type_id: {type: string, format: uuid}
+  property_id: {type: string, format: uuid}
+  schema_revision: {type: integer, format: int64, minimum: 1}

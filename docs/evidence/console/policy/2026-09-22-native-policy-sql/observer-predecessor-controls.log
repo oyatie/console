@@ -1,0 +1,21 @@
+BEGIN
+SET
+DO
+            state             
+------------------------------
+ company_enrollment.finalized
+(1 row)
+
+            state             
+------------------------------
+ native_company_policy.absent
+(1 row)
+
+DO
+              state              
+---------------------------------
+ native_company_policy.finalized
+(1 row)
+
+DO
+ROLLBACK

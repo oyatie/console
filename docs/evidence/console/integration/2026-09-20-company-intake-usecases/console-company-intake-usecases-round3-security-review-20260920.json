@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_INTAKE_PRODUCTION_ROUND3_AND_TEST_ROUND3_CANDIDATE",
+  "base": "83898f6ea46353b992768c8f52b91b5a62e39a46",
+  "production_manifest_sha256": "be30821df1dafa7a6cfdc6510d7b218cd66ce98d2df33d9a0cf2c171c0ed705c",
+  "tests_manifest_sha256": "785666be7ce545bb57a81386b67eaa1b246f1f00c5c7b0e3a87b6677850dd615",
+  "verified_production_members": 5,
+  "verified_test_members": 5,
+  "verified_current_source_locks": 7,
+  "findings": [],
+  "resolved_findings": [
+    "Actual deferred ownerP0001closure identities now mapUnavailable; communication/unknown/40003 remainsUnconfirmed. No unknown outcome becomes confirmed failed.",
+    "Cancel now rereads canonical status including codec under same guard and compares exact expected terminal/Missing projection beforefinish+commit.",
+    "Generic precommit40001 remainsUnavailable; Conflict only exact known digest-conflict identity.",
+    "Exact SQL current-consent refusal identities mapForbidden consistently with typedAuth, no genericP0001mapping."
+  ],
+  "checks": [
+    "Application adds ordinary typed port/usecases/projection validation. Existing V1 receives read-only getters only; historical parser/codec/test bytes preserved. No caller-controlled Account authority or setter.",
+    "PgOrgStore reuses configured verifier/TTL, same Business pool, READ COMMITTED/statement+lock bounds. Signed namespace precedes encode; appropriate Auth submit/status/cancel locks retain actual Account/family/mutationCSRF authority in same transaction.",
+    "OwnerSQL responses boundedLIMIT2 and exact cardinality; checked decoder validates codec1/non-nil account+command, retained pending codec account/command equality, exact terminal no-input/no-mixed-ID shape. Future committed shape requires four nonnil IDs/nonplatform org, but current SQL still refusesCOMMITTED.",
+    "Prepare checks ownerstate/receipt against status; legitimate PENDINGtoEXPIRED across status observation allowed. Cancel checks rereadstatus equality; Missing returns only afterguard.finish and confirmedcommit. All statement/decode/finalAuth failures discard transaction; no view before successful commit.",
+    "No new eligibility preflight: existing SQL determines newcommand eligibility while priorpending recovery remains available after deployment designation revoke. No schema/current grants/routes/serving activation or alternatewriter.",
+    "WIRING ordinary modules only; existing read config/transaction helpers gainpub(super) visibility with unchangedbodies. Existing configdoc broadens description only, no dependency change beyond mechanical Buck source maps.",
+    "Five newSQLx leaves use actual signed fixture, restrictedBusiness pool, realPgOrgStore/Application: exactprepare/reopen/replay/conflict/cancel/Missing/fullhistories; malformed/config/proof refusal; genuinelogout denial; designationrevoke deniesnew but preservesrecovery; six deferredcommitrefusal classifications.",
+    "Deferredtest creates isolated finite test-only trigger with sequence witness, reaches actualcommit and fullrollback for each servererror, removes injectedobjects, then samecommand succeeds/replays. This tests mapper/commit ordering, not genuine missing birth evidence or networkresponse-loss simulation.",
+    "Two pure projection leaves exercise exact preservedcodec/namespace, invalid/mixedterminal IDs and futurecommitted shape. They establish no liveauthority. Existing signed test body prefix is byte-exact, onlynew helpers/leaves appended."
+  ],
+  "authored_counts": {
+    "new_sqlx": 5,
+    "new_pure": 2,
+    "runtime_discovered": 0,
+    "runtime_executed": 0
+  },
+  "limits": [
+    "Source/testcandidate approval only. Root must execute actualnative tests and samecompleteCompanylane; compiler/prerequisite failures with0tests are notownerRED.",
+    "Actualnetworkloss/unconfirmed durablecommit recovery, fullbirthCOMMITTED SQL, terminalpayloadcleanup and168hourexpiry remain broaderrequirements, not supplied by injectedmapper test.",
+    "Complete Company/MVP/release remainsopen. No productionqualification/exposure acceptance.",
+    "Reviewer onlysource/Git/hash/log inspection/private receipt; no producttests/builds/SQL/browser or repositorywrites."
+  ]
+}

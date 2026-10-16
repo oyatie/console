@@ -1,0 +1,111 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "VERIFIED_FAILED_FAST_TIER_EVIDENCE_NOT_ACCEPTANCE",
+  "head": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "command": [
+    "npm",
+    "run",
+    "verify"
+  ],
+  "exit": 1,
+  "seconds_reported": 925.59,
+  "execution_receipt": "/private/tmp/console-mvp-focus-fast-verify-945dd534-20260920.json",
+  "execution_receipt_sha256": "bc2b3046bb3d5879029c0eff27a5868a965548441edfff767dc568d661fd5803",
+  "log": "/private/tmp/console-mvp-focus-fast-verify-945dd534-20260920.log",
+  "log_sha256": "963cff831055ee8653b5e7b620e1cc9bc88124a9e3ff1c3612be5c7696f7809f",
+  "failure": {
+    "final_failed_stages": 1,
+    "stage": "Executed-tests ratchet \u2014 a test binary must have a path from a workflow step",
+    "reason": "One reachable source gained static declared test attributes without baseline update. Exact candidate pins platform/auth/src/lib.rs11; approved producer adds2pure leaves. Named dark seaweedfs_worm source remains retained; log does not report new dark-source failure.",
+    "evidence_lines": [
+      1198,
+      1199,
+      1200,
+      1201,
+      1202,
+      1203,
+      1205
+    ]
+  },
+  "counts": {
+    "fast_stage_headers": 74,
+    "node": {
+      "tests": {
+        "summary_occurrences": 27,
+        "reported_sum": 1458
+      },
+      "pass": {
+        "summary_occurrences": 27,
+        "reported_sum": 1458
+      },
+      "fail": {
+        "summary_occurrences": 27,
+        "reported_sum": 0
+      },
+      "cancelled": {
+        "summary_occurrences": 27,
+        "reported_sum": 0
+      },
+      "skipped": {
+        "summary_occurrences": 27,
+        "reported_sum": 0
+      },
+      "todo": {
+        "summary_occurrences": 27,
+        "reported_sum": 0
+      }
+    },
+    "rust": {
+      "summary_occurrences": 334,
+      "timestamp_prefixed_native_summaries": 11,
+      "reported_pass_sum": 1815,
+      "failed_sum": 0,
+      "ignored_sum": 5,
+      "zero_executed_summaries": 175
+    },
+    "python": [
+      {
+        "reported_tests": 13,
+        "status": "OK"
+      },
+      {
+        "reported_tests": 19,
+        "status": "OK"
+      },
+      {
+        "reported_tests": 19,
+        "status": "OK"
+      },
+      {
+        "reported_tests": 16,
+        "status": "OK"
+      }
+    ],
+    "buck_target_summaries": [
+      "Pass 8. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0",
+      "Pass 1. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0",
+      "Pass 1. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0",
+      "Pass 1. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0"
+    ],
+    "not_mirrored_CI_step_occurrences": 22,
+    "gate_sweep": {
+      "passed": 16,
+      "failed": 0
+    }
+  },
+  "ignored_cases": [
+    "test ci/gates/fabricated-branch/src/lib.rs - (line 8) ... ignored",
+    "test ci/gates/fabricated-branch/src/lib.rs - continues_on_next_line (line 306) ... ignored",
+    "test crates/platform/db/src/audit_tx.rs - audit_tx::with_audit (line 48) ... ignored",
+    "test crates/platform/db/src/audit_tx.rs - audit_tx::with_org_conn (line 259) ... ignored",
+    "test crates/platform/db/src/versioning.rs - versioning (line 30) ... ignored"
+  ],
+  "limits": [
+    "Invocation summaries overlap and may repeat cases; sums are not a unique test aggregate. Buck Pass8/1/1/1 counts targets, not cases. Static declared3111attributes are not runtime execution.",
+    "Full log runs all74stage headers despite one failed ratchet stage; no GREEN fast-verifier claim is warranted. Final FAILED(1) marker matches execution exit1.",
+    "Fast tier contains both native Buck and ordinary Cargo domain/unit summaries. It does not establish complete Buck-native, database/browser workflow, Company or release qualification.",
+    "Five ignored doctests and175zero-execution Rust summaries remain explicit. No skip/deletion is authorized by this review.",
+    "Candidate authority is945dd534and its historical blobs. Root has subsequently begun baseline repair; this receipt does not recast the failed run as newer-candidate success.",
+    "Reviewer ran no builds/tests/SQL/browser or repository writes; read-only log/hash/Git inspection and private receipt only."
+  ]
+}

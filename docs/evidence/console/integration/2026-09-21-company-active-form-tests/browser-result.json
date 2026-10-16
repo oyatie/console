@@ -1,0 +1,146 @@
+{
+  "kind": "REAL_NATIVE_COMPANY_INPUT_VALIDATION_BROWSER",
+  "contract_revision": "company-invalid-enter-v2",
+  "node_version": "v26.7.0",
+  "checkpoints": [
+    "ENROLLED",
+    "PREVIEW_PRESERVED"
+  ],
+  "screenshots": [
+    "01-public.png",
+    "02-terms.png",
+    "03-account-enrolled.png",
+    "04-company-preview-input-preserved.png"
+  ],
+  "documents": [
+    {
+      "ordinal": 1,
+      "method": "GET",
+      "path": "/",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 2,
+      "method": "GET",
+      "path": "/account/register",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 3,
+      "method": "GET",
+      "path": "/account",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 4,
+      "method": "GET",
+      "path": "/account",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 5,
+      "method": "GET",
+      "path": "/account/companies/new",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    }
+  ],
+  "document_failures": 0,
+  "posts": {
+    "/api/v2/auth/registration/start": 1,
+    "/api/v2/auth/registration/finish": 1
+  },
+  "external_requests": 0,
+  "unexpected_mutations": 0,
+  "mutations": [
+    {
+      "ordinal": 1,
+      "method": "POST",
+      "path": "/api/v2/auth/registration/start"
+    },
+    {
+      "ordinal": 2,
+      "method": "POST",
+      "path": "/api/v2/auth/registration/finish"
+    }
+  ],
+  "cleanup": {
+    "confirmed": true,
+    "browser_process_exited": true,
+    "relay_closed": true
+  },
+  "limits": [
+    "Chromium153 virtual resident authenticator and automatic presence only; no human or physical-device picker proof.",
+    "Ephemeral-SPKI localhost TLS termination and unencrypted owned loopback upstream are test topology, not production TLS/HA certification.",
+    "Mutation census observes BrowserContext HTTP request events for pages/popups/workers; service workers are blocked. GET/HEAD/OPTIONS, WebSocket messages and operating-system egress are not certified.",
+    "Two independent DB checkpoints plus actual parent-owned designation required. Invalid Company input Enter must preserve input and make zero requests/effects; successful Company creation and recovery retain separate browser leaves.",
+    "Keyboard discovery and320px geometric reflow are observed on mounted pages; this is not human usability, screen-reader, contrast or complete WCAG certification."
+  ],
+  "browser_pid": 2463,
+  "browser_version": "153.0.8010.12",
+  "root_status": 200,
+  "reflow_root_320": true,
+  "keyboard_skip": true,
+  "keyboard_registration": true,
+  "reflow_register_320": true,
+  "keyboard_terms": true,
+  "keyboard_registration_submit": true,
+  "registration_wire": true,
+  "reflow_account_320": true,
+  "resident": true,
+  "literal_secret_absent": true,
+  "cookie_security": true,
+  "keyboard_company_entry": true,
+  "account_id": "85ebef58-c24f-4e09-ad60-be7202ce3f21",
+  "company_form": {
+    "count": 1,
+    "account_id": "85ebef58-c24f-4e09-ad60-be7202ce3f21",
+    "submit_count": 1,
+    "submit_type": "submit",
+    "submit_enabled": true,
+    "unexpected_actions": 0
+  },
+  "company_form_ready": true,
+  "reflow_setup_320": true,
+  "valid_correction_ready": true,
+  "preview_enters": [
+    {
+      "field": "name",
+      "no_requests": true,
+      "url_unchanged": true,
+      "history_unchanged": true,
+      "inputs_preserved": true,
+      "invalid_before": true,
+      "invalid_after": true,
+      "validation_message": true,
+      "submit_enabled": true,
+      "corrected_valid": true,
+      "inputs_not_stored": true
+    },
+    {
+      "field": "slug",
+      "no_requests": true,
+      "url_unchanged": true,
+      "history_unchanged": true,
+      "inputs_preserved": true,
+      "invalid_before": true,
+      "invalid_after": true,
+      "validation_message": true,
+      "submit_enabled": true,
+      "corrected_valid": true,
+      "inputs_not_stored": true
+    }
+  ],
+  "preview_enter_preserved": true,
+  "business_input_not_stored": true,
+  "status": "BROWSER_LEAF_PASSED"
+}

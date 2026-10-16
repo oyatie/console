@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+buck-out/v2/art/toolchains/11a256c53bf8083e/rust/__hydrate-sysroot-aarch64-apple-darwin__/sysroot/lib/rustlib/aarch64-apple-darwin/bin/rust-lld "$@"

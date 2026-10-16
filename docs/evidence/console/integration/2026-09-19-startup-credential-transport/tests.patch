@@ -1,0 +1,146 @@
+--- a/tools/ci/cargo-needs-postgres-args.test.mjs
++++ b/tools/ci/cargo-needs-postgres-args.test.mjs
+@@ -82,7 +82,7 @@
+     write(join(ci, "postgres-cargo-map.json"), readFileSync(join(source, "postgres-cargo-map.json"), "utf8"));
+     const bin = join(scratch, "bin");
+     write(join(bin, "docker"), `#!/usr/bin/env python3
+-import os, sys, pathlib, stat
++import os, sys, pathlib, stat, hashlib
+ args = sys.argv[1:]
+ root = pathlib.Path(os.environ["TRANSPORT_TEST_ROOT"])
+ with (root / "argv.log").open("a") as f: f.write(repr(args) + "\\n")
+@@ -91,20 +91,25 @@
+     assert stat.S_IMODE(p.stat().st_mode) == 0o600
+     env = dict(line.split("=", 1) for line in p.read_text().splitlines())
+     assert env["CONSOLE_AUTH_POSTGRES_PASSWORD"]
+-    keys = ["CONSOLE_APP_POSTGRES_PASSWORD", "CONSOLE_AUTH_POSTGRES_PASSWORD", "CONSOLE_RT_POSTGRES_PASSWORD", "CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD", "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD", "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD", "POSTGRES_ADMIN_PASSWORD"]
++    keys = ["CONSOLE_APP_POSTGRES_PASSWORD", "CONSOLE_AUTH_POSTGRES_PASSWORD", "CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD", "CONSOLE_RT_POSTGRES_PASSWORD", "CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD", "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD", "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD", "POSTGRES_ADMIN_PASSWORD"]
+     assert len({env[k] for k in keys}) == len(keys)
+     (root / "topology-path").write_text(str(p))
++    (root / "startup-digest").write_text(hashlib.sha256(env["CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD"].encode()).hexdigest())
+ elif args[0] == "port": print("127.0.0.1:49123")
+ elif args[0] == "exec" and args[-1] == "/proc/1/comm": print("postgres")
+ `, true);
+     write(join(bin, "cargo"), `#!/usr/bin/env python3
+-import os, sys, pathlib, urllib.parse, stat
++import os, sys, pathlib, urllib.parse, stat, hashlib
+ root = pathlib.Path(os.environ["TRANSPORT_TEST_ROOT"])
+ with (root / "argv.log").open("a") as f: f.write(repr(sys.argv[1:]) + "\\n")
+-roles = {"DATABASE_URL": "console_buck_admin", "CONSOLE_APALIS_OWNER_DATABASE_URL": "console_app", "CONSOLE_APALIS_RUNTIME_DATABASE_URL": "console_rt", "CONSOLE_TEST_AUTH_DATABASE_URL": "console_auth_rt", "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL": "console_leave_cmd", "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL": "console_ontology_cmd", "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL": "console_platform_force_cmd"}
++roles = {"DATABASE_URL": "console_buck_admin", "CONSOLE_APALIS_OWNER_DATABASE_URL": "console_app", "CONSOLE_APALIS_RUNTIME_DATABASE_URL": "console_rt", "CONSOLE_TEST_AUTH_DATABASE_URL": "console_auth_rt", "CONSOLE_STARTUP_AUTH_DATABASE_URL": "console_auth_startup", "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL": "console_leave_cmd", "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL": "console_ontology_cmd", "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL": "console_platform_force_cmd"}
+ urls = [urllib.parse.urlparse(os.environ[k]) for k in roles]
+ assert all(url.username == role for url, role in zip(urls, roles.values()))
+ assert len({url.password for url in urls}) == len(urls)
++startup = urllib.parse.urlparse(os.environ["CONSOLE_STARTUP_AUTH_DATABASE_URL"])
++assert startup.password and not startup.query and not startup.fragment
++assert hashlib.sha256(startup.password.encode()).hexdigest() == (root / "startup-digest").read_text()
++assert all(url.password not in (root / "argv.log").read_text() for url in urls)
+ assert len({(url.hostname, url.port, url.path) for url in urls}) == 1
+ assert urls[0].hostname == "127.0.0.1" and urls[0].port == 49123
+ assert os.environ["CONSOLE_APALIS_ADMIN_DATABASE_URL"] == os.environ["DATABASE_URL"]
+@@ -115,7 +120,7 @@
+     for (const runner of ["cargo", "nextest"]) {
+       const r = spawnSync(join(ci, "cargo_needs_postgres.sh"), ["--workflow-only", "--only", "app-auth-rest-pg", "--runner", runner], {
+         encoding: "utf8",
+-        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, TMPDIR: scratch, TRANSPORT_TEST_ROOT: scratch },
++        env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, TMPDIR: scratch, TRANSPORT_TEST_ROOT: scratch, CONSOLE_STARTUP_AUTH_DATABASE_URL: "postgres://wrong:inherited@wrong:1/wrong" },
+       });
+       assert.equal(r.status, 0, `${runner}: ${r.stdout}\n${r.stderr}`);
+       assert.equal(readFileSync(join(scratch, "cargo-phases"), "utf8"), "build\ntest\n");
+--- a/tools/buck/test_needs_postgres.test.sh
++++ b/tools/buck/test_needs_postgres.test.sh
+@@ -25,6 +25,16 @@
+     if [[ "$3" == *:/topology.env ]]; then
+       cut -d= -f1 "$2" | sort >"${HARNESS_LOG}.topology-env-keys"
+       printf '%s\n' "$2" >"${HARNESS_LOG}.topology-env-file"
++      python3 - "$2" <<'PY_STARTUP_TOPOLOGY' || exit 1
++import sys, pathlib, stat, hashlib, os
++p = pathlib.Path(sys.argv[1])
++assert stat.S_IMODE(p.stat().st_mode) == 0o600
++values = dict(line.split("=", 1) for line in p.read_text().splitlines())
++keys = ["POSTGRES_ADMIN_PASSWORD", "CONSOLE_APP_POSTGRES_PASSWORD", "CONSOLE_RT_POSTGRES_PASSWORD", "CONSOLE_AUTH_POSTGRES_PASSWORD", "CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD", "CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD", "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD", "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD"]
++assert all(values[k] for k in keys)
++assert len({values[k] for k in keys}) == len(keys)
++pathlib.Path(os.environ["HARNESS_LOG"] + ".startup-digest").write_text(hashlib.sha256(values["CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD"].encode()).hexdigest())
++PY_STARTUP_TOPOLOGY
+     fi
+     exit 0 ;;
+   exec)
+@@ -72,6 +82,27 @@
+ grep -Fq 'CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:' "${env_file}"
+ grep -Fq 'CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:' "${env_file}"
+ grep -Fq 'CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:' "${env_file}"
++
++# The build phase has no executor file; only inspect the actual test handoff.
++if [[ "$1" == test ]]; then
++  [[ -f "${env_file}" ]] || exit 1
++  python3 - "${env_file}" <<'PY_STARTUP_TEST' || exit 1
++import sys, pathlib, stat, hashlib, os, urllib.parse
++p = pathlib.Path(sys.argv[1])
++assert stat.S_IMODE(p.stat().st_mode) == 0o600
++values = dict(line.split("=", 1) for line in p.read_text().splitlines())
++roles = {"DATABASE_URL": "console_buck_admin", "CONSOLE_APALIS_OWNER_DATABASE_URL": "console_app", "CONSOLE_APALIS_RUNTIME_DATABASE_URL": "console_rt", "CONSOLE_TEST_AUTH_DATABASE_URL": "console_auth_rt", "CONSOLE_STARTUP_AUTH_DATABASE_URL": "console_auth_startup", "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL": "console_leave_cmd", "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL": "console_ontology_cmd", "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL": "console_platform_force_cmd"}
++urls = [urllib.parse.urlparse(values[k]) for k in roles]
++assert all(u.username == role and u.password for u, role in zip(urls, roles.values()))
++assert len({u.password for u in urls}) == len(urls)
++assert len({(u.hostname, u.port, u.path) for u in urls}) == 1
++startup = urllib.parse.urlparse(values["CONSOLE_STARTUP_AUTH_DATABASE_URL"])
++assert startup.hostname == "127.0.0.1" and startup.port == 49123
++assert not startup.query and not startup.fragment
++assert hashlib.sha256(startup.password.encode()).hexdigest() == pathlib.Path(os.environ["HARNESS_LOG"] + ".startup-digest").read_text()
++assert all(u.password not in pathlib.Path(os.environ["HARNESS_LOG"]).read_text() for u in urls)
++PY_STARTUP_TEST
++fi
+ printf '%s\n' "${env_file}" >>"${HARNESS_LOG}.envfiles"
+ if [[ "${FAKE_BUCK_SLEEP:-0}" == 1 ]]; then printf "%s\n" "$$" >"${HARNESS_LOG}.childpid"; exec sleep 30; fi
+ exit "${FAKE_BUCK_STATUS:-0}"
+@@ -137,6 +168,7 @@
+ CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD
+ CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD
+ CONSOLE_RT_POSTGRES_PASSWORD
++CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD
+ POSTGRES_ADMIN_PASSWORD
+ POSTGRES_ADMIN_USER
+ POSTGRES_DB
+--- a/tools/buck/run_test_with_postgres_env.test.sh
++++ b/tools/buck/run_test_with_postgres_env.test.sh
+@@ -54,4 +54,39 @@
+   chmod 600 "${scratch}/duplicate.env"
+   if CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/duplicate.env" "${wrapper}" /usr/bin/true; then exit 1; fi
+ done
++# All historical eight keys above remain valid without the optional startup key.
++CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" "${wrapper}" /usr/bin/true
++cat >"${scratch}/startup-child" <<'STARTUP_CHILD'
++#!/usr/bin/env bash
++touch "${STARTUP_CHILD_MARKER}"
++STARTUP_CHILD
++chmod 700 "${scratch}/startup-child"
++for required_key in DATABASE_URL CONSOLE_APALIS_OWNER_DATABASE_URL CONSOLE_APALIS_RUNTIME_DATABASE_URL CONSOLE_APALIS_ADMIN_DATABASE_URL; do
++  grep -v "^${required_key}=" "${valid}" >"${scratch}/startup-incomplete.env"
++  chmod 600 "${scratch}/startup-incomplete.env"
++  if STARTUP_CHILD_MARKER="${scratch}/startup-child-ran" CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/startup-incomplete.env" "${wrapper}" "${scratch}/startup-child" >"${scratch}/startup.stdout" 2>"${scratch}/startup.stderr"; then exit 1; fi
++  grep -Fq 'incomplete environment file' "${scratch}/startup.stderr"
++  [[ ! -e "${scratch}/startup-child-ran" ]]
++done
++startup_value='postgres://console_auth_startup:startup-secret@localhost/db'
++printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=%s\n' "${startup_value}" >>"${valid}"
++CONSOLE_STARTUP_AUTH_DATABASE_URL='postgres://wrong:inherited@wrong/db' CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" "${wrapper}" /usr/bin/env | grep -Fqx "CONSOLE_STARTUP_AUTH_DATABASE_URL=${startup_value}"
++for invalid_kind in duplicate empty substitution unknown; do
++  cp "${valid}" "${scratch}/startup-invalid.env"
++  case "${invalid_kind}" in
++    duplicate) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=%s\n' "${startup_value}" >>"${scratch}/startup-invalid.env" ;;
++    empty) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=\n' >>"${scratch}/startup-invalid.env" ;;
++    substitution) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=$(touch %s)\n' "${scratch}/startup-executed" >>"${scratch}/startup-invalid.env" ;;
++    unknown) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL_EXTRA=%s\n' "${startup_value}" >>"${scratch}/startup-invalid.env" ;;
++  esac
++  chmod 600 "${scratch}/startup-invalid.env"
++  if STARTUP_CHILD_MARKER="${scratch}/startup-child-ran" CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/startup-invalid.env" "${wrapper}" "${scratch}/startup-child" >"${scratch}/startup.stdout" 2>"${scratch}/startup.stderr"; then exit 1; fi
++  case "${invalid_kind}" in
++    duplicate) grep -Fq 'duplicate environment key' "${scratch}/startup.stderr" ;;
++    empty|substitution) grep -Fq 'malformed environment file' "${scratch}/startup.stderr" ;;
++    unknown) grep -Fq 'unexpected environment key' "${scratch}/startup.stderr" ;;
++  esac
++  [[ ! -e "${scratch}/startup-executed" && ! -e "${scratch}/startup-child-ran" ]]
++  ! grep -Eq 'startup-secret|touch |postgres://' "${scratch}/startup.stdout" "${scratch}/startup.stderr"
++done
+ echo 'run_test_with_postgres_env: PASS'

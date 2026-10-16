@@ -1,0 +1,28 @@
+{
+  "status": "PROPOSED_TESTS_AND_DESIGN_REVIEW_NOT_ADMITTED",
+  "author": "/root/integration_tests",
+  "head": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "design_sha256": "913b9107f49d0dd0731947a6eb9a7106d3a4e83a026bf871afdd4db62ba287b1",
+  "new_sqlx_leaves": 5,
+  "explicit_semantic_successors": 1,
+  "executed_tests": 0,
+  "files": {
+    "producer_tests.rs": "7b22a627a25a9d83273b71fc51233cee3010f300b6c5118d0b69ca64c3e7b28c",
+    "platform_self_pin_original.rs": "11dedbc2ddf4985c4d624d12026fe1afd2f640265394dfc31a152a7e00f9d586",
+    "platform_self_pin_successor.rs": "f1cca3e4977a18ffc9360b75a48302ac63af8004f81bf927e3bd27e94975bf82",
+    "REVIEW.md": "b1bc994896685de6d404ebe70bfb1e17547493b7933e56f0c22eabf703797d68"
+  },
+  "source_sha256": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85",
+    "backend/crates/platform/auth/src/jwt.rs": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b",
+    "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+    "backend/crates/platform/auth/src/refresh.rs": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c",
+    "backend/crates/platform/auth/src/handoff.rs": "8f9411a6a3cd2397d7bbc305b57388f80b0a81daf943a917336e233fcc6e4f7e",
+    "backend/app/tests/auth_rest.rs": "0f30cd64c5811204a7ced422dac5bfa3a721f77b23b858d45e06a9ebf1feb1e2",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs": "5e7b95ae648b143c64e70bcaa70261cee03f489eb0fd1a7bfd6ed373d40f92f5",
+    "backend/app/tests/auth_rest/legacy_platform_list_reads.rs": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "f3bdc2e5ceb6d0c3e069655077c36d813fb381abb27c75312679ca3d5163314b",
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "2949c236fb98c54f51c759b237b08d1fbdd19a8b66a7d69e33da9a197d738c48",
+    "backend/crates/platform/auth-rest/tests/group_admin_tenant_context.rs": "0fcd4634c856d8bf1133a16fe5c1f608950c1b0258c3232b25b414dd425a9b81"
+  }
+}

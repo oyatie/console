@@ -1,0 +1,14 @@
+{
+  "kind": "group-list-supplemental-credential-private-proposal",
+  "files_sha256": {
+    "README.md": "a7164d053731a7cb2b3fd4f3909c8bccdae4bb395b74e1bd9b72357e5c7d3395",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_group_credentials.rs": "bd6fb05733e852012029e266ea624632fe0443107bec2d85a8754b0c51eb8615",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_group_reads.rs": "aa0934c70b5e881fc826c72251872279576301005b210fe2d334e184fbed0ec5",
+    "candidate.patch": "7d7a7d21ac8c9b3dd8a6cb5058fc782134c04aacb4bbbfd0833486571dd41fdc",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_group_reads.rs": "3ff0c9dfa0ec1ebb5d60b4ad5b8fa6519eaa4de51b9a03bf7e4dc8d2f3f1026a",
+    "source-pins.json": "3d0920818edab8a507305a4336d0a50757df4aef1210bc6bb9433ddaf7e4ff39",
+    "verification.json": "502dbc9f26dead79d8b5c2aae999b02a23be5a7d72b7b45381a00f5d5efbd9e2"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

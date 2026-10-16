@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root",
+  "verdict": "approve additive tests only",
+  "manifest_sha256": "24c7073ab37ecf060609ac349a3650ab19678bdbb601ecc84fa058abc0e790d7",
+  "candidate_sha256": "382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf",
+  "checks": [
+    "17sourcepins and7packetmembers match",
+    "existing135tests exactunchangedprefix",
+    "both sourcecapture/proposal/review pins independent positive prerequisites",
+    "actual owner positive\u2192rejection\u2192sameouter exactrestoration revoked\u2192explicitrevalidation",
+    "all4count-preserving keyswaps require specific keys diagnostic before later digest",
+    "invisible extra-only mutations are retained in memory",
+    "both scatter labels preserved and independently corrupted",
+    "named operation probe has real existing owner boundary"
+  ],
+  "runtime_tests_executed": 0,
+  "remaining": [
+    "rootclean testcommit",
+    "actual namedRED after positives",
+    "fanoutadmission",
+    "implementation and fullowner/planner acceptance"
+  ]
+}

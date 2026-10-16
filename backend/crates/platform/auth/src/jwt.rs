@@ -5,7 +5,17 @@ use std::str::FromStr;
 use time::Duration;
 use uuid::Uuid;
 
-use crate::AuthError;
+use crate::{AuthError, RefreshTokenIssue};
+
+#[cfg(test)]
+#[path = "jwt_platform_binding_producer_tests.rs"]
+mod platform_binding_producer_tests;
+
+mod account;
+pub use account::{
+    AccountAccessClaims, AccountAccessTokenInput, AccountAccessVerification, AccountAssurance,
+    AccountCsrfClaims, AccountCsrfTokenInput, SignedAccountToken,
+};
 
 #[derive(Debug, Clone)]
 pub struct JwtSettings {
@@ -75,6 +85,46 @@ pub enum TenantAccessContext {
     /// A short-lived tenant context minted for a live GROUP_ADMIN so they can
     /// manage one subsidiary without becoming that tenant's SUPER_ADMIN.
     GroupAdmin,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LegacySessionKind {
+    Direct,
+    GroupAdmin,
+    PlatformViewAs,
+    PlatformTenantContext,
+}
+
+/// Signed correlation only; consumers must still guard the current exact family
+/// and source/target authority. This does not establish a live session.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LegacySessionBinding {
+    pub version: u8,
+    pub family_id: Uuid,
+    pub home_org: Uuid,
+    pub kind: LegacySessionKind,
+}
+
+// Absence alone is historical unbound access. Require a map when present;
+// Option's normal decoder accepts null and struct decoders also accept arrays.
+fn present_legacy_session<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<LegacySessionBinding>, D::Error> {
+    struct BindingVisitor;
+    impl<'de> serde::de::Visitor<'de> for BindingVisitor {
+        type Value = LegacySessionBinding;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("a legacy session binding object")
+        }
+
+        fn visit_map<M: serde::de::MapAccess<'de>>(self, map: M) -> Result<Self::Value, M::Error> {
+            LegacySessionBinding::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+        }
+    }
+    deserializer.deserialize_map(BindingVisitor).map(Some)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -161,6 +211,12 @@ pub struct AccessClaims {
     pub authz_policy_version: u64,
     #[serde(default)]
     pub session_generation: u64,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_legacy_session"
+    )]
+    pub legacy_session: Option<LegacySessionBinding>,
     pub alg: String,
 }
 
@@ -182,6 +238,63 @@ impl AccessClaims {
                 "token scope claims must include both scope_level and scope_node".to_owned(),
             )),
         }
+    }
+
+    fn validate_legacy_session(&self) -> Result<(), AuthError> {
+        let Some(binding) = &self.legacy_session else {
+            return Ok(());
+        };
+        let invalid = || AuthError::InvalidStoredData("invalid legacy session binding".to_owned());
+        let org = Uuid::parse_str(&self.org).map_err(|_| invalid())?;
+        let platform_org = *OrgId::platform().as_uuid();
+        if binding.version != 1
+            || binding.family_id.is_nil()
+            || binding.home_org.is_nil()
+            || org.is_nil()
+        {
+            return Err(invalid());
+        }
+        let valid = match binding.kind {
+            LegacySessionKind::Direct => {
+                binding.home_org == org
+                    && self.platform == (org == platform_org)
+                    && !self.view_as
+                    && !self.read_only
+                    && self.tenant_context.is_none()
+            }
+            LegacySessionKind::GroupAdmin => {
+                binding.home_org != platform_org
+                    && org != platform_org
+                    && self.tenant_context == Some(TenantAccessContext::GroupAdmin)
+                    && self
+                        .actor_home_org
+                        .as_deref()
+                        .and_then(|id| Uuid::parse_str(id).ok())
+                        == Some(binding.home_org)
+                    && self
+                        .group_context_id
+                        .as_deref()
+                        .and_then(|id| Uuid::parse_str(id).ok())
+                        .is_some_and(|id| !id.is_nil())
+            }
+            LegacySessionKind::PlatformViewAs | LegacySessionKind::PlatformTenantContext => {
+                let view_as = binding.kind == LegacySessionKind::PlatformViewAs;
+                binding.home_org == platform_org
+                    && org != platform_org
+                    && !self.platform
+                    && self.tenant_context.is_none()
+                    && self.group_roles.is_empty()
+                    && self.view_as == view_as
+                    && self.read_only == view_as
+                    && self.roles.len() == 1
+                    && if view_as {
+                        !self.roles[0].is_empty()
+                    } else {
+                        self.roles[0] == "SUPER_ADMIN"
+                    }
+            }
+        };
+        if valid { Ok(()) } else { Err(invalid()) }
     }
 }
 
@@ -296,6 +409,44 @@ impl JwtIssuer {
         self.issue_access_token_with_ttl(input, self.settings.access_token_ttl)
     }
 
+    /// Bind direct platform access to the family returned by the Auth owner.
+    /// Consumers must still verify the current family and disclosure authority.
+    pub fn issue_platform_access_token_for_family(
+        &self,
+        input: AccessTokenInput,
+        group_roles: Vec<String>,
+        family: &RefreshTokenIssue,
+    ) -> Result<String, AuthError> {
+        if family.family_id.is_nil()
+            || family.user_id != *input.subject.as_uuid()
+            || family.org_id != input.org_id
+            || input.org_id != OrgId::platform()
+            || !input.platform
+            || input.view_as
+            || input.read_only
+            || family.expires_at <= input.issued_at
+        {
+            return Err(AuthError::InvalidStoredData(
+                "invalid platform session family".to_owned(),
+            ));
+        }
+        self.issue_access_token_inner(
+            input,
+            self.settings.access_token_ttl,
+            None,
+            group_roles,
+            None,
+            None,
+            None,
+            Some(LegacySessionBinding {
+                version: 1,
+                family_id: family.family_id,
+                home_org: *family.org_id.as_uuid(),
+                kind: LegacySessionKind::Direct,
+            }),
+        )
+    }
+
     /// Mint a normal access token that also carries group-role claims.
     ///
     /// The token remains tenant-scoped by its `org` claim; group authority is
@@ -315,6 +466,7 @@ impl JwtIssuer {
             None,
             None,
             None,
+            None,
         )
     }
 
@@ -329,6 +481,7 @@ impl JwtIssuer {
             self.settings.access_token_ttl,
             Some(access_scope),
             group_roles,
+            None,
             None,
             None,
             None,
@@ -354,6 +507,7 @@ impl JwtIssuer {
             Some(TenantAccessContext::GroupAdmin),
             Some(group_id.to_string()),
             Some(actor_home_org.to_string()),
+            None,
         )
     }
 
@@ -370,7 +524,7 @@ impl JwtIssuer {
         input: AccessTokenInput,
         ttl: Duration,
     ) -> Result<String, AuthError> {
-        self.issue_access_token_inner(input, ttl, None, Vec::new(), None, None, None)
+        self.issue_access_token_inner(input, ttl, None, Vec::new(), None, None, None, None)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -383,6 +537,7 @@ impl JwtIssuer {
         tenant_context: Option<TenantAccessContext>,
         group_context_id: Option<String>,
         actor_home_org: Option<String>,
+        legacy_session: Option<LegacySessionBinding>,
     ) -> Result<String, AuthError> {
         if input.view_as && !group_roles.is_empty() {
             return Err(AuthError::InvalidStoredData(
@@ -439,8 +594,10 @@ impl JwtIssuer {
             authz_subject_version: input.authz_subject_version,
             authz_policy_version: input.authz_policy_version,
             session_generation: input.session_generation,
+            legacy_session,
             alg: "ES256".to_owned(),
         };
+        claims.validate_legacy_session()?;
 
         Ok(encode(
             &Header::new(Algorithm::ES256),
@@ -470,6 +627,14 @@ impl JwtVerifier {
     }
 }
 
+#[derive(Deserialize)]
+struct LegacyAccessEnvelope {
+    #[serde(flatten)]
+    claims: AccessClaims,
+    #[serde(default)]
+    token_kind: serde_json::Value,
+}
+
 fn verify_access_token(
     token: &str,
     decoding_key: &DecodingKey,
@@ -479,30 +644,40 @@ fn verify_access_token(
     validation.set_issuer(&[settings.issuer.as_str()]);
     validation.set_audience(&[settings.audience.as_str()]);
     validation.set_required_spec_claims(&["exp", "iss", "aud", "sub"]);
-    let token = decode::<AccessClaims>(token, decoding_key, &validation)?;
+    let envelope = decode::<LegacyAccessEnvelope>(token, decoding_key, &validation)?.claims;
+    if matches!(
+        envelope.token_kind.as_str(),
+        Some("account_v1" | "account_csrf_v1")
+    ) {
+        return Err(AuthError::Jwt(
+            jsonwebtoken::errors::ErrorKind::InvalidToken.into(),
+        ));
+    }
+    let claims = envelope.claims;
     // Fail closed on a malformed tenant claim: the `org` claim arms
     // `app.current_org` for RLS, so a token whose `org` is not a valid UUID must
     // never be accepted — it could otherwise reach the DB with an unparseable or
     // empty tenant context.
-    OrgId::from_str(&token.claims.org).map_err(|_| {
+    OrgId::from_str(&claims.org).map_err(|_| {
         AuthError::InvalidStoredData("token org claim is not a valid uuid".to_owned())
     })?;
-    token.claims.access_scope()?;
-    if token.claims.view_as && !token.claims.group_roles.is_empty() {
+    claims.access_scope()?;
+    if claims.view_as && !claims.group_roles.is_empty() {
         return Err(AuthError::InvalidStoredData(
             "view-as tokens cannot carry group roles".to_owned(),
         ));
     }
-    validate_group_roles(&token.claims.group_roles)?;
+    validate_group_roles(&claims.group_roles)?;
     validate_tenant_context(
-        token.claims.tenant_context,
-        token.claims.group_context_id.as_deref(),
-        token.claims.actor_home_org.as_deref(),
-        &token.claims.roles,
-        &token.claims.group_roles,
-        token.claims.platform,
-        token.claims.view_as,
-        token.claims.read_only,
+        claims.tenant_context,
+        claims.group_context_id.as_deref(),
+        claims.actor_home_org.as_deref(),
+        &claims.roles,
+        &claims.group_roles,
+        claims.platform,
+        claims.view_as,
+        claims.read_only,
     )?;
-    Ok(token.claims)
+    claims.validate_legacy_session()?;
+    Ok(claims)
 }

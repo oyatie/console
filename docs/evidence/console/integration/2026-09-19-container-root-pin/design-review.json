@@ -1,0 +1,53 @@
+{
+  "kind": "independent-container-canonical-root-pin-review",
+  "reviewer": "/root/integration_tests",
+  "base_sha": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "candidate_manifest_sha256": "3daf07fa0a639e968508eccdf4c0b8625e3da88b50930e1c9261059d50a1105c",
+  "status": "APPROVE_EXACT_BOUNDED_BUILD_REPAIR",
+  "rounds": [
+    {
+      "round": 1,
+      "focus": "Actual RED and canonical source",
+      "decision": "approve",
+      "evidence": "Buildx log resolves pinned Rust image and fails exact COPY backend/rust-toolchain.toml; root canonical1.98.1 pin exists and no nested backend pin exists. Actual builder is sufficient probe; no string-only replacement test."
+    },
+    {
+      "round": 2,
+      "focus": "Build-context isolation and privilege",
+      "decision": "approve",
+      "evidence": "Only exact root filename added to existing deny-first allowlist. Existing .git/env/node_modules/target exclusions and nonroot runtime remain unchanged; no network credential/context/global Docker mutation introduced."
+    },
+    {
+      "round": 3,
+      "focus": "Compiler resolution and reproducibility",
+      "decision": "approve",
+      "evidence": "WORKDIR remains /workspace/backend and canonical pin copied to parent /workspace; rustup discovers parent pin. Existing locked build and both immutable image digests unchanged. rustc -Vv gives actual compiler provenance; root must verify1.98.1 and Linux target, never assume image tag is final compiler."
+    },
+    {
+      "round": 4,
+      "focus": "Exact diff, admission and claim limits",
+      "decision": "approve",
+      "evidence": "Verified all3source-preimage and3proposal-file hashes; exact2file diff is root COPY/comment, rustc provenance prefix, one ignore-list filename. Same actual builder command must be lane-admitted on exact clean candidate and green; complete image/runtime qualification remains separate."
+    }
+  ],
+  "observed_red": {
+    "path": "/private/tmp/console-container-build-buildx-red.log",
+    "sha256": "5c4741202c3da1ac18ff7c5f00e7e9a31adf3dca8919353529acd3c9853b8350",
+    "boundary": "BuildKit COPY missing /backend/rust-toolchain.toml",
+    "not_a_business_test": true
+  },
+  "executions_by_reviewer": 0,
+  "repository_edits": 0,
+  "required_verification": [
+    "Same named Buildx builder probe green after source integration",
+    "Actual rustc -Vv1.98.1 and Linux architecture retained",
+    "Complete image build plus independently bounded runtime artifact/link checks",
+    "Any later compiler/dependency/source failure stays explicit RED"
+  ],
+  "not_claimed": [
+    "actual candidate build executed",
+    "business tests",
+    "SSR/WASM qualification",
+    "assembled release or production exposure"
+  ]
+}

@@ -1,0 +1,163 @@
+[
+  {
+    "command": [
+      "tools/buck2",
+      "test",
+      "--num-threads=1",
+      "//backend/crates/identity/application:console-identity-application-unit"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-usecases-native-unit-recheck-20260920.log",
+    "sha256": "0835cb954c3a1deb72d3a83664d2315b77a4336a1818fcb91ca81433b962b48b",
+    "executed": 12
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-identity-application",
+      "-p",
+      "console-identity-adapter-postgres",
+      "--all-targets",
+      "--all-features",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-usecases-clippy-20260920.log",
+    "sha256": "38049591d73ae9096595b5ab2c784ce7ae84b31520122375bcdbbe3d19315443",
+    "executed": null
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-usecases-app-clippy-20260920.log",
+    "sha256": "0ac1b49fdcb033a686c6802f281aaa6a1c03544ad6d8dda71468f74f00a9dce0",
+    "executed": null
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "--all",
+      "--check"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-usecases-final-format-20260920.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "executed": null
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools/buck",
+      "-p",
+      "test_gen_first_party.py"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-usecases-generator-20260920.log",
+    "sha256": "00abdf35df18b78f50afaf23a852855cf9469b85006e3267bc7878020fd4ae42",
+    "executed": 68
+  },
+  {
+    "command": [
+      "node",
+      "tools/ci/gate-sweep.mjs"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-usecases-preflight-20260920.log",
+    "sha256": "bdbfc50a7d90c3ecf1fc484c096b15ae5b9a70884aba0c0f266bbcddd90b7dac",
+    "executed": 16
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_intake_usecase_prepares_reopens_conflicts_and_cancels_exact_history",
+    "exit": 0,
+    "seconds": 190.64,
+    "log": "/private/tmp/console-company-intake-usecases-native-0-20260920.log",
+    "sha256": "7b656972c72ca879ba2aec8a644e108c8b64ab9aebba946f69a9746468484437"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_intake_usecase_rejects_invalid_transport_configuration_and_input",
+    "exit": 0,
+    "seconds": 64.6,
+    "log": "/private/tmp/console-company-intake-usecases-native-1-20260920.log",
+    "sha256": "65934f13eb4b3e88ebc22d53d5db4d2384227f32d5727c8e6695f33d0a226980"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_intake_usecase_real_logout_cannot_become_missing_or_pending",
+    "exit": 0,
+    "seconds": 63.71,
+    "log": "/private/tmp/console-company-intake-usecases-native-2-20260920.log",
+    "sha256": "2c987d94cc74833c89a6f6ba72ae59b1fe0546cf350341d7763d9542d6c76984"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_intake_usecase_designation_revocation_denies_new_work_preserves_recovery",
+    "exit": 0,
+    "seconds": 67.05,
+    "log": "/private/tmp/console-company-intake-usecases-native-3-20260920.log",
+    "sha256": "d3e42fd791ad7628beea2f4cc1bd8b85f73e7404c8c2bd99580958c0dfecaef1"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_intake_usecase_deferred_commit_refusal_rolls_back_before_view_and_recovers",
+    "exit": 0,
+    "seconds": 59.34,
+    "log": "/private/tmp/console-company-intake-usecases-native-4-20260920.log",
+    "sha256": "ba82181e4caf0d28b1b465cc904302f55df4bc48746f3347c9c4b1e385df9635"
+  }
+]

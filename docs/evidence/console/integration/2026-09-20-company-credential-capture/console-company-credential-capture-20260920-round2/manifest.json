@@ -1,0 +1,11 @@
+{
+  "predecessor_manifest_sha256": "ae7b3c0c5a1f2e34a97e19b848304e9fb7b36109ee6c47c9db1aa3116122c45b",
+  "change": "Box the existing Response only on API refusal; exact response/grammar/assertions unchanged. No lint suppression. Test helper accepts same boxed Response.",
+  "files": {
+    "account_entry.rs": "9c05763e6cdc3a42a60c377c5980636c093726788272dcb95d0afa9cfcfe2ddc",
+    "account_browser.rs": "44792370bfc82fc0ea51434e9b23b945fc14a11efef1f473c830ffc6d34afd53",
+    "company_credential_capture_tests.rs": "1d52dfadadce0c6d2b14abc747b9ca126136eb81ab23dbd056ef17028f56a1a7"
+  },
+  "retained_clippy_failure": "/private/tmp/console-company-credential-capture-clippy-20260920.log",
+  "tests_semantics_unchanged": true
+}

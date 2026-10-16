@@ -1,0 +1,73 @@
+{
+  "reviewer": "integration_tests",
+  "review_kind": "fourth/final independent exact design consensus review",
+  "verdict": "APPROVED_EXACT_DESIGN_FOR_TEST_AUTHORING_ONLY",
+  "reviewed_utc": "2026-09-20T10:00:48.746479+00:00",
+  "design_manifest_sha256": "c6a3923089706addc6f3e691a7651646675fca9ebf0984b05c00ee73d4b013c6",
+  "design_sha256": "e1b1f777692c5339f5a8f2196c209951c6074e4789a15490b987aa3ec86e8025",
+  "oracle_roster_sha256": "932c7f92b95b2603daa1dcd318782b8e39ff4545fa7abc57e680a68dbd09f3ee",
+  "prospective_row_sha256": "86f71fb54b809ee06807eefb3c45d37032706bea2f1ce66f78385eaad73edbdc",
+  "source_custody_sha256": "946e8e16debdf719f5f6a15a7f574e6cbc7bcfbb26ea953dc6f595494c8641e3",
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "FUSION-DESIGN-ATTESTATION-RESTORE",
+      "resolution": "Named digest-visible signature history retains the exact same outer object, checks false on mutation, requires actual owner rejection, restores exact positive shape/keys/canonical bytes without validation, requires false after restoration, then true only after explicit successful revalidation."
+    },
+    {
+      "id": "JSON-invisible additional own-key acceptance",
+      "resolution": "Exact catalogue-row and source-binding own enumerable key sets are checked before hashing. Direct in-memory neutral undefined/function extra-key controls cannot erase the fault by JSON round-trip."
+    },
+    {
+      "id": "FUSION-DESIGN-INVISIBLE-PREVALIDATION",
+      "resolution": "Design explicitly separates digest-visible and serialization-invisible histories. Invisible controls prove own-key presence and identical canonical bytes, do not require prevalidation false, then require actual exact-key owner rejection and false. Same-object restoration remains false until successful fresh validation. N20/N26 and general instructions agree."
+    }
+  ],
+  "verification": {
+    "sealed_packet_members_verified": 6,
+    "current_source_custody_files_verified": 13,
+    "prospective_data_byte_identical_to_round1": true,
+    "source_custody_byte_identical_to_round1": true,
+    "prior_independently_confirmed_catalogue_entries": 202,
+    "prior_confirmed_existing_JS_canonical_digest": "520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee",
+    "reference_lifecycle_counts": {
+      "unmarked": 184,
+      "experimental": 15,
+      "deprecated": 3
+    },
+    "negative_groups": 26,
+    "named_same_object_history_required": true,
+    "runtime_tests_executed": 0
+  },
+  "source_and_consumer_conclusions": [
+    "No ledgerDigest, canonicalJsonDigest, isValidatedConsoleTruthLedger, exported API, planner, CLI, CI or package expansion. Existing JSON-content digest semantics are now stated accurately.",
+    "One additive planned runtime support row and a narrow branch in existing validateReleaseInventory remain the only implementation shape. Test edits are additive to existing exported-owner suite. Root serializes authority/checker/test changes.",
+    "Exact original202signature/lifecycle/leaf/binding objects and conservative top-level row/null semantic dimensions are unchanged. The reference matrix remains separate from leaf acceptance authority.",
+    "Existing planned-only five-state refusal, partial_snapshot reference state, incomplete support matrices and no-exposure contract remain. Catalogue equality cannot establish formula behavior, interoperability or full Foundry coverage.",
+    "Actual CLI/planner invoke same validator under genuine C/T/M authority train. New row changes registry/promotion/planner content digests, requiring root exact-candidate records; historical evidence is preserved rather than rewritten.",
+    "Required owner-bound changed-signature RED retains passing exact-positive fixture and source custody prerequisites. Source/import/zero-test or unrelated prerequisite failure cannot admit implementation.",
+    "Preservation proof removes only appended row and compares entire parsed preimage; complete existing owner/planner regressions and actual counts remain required. Shared-binding control promises exact membership only, not array uniqueness."
+  ],
+  "reuse_of_valid_evidence": [
+    "/private/tmp/console-fusion-function-matrix-design-round1-integration-tests-review-20260920.json",
+    "/private/tmp/console-fusion-function-matrix-design-round2-integration-tests-review-20260920.json",
+    "/private/tmp/console-fusion-function-matrix-design-round3-integration-tests-review-20260920.json",
+    "docs/evidence/console/research/2026-09-19-foundry-sheets-documents/independent-review.json"
+  ],
+  "remaining_gates": [
+    "Root design consensus and explicit test-author assignment",
+    "Independently reviewed exact test candidate and live named owner RED",
+    "Lane admission before checker/registry implementation",
+    "Same-probe GREEN, full owner/affected planner regression, independent additive/source review and exact candidate record"
+  ],
+  "limitations": [
+    "Design approval authorizes bounded test authoring only; no test candidate or implementation reviewed here.",
+    "Reference preservation is not function execution, general Foundry completeness, milestone acceptance, production qualification or release."
+  ],
+  "repository_edits": false,
+  "product_runtime_executions": 0,
+  "build_executions": 0,
+  "database_executions": 0,
+  "network_calls": 0,
+  "implementation_admitted": false
+}

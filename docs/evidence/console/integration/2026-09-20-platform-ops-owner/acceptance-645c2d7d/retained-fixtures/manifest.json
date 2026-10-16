@@ -1,0 +1,14 @@
+{
+  "kind": "retained-ops-regression-fixture-prerequisite-proposal",
+  "files_sha256": {
+    "README.md": "9550a00df773d3e954f30190266cd981231c57072c21eec471b0eaeaaf0da6ff",
+    "candidate/backend/app/tests/console_route_telemetry.rs": "ce17b2255c832b429a1c6333970ba01b0ceb78c1613a1826d5333bbacdb76852",
+    "candidate/backend/crates/platform/platform-rest/tests/ops_dashboard.rs": "2d92ab96df3b6aa278cea4f70825dfa38d673742ee1f7eaf786dc6909ce63f59",
+    "candidate.patch": "48ebd1c11cdf74cb965017b91d62d5483379a69a8d38b442a688e45085f4a3e3",
+    "preimage/backend/app/tests/console_route_telemetry.rs": "0c3a016b48bd71b43ad08ab777aab0d87d50b69c2df079ab40e173cec22e48f6",
+    "preimage/backend/crates/platform/platform-rest/tests/ops_dashboard.rs": "d374d53f18776378fc51103f9612112fd4222fe6e7fb8ac9679313fee812c3b6",
+    "verification.json": "c22fdd0369d356c35283342fbb90569be8cf1dfde11e35af53cf44d2b3a2ee27"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

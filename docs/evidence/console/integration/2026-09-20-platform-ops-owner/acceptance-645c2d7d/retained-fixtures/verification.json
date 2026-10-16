@@ -1,0 +1,25 @@
+{
+  "base_head": "10269cc6d5b9841d22869810f6a00fd095a703f8",
+  "retained_sqlx_leaves": 3,
+  "new_test_leaves": 0,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 passed",
+  "mechanical_checks": {
+    "backend/crates/platform/platform-rest/tests/ops_dashboard.rs": {
+      "existing_assertions": 9,
+      "all_existing_assertions_retained": true,
+      "test_names_unchanged": [
+        "tenant_token_is_rejected_with_403",
+        "platform_token_aggregates_tenant_health_and_audits_the_read"
+      ]
+    },
+    "backend/app/tests/console_route_telemetry.rs": {
+      "existing_assertions": 10,
+      "all_existing_assertions_retained": true,
+      "test_names_unchanged": [
+        "route_telemetry_records_tenant_events_and_surfaces_adoption_by_org"
+      ]
+    }
+  }
+}

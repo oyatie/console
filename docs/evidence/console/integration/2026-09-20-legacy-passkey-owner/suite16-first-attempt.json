@@ -1,0 +1,12 @@
+{
+  "candidate": "112e1e45",
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-legacy-passkey-suite-map-20260920.json --only legacy-passkey-suite",
+  "discovered": 16,
+  "executed": 16,
+  "passed": 15,
+  "failed": 1,
+  "ignored": 0,
+  "seconds": 110.76,
+  "failure": "explicit_derived_shapes_refuse_even_with_live_sibling_family: valid signed derived shape prerequisite. Group fixture inherits MECHANIC but existing validator requires ADMIN. Not an owner refusal failure and not accepted evidence for that case.",
+  "fix_state": "Independently reviewed one-line valid-fixture correction requested; all assertions retained."
+}

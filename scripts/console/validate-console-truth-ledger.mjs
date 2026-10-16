@@ -47,7 +47,7 @@ function tagRef(value, label) {
 function uniqueStrings(values, label) { const seen = new Set(); for (const value of values) { nonempty(value, label); if (seen.has(value)) fail(`duplicate ${label}: ${value}`); seen.add(value); } return seen; }
 
 function canonicalReceiptPath(capabilityId, candidateSha) { return `docs/evidence/console/reviews/${capabilityId}/${candidateSha}.json`; }
-function git(root, args, encoding = 'utf8') { return execFileSync('git', ['-C', root, ...args], { encoding, stdio: ['ignore', 'pipe', 'pipe'] }); }
+function git(root, args, encoding = 'utf8') { return execFileSync('git', ['-C', root, ...args], { encoding, maxBuffer: 16 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] }); }
 function gitSucceeds(root, args) { try { git(root, args); return true; } catch { return false; } }
 function repositoryPath(value) { return typeof value === 'string' && value !== '' && !value.includes('..') && !value.startsWith('/') && !value.includes('\\'); }
 // One file per new ledger entry, so two lanes never write the same bytes. Status `A` is
@@ -244,7 +244,250 @@ function verifyImmutableReviewReceipt(repoRoot, reviewer, cap, candidate, outcom
   const attestation = Object.freeze({}); immutableReceiptAttestations.add(attestation); return attestation;
 }
 
-export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha = () => true, resolveRef = () => true, resolveBuckTarget = () => true, resolveSource = () => true, expectedCandidateSha, routeFacts, repoRoot } = {}) {
+// This verifies planned inventory structure only. Promotion requires a separate
+// authenticated, stage-specific verifier; descriptive evidence cannot grant it.
+function validateReleaseInventory(registry, resolveSource) {
+  const label = 'release inventory';
+  const require = (condition, detail) => { if (!condition) fail(`${label}: ${detail}`); };
+  const text = (value, detail) => nonempty(value, `${label} ${detail}`);
+  const record = (value, detail) => object(value, `${label} ${detail}`);
+  const list = (value, detail, empty = false) => {
+    require(Array.isArray(value) && (empty || value.length > 0), `${detail} must be an array${empty ? '' : ' with entries'}`);
+    return value;
+  };
+  const strings = (value, detail, empty = false) => uniqueStrings(list(value, detail, empty), `${label} ${detail}`);
+  const uniqueRecords = (value, key, detail) => {
+    const rows = list(value, detail);
+    strings(rows.map((row) => record(row, detail)[key]), `${detail} ${key}`);
+    return new Map(rows.map((row) => [row[key], row]));
+  };
+  require(Object.hasOwn(registry, 'release_inventory'), 'section is required');
+  const release = record(registry.release_inventory, 'section');
+  require(release.version === 1 && release.intent_date === '2026-09-19', 'unsupported version or intent date');
+  require(JSON.stringify(release.authority) === JSON.stringify(['docs/current/PRODUCT.md','docs/current/ROADMAP.md','docs/current/DELIVERY.md']), 'current authority paths required');
+  const population = record(release.population, 'population');
+  require(population.groups === 1 && population.companies === 6 && population.people === 2000 && population.jurisdiction === 'KR', 'population differs from release contract');
+  const stages = ['planned','implemented','integration_accepted','production_qualified','released'];
+  const policy = record(release.state_policy, 'state policy');
+  require(JSON.stringify(policy.order) === JSON.stringify(stages), 'state order is invalid');
+  text(policy.rule, 'state rule'); text(policy.dispatch, 'dispatch rule');
+  strings(release.cross_product_acceptance, 'cross-product acceptance');
+  strings(release.blockers, 'blockers');
+  const families = uniqueRecords(release.families, 'id', 'families');
+  for (const family of families.values()) { text(family.label, 'family label'); text(family.coverage, 'family coverage'); }
+  const exclusions = uniqueRecords(release.exclusions, 'id', 'exclusions');
+  for (const excluded of exclusions.values()) {
+    require(!families.has(excluded.id), 'family is also excluded'); text(excluded.reason, 'exclusion reason');
+  }
+  const leaves = uniqueRecords(release.leaves, 'id', 'leaves');
+  for (const leaf of leaves.values()) {
+    require(families.has(leaf.id.split('.')[0]) && leaf.id.includes('.'), `${leaf.id} has unknown family`);
+    require(leaf.required === true, `${leaf.id} must be required`);
+    require(Number.isInteger(leaf.milestone) && leaf.milestone >= 0 && leaf.milestone <= 10, `${leaf.id} milestone invalid`);
+    text(leaf.owner, `${leaf.id} owner`); text(leaf.journey, `${leaf.id} journey`);
+    strings(leaf.blockers, `${leaf.id} blockers`); record(leaf.evidence, `${leaf.id} evidence`);
+    for (const dependency of strings(leaf.dependencies, `${leaf.id} dependencies`, true)) {
+      require(dependency !== leaf.id && leaves.has(dependency), `${leaf.id} has invalid dependency ${dependency}`);
+    }
+    const acceptance = record(leaf.acceptance, `${leaf.id} acceptance`);
+    text(acceptance.outcome, `${leaf.id} acceptance outcome`);
+    require(acceptance.status === 'not_bound' && acceptance.command === null && acceptance.fixtures === null && acceptance.boundary === null, `${leaf.id} has unverified acceptance binding`);
+    const states = record(leaf.states, `${leaf.id} states`);
+    require(Object.keys(states).length === stages.length && stages.every((stage) => Object.hasOwn(states, stage) && typeof states[stage] === 'boolean'), `${leaf.id} state keys must be the five booleans`);
+    require(states.planned, `${leaf.id} must be planned`);
+    require(stages.slice(1).every((stage) => !states[stage]), `${leaf.id} unbound promotion cannot establish a later state`);
+  }
+  const visited = new Set(), active = new Set();
+  const visit = (id) => {
+    require(!active.has(id), `dependency cycle at ${id}`);
+    if (visited.has(id)) return;
+    active.add(id);
+    for (const dependency of leaves.get(id).dependencies) visit(dependency);
+    active.delete(id); visited.add(id);
+  };
+  for (const id of leaves.keys()) visit(id);
+
+  const freeze = record(release.reference_freeze, 'reference freeze');
+  require(freeze.target_date === '2026-09-19' && freeze.status === 'partial_snapshot', 'reference freeze is unverified');
+  text(freeze.coverage, 'reference coverage'); strings(freeze.blockers, 'reference blockers');
+  const sources = uniqueRecords(freeze.sources, 'id', 'sources');
+  const url = (value) => {
+    text(value, 'public URL');
+    let parsed; try { parsed = new URL(value); } catch { fail(`${label}: invalid public URL`); }
+    require(parsed.protocol === 'https:' && !parsed.username && !parsed.password, 'public URL must use HTTPS without credentials');
+  };
+  const timestamp = (value) => {
+    require(typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value)), 'source retrieval timestamp invalid');
+    const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+    const date = new Date(0); date.setUTCFullYear(year, month - 1, day);
+    require(date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day, 'source retrieval timestamp calendar date invalid');
+  };
+  for (const source of sources.values()) {
+    require(repositoryPath(source.path) && path.posix.normalize(source.path) === source.path && !/[\x00-\x1f]/.test(source.path), 'source path must be canonical repository relative');
+    require(Number.isSafeInteger(source.bytes) && source.bytes > 0, 'source byte size invalid');
+    require(SHA256.test(source.sha256 ?? '') && SHA256.test(source.compressed_sha256 ?? ''), 'source hashes invalid');
+    url(source.requested_url); text(source.limitations, 'source limitations');
+    if (Object.hasOwn(source, 'retrieved_utc')) {
+      timestamp(source.retrieved_utc); url(source.effective_url); require(source.status === 200, 'source response not successful');
+    } else { timestamp(source.retrieved_file_mtime_utc); text(source.timestamp_basis, 'source timestamp basis'); }
+    const resolved = resolveSource(source.path);
+    require(resolved === true || resolved?.tracked_regular === true, `source is not a tracked regular file: ${source.path}`);
+  }
+  const binding = (value) => {
+    const item = record(value, 'source binding'), source = sources.get(item.source_id);
+    require(source && item.artifact_path === source.path, 'source binding identity/path mismatch');
+    const digests = ['sha256','artifact_uncompressed_sha256'].filter((key) => Object.hasOwn(item, key));
+    require(digests.length > 0 && digests.every((key) => item[key] === source.sha256), 'source binding digest mismatch');
+    text(item.quote, 'source quotation'); text(item.quote_matching ?? item.matching, 'quote matching'); text(item.scope, 'source scope');
+  };
+  const matrices = record(release.support_matrices, 'support matrices');
+  const connectorRows = list(record(matrices.connectors, 'connectors matrix').entries, 'connector entries');
+  const connectorNames = new Set(), connectorIdentities = new Set();
+  for (const row of connectorRows) {
+    record(row, 'connector entry'); text(row.reference_path, 'connector reference path');
+    const named = typeof row.status === 'string' && row.status.match(/^Overview explicitly names (\S(?:.*\S)?) under (\S(?:[^;]*\S)?); individual support\/modes\/lifecycle not verified$/);
+    require(named || row.status === 'discovered documentation link; support/modes/lifecycle not verified', 'malformed connector reference status');
+    const identity = named ? `name:${named[1]}` : `path:${row.reference_path}`;
+    require(!connectorIdentities.has(identity), 'duplicate connector identity');
+    connectorIdentities.add(identity);
+    if (named) connectorNames.add(named[1]);
+  }
+  const runtimeNames = new Set(list(record(matrices.runtimes, 'runtimes matrix').entries, 'runtime entries').map((row) => record(row, 'runtime entry').runtime));
+  const bindings = record(freeze.source_bindings, 'source bindings');
+  for (const [leaf, entries] of Object.entries(bindings)) {
+    const targetExists = leaves.has(leaf)
+      || (leaf.startsWith('connector:') && connectorNames.has(leaf.slice('connector:'.length)))
+      || (leaf.startsWith('runtime:') && runtimeNames.has(leaf.slice('runtime:'.length)));
+    require(targetExists, 'source binding names unknown leaf or support identity');
+    for (const item of list(entries, 'leaf source bindings')) binding(item);
+  }
+  // Reuse exact digests within this validation; never retain a mutable registry's index.
+  const catalogueBindingDigests = new Map();
+  const hasCatalogueBinding = (leaf, value) => {
+    if (!catalogueBindingDigests.has(leaf)) {
+      catalogueBindingDigests.set(leaf, new Set((bindings[leaf] ?? []).map(canonicalJsonDigest)));
+    }
+    return catalogueBindingDigests.get(leaf).has(canonicalJsonDigest(value));
+  };
+  for (const name of connectorNames) require(Object.hasOwn(bindings, `connector:${name}`), 'named connector source binding required');
+  for (const field of ['runtime_qualifications','models_administration_qualifications']) {
+    if (Object.hasOwn(freeze, field)) for (const item of list(freeze[field], field)) binding(item);
+  }
+  const consoleAcceptance = (row) => {
+    require(['not established','not established; does not remove explicit Console requirements'].includes(row.console_acceptance) && row.command === null, 'support cell claims unverified Console acceptance');
+  };
+  for (const [name, key] of [['connectors','reference_path'],['runtimes','runtime'],['sdks','language']]) {
+    const matrix = record(matrices[name], `${name} matrix`);
+    require(matrix.status === 'incomplete', `${name} support matrix is unverified`);
+    strings(matrix.required_dimensions, `${name} dimensions`);
+    if (name === 'connectors') require(sources.has(matrix.catalog_source), 'connector catalog source invalid');
+    const rows = name === 'connectors' ? connectorRows : uniqueRecords(matrix.entries, key, `${name} entries`).values();
+    for (const row of rows) {
+      consoleAcceptance(row);
+      if (name === 'connectors') {
+        require(row.reference_path.startsWith('/docs/foundry/'), 'connector reference path invalid');
+        text(row.status, 'connector reference status');
+        if (row.source_binding) binding(row.source_binding);
+      } else {
+        require(sources.has(row.source), `${name} source invalid`); text(row.reference_status, `${name} reference status`);
+        if (name === 'sdks') text(row.reference_distribution, 'SDK distribution');
+      }
+    }
+  }
+  // Frozen reference inventory only; no runtime semantics or Console support is qualified.
+  const fusion = matrices.runtimes.entries.find((row) => row.runtime === 'Fusion formula functions');
+  require(fusion, 'Fusion formula function catalogue is required');
+  const catalogueKeys = (value, keys, detail, catalogue = 'Fusion') => {
+    record(value, `${catalogue} ${detail}`);
+    const actual = Object.keys(value);
+    require(actual.length === keys.length && keys.every((key) => actual.includes(key)), `${catalogue} ${detail} keys differ from frozen reference`);
+  };
+  catalogueKeys(fusion, ['runtime','reference_status','source','console_acceptance','command','function_catalog','semantics_status','unqualified_semantics'], 'runtime');
+  require(fusion.source === 'fusion-function-library'
+    && fusion.reference_status === 'Frozen 202-entry reference catalogue; lifecycle labels preserved; Console execution unverified'
+    && fusion.console_acceptance === 'not established' && fusion.command === null
+    && fusion.semantics_status === 'not_bound', 'Fusion runtime must retain unqualified reference status');
+  catalogueKeys(fusion.unqualified_semantics, ['runtime_and_library_versions','type_and_coercion','null_and_error','optional_and_variadic_arguments','locale_timezone_precision','dependency_recalculation','effects_authority_and_recovery','concurrency_reconnect','lifecycle_successor_equivalence'], 'semantics');
+  require(Object.values(fusion.unqualified_semantics).every((value) => value === null), 'Fusion semantics remain unqualified');
+  require(Array.isArray(fusion.function_catalog) && fusion.function_catalog.length === 202, 'Fusion catalogue must contain 202 ordered entries');
+  for (const row of fusion.function_catalog) {
+    // Check own keys before JSON hashing: undefined/function values disappear in JSON.
+    catalogueKeys(row, ['section','signature','reference_lifecycle','required_leaf','console_acceptance','source_binding'], 'catalogue entry');
+    catalogueKeys(row.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'catalogue binding');
+  }
+  require(canonicalJsonDigest(fusion.function_catalog) === '520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee', 'Fusion catalogue differs from frozen reviewed records');
+  for (const row of fusion.function_catalog) {
+    require(leaves.has(row.required_leaf) && ['F09.formula-action-library','F09.formula-chart-library','F09.formula-core-library','F09.formula-timeseries-library','F09.formula-validation-library'].includes(row.required_leaf)
+      && row.console_acceptance === 'not established', 'Fusion catalogue leaf or acceptance invalid');
+    binding(row.source_binding);
+    require(hasCatalogueBinding(row.required_leaf, row.source_binding), 'Fusion catalogue exact shared source binding is required');
+  }
+  for (const [runtime, source, count, leaf, digest] of [
+    ['Quiver time-series cards', 'quiver-cards-index-time-series', 39, 'F08.time-series-transform-library', 'fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945'],
+    ['Quiver chart cards', 'quiver-cards-index-charts', 21, 'F08.chart-library', '3b34ea79d416110e8ddb259566a80cf53073747d4a3325a4ee938df1a714bc5a'],
+  ]) {
+    const row = matrices.runtimes.entries.find((entry) => entry.runtime === runtime);
+    require(row, `Quiver catalogue ${runtime} is required`);
+    catalogueKeys(row, ['runtime','reference_status','source','console_acceptance','command','analytical_card_catalog','semantics_status','unqualified_semantics'], 'runtime', 'Quiver');
+    require(row.source === source && row.reference_status === `Frozen ${count}-entry index catalogue; label/path tuples preserved; individual semantics and Console execution unverified`
+      && row.console_acceptance === 'not established' && row.command === null && row.semantics_status === 'not_bound', 'Quiver runtime must retain unqualified reference status');
+    catalogueKeys(row.unqualified_semantics, ['runtime_and_library_versions','input_types_and_nulls','numeric_and_time_semantics','limits_and_performance','refresh_and_reproducibility','effects_authority_and_disclosure','collaboration_and_recovery','lifecycle_and_successor_equivalence'], 'semantics', 'Quiver');
+    require(Object.values(row.unqualified_semantics).every((value) => value === null), 'Quiver semantics remain unqualified');
+    require(Array.isArray(row.analytical_card_catalog) && row.analytical_card_catalog.length === count, `Quiver catalogue must contain ${count} ordered entries`);
+    for (const card of row.analytical_card_catalog) {
+      catalogueKeys(card, ['category','operation','reference_path','required_leaf','scope','source_binding'], 'card', 'Quiver');
+      catalogueKeys(card.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'binding', 'Quiver');
+    }
+    // Keep distinct labels sharing a path: the pin binds original ordered tuples.
+    require(canonicalJsonDigest(row.analytical_card_catalog) === digest, 'Quiver catalogue differs from frozen reviewed records');
+    for (const card of row.analytical_card_catalog) {
+      require(card.category === source && card.source_binding.source_id === source && card.required_leaf === leaf && leaves.has(leaf), 'Quiver card source or leaf invalid');
+      binding(card.source_binding);
+      require(hasCatalogueBinding(leaf, card.source_binding), 'Quiver catalogue exact shared source binding is required');
+    }
+  }
+  const media = matrices.runtimes.entries.find((row) => row.runtime === 'Media operations and reference compute rates');
+  require(media, 'Media operation catalogue is required');
+  catalogueKeys(media, ['runtime','reference_status','source','console_acceptance','command','media_transform_catalog','reference_rate_unit','semantics_status','unqualified_semantics'], 'runtime', 'Media');
+  require(media.source === 'media-sets-advanced-formats-media-usage-limits'
+    && media.reference_status === 'Frozen 44-row public operation/rate catalogue: 43 required references and 1 explicit Intelligence exclusion; vendor usage units are not Console price, latency or throughput; executable semantics unverified'
+    && media.console_acceptance === 'not established' && media.command === null
+    && media.reference_rate_unit === 'Foundry compute-seconds per GB processed'
+    && media.semantics_status === 'not_bound', 'Media runtime must retain unqualified reference status and units');
+  catalogueKeys(media.unqualified_semantics, ['operation_semantics','format_codec_and_version_support','runtime_and_model_versions','limits_and_resource_accounting','authorization_and_source_restrictions','output_publication_and_partial_failure','cancellation_and_recovery','retention_and_deletion','lifecycle_and_successor_equivalence'], 'semantics', 'Media');
+  require(Object.values(media.unqualified_semantics).every((value) => value === null), 'Media semantics remain unqualified');
+  require(Array.isArray(media.media_transform_catalog) && media.media_transform_catalog.length === 44, 'Media catalogue must contain 44 ordered entries');
+  for (const row of media.media_transform_catalog) {
+    catalogueKeys(row, ['category','operation','reference_compute_seconds_per_gb','required_leaf','scope','source_binding'], 'card', 'Media');
+    catalogueKeys(row.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'binding', 'Media');
+  }
+  // Bind category/name/rate tuples, including repeated names and the retained exclusion.
+  require(canonicalJsonDigest(media.media_transform_catalog) === '76e13ccb2918a75b6612415d891f68fd8695667f6e3539d68806281934b17504', 'Media catalogue differs from frozen reviewed records');
+  let excludedMediaRows = 0;
+  for (const row of media.media_transform_catalog) {
+    require(row.source_binding.source_id === media.source, 'Media catalogue source invalid');
+    binding(row.source_binding);
+    if (row.required_leaf === null) {
+      excludedMediaRows += 1;
+      require(row.category === 'Documents' && row.operation === 'Extract text using VLM *'
+        && row.reference_compute_seconds_per_gb === 275
+        && row.scope === 'Excluded generative/model-specific operation; Intelligence roadmap authority required', 'Media exclusion must retain the reviewed VLM scope');
+    } else {
+      require(leaves.has(row.required_leaf) && ['F04.media-capacity-recovery','F04.image-transform-library','F04.audio-transform-library','F04.video-transform-library','F04.document-transform-library','F04.spreadsheet-extraction','F12.inference'].includes(row.required_leaf), 'Media catalogue leaf invalid');
+      require(hasCatalogueBinding(row.required_leaf, row.source_binding), 'Media catalogue exact shared source binding is required');
+    }
+  }
+  require(excludedMediaRows === 1, 'Media catalogue must retain exactly one explicit exclusion');
+  if (Object.hasOwn(matrices, 'models_administration')) {
+    for (const row of uniqueRecords(matrices.models_administration, 'dimension', 'models administration matrix').values()) {
+      strings(row.values, 'model support values'); text(row.reference_support, 'model reference support'); binding(row.source_binding); consoleAcceptance(row);
+    }
+  }
+}
+
+export function validateConsoleTruthLedger(registry, jurisdiction, options = {}) {
+  validatedRegistries.delete(registry);
+  const { resolveSha = () => true, resolveRef = () => true, resolveBuckTarget = () => true, resolveSource = () => true, expectedCandidateSha, routeFacts, repoRoot } = options;
   object(registry, 'registry'); object(jurisdiction, 'jurisdiction register');
   if (registry.schema_version !== 'console-capability-registry-v2') fail('unsupported console capability registry schema');
   if (jurisdiction.schema_version !== 'console-jurisdiction-register-v2') fail('unsupported console jurisdiction register schema');
@@ -463,6 +706,7 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   // directly — so the equality it tests is unchanged, only shorter.
   const expectedBindings = new Set(registry.capabilities.flatMap((cap) => array(cap.jurisdiction_bindings).map((binding) => `${binding.control_id}|${cap.id}`))); const actualTraces = new Set([...controls.values()].flatMap((control) => array(control.capability_traceability).map((trace) => `${control.id}|${trace.capability_id}`))); if (expectedBindings.size !== actualTraces.size || [...expectedBindings].some((tuple) => !actualTraces.has(tuple))) fail('Korea control trace is not an exact capability binding bijection');
     if (routeFacts) { const owners = registry.capabilities.flatMap((cap) => cap.route_presentation.route_keys.map((key) => `cap:${cap.id}:${key}`)).concat(array(registry.source_inventory?.unmodeled_keys).map((entry) => `unmodeled:${entry.key}`)); const keys=owners.map((entry) => entry.split(':').at(-1)); const actual=new Set(Object.keys(routeFacts.facts ?? {})); if (new Set(keys).size !== keys.length || keys.length !== actual.size || [...actual].some((key)=>!keys.includes(key))) fail('source route inventory is not a complete bijection'); }
+  validateReleaseInventory(registry, resolveSource);
   validatedRegistries.set(registry, ledgerDigest(registry));
   return { capability_count: registry.capabilities.length, candidate_sha: candidate.sha, verdict: 'STRUCTURALLY_VALID_HOLD_PRESERVED' };
 }

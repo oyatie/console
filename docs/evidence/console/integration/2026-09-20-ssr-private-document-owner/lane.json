@@ -1,0 +1,35 @@
+[
+  {
+    "lane": "ssr-private-document-owner",
+    "owner": "/root",
+    "base_sha": "bf6af0149b30eea0a4ebad065801320bb52316e1",
+    "immutable_target": "Every native and legacy SSR document retains its body/status and appropriate private response envelope",
+    "allowed_paths": [
+      "backend/crates/payroll/ui/src/lib.rs",
+      "backend/crates/payroll/ui/src/native_account.rs",
+      "backend/crates/payroll/ui/pkg",
+      "backend/crates/payroll/ui/bundle.lock.json"
+    ],
+    "probe": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-ui --features islands,ssr --lib private_document_tests::",
+    "mechanical_guide": "Extend existing SSR owner with one private document helper; native document reuses it with exact existing CSP; three legacy constructors use frame-ancestors none and object/base none without script restrictions. Rebuild through unchanged WASM recipe. No test edits.",
+    "reviewers": [
+      "/root/integration_security",
+      "/root"
+    ],
+    "pre_mortem": "Native restrictive CSP accidentally copied to legacy blocks inline island, helper changes bytes/status, unsafe constructor bypass remains",
+    "blast_radius": "UI response construction and regenerated bundle only; no DB/auth changes",
+    "detection": "Four real owner tests, exact native CSP/body, retained tests, actual hydration browser",
+    "rollback": "Revert bounded source/generated artifacts together; preserve evidence",
+    "stop_conditions": [
+      "Nonowner RED",
+      "Changed authorization",
+      "Unreviewed oracle change",
+      "Unexpected generated churn"
+    ],
+    "remaining_holds": [
+      "Assembled release",
+      "Real Account-to-payroll journey",
+      "Comprehensive legacy script CSP hardening"
+    ]
+  }
+]

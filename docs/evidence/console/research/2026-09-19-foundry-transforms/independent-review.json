@@ -1,0 +1,52 @@
+{
+  "kind": "independent-bounded-F02-F04-reference-and-additive-rebase-review",
+  "reviewer": "integration_tests",
+  "verdict": "APPROVED_BOUNDED_REFERENCE_ADDITION_AND_EXACT_CURRENT_REBASE",
+  "reviewed_utc": "2026-09-20T01:44:49.973006+00:00",
+  "proposal_sha256": "3d27a8cc372fba47d5f16b8d94415e82e26512742ece24d0d2f1b205e4c58d1d",
+  "patch_sha256": "d56612a08de2b327291ce7e7c85ec581bd17b78dc41e241c2415b0640b464a4e",
+  "manifest_sha256": "a4b6b9d83e802f07dff65b696c2842e2a2976b89230f323a4e70ee86f73ff2b9",
+  "proposal_base": "6380fc42d9e88d1b89b69139bd81c0528a6e2f9a",
+  "proposal_base_registry_sha256": "0772eff84fd6ad8084e70a3cd608d210b633aa8209070727ef4246bc811bf7d6",
+  "rebase_target_registry_sha256": "c56885b6a3dc4fc83fcc2515de0c2b1b01dba8b21580d3d1a40df2039198424b",
+  "checks": {
+    "errors": [],
+    "manifest_files_verified": 74,
+    "sources_verified": 33,
+    "quote_occurrences_checked": 195,
+    "media_rows_verified": 44,
+    "media_rows_exact": true,
+    "new_leaves": 34,
+    "base_leaves": 187,
+    "current_leaves": 211,
+    "rebased_leaves": 245,
+    "current_registry_sha256": "c56885b6a3dc4fc83fcc2515de0c2b1b01dba8b21580d3d1a40df2039198424b",
+    "patch_operations": 190,
+    "no_prior_value_changed": true
+  },
+  "findings": [],
+  "method": [
+    "Hashed74 manifest members independently, checked all33 compressed/raw source hashes and raw lengths, and original capture receipt metadata/path-byte correspondence.",
+    "Independently parsed article data-pagefind-body, verified195 quote occurrences including44 repeated catalog bindings, and compared all44 media category/name/rate rows in captured order. Confirmed rates are vendor compute-seconds/GB, not Console measurements.",
+    "Verified actual retrieval timestamps map to2026-09-19 America/New_York while preserving2026-09-20 UTC custody and historical-authentication limitations.",
+    "Applied190 operations to pinned187-leaf base and current211-leaf registry independently. All additions; no dictionary key replacement, source-ID/path collision or leaf-ID collision. Recursively preserved all previous values and array prefixes, including newly integrated F05/F06 work.",
+    "Verified both resulting graphs resolve and are acyclic; current rebase yields245 unique leaves. All34 new leaves planned only, command null and status not_bound; reference freeze remains partial_snapshot.",
+    "Read65 compatibility/security qualifications and13 limitations: per-key selected-mode exactly-once does not establish delivery; successful schedule is dispatch only; job and transactionless media partial outcomes retained; destructive replay not Console policy; computational checkpoints differ from durable state recovery.",
+    "Verified no year is invented for November30 deprecation notice; rollback successor does not waive dependency recovery. Virtual-media staleness, copied derivatives, source/engine constraints, PDF/XLSX gaps and beta qualifications remain explicit.",
+    "VLM catalog row is explicitly excluded with required_leaf null; embeddings retain unspecified-model/Intelligence authority caveat. No AIP implementation authorization inferred."
+  ],
+  "limits": [
+    "Reference-only addition, not exhaustive F02/F04/Foundry freeze or runtime/implementation/workflow/production acceptance.",
+    "Rebase approval binds exact current registry hash; root must preserve its serialized writer and recheck before applying. If current registry changes, repeat collision/preservation/graph checks against new exact bytes.",
+    "Keep source captures and exact packet/review custody when integrating. No committed artifact custody established here.",
+    "Structural schema validator report uses permissive resolvers and is not accepted as signed source-train or production evidence."
+  ],
+  "runtime_tests_executed": 0,
+  "repository_edits": false,
+  "reproduction": {
+    "script": "/private/tmp/review-transforms-independent.py",
+    "script_sha256": "1ec0f05275f00ebf96a1d91f1620e65ae1cc14154550282949f1740961fe2ce5",
+    "results": "/private/tmp/console-transforms-independent-checks.json",
+    "results_sha256": "850d60fe5ffbb9101c7446e60d566ae6c67f161c77005dc3096923ba8c9bc6b6"
+  }
+}

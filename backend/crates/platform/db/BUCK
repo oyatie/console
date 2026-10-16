@@ -2,6 +2,11 @@
 load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")
 
 export_file(
+    name = "Cargo.toml",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "crate-source-tree",
     src = "src",
     mode = "reference",
@@ -44,6 +49,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -68,6 +74,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -93,6 +100,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -118,6 +126,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -143,6 +152,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -168,6 +178,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -193,6 +204,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -218,6 +230,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -243,6 +256,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -268,6 +282,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -293,6 +308,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -318,6 +334,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -343,6 +360,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -368,6 +386,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",
@@ -393,6 +412,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
         "//third-party/rust:sqlx",

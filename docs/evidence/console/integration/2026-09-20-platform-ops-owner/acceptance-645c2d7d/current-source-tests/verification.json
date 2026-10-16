@@ -1,0 +1,10 @@
+{
+  "depends_on_packet_A": "036033e304d76bee15d4b4fbea13cb29acc4cd37718599fa70974133892da257",
+  "composes_packet_B_round2": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31",
+  "sqlx_leaves": 2,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 edition2024 passed",
+  "shared_helper_changes": "three visibility prefixes plus one narrow reexport; every existing body/test/include byte preserved",
+  "histories_unavailable_unchanged": true
+}

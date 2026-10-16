@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "kind": "independent_payroll_list_design_round3_and_test_review",
+  "candidate_sha256": {
+    "/private/tmp/console-payroll-list-owner-design-round2-20260921.md": "4c9ced745b76a51ecb84535176204cc06d96693fa88c55afd8aa7ee4b925ebd2",
+    "/private/tmp/console-payroll-list-recovery-test-round1-20260921.rs": "a6c8a9e75a8ec1b771fbf9ab92d5804842b0aad68a9cebd5c20fda718402be66"
+  },
+  "verdict": "APPROVE bounded round2 design direction. Round1 test is a valid semantic SSR recovery oracle; strengthen exact failed JSON envelope before final test freeze to cover the concrete adapter-conversion disclosure hazard. No execution or implementation admission claimed.",
+  "verified": [
+    "Existing mounted SSR path independently resolves a payroll floor and converts all list errors to empty Vec, proving the proposed owner-stage distinction addresses a real source-level defect.",
+    "Existing list_runs_page authenticates through request-context, invokes exact authorize_org_wide(PayrollRunRead), and reads plus inserts payroll_run.list_read audit in with_audits. Preserve those identities, atomicity and existing snapshot semantics.",
+    "Application-owned Summary/Page DTO relocation preserves all fields, types, serde shape and old adapter reexports. Required factory passed by App is composition; actor/org/grant and authority flags must not become query inputs.",
+    "SSR authorization-stage errors including unknown authority map only to Omitted. Only a subsequent query/audit/commit failure after this operation establishes authority may map to Failure. Remove old App payroll floor so earlier authorization cannot replace this result.",
+    "Round1 test creates owner run through actual PgPayRunPort::execute; actual JSON and SSR positives plus two committed audits precede targeted audit trigger. Failure and recovery are mounted-route assertions, with denied/invalid/absent credentials nondisclosure and exact audit counts.",
+    "Disposition is bounded list compatibility and recoverability only: native Account authority, principal conversion, detail/lifecycle ownership, complete payroll workflow and release qualification remain outstanding."
+  ],
+  "required_security_preservation": [
+    "Do not use existing PgPayrollError\u2192KernelError database mapping verbatim: it embeds DbError::to_string, whereas current REST from_store and From<DbError> sanitize to internal/internal server error. Log internal detail server-side and preserve public sanitized message before the new application boundary.",
+    "Preserve original authorization KernelError kind/message and request-context error mapping for the compatible JSON route. Do not collapse all API failures into omission or generic forbidden.",
+    "Current-round1 failed_json asserts only 500 and no run ID; it would not detect private-payroll-audit-fault disclosure. Add exact JSON equality for the existing error envelope before final test freeze. This is independent security hardening of the new oracle, not weakening an existing test."
+  ],
+  "remaining_acceptance": [
+    "Exact final test candidate review and actual semantic RED/discovery before implementation.",
+    "Source review of adapter error sanitation, application stage ownership, mandatory factory and removal of obsolete App payroll-floor inference.",
+    "Existing JSON/auth/audit isolation tests and UI28 remain required. Same-current-session revocation after a positive read remains acceptance evidence; round1 alone does not test revocation.",
+    "Actual native Account/browser lifecycle and production qualifications are not established by legacy Bearer fixtures."
+  ],
+  "tests_executed": 0,
+  "repository_edits": 0
+}

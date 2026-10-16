@@ -1,0 +1,16 @@
+{
+  "author": "/root/integration_security",
+  "status": "PROPOSED_TEST_SOURCE_REQUIRES_INDEPENDENT_REVIEW",
+  "base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "source_preimage_sha256": "edf78dca4fd37d54a43c7308255d2897fc1a7edba075d59852de93c40aedef76",
+  "new_tests": 1,
+  "unchanged_prior_tests": 6,
+  "actual_tests_executed": 0,
+  "repository_writes": 0,
+  "files": {
+    "addition.rs": "3d2925cdc9d667ef3fdcf994512a3dab55b9e0b95d1e10b15f31d7f1dd7a1c54",
+    "native_company_intake_owner.rs": "367d6a604cfa511ef713c7192911be1ebda4cfd7241ce840604323c2195c79ed",
+    "CONTRACT.md": "edc8cef97d1e27039ffde3ada434192878880fab6cbbef0da1cb8207f08197bf"
+  },
+  "supersedes": "/private/tmp/console-company-intake-acl-tests-20260920-round1/MANIFEST.json"
+}

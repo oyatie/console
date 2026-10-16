@@ -1,0 +1,17 @@
+{
+  "head": "93382557f564d92ae62983af3a7d5a06cfc321ba",
+  "merge_parent": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "canonical_lock_preserved_sha256": "ac377162699a97f7f0dedc5bed39ba86d7c053955621a87ff97ea5ecf4b1f2c6",
+  "unchanged_hydrate_graph_files": 37,
+  "input_lock_only_two_canonical_hash_fields_changed": true,
+  "input_lock_sha256": "242e7d87981549461fc37ce3cea8d1847ba4dc618972a9e365ff17f4eb39ce91",
+  "canonical_graph_preserved_from_hydration": true,
+  "product_rust_changed_from_integration_head": [],
+  "theme_preserved": true,
+  "hydration_test_methods_preserved": 70,
+  "merged_test_methods": 72,
+  "generator_sha256": "b670a3e25102bd830c72ac74ff88589a81dbbe8f12008e13033643e1f971d780",
+  "only_reviewed_comment_successor": true,
+  "ui_BUCK_sha256": "cd05ff0b14a19c645033851e25f45d5759ecde37eed4e3ad746ed5aaa9ed4cdc",
+  "ui_BUCK_only_adds_theme_to_both_consumers": true
+}

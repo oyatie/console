@@ -1,0 +1,74 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "bounded-list-evidence-accepted-independent-ops-dependency-ready-transition-reliability-HOLD",
+  "candidate_sha": "3908eefcda5fb5263b3b3accf6bc446f91c38031",
+  "production_source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+    "backend/crates/platform/authz/src/platform_policy.rs": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06",
+    "backend/crates/platform/provisioning/src/lib.rs": "c0839851bb8a11964cabe4636833625722b0500fc4324e8a8b087f67cf61d7e7",
+    "backend/crates/platform/platform-rest/src/lib.rs": "d01ba273366bda19a4a60f98cffb160aa8daaa4982a43050f257e7a0efc68ce2",
+    "backend/crates/platform/auth-rest/src/lib.rs": "f0ddf179161083fc6b6da06efe4223043a7569021094f4fd8e0dffab9a47b8f4",
+    "backend/app/src/lib.rs": "4954d9f706efd2b7bfc1cf926f62c3bb881a66707e0ae67e2f483d4304df638d",
+    "ops/generate-account-custody.py": "1c35801c84b87df57e7e3462021733e191624d0fa711eacbafb79e34989e7d89"
+  },
+  "transition_source_sha256": "7d83c98712f410bf2f3d13d80ba3634f21ba85cc4b4b8ceffbaff8c439411f25",
+  "evidence_sha256": {
+    "console-platform-source-full52-3908eefc-run5-20260920.log": "c13ef6585de21d187067dc19f3c1386be15ac9507fd5e64cbd4aa7cfe94f5610",
+    "console-platform-source-full52-cfd16748-run4-20260920.log": "b506065959d2bd3d07131e36eab893bf6e72eb79de2d26ee91d20256d9f5300f",
+    "console-platform-list-final30-5ce1fa20-run1-20260920.log": "2e4193442319504a76d72891413137b7cd49c2c0d42fe6f1165013aa69213eb9"
+  },
+  "facts": [
+    "Current clean-start3908run independently observed original named mountedowner1pass10.44s443filtered and retained52pass671.14s392filtered;0fail/ignored both.",
+    "Existing full30distinct list leaves passed at5ce; reuse unchanged production/list boundary only, not rerun30 at3908.",
+    "Candidate production/generator pins equal prior reviewedc3source; transition source is exact approved7d83diagnostic-only successor.",
+    "cfd full52run4 retains51pass/1fail SQLnil/scope/refusal owner snapshot; later sixfocuseddiagnosticpasses and52pass identify neither changed component nor cause.",
+    "Earlier observed upgrade physical-indexstats drift does not attribute later SQLrefusal failure.",
+    "Private readguard unimplemented/causally unproven; no normalization, disabledtests or waiver authorized.",
+    "Root has advanced to10269cc6initialopstests after runtime; this receipt binds3908runtime candidate and is not evidence that10269tests passed."
+  ],
+  "resolved_findings": [
+    "PLATFORM-LIST-MOUNTED503-EVIDENCE closed by accepted30suite actual GETHEAD source/projection/audit503 histories and recovery."
+  ],
+  "open_findings": [
+    {
+      "id": "PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT",
+      "disposition": "release/reliability HOLD",
+      "evidence": "cfd run4 line1036 exact tuple mismatch; no failing diagnostic reproduction yet",
+      "closure": "Identify differing component/cause; independently review correction if warranted and prove without suppressing fields/tests."
+    }
+  ],
+  "dependency_decision": {
+    "allowed": "Separate ops current-authority owner conversion through own reviewed clean-tree mountedRED/admission using exact approved rawcredential/retainedsource contract and normal runtime gates.",
+    "conditions": [
+      "No bridge SQL/profile/migration/history change under this dependency.",
+      "Preserve/report unresolved source snapshot issue and all actual failures.",
+      "No transition reliability, milestone0, or release qualification claim from laterpass.",
+      "New and affected ops/list tests plus independent final artifact review remain required."
+    ],
+    "not_allowed": "Skipping/weakening retained tests, claiming intermittent cause fixed, production exposure or broad source transition reliability acceptance."
+  },
+  "lens_audit": {
+    "Cartesian doubt": "Current52pass is one observed diagnostic-only replay, not a fix for prior unexplained51pass/1fail exact snapshot history; issue remains release HOLD.",
+    "Essentialism / YAGNI": "One owner/sole route; no universal handler or new production fault framework.",
+    "Chestertons Fence": "Historical source serializers/pins, raw consumers and existing test oracles preserved.",
+    "Contrarian / outside-the-box": "Raw function grant closure explicitly deferred to real machine/view-as successor, not falsely inferred from guarded Rust route.",
+    "Socratic": "Missing mounted503 evidence repaired through reviewed actual boundary cases; later green cannot erase unexplained snapshot failure.",
+    "Pragmatism": "Existing Auth locks and finite Cedar reuse; actual login/DB effects, no mock principal.",
+    "Red Team": "Actual mounted503source/projection/audit cases now pass; signed/currentrole, exactfamily, source locks, COMMIT ambiguity and finite privacy established within bounded list30.",
+    "Systems Thinking": "Single Business tx retains source through projection/audit/commit; Authz pure facts not transferable authority.",
+    "Operability / Day-2": "Timeout cancellation/recovery and real lost COMMIT acknowledgement tested; rollback must fence unsafe older source, not reopen known gap.",
+    "Opportunity Cost": "Continue independent ops owner conversion using unchanged SQL/profile contract rather than retry-until-green; retain diagnostic work and failure HOLD.",
+    "Blast-radius / cell-based": "Bounded route and narrow credential-owner source bridge; test-only corruption transactions and exact restoration.",
+    "Constant-work / anti-fragility": "Observed unrelated source progress and bounded wait cleanup; release mixed-load envelope remains unqualified.",
+    "Shared-nothing / eventual consistency": "No automatic retry after ambiguous commit; explicit recovery preserves exact one observational audit.",
+    "FinOps / unit-cost": "Additional source/family locks and DB-clock checks have no qualified production cost/load claim.",
+    "Telemetry-first": "Exact audit20fields/DBwindow/allstate and mounted503 evidence verified; failed transition rawlog and value-free diagnostics retained.",
+    "Zero-trust / defense-in-depth": "Raw credential verified inside owner, retained current source, fixed Cedar tuple, exact role ACL checks and final outer privacy; raw SQL capability remains HOLD."
+  },
+  "runtime_tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Protected-dev independentCOMMENT/check/merge/readback separate.",
+    "Other Platform owners/workers/viewas/rawSQL grants/globalboundissuance remain open.",
+    "BrowserUX/accessibility/load/recovery/Koreanapplicability/fullmilestones0-10 remain unqualified."
+  ]
+}

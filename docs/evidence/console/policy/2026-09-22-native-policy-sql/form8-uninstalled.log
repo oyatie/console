@@ -1,0 +1,18 @@
+BEGIN
+SET
+ uninstalled_form_exact_null 
+-----------------------------
+ t
+(1 row)
+
+COMMIT
+ inputs_unchanged 
+------------------
+ t
+(1 row)
+
+ receipts_unchanged 
+--------------------
+ t
+(1 row)
+

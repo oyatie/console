@@ -1,0 +1,21 @@
+{
+  "kind": "initial-ad-hoc-smoke-expectation-failure",
+  "expected_readyz_status": 503,
+  "actual_readyz_status": 200,
+  "actual_body": {
+    "status": "ready",
+    "service": "console-app",
+    "role": "api",
+    "database": "not_configured",
+    "leave_command_database": "not_configured",
+    "ontology_command_database": "not_configured",
+    "platform_force_command_database": "not_configured"
+  },
+  "assertion": "assert r.returncode==0 and r.stdout.endswith(\\n503)",
+  "result": "AssertionError: actual all-not_configured ready body and200",
+  "diagnosis": "The expectation was incorrect: current readyz explicitly permits a process with no configured database; no product source or existing test was changed.",
+  "initial_container_network_and_cleanup": "Root tool execution reported --network none and finally rm --force, but initial HostConfig/absence artifacts were not captured; later runtime_smoke.py separately verifies those properties.",
+  "limits": [
+    "No database-backed readiness, security, migration or business acceptance from this process smoke"
+  ]
+}

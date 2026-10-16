@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 2,
+  "decision": "APPROVE round2 design; GROUP-LIST-DECODE-503 refinement addressed; no tests or implementation admitted",
+  "manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "design_sha256": "a1d858465156868aee8c81a983edbda0497df3fc44b8b291cac5ce9a4888b72c",
+  "checks": [
+    "Exact previous design bytes retained; census/source pins unchanged; append only Group-specific actual mapping-failure acceptance.",
+    "Valid JSONB with one malformed member UUID reaches actual Json<Vec<GroupMemberSummary>> decoder; independent restricted Business raw query control distinguishes SQL success from pre-decoder failure.",
+    "Observed real console_rt projection boundary and genuine current source checks prevent mock, missing-schema, rejected-source or timer-only qualification.",
+    "Direct finite unavailable plus actual GET503/private and HEAD503/empty; zeroaudit/alltable/history preservation, no secrets or malformed value disclosure.",
+    "Disposable exact function source/catalog/privilege preservation and finally-style restoration before assertions/recovery; same credential and database used for positive recovery.",
+    "No production fault seam, historical migration, new grant or source-family helper edit."
+  ],
+  "findings": [],
+  "remaining_holds": [
+    "Two further independent design rounds and exact root consensus before test authoring.",
+    "Actual reversible function-fixture source and oracle tests require independent review; design acceptance is not proof of executed decoder history.",
+    "Real mounted ownerRED, lane admission and full affected regressions remain required.",
+    "RawSQL grants, otherowners and source-snapshot intermittency remain release HOLDs."
+  ]
+}

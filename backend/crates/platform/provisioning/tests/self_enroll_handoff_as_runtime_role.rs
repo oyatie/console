@@ -1,44 +1,27 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! RLS-as-`console_rt` gate for the cross-device passkey-enrollment self-handoff
-//! (`BootstrapCredentialStore::issue_self_enroll_handoff`).
-//!
-//! The self-handoff lets a user on a DESKTOP mint a fresh single-use, short-TTL
-//! one-time code FOR THEMSELVES, render it as a QR, and finish passkey enrollment
-//! on their PHONE — no Bluetooth / caBLE hybrid tunnel. Because it is a
-//! credential-handoff path it must hold the same RLS + single-use + expiry
-//! invariants as the rest of the bootstrap machinery, and it must NEVER mint a
-//! code for another user.
-//!
-//! Every statement here runs as the genuine non-owner `console_rt` role (FORCE RLS
-//! applies, BYPASSRLS does not), exactly like production, so the test fails closed
-//! if the issuance forgets to arm `app.current_org`.
-//!
-//! Proven, as `console_rt`:
-//!   * SELF-ONLY: the minted handoff is owned by exactly the issuing user, stamped
-//!     with the issuer's own org, and is invisible under any other tenant's GUC.
-//!   * SINGLE-USE: a handoff redeems → the user enrolls a passkey → the code is
-//!     consumed and a second redeem of the SAME code fails.
-//!   * EXPIRY: an expired handoff does not redeem.
-//!   * HANDOFF → ENROLL: the happy path (issue → redeem → register passkey)
-//!     works end to end as the runtime role.
-//!   * SUPERSEDE: minting a handoff while the user already holds an OPEN code
-//!     revokes the stale code (the one-open-per-user invariant) and the new one
-//!     redeems while the old one no longer does.
+//! Real-login compatibility tests for unmigrated legacy self-handoff.
+//! Auth proof, handoff, passkey and consume operations use console_auth_rt after
+//! actual migration/operator finalization. Company audit reads use console_rt;
+//! raw credential reads are denied to Business under every Company selector.
+//! Preserve exact owner/provenance, expiry, supersession and single consumption.
+//! These legacy fixtures do not authorize employer recovery for migrated Accounts.
 
 use console_kernel_core::OrgId;
 use console_platform_auth::{
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, WebauthnSettings,
 };
 use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use url::Url;
 use uuid::Uuid;
 use webauthn_authenticator_rs::WebauthnAuthenticator;
 use webauthn_authenticator_rs::softpasskey::SoftPasskey;
 
-/// A second, non-KNL tenant id, used to prove cross-tenant isolation of a handoff.
+/// A second legacy Company selector, used to verify raw Business credential denial.
 const ORG_T2: Uuid = Uuid::from_u128(0x3333_3333_3333_3333_3333_3333_3333_3333);
 
 /// Short handoff TTL the REST layer uses (5 min); mirrored here.
@@ -55,22 +38,9 @@ fn passkey_service() -> PasskeyService {
     .unwrap()
 }
 
-/// Build a SECOND pool whose every connection runs `SET ROLE console_rt` on checkout,
-/// so statements execute as the genuine non-owner RUNTIME role — FORCE RLS
-/// applies and BYPASSRLS does not — exactly as production connects.
-async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+/// Authenticate directly as the same restricted Auth login used by production.
+async fn auth_role_pool(owner_pool: &PgPool) -> PgPool {
+    login_test_pool(owner_pool, TestDatabaseLogin::Auth).await
 }
 
 /// Seed an `organizations` row + one user in it, as the OWNER (superuser) pool
@@ -102,17 +72,17 @@ async fn seed_org_and_user(owner_pool: &PgPool, org: Uuid, tag: &str) -> Uuid {
     user_id
 }
 
-/// Register a discoverable passkey for `user_id` in `org` as `console_rt`, returning
+/// Register a discoverable passkey for `user_id` in `org` as Auth, returning
 /// the stored credential id. The registration-finish INSERT is org-stamped.
 async fn register_passkey_as_runtime(
     service: &PasskeyService,
-    rt_pool: &PgPool,
+    auth_pool: &PgPool,
     org: OrgId,
     user_id: Uuid,
 ) -> String {
     let registration = service
         .start_registration(
-            rt_pool,
+            auth_pool,
             org,
             PasskeyRegistrationStart {
                 user_id,
@@ -121,7 +91,7 @@ async fn register_passkey_as_runtime(
             },
         )
         .await
-        .expect("start_registration must succeed as console_rt");
+        .expect("start_registration must succeed as the restricted Auth login");
 
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential = authenticator
@@ -132,16 +102,16 @@ async fn register_passkey_as_runtime(
         .unwrap();
 
     let stored = service
-        .finish_registration(rt_pool, org, registration.ceremony_id, credential)
+        .finish_registration(auth_pool, org, registration.ceremony_id, credential)
         .await
-        .expect("finish_registration must INSERT the passkey as console_rt");
+        .expect("finish_registration must INSERT the passkey as the restricted Auth login");
     stored.credential_id
 }
 
 /// Consume the user's open code atomically (the single point of single-use
 /// enforcement; in production this runs in the same tx as the passkey insert).
-async fn consume_open_code_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uuid) {
-    let mut tx = rt_pool.begin().await.unwrap();
+async fn consume_open_code_as_runtime(auth_pool: &PgPool, org: OrgId, user_id: Uuid) {
+    let mut tx = auth_pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(org.as_uuid().to_string())
         .execute(&mut *tx)
@@ -150,16 +120,20 @@ async fn consume_open_code_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uui
     BootstrapCredentialStore
         .consume_open_credentials_tx(&mut tx, org, user_id, OffsetDateTime::now_utc())
         .await
-        .expect("consume must succeed as console_rt");
+        .expect("consume must succeed as the restricted Auth login");
     tx.commit().await.unwrap();
 }
 
-/// Read a bootstrap credential's owning user + org by its OTP, as `console_rt` with
-/// the GUC armed to `org`.
-async fn handoff_owner_as_runtime(rt_pool: &PgPool, org: OrgId, otp: &str) -> Option<(Uuid, Uuid)> {
+/// Inspect the exact OTP's owning user and legacy Company through Auth custody.
+/// This observation is not Company-GUC authorization; Business denial is separate.
+async fn handoff_owner_as_runtime(
+    auth_pool: &PgPool,
+    org: OrgId,
+    otp: &str,
+) -> Option<(Uuid, Uuid)> {
     use sha2::{Digest, Sha256};
     let token_hash = Sha256::digest(otp.as_bytes()).to_vec();
-    let mut tx = rt_pool.begin().await.unwrap();
+    let mut tx = auth_pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(org.as_uuid().to_string())
         .execute(&mut *tx)
@@ -178,71 +152,98 @@ async fn handoff_owner_as_runtime(rt_pool: &PgPool, org: OrgId, otp: &str) -> Op
 
 // ===========================================================================
 // (1) SELF-ONLY: the minted handoff belongs to exactly the issuing user, is
-// stamped with the issuer's own org, and is invisible under another tenant's GUC.
+// stamped with the issuer's own org, with raw Business reads denied in both scopes.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handoff_is_scoped_to_the_issuing_user_only(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let auth_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
-    // A second tenant exists so we can prove cross-tenant invisibility.
+    // A second Company exists so both selectors are tested for credential denial.
     let _other = seed_org_and_user(&owner_pool, ORG_T2, "T2").await;
 
     let issue = BootstrapCredentialStore
         .issue_self_enroll_handoff(
-            &rt_pool,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
             HANDOFF_TTL,
         )
         .await
-        .expect("self-handoff issuance must succeed as console_rt");
+        .expect("self-handoff issuance must succeed as the restricted Auth login");
 
     // Owned by exactly the issuing user, stamped with the issuer's own org.
-    let owner = handoff_owner_as_runtime(&rt_pool, knl, issue.token.as_str()).await;
+    let owner = handoff_owner_as_runtime(&auth_pool, knl, issue.token.as_str()).await;
     assert_eq!(
         owner,
         Some((user_id, *knl.as_uuid())),
         "handoff must be owned by the issuing user and stamped with their own org"
     );
 
-    // Invisible under another tenant's GUC (cross-tenant isolation holds).
-    let other = OrgId::from_uuid(ORG_T2);
-    assert_eq!(
-        handoff_owner_as_runtime(&rt_pool, other, issue.token.as_str()).await,
-        None,
-        "the handoff must be invisible under a different tenant's GUC"
-    );
+    // Neither the owning nor another Company selector grants Business access.
+    // Auth's positive provenance read above must not be mistaken for Business RLS.
+    let business = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
+    let token_hash = {
+        use sha2::{Digest, Sha256};
+        Sha256::digest(issue.token.as_str().as_bytes()).to_vec()
+    };
+    for org in [knl, OrgId::from_uuid(ORG_T2)] {
+        let mut tx = business.begin().await.unwrap();
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org.as_uuid().to_string())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let error = sqlx::query_as::<_, (Uuid, Uuid)>(
+            "SELECT user_id, org_id FROM auth_bootstrap_credentials WHERE token_hash = $1",
+        )
+        .bind(&token_hash)
+        .fetch_optional(&mut *tx)
+        .await
+        .expect_err("Business cannot inspect any handoff credential");
+        assert_eq!(
+            error
+                .as_database_error()
+                .and_then(|error| error.code())
+                .as_deref(),
+            Some("42501"),
+            "both Company selectors must retain credential custody"
+        );
+        tx.rollback().await.unwrap();
+    }
 }
 
 // ===========================================================================
 // (2) HANDOFF → ENROLL → SINGLE-USE: a handoff redeems, the user enrolls a
 // passkey (which consumes the code), and a SECOND redeem of the same code fails.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handoff_redeems_then_enroll_consumes_it_single_use(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let auth_pool = auth_role_pool(&owner_pool).await;
+    let business = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
     let issue = BootstrapCredentialStore
         .issue_self_enroll_handoff(
-            &rt_pool,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
             HANDOFF_TTL,
         )
         .await
-        .expect("self-handoff issuance must succeed as console_rt");
+        .expect("self-handoff issuance must succeed as the restricted Auth login");
     let otp = issue.token.as_str().to_owned();
 
     // The phone redeems the handoff (first sign-in path) and gets a session.
     let redemption = BootstrapCredentialStore
-        .redeem_otp(&rt_pool, &otp, OffsetDateTime::now_utc())
+        .redeem_otp(&auth_pool, &otp, OffsetDateTime::now_utc())
         .await
-        .expect("handoff redeem must find the credential as console_rt");
+        .expect("handoff redeem must find the credential as the restricted Auth login");
     assert_eq!(redemption.user_id, user_id);
     assert_eq!(redemption.org_id, knl);
     assert!(
@@ -252,24 +253,25 @@ async fn handoff_redeems_then_enroll_consumes_it_single_use(owner_pool: PgPool) 
 
     RefreshTokenStore
         .issue_family(
-            &rt_pool,
+            &business,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
             Duration::days(30),
         )
         .await
-        .expect("session mint must pass RLS as console_rt");
+        .expect("session mint must pass RLS as the restricted Auth login");
 
     // The phone enrolls a passkey; enrollment consumes the open handoff code
     // atomically (production runs this in the register-finish transaction).
     let service = passkey_service();
-    register_passkey_as_runtime(&service, &rt_pool, knl, user_id).await;
-    consume_open_code_as_runtime(&rt_pool, knl, user_id).await;
+    register_passkey_as_runtime(&service, &auth_pool, knl, user_id).await;
+    consume_open_code_as_runtime(&auth_pool, knl, user_id).await;
 
     // SINGLE-USE: the same handoff code can never mint another session.
     let replay = BootstrapCredentialStore
-        .redeem_otp(&rt_pool, &otp, OffsetDateTime::now_utc())
+        .redeem_otp(&auth_pool, &otp, OffsetDateTime::now_utc())
         .await;
     assert!(
         matches!(replay, Err(ProvisioningError::InvalidBootstrapCredential)),
@@ -286,28 +288,30 @@ async fn handoff_redeems_then_enroll_consumes_it_single_use(owner_pool: PgPool) 
 // NULL so the write succeeded, but RLS `USING (org_id = app.current_org)` then
 // hid it from every tenant read. RED (pre-fix): the KNL-armed read returns 0.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn consume_audit_row_is_tenant_scoped_and_visible_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let auth_pool = auth_role_pool(&owner_pool).await;
+    let business = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
-    // Issue an open code, then consume it (the single-use burn) as `console_rt`.
+    // Auth issues and consumes; Business retains the tenant-scoped audit read.
     BootstrapCredentialStore
         .issue_self_enroll_handoff(
-            &rt_pool,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
             HANDOFF_TTL,
         )
         .await
-        .expect("self-handoff issuance must succeed as console_rt");
-    consume_open_code_as_runtime(&rt_pool, knl, user_id).await;
+        .expect("self-handoff issuance must succeed as the restricted Auth login");
+    consume_open_code_as_runtime(&auth_pool, knl, user_id).await;
 
     // As `console_rt`, armed to KNL: the consume event must be visible AND stamped
     // with KNL. A NULL-org row would be invisible here (RLS USING excludes it).
-    let mut tx = rt_pool.begin().await.unwrap();
+    let mut tx = business.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
         .bind(knl.as_uuid().to_string())
         .execute(&mut *tx)
@@ -331,21 +335,22 @@ async fn consume_audit_row_is_tenant_scoped_and_visible_as_runtime_role(owner_po
 // ===========================================================================
 // (3) EXPIRY: a handoff that has lapsed does not redeem.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn expired_handoff_does_not_redeem(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let auth_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
     // Issue a handoff timestamped in the past so it is already expired.
     let issued_at = OffsetDateTime::now_utc() - Duration::hours(1);
     let issue = BootstrapCredentialStore
-        .issue_self_enroll_handoff(&rt_pool, user_id, knl, issued_at, HANDOFF_TTL)
+        .issue_self_enroll_handoff(&auth_pool, user_id, knl, issued_at, HANDOFF_TTL)
         .await
-        .expect("self-handoff issuance must succeed as console_rt");
+        .expect("self-handoff issuance must succeed as the restricted Auth login");
 
     let result = BootstrapCredentialStore
-        .redeem_otp(&rt_pool, issue.token.as_str(), OffsetDateTime::now_utc())
+        .redeem_otp(&auth_pool, issue.token.as_str(), OffsetDateTime::now_utc())
         .await;
     assert!(
         matches!(result, Err(ProvisioningError::InvalidBootstrapCredential)),
@@ -359,16 +364,17 @@ async fn expired_handoff_does_not_redeem(owner_pool: PgPool) {
 // the FRESH one redeems while the OLD one no longer does. The one-open-per-user
 // partial-unique index forbids two live codes; this proves the supersede path.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handoff_supersedes_a_users_existing_open_code(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let auth_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
     // First handoff: the user's initial open code.
     let first = BootstrapCredentialStore
         .issue_self_enroll_handoff(
-            &rt_pool,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
@@ -381,7 +387,7 @@ async fn handoff_supersedes_a_users_existing_open_code(owner_pool: PgPool) {
     // and mint a fresh one — without erroring on the one-open-per-user index.
     let second = BootstrapCredentialStore
         .issue_self_enroll_handoff(
-            &rt_pool,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
@@ -397,7 +403,7 @@ async fn handoff_supersedes_a_users_existing_open_code(owner_pool: PgPool) {
 
     // The OLD code is now dead; the FRESH code redeems.
     let stale = BootstrapCredentialStore
-        .redeem_otp(&rt_pool, first.token.as_str(), OffsetDateTime::now_utc())
+        .redeem_otp(&auth_pool, first.token.as_str(), OffsetDateTime::now_utc())
         .await;
     assert!(
         matches!(stale, Err(ProvisioningError::InvalidBootstrapCredential)),
@@ -405,9 +411,9 @@ async fn handoff_supersedes_a_users_existing_open_code(owner_pool: PgPool) {
     );
 
     let fresh = BootstrapCredentialStore
-        .redeem_otp(&rt_pool, second.token.as_str(), OffsetDateTime::now_utc())
+        .redeem_otp(&auth_pool, second.token.as_str(), OffsetDateTime::now_utc())
         .await
-        .expect("the fresh handoff must redeem as console_rt");
+        .expect("the fresh handoff must redeem as the restricted Auth login");
     assert_eq!(fresh.user_id, user_id);
     assert_eq!(fresh.org_id, knl);
 }

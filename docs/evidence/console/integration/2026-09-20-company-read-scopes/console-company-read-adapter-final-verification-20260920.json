@@ -1,0 +1,69 @@
+[
+  {
+    "command": [
+      "tools/buck2",
+      "test",
+      "//backend/crates/platform/auth:console-platform-auth-unit"
+    ],
+    "exit": 0,
+    "seconds": 16.83,
+    "log": "/private/tmp/console-company-read-adapter-final-0-20260920.log",
+    "sha256": "b828a3cc9a23e1fb28ec83ac87a1473b3fca290819f01da8a25658a2e56a9a33"
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 50.05,
+    "log": "/private/tmp/console-company-read-adapter-final-1-20260920.log",
+    "sha256": "9aeca39fea558d03086bdce420d1010714ebba9ae7cdfa474393932f24b03377"
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "--all",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 3.27,
+    "log": "/private/tmp/console-company-read-adapter-final-2-20260920.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": [
+      "node",
+      "tools/ci/gate-sweep.mjs"
+    ],
+    "exit": 0,
+    "seconds": 56.34,
+    "log": "/private/tmp/console-company-read-adapter-final-3-20260920.log",
+    "sha256": "c2543f1316b390efaa82414caeb695e0d91d24ce6b549cf8844ea013835bcfc5"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.03,
+    "log": "/private/tmp/console-company-read-adapter-final-4-20260920.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

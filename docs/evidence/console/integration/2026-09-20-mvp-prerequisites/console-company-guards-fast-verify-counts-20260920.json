@@ -1,0 +1,2275 @@
+{
+  "source_log": "/private/tmp/console-company-guards-fast-verify-round2-20260920.log",
+  "note": "Parsed per-stage summaries, including nested verification. Do not sum as unique tests; Python/other output formats are not covered.",
+  "stages": [
+    {
+      "stage": "Release metadata semantic regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          8,
+          8,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Release metadata documentation link tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          54,
+          54,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Release metadata documentation manifest gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Release metadata documentation local-link gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          6,
+          6,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Cheap Buck2 generated-face admission  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Foundation gate contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Reasoning lens manifest regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          12,
+          12,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Reasoning lens manifest drift  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "CI preflight contract tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          68,
+          68,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Buck impact planner regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Console route inventory regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          13,
+          13,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Console authority-train regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          3,
+          3,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Console lane-receipt validator regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          22,
+          22,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Console PR authority bootstrap regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          86,
+          86,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Executed-tests baseline set regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          26,
+          26,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Local CI mirror contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          17,
+          17,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Console truth-ledger validator exact-M regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          207,
+          207,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Console fanout planner exact-M regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          29,
+          29,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Buck PostgreSQL environment wrapper regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Buck disposable PostgreSQL harness regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "CI preflight contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          160,
+          159,
+          1,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Canonical npm lockfile  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Cargo.lock consistency  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Executed-tests ratchet \u2014 a test binary must have a path from a workflow step  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          15,
+          15,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "JavaScript test reachability ratchet  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "JavaScript test reachability unit tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          2,
+          2,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Lane fan-out harness preflight  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Workflow test-runner credential literals  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          6,
+          6,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "rustfmt check  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "clippy -D warnings  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Layer-boundary gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Audit-coverage gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Migration-safety gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Tenant-isolation gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "PII-no-logs gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "RLS-arming gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Dev-auth-absence gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "IaC tier-discipline gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Fabricated-branch gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Personal-data-classification gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Writer-ownership gate  (cwd: backend)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Buck2 CI-gate mutation suites \u2014 every gate proven to still reject  (cwd: .)",
+      "rust_test_result_summaries": [
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          17,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          27,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          25,
+          0,
+          0
+        ]
+      ],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "PR 473 migration operational contract tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Buck2 platform-authz unit suite  (cwd: .)",
+      "rust_test_result_summaries": [
+        [
+          117,
+          0,
+          0
+        ]
+      ],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Buck2 console-app unit suite  (cwd: .)",
+      "rust_test_result_summaries": [
+        [
+          166,
+          0,
+          0
+        ]
+      ],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Buck2 console-app OpenAPI drift suite  (cwd: .)",
+      "rust_test_result_summaries": [
+        [
+          15,
+          0,
+          0
+        ]
+      ],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "ADR governance tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          33,
+          33,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "ADR governance gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Doc citations \u2014 every code citation must resolve  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Shared text gate unit tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          7,
+          7,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Gate-input provenance instrument  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Gate-input provenance unit tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          13,
+          13,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "G004 identity group org people policy foundation gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "G005 workflow approval Work Hub lifecycle gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Workflow runtime spine gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Workflow runtime M2 strangler dark-landing gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Workflow runtime M2 Cedar-guard observe-and-record gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          7,
+          7,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Workflow runtime M2 flag-ON runtime gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Workflow runtime M2 outbox-drainer transactional-idempotency gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "G006 asset equipment dispatch lifecycle gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "G007 collaboration mail calendar poll mobile lifecycle gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "G008 import HR payroll readiness gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "People HR lifecycle maturity gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Payroll release-gate contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Undeclared imports \u2014 every bare specifier must be declared  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          20,
+          20,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Request-body contract \u2014 spec fields must exist on the handler  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          622,
+          622,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Governed command-database DARK wiring regression  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          10,
+          10,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Render manifests and NetworkPolicy enforcement preflight  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Production hardening contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Production hardening regression tests  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          160,
+          160,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Domain crate unit tests  (cwd: .)",
+      "rust_test_result_summaries": [
+        [
+          13,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          22,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          20,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          18,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          17,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          17,
+          0,
+          0
+        ],
+        [
+          14,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          17,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          24,
+          0,
+          0
+        ],
+        [
+          19,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          19,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          13,
+          0,
+          0
+        ],
+        [
+          43,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          31,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          17,
+          0,
+          0
+        ],
+        [
+          9,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          0
+        ],
+        [
+          14,
+          0,
+          0
+        ],
+        [
+          30,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          49,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          0
+        ],
+        [
+          117,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          31,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          33,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          13,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          13,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          48,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          29,
+          0,
+          0
+        ],
+        [
+          16,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          0
+        ],
+        [
+          55,
+          0,
+          0
+        ]
+      ],
+      "node_test_result_summaries": []
+    },
+    {
+      "stage": "Platform contract drift gate  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          6,
+          6,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Employee import replay contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          2,
+          2,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "stage": "Ontology write precondition contract  (cwd: .)",
+      "rust_test_result_summaries": [],
+      "node_test_result_summaries": [
+        [
+          4,
+          4,
+          0,
+          0,
+          0
+        ]
+      ]
+    }
+  ]
+}

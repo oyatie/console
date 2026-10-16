@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-design-round2-only",
+  "manifest_sha256": "31f428486d2725b04f9b36e2c0cdf1351b9fc3073b7d4f27207b826679e4fecf",
+  "findings": [],
+  "checks": [
+    "All five production source pins and design hash independently verified.",
+    "Only health read owner/sole caller conversion; no new public policy knobs or detached authority overload; current source retained in one READ COMMITTED transaction.",
+    "Requested checks after health/before adoption, after adoption/before mapping, before audit and after audit/before commit are now explicit and use fresh DB time; failing first-stage recheck prevents second query.",
+    "Exact health401/403/503 bytes and deny/error categories frozen; operation failures do not invoke bridge error mapper.",
+    "Existing list signature/wire behavior preserved; private closed two-owner mapping appropriate.",
+    "Exact GET/HEAD ops outer privacy, current-role real RED, both projection waits, unknown commit, expiry, revocation and unchanged14/6 fields required."
+  ],
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Remaining design rounds, independently reviewed executable test packet and actual clean-tree owner-bound RED before implementation admission.",
+    "List transition runtime failures and retained regressions remain separate open prerequisite.",
+    "Raw SQL grants, unrelated Platform consumers and release qualification remain HOLD."
+  ]
+}

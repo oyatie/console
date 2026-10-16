@@ -1,0 +1,8 @@
+{
+  "result": {
+    "capability_count": 27,
+    "candidate_sha": "896fd25969f98d4af944a165bbf9d11ecb38209e",
+    "verdict": "STRUCTURALLY_VALID_HOLD_PRESERVED"
+  },
+  "scope": "Current working registry structural check using default resolvers; not signed candidate train, hosted gate, runtime acceptance or cutoff qualification."
+}

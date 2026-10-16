@@ -27,6 +27,9 @@ use console_identity_application::{
 };
 use console_kernel_core::{BranchId, BranchScope, OrgId, TraceContext, UserId};
 use console_platform_request_context::CURRENT_ORG;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_database_url, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
@@ -35,23 +38,10 @@ use uuid::Uuid;
 /// A second, non-KNL tenant id, to prove cross-tenant isolation under `console_rt`.
 const ORG_B: Uuid = Uuid::from_u128(0x2222_2222_2222_2222_2222_2222_2222_2222);
 
-/// A pool whose every connection runs `SET ROLE console_rt`, so statements execute as
-/// the production runtime role (NOSUPERUSER, NOBYPASSRLS) under FORCE RLS.
+/// Authenticate the actual restricted Business login (NOSUPERUSER, NOBYPASSRLS).
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+    login_test_pool(owner_pool, TestDatabaseLogin::Business).await
 }
-
 async fn seed_org(owner_pool: &PgPool, org: Uuid, tag: &str) {
     let mut tx = owner_pool.begin().await.unwrap();
     sqlx::query("SET LOCAL row_security = off")
@@ -126,10 +116,11 @@ async fn count_as_runtime(rt_pool: &PgPool, org: Uuid) -> i64 {
     count
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role(
     owner_pool: PgPool,
 ) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let org_a = *OrgId::knl().as_uuid();
     let org_b = ORG_B;
@@ -233,8 +224,9 @@ async fn mint_role_change_receipt(
         .id
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn bump_and_get_subject_authz_versions_via_store(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let org = OrgId::knl();
     let org_uuid = *org.as_uuid();
@@ -407,8 +399,9 @@ async fn bump_and_get_subject_authz_versions_via_store(owner_pool: PgPool) {
 /// user-edit form re-sends the current roles on a profile edit — that must save
 /// without a receipt and must not bump the subject version — while any real
 /// change (including one that no longer matches its receipt) is still rejected.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn update_user_delta_scopes_the_preview_receipt_gate(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let org = OrgId::knl();
     let org_uuid = *org.as_uuid();
@@ -572,10 +565,9 @@ async fn page_budget_runtime_pool(
     let connections = Arc::new(AtomicUsize::new(0));
     let acquired = Arc::clone(&leases);
     let connected = Arc::clone(&connections);
-    let options = owner_pool
-        .connect_options()
-        .as_ref()
-        .clone()
+    let options = login_test_database_url(owner_pool, TestDatabaseLogin::Business)
+        .parse::<sqlx::postgres::PgConnectOptions>()
+        .expect("actual Business transport must parse")
         .application_name("console_identity_page_budget");
     let pool = PgPoolOptions::new()
         .max_connections(1)
@@ -591,7 +583,10 @@ async fn page_budget_runtime_pool(
         .after_connect(move |conn, _meta| {
             let connected = Arc::clone(&connected);
             Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
+                let login: String = sqlx::query_scalar("SELECT session_user::text")
+                    .fetch_one(conn)
+                    .await?;
+                assert_eq!(login, "console_rt");
                 connected.fetch_add(1, Ordering::SeqCst);
                 Ok(())
             })
@@ -778,8 +773,9 @@ fn collection_directory_query() -> DirectoryListQuery {
     }
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn list_users_page_uses_one_runtime_lease(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let fixture = seed_collection_fixture(&owner_pool).await;
     let (pool, leases, connections) = page_budget_runtime_pool(&owner_pool).await;
     let store = PgOrgStore::new(pool.clone());
@@ -797,8 +793,9 @@ async fn list_users_page_uses_one_runtime_lease(owner_pool: PgPool) {
     assert_eq!(page.items.len(), 3);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn list_directory_people_page_uses_one_runtime_lease(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let fixture = seed_collection_fixture(&owner_pool).await;
     let (pool, leases, connections) = page_budget_runtime_pool(&owner_pool).await;
     let store = PgOrgStore::new(pool.clone());
@@ -816,10 +813,11 @@ async fn list_directory_people_page_uses_one_runtime_lease(owner_pool: PgPool) {
     assert_eq!(page.items.len(), 3);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn collection_pages_preserve_scope_memberships_and_pagination_as_runtime_role(
     owner_pool: PgPool,
 ) {
+    prepare_account_test_database(&owner_pool).await;
     let fixture = seed_collection_fixture(&owner_pool).await;
     let store = PgOrgStore::new(runtime_role_pool(&owner_pool).await);
     let scope = BranchScope::single(fixture.visible);
@@ -1006,8 +1004,9 @@ async fn collection_pages_preserve_scope_memberships_and_pagination_as_runtime_r
     assert!(beyond_end.items.is_empty());
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn directory_page_succeeds_without_runtime_phone_select_privilege(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let org = OrgId::knl();
     seed_org(&owner_pool, *org.as_uuid(), "A").await;
     let user = seed_active_user(&owner_pool, *org.as_uuid()).await;

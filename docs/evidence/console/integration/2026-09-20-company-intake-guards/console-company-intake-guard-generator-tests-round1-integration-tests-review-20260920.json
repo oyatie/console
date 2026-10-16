@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_BOUNDED_PRESERVATION_AND_RESOURCE_TEST_SOURCE_RUNTIME_PENDING",
+  "manifest": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/MANIFEST.json",
+  "manifest_sha256": "d4da697a1cd3194173084188345871dca262378bd1a226690094d6100025817e",
+  "findings": [],
+  "evidence": [
+    "Existing generator method retains six custody fixed digests/disk checks, parser/schema fixed digests/function checks/separation, and all intake function/output/disk/uninstalled/separation assertions.",
+    "Intake is promoted to ninth frozen predecessor using existing exact SHA256; exact output set grows9to10 solely for private guards resource.",
+    "New guard output must equal generator function and disk, retain UNINSTALLED marker, contain six required guard declarations absent from all nine predecessors.",
+    "One new exact external Buck mapping/source existence method; structural AST source segments confirm all67existing test methods byte-identical and prospective total68.",
+    "Current source-lock hashes match; no generator import/execution, build, DB or tests performed."
+  ],
+  "limitations": [
+    "Declaration-marker checks establish resource separation/preservation only, not correctness of guard SQL bodies or production installation.",
+    "Root must integrate reviewed source/resources and run exact native checks; runtime0 is not acceptance."
+  ],
+  "reviewer_tests_executed": 0,
+  "repository_writes": 0
+}

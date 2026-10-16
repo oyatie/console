@@ -1,0 +1,13 @@
+{
+  "owner": "/root",
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "test_sha256": "69569dc7d9621575d36f82de73624bd5af26b41c1ce4ac3bbafcc82e975b9736",
+  "native_probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin tools/buck2 test //backend/crates/platform/ui:console-platform-ui-unit",
+  "discovered": 3,
+  "executed": 3,
+  "failed": 3,
+  "skipped": 0,
+  "reason": "Empty renderer executed: semantic assertions fail; compile succeeded. Initial sandbox lifecycle-lock failure excluded from semantic evidence.",
+  "allowlist_amendment": "Generated layer-boundary/BUCK two source mappings approved by test reviewer.",
+  "remaining": "UI implementation, browser proof and real owner integration outstanding; no workflow acceptance."
+}

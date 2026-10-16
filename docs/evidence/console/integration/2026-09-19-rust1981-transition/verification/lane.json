@@ -1,0 +1,21 @@
+{
+  "owner": "/root",
+  "base_sha": "15f35209bfbfa9f5ef72a4f472917ec31223d52d",
+  "immutable_test_target": "15f35209bfbfa9f5ef72a4f472917ec31223d52d",
+  "design_sha256": "44f4508d196d520b6d31c1afb6cca925d95e4d042c711ed2c1e5cdab4ff1d3ba",
+  "probe": "node docs/evidence/console/integration/2026-09-19-rust1981-transition/probe.mjs",
+  "allowed_paths": [
+    "rust-toolchain.toml",
+    "toolchains/rust/lock.bzl"
+  ],
+  "source_of_truth_writer": "Root canonical pin and existing lock generator",
+  "mechanical_guide": "Apply approved pin bytes; regenerate lock via existing parseManifest/buildLock/renderBzl using reviewed official snapshot; compare to approved exact output.",
+  "reviewer": "/root/integration_security",
+  "risk_contract": "See committed DESIGN.md for pre-mortem, detection, rollback, stop conditions and outstanding qualifications",
+  "result": "admitted exact RELEASE_RUST_PIN failure on clean test commit",
+  "remaining_holds": [
+    "Container/Linux/wholeworkspace/browser and release qualification incomplete"
+  ],
+  "pre_fixture_test_base_sha": "db6c45d13d0241b5281014725cb17f2c313cd13e",
+  "fixture_review_sha256": "009817321e7f729a3ef89d4fef90e77c1b12d1afce48c9bc1dc090183f2333f5"
+}

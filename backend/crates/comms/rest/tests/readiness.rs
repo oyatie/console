@@ -21,8 +21,14 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn missing_mail_master_key_keeps_read_paths_clean_and_send_unavailable(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -53,7 +59,10 @@ async fn missing_mail_master_key_keeps_read_paths_clean_and_send_unavailable(poo
         let service = router(CommsRestState::new(
             PgMailStore::new(runtime_role_pool(&pool).await),
             None,
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ));
 
         let account = get_json(service.clone(), MAIL_ACCOUNT_PATH, &token).await;

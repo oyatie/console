@@ -1,0 +1,10 @@
+{
+  "baseline": "e1007b0c4235f86079cfff40f2f8280c9fa40c3a",
+  "source_sha256": {
+    "scripts/check-adrs.mjs": "ce2f834007cd53a779e2e65183ca7e9cc7ed90a1ca1fc159f123446c17115d7b",
+    "scripts/check-adrs.test.mjs": "c9c0860b7f2afb2ae4cedd6df7e5899365cfb8b105a79835ecd2466a137e4806",
+    "docs/evidence/console/integration/2026-09-20-cedar-ci-and-readiness/candidate1085613a-verify.log": "ab0f941ccc58e62a2be73a7d1afe35b16470395790da8cc0afc93102eea9ebe7",
+    "docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log": "70882bb929794167772c536b14f8fd243e5d122e16beb9d9048b65af15506f90"
+  },
+  "full_verify_log_sha256": "f320520a05b2749095d69ca64935e9c71fc145db0449a8e4498e12577cef7cfd"
+}

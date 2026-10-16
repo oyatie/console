@@ -1,0 +1,21 @@
+{
+  "observed_head_sha": "5d66d69813d43555af33e75eefaac707f6c5b09c",
+  "files": {
+    "tools/ci/cargo-needs-postgres-args.test.mjs": {
+      "preimage_sha256": "b48d1ca5086c433b39234499ebf522fbf0ae0e9d1dc5aca529c70274b5266592",
+      "candidate_sha256": "1525ed3a7365063487e5e6ea25e35ce0ad9ec2f23ef64164cf0efacb9e5872a2"
+    },
+    "tools/buck/test_needs_postgres.test.sh": {
+      "preimage_sha256": "3132b174e7da1eb9c8a3664dfad1bb25920540600d2b4ad1ee0dfd093553bb95",
+      "candidate_sha256": "cb3c94bac40fa038ba2fa369b53362c6157645ee7f92b5c8ac7e7c8fcf76e64b"
+    },
+    "tools/buck/run_test_with_postgres_env.test.sh": {
+      "preimage_sha256": "1166ee1b2e1a2d455140f1fcba8449528b3e74e2b2a3f125decaa204285ec319",
+      "candidate_sha256": "f224391d6e3037f29de5b81836f97bc7793a39f787e1535be179fe29aea81a8b"
+    }
+  },
+  "supersedes": {
+    "packet": "/private/tmp/console-startup-credential-transport-proposal-20260919-round2",
+    "reason": "Independent reviewer requested exact discovered owner prefix and failure if Buck test handoff omits whole private env file."
+  }
+}

@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# Test-tool bootstrap only. Product and test binaries are built by Buck2.
+set -euo pipefail
+umask 077
+
+fail() { echo "native browser: $1" >&2; exit 1; }
+for tool in npm node curl unzip openssl uname; do
+  command -v "${tool}" >/dev/null || fail "required bootstrap tool missing"
+done
+[[ "$(uname -s)" == Linux && "$(uname -m)" == x86_64 ]] || fail "unsupported reviewed platform"
+[[ -n "${RUNNER_TEMP:-}" && -d "${RUNNER_TEMP}" && "${RUNNER_TEMP}" == /* ]] || fail "absolute runner temporary directory required"
+[[ -n "${GITHUB_ENV:-}" && -f "${GITHUB_ENV}" && -w "${GITHUB_ENV}" ]] || fail "writable GITHUB_ENV required"
+case "${RUNNER_TEMP}${GITHUB_ENV}" in
+  *$'\n'*|*$'\r'*) fail "newline in output path" ;;
+esac
+node -e 'if (Number(process.versions.node.split(".")[0]) < 18) process.exit(1)' || fail "Node 18 or newer required"
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source_dir="${repo_root}/docs/evidence/console/integration/2026-09-19-root-entry-browser"
+stage="$(mktemp -d "${RUNNER_TEMP}/console-native-browser.XXXXXX")"
+chmod 700 "${stage}"
+mkdir "${stage}/runtime" "${stage}/outputs" "${stage}/runtime/browser"
+
+verify_sha() {
+  local actual
+  actual="$(openssl dgst -sha256 "$1")" || fail "required pinned file missing"
+  [[ "${actual##* }" == "$2" ]] || fail "pinned file digest mismatch"
+}
+cp "${source_dir}/playwright-package.json" "${stage}/runtime/package.json"
+cp "${source_dir}/playwright-package-lock.json" "${stage}/runtime/package-lock.json"
+verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d193c20e3b2473c1e59f43e798a9b9
+verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
+for entry in \
+  account:1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664 \
+  company:7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57 \
+  company-preview:7e52a48f2e851457dba7d55fa0874fc10dc516506bdd5701b086f2fac4ee0ce6 \
+  hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c; do
+  cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"
+  verify_sha "${stage}/${entry%%:*}.cjs" "${entry#*:}"
+done
+
+npm --prefix "${stage}/runtime" ci --ignore-scripts --no-audit --no-fund
+verify_sha "${stage}/runtime/node_modules/playwright-core/browsers.json" 545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946
+node "${stage}/runtime/node_modules/playwright/cli.js" install-deps chromium-headless-shell
+curl --fail --location --silent --show-error \
+  https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-headless-shell-linux64.zip \
+  --output "${stage}/browser.zip"
+verify_sha "${stage}/browser.zip" a9da028861a0cf789ff25c2fed45f5f1aaf969ed9247835b6a7821a4f7af9d1d
+unzip -q "${stage}/browser.zip" -d "${stage}/runtime/browser"
+browser="${stage}/runtime/browser/chrome-headless-shell-linux64/chrome-headless-shell"
+verify_sha "${browser}" ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e
+chmod 700 "${browser}"
+
+# Publish only after every prerequisite check; no environment or credentials enter
+# the receipt. These version/digest facts are not browser execution evidence.
+node - "${stage}" "${GITHUB_ENV}" "$(npm --version)" "$(openssl version)" <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const [stage, envFile, npmVersion, opensslVersion] = process.argv.slice(2);
+const hash = name => crypto.createHash('sha256').update(fs.readFileSync(path.join(stage, name))).digest('hex');
+const pkg = JSON.parse(fs.readFileSync(path.join(stage, 'runtime/node_modules/playwright/package.json')));
+const core = JSON.parse(fs.readFileSync(path.join(stage, 'runtime/node_modules/playwright-core/package.json')));
+if (pkg.version !== '1.63.0' || core.version !== '1.63.0') throw Error('pinned package version mismatch');
+const drivers = {
+  CONSOLE_BROWSER_JOURNEY: 'account',
+  CONSOLE_COMPANY_BROWSER: 'company',
+  CONSOLE_COMPANY_PREVIEW_BROWSER: 'company-preview',
+  CONSOLE_HYDRATION_BROWSER: 'hydration',
+};
+const digests = {
+  package: hash('runtime/package.json'), lock: hash('runtime/package-lock.json'),
+  browsers: hash('runtime/node_modules/playwright-core/browsers.json'),
+  archive: hash('browser.zip'),
+  executable: hash('runtime/browser/chrome-headless-shell-linux64/chrome-headless-shell'),
+  drivers: Object.fromEntries(Object.values(drivers).map(name => [name + '.cjs', hash(name + '.cjs')])),
+};
+fs.writeFileSync(path.join(stage, 'prerequisites.json'), JSON.stringify({
+  tools: {node: process.version, npm: npmVersion, openssl: opensslVersion},
+  versions: {playwright: pkg.version, chromium: '153.0.8010.12', revision: '1243'},
+  digests, status: 'PREREQUISITES_STAGED_BROWSER_EXECUTION_PENDING',
+}, null, 2) + '\n', {flag: 'wx', mode: 0o600});
+const settings = Object.entries(drivers).flatMap(([prefix, name]) => [
+  prefix + '_DRIVER=' + path.join(stage, name + '.cjs'),
+  prefix + '_SHA256=' + digests.drivers[name + '.cjs'],
+  prefix + '_OUTPUT=' + path.join(stage, 'outputs', name),
+]);
+fs.appendFileSync(envFile, settings.join('\n') + '\n');
+NODE

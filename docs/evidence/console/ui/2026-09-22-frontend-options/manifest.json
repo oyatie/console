@@ -1,0 +1,12 @@
+{
+  "status": "bounded comparison; recommendation only, no framework migration or qualification",
+  "implementation_base": "8f6100490bac335c516351edeaac4782a9480e9a",
+  "files": {
+    "CURRENT-SCREEN-NOTE.md.txt": "d989f8234e4bd023757f23490babc2378f7f255dcf80c1229da74726749c20af",
+    "REVIEW.md.txt": "1a985cf24b74b7a76673ec02b02de8631e6e4f75c34435843fd63f2969810756",
+    "dioxus-renderers.md.txt": "6ed631562f5bc0d24c538afb8c551998eb07502b81ab1f64a28e376d5cc75555",
+    "leptos-nested-routing.md.txt": "d63927168dfa6ec73bf5265eb499a775ec3936fd674ef2b888eb2c512b2590fb",
+    "root-verification.json": "7a6427fa384f38103fb046563e18609a47ebfec8625dc9ad0d5baf1e83df49ca",
+    "tauri-frontend.mdx.txt": "c68d74f34a51880f3dbabda86b4b683a55004b0c59de6388c02ec8016ba2bffb"
+  }
+}

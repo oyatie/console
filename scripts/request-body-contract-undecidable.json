@@ -767,37 +767,37 @@
     {
       "operation": "POST /api/v1/payroll/runs/{id}/close-attendance",
       "rust_file": "backend/crates/payroll/rest/src/lib.rs",
-      "handler": "lifecycle",
-      "body_type": null,
-      "reason": "no_direct_json_binding"
+      "handler": "lifecycle::close_attendance",
+      "body_type": "CloseAttendanceBody",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/payroll/runs/{id}/decision",
       "rust_file": "backend/crates/payroll/rest/src/lib.rs",
-      "handler": "lifecycle",
-      "body_type": null,
-      "reason": "no_direct_json_binding"
+      "handler": "lifecycle::decide_run",
+      "body_type": "DecisionBody",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/payroll/runs/{id}/disbursement/attest",
       "rust_file": "backend/crates/payroll/rest/src/lib.rs",
-      "handler": "lifecycle",
-      "body_type": null,
-      "reason": "no_direct_json_binding"
+      "handler": "lifecycle::attest_disbursement",
+      "body_type": "AttestDisbursementBody",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/payroll/runs/{id}/exceptions/{exceptionId}/resolve",
       "rust_file": "backend/crates/payroll/rest/src/lib.rs",
-      "handler": "lifecycle",
-      "body_type": null,
-      "reason": "no_direct_json_binding"
+      "handler": "lifecycle::resolve_exception",
+      "body_type": "ResolveExceptionBody",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/payroll/runs/{id}/schedule-disbursement",
       "rust_file": "backend/crates/payroll/rest/src/lib.rs",
-      "handler": "lifecycle",
-      "body_type": null,
-      "reason": "no_direct_json_binding"
+      "handler": "lifecycle::schedule_disbursement",
+      "body_type": "ScheduleDisbursementBody",
+      "reason": "rust_struct_not_strict"
     },
     {
       "operation": "POST /api/v1/period-locks",

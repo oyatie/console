@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_LINT_REPAIR_AND_COMMIT",
+  "source_lock_sha256": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a",
+  "evidence_hashes": {
+    "/private/tmp/console-company-intake-lint-verification-20260920.json": "9af03332a7caf7c582f96c27292cb66319827a069b0e51398cdcc2f775c5ac4f",
+    "/private/tmp/console-company-intake-lint-native-binary-20260920.json": "b21ca07790162704a04c68e7a09b2087909ed33810e16e7984fd40cc2d603135",
+    "/private/tmp/console-company-intake-lint-native-results-20260920.json": "22cb1eb80a22a67c2b30101f52a02da923884ea1181adac834f12469d14a1a2d",
+    "/private/tmp/console-company-intake-lint-20260920-round2/source-lock.json": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a",
+    "/private/tmp/console-company-intake-lint-native-1-20260920.log": "663c261be055660f0e035b74db641c2a757f03e2d322ff96085e2bf30b631c4e",
+    "/private/tmp/console-company-intake-lint-native-2-20260920.log": "aba7dfb0cc8f10c7a42ceaaf07fd099ad7914e87b2f2dadc66553830b8116fe6",
+    "/private/tmp/console-company-intake-lint-native-3-20260920.log": "a501d3c188e081aa1352ca6ae1a34881a86353a8047f435197a59ccc622d7a0d",
+    "/private/tmp/console-company-intake-lint-red-round2-20260920.log": "c34329dd95581413c9f31ce0b59eefae293f6a2232539bc04a4449a5504bd28a",
+    "/private/tmp/console-company-intake-lint-probe-round2-20260920.log": "50a4f413101ba4f93c032c9a28daf9c0cef7336383bece05c4a346df5feda347"
+  },
+  "binary_sha256_verified": "36cccc6d629f0222ce0b6936b389b3e9d3834795ca209b9eaf1badad97f16bda",
+  "facts": [
+    "Exact three source hashes match previously reviewed mechanical candidate.",
+    "Actual strict Clippy RED contains two original diagnostics; same probe GREEN completes devprofile.",
+    "Independent binary SHA/size verification; three affected native test logs each execute exact named leaf and report1pass/499filtered/0ignored.",
+    "500is discovery count, not execution count."
+  ],
+  "limits": [
+    "No whole-tree verifier or Company workflow acceptance; classification prerequisite remains open.",
+    "Only three affected test helpers and their bounded verification approved.",
+    "Reviewer inspected artifacts/logs only; no build/test/SQL execution."
+  ]
+}

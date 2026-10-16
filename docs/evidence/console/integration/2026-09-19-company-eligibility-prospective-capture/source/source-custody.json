@@ -1,0 +1,17 @@
+{
+  "base_sha": "a86dac710a1daab97caacf17ee2f429f4ac072c5",
+  "canonical_generator_sha256": "66d0a814b0b736d18be1f16c4172fb8eb456c64760af7c296b7577952f3af1e8",
+  "historical_business_session_serializer_sha256": "5cb53a97aaf13dec5eb0e2ad0d39d45eafc7aabff2858fdf6366a16c6a987e35",
+  "prospective_serializer_sha256": "74c8e2a912e75b3b4e2dc85ca6c1acb4893fd513483ee1d83ede14ba88ff2f46",
+  "prior_business_session_hashes_preserved": [
+    "46882185abbec62cf868718cb5e3d72a9002fd436c042ce3f3293b1dc56d48a5",
+    "ace188362c3ff000a534f5abd5359c588d9e508ec5192eac6eda852d0a130629"
+  ],
+  "final_business_session_hashes_preserved": [
+    "c4582399f122012f1bf7e0edc0fe7639c6403d30d4ce6d78bd6864c50ad3a531",
+    "7429d460a604d3dfe5bf9472fefcb8505371f6060efbf07aa5bdc477e66dcf31"
+  ],
+  "new_profile_hashes": "NOT_YET_CAPTURED_OR_PROPOSED",
+  "database_or_build_runs": 0,
+  "repository_edits": 0
+}

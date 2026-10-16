@@ -9,8 +9,10 @@
 use console_kernel_core::OrgId;
 use console_platform_db::{DbError, with_org_conn};
 use console_platform_provisioning::PlatformProvisioner;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
@@ -28,21 +30,9 @@ fn is_group_of_one_slug(slug: &str, org_id: Uuid) -> bool {
     (2..=9).any(|n| slug == format!("g{n}-{hex}"))
 }
 
-/// Build a pool whose every connection runs `SET ROLE console_rt` on checkout,
-/// matching `rls_auth_chain_as_runtime_role.rs`.
+/// Authenticate the actual Business login, matching the existing AUTH7 fixtures.
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+    login_test_pool(owner_pool, TestDatabaseLogin::Business).await
 }
 
 async fn unique_org_id_on_memberships(pool: &PgPool) -> bool {
@@ -65,8 +55,9 @@ async fn unique_org_id_on_memberships(pool: &PgPool) -> bool {
 }
 
 /// T7: `onboard_tenant` as `console_rt` mints a Group-of-one distinct from the org.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn t7_onboard_tenant_as_console_rt_mints_group_of_one(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let onboarded = PlatformProvisioner::new(Duration::hours(24))
         .onboard_tenant(
@@ -138,8 +129,9 @@ async fn t7_onboard_tenant_as_console_rt_mints_group_of_one(owner_pool: PgPool) 
 }
 
 /// T9 onboard variant: after onboard, `with_org_conn` arms the new org id, never the group id.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn t9_onboard_with_org_conn_arms_org_id_never_group_id(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let onboarded = PlatformProvisioner::new(Duration::hours(24))
         .onboard_tenant(
@@ -183,8 +175,9 @@ async fn t9_onboard_with_org_conn_arms_org_id_never_group_id(owner_pool: PgPool)
 }
 
 /// T14: `remove(A, org)` while the org is in B does not remint and does not snap.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn t14_stale_remove_does_not_remint_or_snap(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
     let provisioner = PlatformProvisioner::new(Duration::hours(24));
     let now = OffsetDateTime::now_utc();

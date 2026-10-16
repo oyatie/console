@@ -1,0 +1,58 @@
+{
+  "kind": "payroll-generated-hydration-synchronization",
+  "base_sha": "e03b0c060ea953c680907d7e7a9221896de5fd80",
+  "owner": "root sole repository writer",
+  "build": "CARGO_NET_OFFLINE=true bash tools/ui/build-payroll-wasm.sh",
+  "status": "generated artifact synchronized; not browser or release qualification",
+  "admission": "Existing bundle drift gate failed on stale source manifest and passed after regeneration; exact retained source and recipe reused.",
+  "proof": {
+    "bundle_controls": {
+      "executed": 18,
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    "payroll_ui_unit": {
+      "executed": 8,
+      "passed": 8,
+      "failed": 0,
+      "filtered": 0
+    }
+  },
+  "artifacts": {
+    "backend/crates/payroll/ui/bundle.lock.json": "b2e0df3266ff563c72be624d79571884c436a5f706243af02b1c889b06bc5b0e",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "69958e39fcdbdc20a9fe2bdb05f047817e313969d279bae3c3016f3c5a6758e9",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "6a4caef3cb32ff6c981991eca5819e6c3d9bd58e18c37c8039597bfe2130a534",
+    "backend/Cargo.lock": "3616dadd89892ac18c9d7abcb2a8daa71c47a292e204c1cdd6306a16f1f0a3a5"
+  },
+  "logs": {
+    "admission": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "red": "7a79268bb63e4cedf31bb9b28d2eef1c2c19f3abd53082476f369b4eb3e79fd7",
+    "build": "8434f9d943124d0f6ca8f7644bcd5ba524087ad0ffd08986d3bb08309b3b26da",
+    "probe": "7655d5a8486d4252abcedbd79f5a7454713f2851e26fb81909ea340006bdbcf4",
+    "tests": "8c6fecf780b48992458b172c1f3eaee77d49543ec89448212ac0dfaab8e2efcf",
+    "ui-tests": "174cabd270d6cc8c1ecc76e38fd8254c8a330f2fada6fbb4473d3e19f983294a"
+  },
+  "remaining": [
+    "Full repository verification pending.",
+    "Native browser and full release qualification remain open."
+  ],
+  "review": {
+    "reviewer": "integration_security",
+    "verdict": "approved exact generated synchronization; carried forward and independently reread",
+    "wasm_bytes": 384562,
+    "wasm_exports": 29,
+    "resolved_js_references": 28,
+    "manifest_inputs": 7,
+    "manifest_outputs": 2,
+    "stable_exports": [
+      "AuthorizedRuns_177efa8e22da84d9",
+      "hydrate"
+    ],
+    "excludes": [
+      "browser qualification",
+      "reproducible-build claim",
+      "release qualification"
+    ]
+  }
+}

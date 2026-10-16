@@ -1,0 +1,26 @@
+{
+  "tests_declared": {
+    "sqlx": 1,
+    "pure": 2
+  },
+  "tests_executed": 0,
+  "runtime_build_database_browser_executed": false,
+  "repository_writes": 0,
+  "private_rustfmt": {
+    "command": "rustup run 1.98.1 rustfmt --edition 2024 <private>/legacy_platform_list_reads.rs",
+    "exit": 0
+  },
+  "structural_checks": [
+    "one existing module anchor",
+    "exact original source preserved except additive module declaration",
+    "new file contains one SQLx and two pure leaves",
+    "public table snapshot uses existing all_rows helper",
+    "no production API references introduced before implementation"
+  ],
+  "planned_pure_oracle_controls": {
+    "positive": 2,
+    "negative": 81
+  },
+  "first_owner_command_template": "cargo +1.98.1 test -p console-app --test auth_rest legacy_platform_list_reads::mounted_platform_list_same_bearer_current_member_denies_and_restores -- --exact --nocapture",
+  "command_environment": "Root supplies existing qualified Docker/runtime database transport and pinned build environment; author has not executed Cargo. Actual production candidate command/log/discovered counts remain required."
+}

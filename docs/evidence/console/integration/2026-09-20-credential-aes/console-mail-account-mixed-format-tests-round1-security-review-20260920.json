@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE bounded additive realPgMailStore mixedformat test-source and mechanical registration/resources",
+  "manifest_sha256": "3f6a94ac26777337bbb4b0f5de6210a5b791379519b95db91dca535282f9b25b",
+  "findings": [],
+  "counts": {
+    "packet_members_verified": 4,
+    "source_locks_verified": 9,
+    "additional_sqlx": 1,
+    "existing_sqlx_unchanged": 4,
+    "reviewer_tests_executed": 0,
+    "repository_writes": 0
+  },
+  "checks": [
+    "FrozenJSON SHA10a7... exact capturedoldSMTP/IMAP bundles with publickey7 and matching org/accountAAD. No oldciphertext regeneration.",
+    "ActualPgMailStore insert and independentfield updates with realconcreteAEScipher. Payload/nonce/wrap/wrapnonce/sharedKEKversion compared for both secrets via actualstore and independentphysicalSELECT.",
+    "Repeatedstore/poolclose and newpool/store/cipher construction reads original, mixed and allAES phases; exactuntouchedbundle preserved; reads cannot pass by transparently resealing.",
+    "Three actualconfigureaudits and write-onlyprojection checks retained. Originalfourparenttest bodies untouched, ordinarynestedmodule requires no newcrate/dependency.",
+    "Parenthelpers and devdependencies resolve actualtypes/APIs. ExistingSETROLEconsole_rt fixture checks currentrolenonsuper/noBYPASS; source explicitly avoids false actualLOGIN/HTTP/production claim."
+  ],
+  "mechanical_scope_additions": [
+    "backend/crates/comms/adapter-postgres/tests/mail_account_rls_surfaces_as_runtime_role/mixed_format.rs",
+    "backend/crates/comms/adapter-postgres/tests/mail_account_rls_surfaces_as_runtime_role/fixtures/credential-legacy-v1.json",
+    "backend/crates/comms/adapter-postgres/BUCK"
+  ],
+  "mechanical_guide": "Append exact ordinarypathmod to retainedparent; generator adds nestedRust/immutableJSON mapping to existing target only. No newstandaloneintegrationtarget, weakenedtest, changedhistoricalmigration or dependency. Existing generator/baseline lanepermissions used for exact+1discoveryfloor when actually executed.",
+  "runner_correction": "ADOPTION.md raw bucktest suggestion is superseded by existing test_needs_postgres.sh credentialloader and //tools/buck:comms-adapter-postgres-mail-account-rls-surfaces-as-runtime-role-pg. This is invocation-only correction, no source/fixture semantic reseal required.",
+  "limits": [
+    "Newtest compile/discovery/runtime pending; missingDB prerequisite or0discovery is no proof.",
+    "Store/RLS-role evidence only; actualrestrictedLOGIN/currentAccountauth/UI/networkmaildelivery remain distinct.",
+    "AESfinalartifact/providerchecks and deploymentreader/rollback/noncebudget qualifications remain open."
+  ]
+}

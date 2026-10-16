@@ -1,0 +1,48 @@
+{
+  "dependency_lock_sha256": "7693dedf40a4d9cc675fa50431e5f9ecae67695c8ef46bdddd4af48838f9a822",
+  "format": 1,
+  "inputs": {
+    ".buckconfig": "f0f78518c2da7050b34e26adf61ef7e526cd14054342139d57ad28ede0590698",
+    "BUCK": "83c25e6de38a9cc461877c52a5b7e403d29f9c3a905a040e5e2a7c8d87c193bd",
+    "backend/crates/payroll/ui/BUCK": "74e51aa4616b8e116aa7524e60df67a4a7cb1ffadb8fbce92a4c5e06b45e71ca",
+    "clients/desktop-web/BUCK": "0a4b926737493888d0bd73bcf4358856c57dc27a146a5f90776c9c2bd83eb9b8",
+    "clients/desktop-web/dependencies.lock.bzl": "f7e8b19b4d5c3274b02696786fe2a3b173d105d0eb2518176d7416983e728e9c",
+    "clients/desktop-web/dependencies.lock.json": "923252d62073e328d1b947b7a55e9854ce03938ed334817b830289f565dd176b",
+    "clients/desktop-web/package.json": "9dc115ca600d79f0fe509d79cd040373661b6b99ac5f6b9d4dafd4921e3d1eaf",
+    "clients/desktop-web/src/account-guard.ts": "e074f064c70be90008dd7cb6ee9f08530034a054b462fe7f88a8f94b88a55214",
+    "clients/desktop-web/src/account-projection.ts": "ea186f4e9ce09e2399be97f734e88b511360a04fa809711c2dcdfa65a0fbcc38",
+    "clients/desktop-web/src/account-view.tsx": "14fec8166503f4dba177c05a59413846ce6a3cc150889e50257245af214a6c20",
+    "clients/desktop-web/src/account.css": "060b9a03daa269a55ac57cabaf67c2b8f1a9709b5ca27b9c55c6a578097296ad",
+    "clients/desktop-web/src/account.tsx": "d68c576a84e95067762fb2d347814da41aff862858fced4a938a514521927f48",
+    "clients/desktop-web/src/people-guard.ts": "4376d8d629dadcddb2a410d2b009eba875e120409258ed20f9eb29e6c07485d1",
+    "clients/desktop-web/src/people-projection.ts": "9077e246dd90cab9ec5b6d70fea75152592aba154bb71003a5dcd7d946041c08",
+    "clients/desktop-web/src/people-view.tsx": "0b35182a39be8f54588322c09d7e3c910979eb00ce3ca0d51fe229e6376da7fe",
+    "clients/desktop-web/src/people.css": "16fbb57ef0a01ad366b7907b1824109f3887c638ee3a984e3578c943dc546a5f",
+    "clients/desktop-web/src/people.tsx": "b7358c8a333e2210db2c938cd186238f809bfe4a41f55758032b67a9d9395ece",
+    "clients/desktop-web/tsconfig.json": "1ecc3c38e332a8a65618a1f3658fd82b3584fc504f7b43850b57287cd51bb719",
+    "tools/buck/gen_first_party.py": "72019383eb12cc6f7a5e3e02c8934b897e158ff18c66177678eebf2c6629257f",
+    "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
+    "tools/ui/BUCK": "d998939d8f008ae25cd9e1fe1d34e4a716f7f9645cd1c0a13acc335fee7737b9",
+    "tools/ui/react.bzl": "715001cf5f214140b6858013702af96bfb73c514ec5f1641e6821caef5c498f9",
+    "tools/ui/react_bundle.py": "9f2033fce036325b1b9fea0b50aa8335803d0810b87418a421bce1d1d3039082"
+  },
+  "outputs": {
+    "people-guard.js": "d697d2288cf8588c09fb375545105349deb73eb1d6de9ac34bf43e26affad594",
+    "people.css": "be360b4ed8cbc18ec774d88e5ae5d54cbff0e6b94ba8f32532b2fea221e56b95",
+    "people.js": "e627d3b39da89e0ab72192c2c4d58792860e5c9b1aab6d4bddd11db34dab1cb4"
+  },
+  "producer": {
+    "host": "darwin-arm64",
+    "kind": "buck2-native-react-people-v1",
+    "tools": {
+      "esbuild": "10b6243df618d374bb2d5c9cfbe7052e1405f6aa4e53a6164f11a91b9f2e1384",
+      "node": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"
+    },
+    "typecheck_sha256": "6f21cebeed8ff2fa702e23bde821d3107caf2b10335bb1205c0d7efe508142ea",
+    "versions": {
+      "esbuild": "0.28.2",
+      "node": "26.7.0",
+      "typescript": "5.9.3"
+    }
+  }
+}

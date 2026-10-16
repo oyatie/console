@@ -980,6 +980,41 @@ pub async fn submit_run_in_tx(
     if open > 0 {
         return Err(LifecycleError::ExceptionsOpen(open));
     }
+    // Compare identities at one run-wide revision in one statement snapshot.
+    // Matching counts or each line's latest row can hide a partial revision.
+    let roster_ready: bool = sqlx::query_scalar(
+        "WITH run_scope AS ( \
+           SELECT id, org_id FROM payroll_draft_runs WHERE id = $1 \
+         ), roster AS ( \
+           SELECT l.org_id, l.run_id, l.id, l.calculation_status, l.blockers \
+           FROM payroll_draft_lines l JOIN run_scope r \
+             ON r.org_id = l.org_id AND r.id = l.run_id \
+         ), latest_calculations AS ( \
+           SELECT c.org_id, c.run_id, c.line_id \
+           FROM payroll_line_calculations c JOIN run_scope r \
+             ON r.org_id = c.org_id AND r.id = c.run_id \
+           WHERE c.version = (SELECT MAX(v.version) FROM payroll_line_calculations v \
+                              WHERE v.org_id = r.org_id AND v.run_id = r.id) \
+         ) \
+         SELECT EXISTS (SELECT 1 FROM roster) \
+           AND NOT EXISTS (SELECT 1 FROM roster \
+                           WHERE calculation_status IS DISTINCT FROM 'READY_FOR_REVIEW' \
+                              OR blockers IS DISTINCT FROM '[]'::jsonb) \
+           AND NOT EXISTS (SELECT 1 FROM roster l WHERE NOT EXISTS ( \
+             SELECT 1 FROM latest_calculations c \
+             WHERE c.org_id = l.org_id AND c.run_id = l.run_id AND c.line_id = l.id)) \
+           AND NOT EXISTS (SELECT 1 FROM latest_calculations c WHERE NOT EXISTS ( \
+             SELECT 1 FROM roster l \
+             WHERE l.org_id = c.org_id AND l.run_id = c.run_id AND l.id = c.line_id))",
+    )
+    .bind(run_id)
+    .fetch_one(tx.as_mut())
+    .await?;
+    if !roster_ready {
+        return Err(LifecycleError::InvalidState(
+            "payroll roster is not fully calculated and ready for review".to_owned(),
+        ));
+    }
     sqlx::query(
         "UPDATE payroll_draft_runs \
          SET status = 'SUBMITTED', submitted_by = $2, submitted_at = now(), updated_at = now() \
@@ -989,6 +1024,39 @@ pub async fn submit_run_in_tx(
     .bind(actor)
     .execute(tx.as_mut())
     .await?;
+    Ok(())
+}
+
+async fn require_distinct_review_persons_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    submitter: Uuid,
+    decider: Uuid,
+) -> Result<(), LifecycleError> {
+    // Retain both links through the decision commit, in stable lock order.
+    // Locking only Users would still permit a binding DELETE followed by INSERT.
+    let users: Vec<(Uuid, Option<Uuid>)> = sqlx::query_as(
+        "SELECT org_id, employee_id FROM users WHERE id = ANY($1) ORDER BY id FOR SHARE",
+    )
+    .bind([submitter, decider].as_slice())
+    .fetch_all(tx.as_mut())
+    .await?;
+    let [(org, Some(first)), (other_org, Some(second))] = users.as_slice() else {
+        return Err(LifecycleError::SodViolation);
+    };
+    if org != other_org || first == second {
+        return Err(LifecycleError::SodViolation);
+    }
+    let persons: Vec<Uuid> = sqlx::query_scalar(
+        "SELECT person_id FROM employee_person_bindings \
+         WHERE org_id = $1 AND employee_id = ANY($2) ORDER BY employee_id FOR SHARE",
+    )
+    .bind(org)
+    .bind([*first, *second].as_slice())
+    .fetch_all(tx.as_mut())
+    .await?;
+    if persons.len() != 2 || persons[0] == persons[1] {
+        return Err(LifecycleError::SodViolation);
+    }
     Ok(())
 }
 
@@ -1005,9 +1073,11 @@ pub async fn decide_run_in_tx(
     if run.status != "SUBMITTED" {
         return Err(invalid_state("decide", &run.status));
     }
-    if run.submitted_by == Some(actor) {
+    let submitter = run.submitted_by.ok_or(LifecycleError::SodViolation)?;
+    if submitter == actor {
         return Err(LifecycleError::SodViolation);
     }
+    require_distinct_review_persons_in_tx(tx, submitter, actor).await?;
     match decision {
         "APPROVE" => {
             sqlx::query(

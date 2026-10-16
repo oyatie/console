@@ -1,0 +1,168 @@
+[
+  {
+    "lane": "native-company-enrollment",
+    "base": "83898f6ea46353b992768c8f52b91b5a62e39a46",
+    "owner": "/root",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg > /private/tmp/console-native-company-intake-usecases-enclosing-red-20260920.log 2>&1",
+    "allow": [
+      "backend/crates/identity/application/src/company.rs",
+      "backend/crates/identity/application/src/company",
+      "backend/crates/identity/application/src/lib.rs",
+      "backend/crates/identity/application/src/company_enrollment_tests.rs",
+      "ops/generate-account-custody.py",
+      "ops/postgres-company-enrollment-input.sql",
+      "ops/test_company_enrollment_input_generator.py",
+      "ops/BUCK",
+      "backend/app/tests/auth_rest/native_company_input_parser.rs",
+      "backend/app/tests/auth_rest/native_company_setup.rs",
+      "backend/app/tests/auth_rest/fixtures/company-enrollment-input-boundary.sql",
+      "backend/app/tests/auth_rest/fixtures/company-enrollment-input-golden.sql",
+      "backend/app/tests/auth_rest/fixtures/company-enrollment-input-malformed.sql",
+      "backend/app/BUCK",
+      "tools/buck/gen_first_party.py",
+      "tools/buck/test_gen_first_party.py",
+      "ops/postgres-company-enrollment-intake.sql",
+      "backend/app/tests/auth_rest/native_company_intake_owner.rs",
+      "backend/app/Cargo.toml",
+      "backend/Cargo.lock",
+      "backend/crates/platform/auth/src/account.rs",
+      "backend/crates/platform/auth/src/session.rs",
+      "backend/crates/platform/auth/src/session/company_enrollment.rs",
+      "backend/crates/platform/auth/BUCK",
+      "backend/app/tests/auth_rest/native_company_signed_credentials.rs",
+      "ops/postgres-company-enrollment-guards.sql",
+      "backend/app/tests/auth_rest/native_company_intake_guards.rs",
+      "backend/crates/identity/domain/src",
+      "backend/crates/identity/domain/Cargo.toml",
+      "backend/crates/identity/domain/BUCK",
+      "backend/crates/identity/application/src",
+      "backend/crates/identity/application/Cargo.toml",
+      "backend/crates/identity/application/BUCK",
+      "backend/crates/identity/adapter-postgres/src",
+      "backend/crates/identity/adapter-postgres/Cargo.toml",
+      "backend/crates/identity/adapter-postgres/BUCK",
+      "backend/crates/identity/rest/src/lib.rs",
+      "backend/crates/identity/rest/src/company.rs",
+      "backend/crates/identity/rest/src/company",
+      "backend/crates/identity/rest/Cargo.toml",
+      "backend/crates/identity/rest/BUCK",
+      "backend/crates/platform/authz/src/company_policy.rs",
+      "backend/crates/platform/authz/src/company_policy",
+      "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "backend/crates/platform/authz/src/lib.rs",
+      "backend/crates/platform/authz/Cargo.toml",
+      "backend/crates/platform/authz/BUCK",
+      "backend/crates/platform/auth-rest/src/account_entry.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs",
+      "backend/crates/platform/auth-rest/Cargo.toml",
+      "backend/crates/platform/auth-rest/BUCK",
+      "backend/app/src/lib.rs",
+      "backend/crates/payroll/ui/src/native_account.rs",
+      "backend/crates/payroll/ui/src/native_account.css",
+      "backend/crates/payroll/ui/src/native_account.js",
+      "backend/crates/payroll/ui/src/lib.rs",
+      "backend/crates/payroll/ui/Cargo.toml",
+      "backend/crates/payroll/ui/BUCK",
+      "backend/app/tests/auth_rest.rs",
+      "backend/app/tests/auth_rest/native_identity_birth_tests.rs",
+      "backend/app/tests/auth_rest/native_identity_current_tests.rs",
+      "backend/app/tests/auth_rest/native_identity_metadata_tests.rs",
+      "backend/app/tests/auth_rest/native_identity_migration_tests.rs",
+      "backend/app/tests/auth_rest/native_identity_catalog.json",
+      "backend/app/tests/auth_rest/native_company_policy_http_tests.rs",
+      "ops/postgres-company-native-identity.sql",
+      "backend/app/src/account_custody_state.sql",
+      "backend/app/src/account_credential_custody_state.sql",
+      "ops/postgres-finalize-account-custody.sql",
+      "ops/postgres-finalize-account-credentials.sql",
+      "ops/postgres-verify-account-native.sql",
+      "backend/crates/platform/auth-rest/src/account_browser.rs",
+      "backend/crates/platform/auth-rest/src/company_credential_capture_tests.rs"
+    ],
+    "immutable_target": "authenticated native Company enrollment commits once, reopens, preserves Account credentials and exposes current authorized Company context",
+    "mechanical_guide": "Identity domain owns nonnil Account identity distinct from UserId. Application owns checked current material/refs, ports, use cases and authorized views; no Auth/sqlx/Axum dependency. Existing PgOrgStore implements credentials-opaque store scopes; no duplicate role repository. Add native company_policy adapter using current strict Cedar engine. No change to historical wire codecs; PropertyRef remains4fields, exact5use+2delegation clauses and16field occurrences. Delegation does not permit use. Finish successful Auth scope before returning any view. AppState only composes owners and ordinary routes; Company REST and Leptos receive authorized projections. Discovery closes Account enumeration before perCompanyGroup locks and checks final generation; deny omits, unavailable discards all labels. Generate complete identity/catalog/current-source owner with all approved37triggers/35FKs and private19row registry locks. ops/postgres-company-native-identity.sql is the exact existing proposed migration-test resource; names for any additional complete effect resource must be listed in the successor before creation. Atomic complete guard/grant/custody successor only: new exact current profiles, preserve historical fingerprints/bytes, no resealing historical profile and no activation of partial successful birth. Keep Account immutable birth/terms verification, recognized bounded Company-origin chain and final current Auth recheck. Generated BUCK/manifests are mechanical dependency/source wiring only. Retained Cargo.lock allowance does not authorize unrelated dependency upgrades. Do not widen allow to entire backend/app/src, platform/authz/src, ops, migrations, tests or authority trees. Import reviewed test sources with ordinary module wiring/formatting. Exact assertions/fixtures remain reviewed; semantic changes require independent successor review. Preserve original complete HTTP probe and later workspace/reopen/current-policy/effect assertions. Credential capture extends AuthRestState through existing API read/post and document grammar. Return only bounded opaque AccountEnrollmentCredentials. Do not authenticate from captured bytes or return raw cookie/CSRF values. Preserve API BrowserError envelopes and document NativeEntryError mapping. All signed/current proof remains owning Auth transaction; no additional transaction in transport capture. No new cookie parser, credentials issuer or business transition in AuthRest. Intake usecases reuse installed prepare/status/cancel SQL and signed guard on existing PgOrgStore. Strict persisted status decoding; finalAuth+commit precedes view; explicit known closure rollback differs from unconfirmed commit. No serving route or SQL birth activation.",
+    "pre_mortem": [
+      "A smaller substep is called full enrollment success",
+      "Current policy source changes after projection",
+      "Partial custody activation exposes native truth through legacy bypass",
+      "Discovery leaks names after authority failure"
+    ],
+    "detection": [
+      "Same complete authenticated probe reaches GREEN with durable effects/reopen",
+      "Exact19row lock witness and current Auth expiry tests",
+      "Native graph/ACL/custody populated transition and legacy compatibility tests",
+      "Mounted real evaluator deny/unavailable/discovery cases"
+    ],
+    "rollback": "Before native birth restore verified predecessor/empty additive candidate only; after native birth fence new entry and retain native rows, constraints, attribution and receipts. No conversion to User or data/history deletion.",
+    "stop_conditions": [
+      "Unexpected historical byte/profile drift",
+      "Security or command-contract regression",
+      "Unreviewed semantic test change",
+      "Prerequisite failure misclassified as owner RED"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "reviews": [
+      "/private/tmp/console-native-company-enrollment-lane-boundary-review-20260920.json",
+      "/private/tmp/console-native-company-parser-sqlx-tests-round1-security-review-20260920.json",
+      "/private/tmp/console-company-intake-owner-round2-security-review-20260920.json",
+      "/private/tmp/console-company-intake-lane-expansion-security-review-20260920.json",
+      "/private/tmp/console-company-intake-dev-dependency-security-review-20260920.json",
+      "/private/tmp/console-company-signed-credential-seam-round2-security-review-20260920.json",
+      "/private/tmp/console-company-signed-credential-seam-round2-integration-tests-review-20260920.json",
+      "/private/tmp/console-company-signed-credential-lane-expansion-security-review-20260920.json",
+      "/private/tmp/console-company-intake-guards-lane-expansion-security-review-20260920.json",
+      "/private/tmp/console-native-company-enclosing-scope-successor-security-review-20260920.json",
+      "/private/tmp/console-company-read-usecase-tests-round3-security-review-20260920.json",
+      "/private/tmp/console-company-credential-capture-round1-security-review-20260920.json"
+    ],
+    "remaining_holds": [
+      "Full enrollment probe and required current source/compatibility/browser cases unaccepted until executed",
+      "Later grant/revoke/business-capability issuance not granted by initial role",
+      "168hourpositive/terminalcleanup/populatedrollout requirements remain open",
+      "AllfiveMVPworkflows and full release remain open; exposure/payments separate"
+    ],
+    "test_candidate": {
+      "head": "42a87196d61b3947b177fcfa057b7e1f7289ea83",
+      "path": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "sha256": "3bd9276d4d2c3995a912a8fcaff6013ae26a80e8d90a2f64c78f4c5767e2f92c"
+    },
+    "observed_red": {
+      "log": "/private/tmp/console-company-owner-red-20260920.log",
+      "executed": 1,
+      "failed": 1,
+      "filtered": 475,
+      "actual_http": 404,
+      "expected_http": 201,
+      "prerequisite_failure": false
+    },
+    "implementation_successor_base": "458fb682eee64bb72af264bfe2b542343d0acff7",
+    "test_successor": {
+      "commit": "bcb0530a0fb751a3c420d5b819d705f2d8b07f11",
+      "files": {
+        "backend/app/tests/auth_rest/native_company_intake_owner.rs": "56dd170464e5e135c84b87b07fc160a31ac7cd0afe4b6dcce5d14d109bb2d47e",
+        "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "7351d79474e30649775312792b0ff6920d699581e0da77cd866742d5982d6a26"
+      },
+      "review": "/private/tmp/console-company-intake-composition-integration-tests-review-20260920.json"
+    },
+    "test_context_successor": {
+      "commit": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+      "review": "/private/tmp/console-company-intake-profile-jit-test-security-review-20260920.json",
+      "change": "jit=off only; unchanged classifier bytes and10s/1s bounds"
+    },
+    "guard_test_successor": {
+      "commit": "458fb682eee64bb72af264bfe2b542343d0acff7",
+      "files": {
+        "backend/app/tests/auth_rest/native_company_intake_guards.rs": "d088e3e201249a686476383b5bdaed9b66a603b9715014e15ebd1ea15f6a85db",
+        "backend/app/tests/auth_rest/native_company_intake_owner.rs": "73097a7b70b6e1602de7313caa97b750fe91838ec189401a164b37eb4b0335ab",
+        "tools/buck/test_gen_first_party.py": "275d6d98bc7cec743a73a40162ceb9ba1bbf8096609da7d4d1a8aeab7b81b94b",
+        "ops/test_company_enrollment_input_generator.py": "632010c33c33ea262af9ddfe380b2825ad4aa5c337f8428785b30fbd040bd745"
+      },
+      "review": "/private/tmp/console-company-intake-guards-format-composition-integration-tests-review-20260920.json"
+    },
+    "predecessor_lane": "/private/tmp/console-native-company-capture-enclosing-lane-approved-20260920.json",
+    "capture_source_stage": "Exact independently approved tests/source; original enclosing probe unchanged and red on clean ff56a8dd3."
+  }
+]

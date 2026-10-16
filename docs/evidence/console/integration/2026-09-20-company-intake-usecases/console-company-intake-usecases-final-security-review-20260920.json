@@ -1,0 +1,44 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_INTAKE_USECASES_FINAL_IMPLEMENTATION_AND_VERIFICATION",
+  "base": "8dd2b4b4ccb767283393752c607170673e426058",
+  "receipt_hashes": {
+    "/private/tmp/console-company-intake-usecases-final-source-20260920.json": "a24e4b88985db0f8bb7f4d7c99d02c9f38154abda9f7497eadb23becd9456f1b",
+    "/private/tmp/console-company-intake-usecases-final-verification-20260920.json": "829e49fd05fa613943305579c760c210dcaff90fde0f10a7f32a1f3b828695ce",
+    "/private/tmp/console-company-intake-usecases-artifacts-20260920.json": "4eb4b4bbe1a32fe6a346f642dc2b0f82e99c5bcf869e2afc0303eb7779703d58",
+    "/private/tmp/console-company-intake-usecases-final-record-20260920.json": "1f0ff3a469527bbbab1ba0d484454e268c4f442860666d6d56959c332ba0463b"
+  },
+  "findings": [],
+  "checks": [
+    "Nine current source/test/baseline hashes verified. Production matches approved round3 bytes plus exact ordinary test registration/WIRING; two helper visibility additions and signature reflow preserve bodies. Both tests exact approved bytes.",
+    "All11verification log hashes/exits checked. NativeApplication12passed0filtered includes both newprojection leaves; five exact nativeSQLx leaves each1passed516filtered.17distinctproductcases, not517executed.",
+    "Both exact nativeartifact bytes/hash and directlisting hashes/counts verified: Application12 and AppAuthREST517.",
+    "Both strictClippy invocations and workspaceformat exit0; generator68passed, preflight16passed. Root reports diffcheck0.",
+    "Baseline structural comparison againstHEAD differs only IdentityApplicationlib10to12; static total3125to3127, allother values/darkset unchanged.",
+    "Failed executorargument invocation executed0tests and initialformat failure remain explicit prior prerequisite/format evidence. Neither relabeledownerRED.",
+    "Final scope accurately distinguishes real prepared/cancelled durable intake from absent completeCompanybirth/HTTP activation and distinguishes injected40003classification/rollback from realnetworkloss."
+  ],
+  "counts": {
+    "native_application_discovered_passed": 12,
+    "native_app_discovered": 517,
+    "native_app_selected_passed": 5,
+    "native_app_filtered_each": 516,
+    "distinct_product_cases_passed": 17,
+    "generator_tests_passed": 68,
+    "preflight_stages_passed": 16
+  },
+  "commit_scope": [
+    "backend/crates/identity/application/src/company.rs",
+    "backend/crates/identity/application/src/company_enrollment.rs",
+    "backend/crates/identity/application/src/lib.rs",
+    "backend/crates/identity/adapter-postgres/src/company_enrollment.rs",
+    "backend/crates/identity/adapter-postgres/src/company_policy.rs",
+    "backend/crates/identity/adapter-postgres/src/lib.rs",
+    "docs/program/executed-tests-baseline.json"
+  ],
+  "limits": [
+    "Tests already independently committed8dd2b4b4c; approval covers sevenproduction/baseline paths only. No schema/migration/route activation or releasequalification.",
+    "Original completeCompany404vs201lane and topology/birth/COMMITTED/operationalrecovery work remain open; allfiveMVP/fullrelease unchanged.",
+    "Reviewer performed source/Git/log/hash/artifact inspection and private receipt only; no producttest/build/SQL/browser or repositorymutation."
+  ]
+}

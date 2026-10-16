@@ -1,0 +1,27 @@
+type: object
+required:
+- challenge
+- rpId
+- allowCredentials
+- userVerification
+properties:
+  challenge:
+    $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+  timeout:
+    type: integer
+    minimum: 0
+    maximum: 4294967295
+  rpId:
+    type: string
+  allowCredentials:
+    type: array
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnDescriptor'
+  userVerification:
+    $ref: '#/components/schemas/NativeWebAuthnUserVerificationPolicy'
+  hints:
+    type: array
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnHint'
+  extensions:
+    $ref: '#/components/schemas/NativeWebAuthnAuthenticationRequestExtensions'

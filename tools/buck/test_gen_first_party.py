@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """Behavior locks for the first-party Rust BUCK graph generator."""
 
+import ast
+import contextlib
+import hashlib
+from unittest.mock import patch
 import importlib.util
 import inspect
+import io
+import json
 import re
 import shutil
 import subprocess
@@ -21,6 +27,118 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class GeneratorCliTests(unittest.TestCase):
+
+    class ProjectedManifestReady(Exception):
+        pass
+
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location(
+            "hydrate_selection_fixture", GENERATOR_PATH.with_name("gen_hydrate.py")
+        )
+        self.hydrate = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.hydrate)
+        self.library = {
+            "kind": ["rlib", "cdylib"], "crate_types": ["rlib", "cdylib"],
+            "name": "console_payroll_ui",
+            "src_path": str(self.hydrate.REPO / "backend/crates/payroll/ui/src/lib.rs"),
+        }
+        self.integration = {
+            "kind": ["test"], "crate_types": ["bin"], "name": "react_people",
+            "src_path": str(self.hydrate.REPO / "backend/crates/payroll/ui/tests/react_people.rs"),
+        }
+
+    def test_hydration_run_preserves_captured_success_output(self):
+        output = 'real subprocess success output\n'
+        argv = [sys.executable, '-c',
+                'import sys; sys.stdout.write(sys.argv[1])', output]
+        reported = io.StringIO()
+        with contextlib.redirect_stderr(reported):
+            result = self.hydrate.run(argv, timeout=10)
+        self.assertEqual(output, result)
+        self.assertEqual('', reported.getvalue())
+
+    def test_hydration_run_reports_failure_stdout_and_preserves_error(self):
+        output = 'real subprocess failure diagnostic\nsecond diagnostic line\n'
+        argv = [sys.executable, '-c',
+                'import sys; sys.stdout.write(sys.argv[1]); sys.exit(23)', output]
+        reported = io.StringIO()
+        with contextlib.redirect_stderr(reported):
+            with self.assertRaises(subprocess.CalledProcessError) as caught:
+                self.hydrate.run(argv, timeout=10)
+        self.assertEqual(23, caught.exception.returncode)
+        self.assertEqual(argv, caught.exception.cmd)
+        self.assertEqual(output, caught.exception.output)
+        self.assertIsNone(caught.exception.stderr)
+        self.assertEqual(output, reported.getvalue())
+
+    def project_hydration(self, targets):
+        # Cargo metadata fixtures exercise target selection only. No compiler,
+        # Reindeer, business data, or canonical manifest is modified.
+        ui = {
+            "name": "console-payroll-ui", "version": "0.1.0", "description": None,
+            "license": "MIT", "edition": "2024", "rust_version": "1.98.1",
+            "targets": targets, "dependencies": [], "features": {},
+        }
+
+        def run(argv):
+            if argv[:2] == ["rustup", "which"]:
+                return "/unexecuted-tooling-fixture/" + argv[-1] + "\n"
+            if "metadata" in argv and "--no-deps" in argv:
+                return json.dumps({"packages": [ui]})
+            if "metadata" in argv and "--manifest-path" in argv:
+                raise self.ProjectedManifestReady()
+            self.fail("unexpected projection invocation: " + repr(argv))
+
+        with tempfile.TemporaryDirectory(prefix="hydrate-target-selection-") as tmp:
+            output = Path(tmp).resolve() / "projection"
+            with patch.object(self.hydrate, "OUTPUT", output), \
+                    patch.object(self.hydrate, "run", side_effect=run), \
+                    patch.object(sys, "argv", ["gen_hydrate.py", "--reindeer", "/unexecuted-fixture"]):
+                with self.assertRaises(self.ProjectedManifestReady):
+                    self.hydrate.main()
+            import tomllib
+            projected = tomllib.loads((output / "Cargo.toml").read_text())
+            self.assertEqual("console_payroll_ui", projected["lib"]["name"])
+            self.assertEqual(["rlib", "cdylib"], projected["lib"]["crate-type"])
+            self.assertEqual(
+                self.library["src_path"],
+                str((output / projected["lib"]["path"]).resolve()),
+            )
+            for option in ["autobins", "autoexamples", "autotests", "autobenches"]:
+                self.assertIs(projected["package"][option], False)
+
+    def test_existing_single_library_projects_its_exact_identity(self):
+        self.project_hydration([self.library])
+
+    def test_real_integration_test_does_not_replace_hydration_library(self):
+        self.project_hydration([self.library, self.integration])
+
+    def test_library_selection_does_not_depend_on_target_order(self):
+        self.project_hydration([self.integration, self.library])
+
+    def test_no_target_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([])
+
+    def test_integration_test_without_library_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([self.integration])
+
+    def test_nonlibrary_target_at_library_path_is_rejected(self):
+        wrong_kind = {**self.library, "kind": ["test"], "crate_types": ["bin"]}
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([wrong_kind])
+
+    def test_library_with_wrong_source_is_rejected(self):
+        wrong_source = {**self.library, "src_path": self.integration["src_path"]}
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([wrong_source])
+
+    def test_duplicate_libraries_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "real single UI library"):
+            self.project_hydration([self.library, dict(self.library)])
+
+
     def run_cli(self, argument: str) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -62,6 +180,93 @@ class GeneratorCliTests(unittest.TestCase):
 
 
 class GeneratorContractsResourceTests(unittest.TestCase):
+    def test_account_finalizer_getters_use_only_fixed_declared_compiler_inputs(self) -> None:
+        root = Path(GENERATOR.REPO)
+        helper = root / "backend/crates/platform/test-support/src/lib.rs"
+        source = helper.read_text()
+        external = GENERATOR.RESOURCE_CONFIG["console-platform-test-support"]["external"]
+
+        def require_static_input(body, expected):
+            literals = r'r(?P<raw_hashes>#*)".*?"(?P=raw_hashes)|"(?:\\.|[^"\\])*"'
+            body = re.sub(literals + r"|/\*.*?\*/|//[^\n]*",
+                          lambda item: "" if item[0].startswith(("/*", "//")) else item[0],
+                          body, flags=re.S)
+            literal_spans = [item.span() for item in re.finditer(literals, body, re.S)]
+            inputs = [item for item in re.finditer(
+                r'\b(include_(?:str|bytes))!\(\s*(?:"([^"]+)"|r(#*)"([^"]+)"\3)\s*\)',
+                body,
+            ) if not any(start <= item.start() < end for start, end in literal_spans)]
+            self.assertEqual(len(inputs), 1, "getter must consume one fixed compiler SQL input")
+            item = inputs[0]
+            relative = item[2] or item[4]
+            self.assertFalse(Path(relative).is_absolute(), "input must stay inside the declared source layout")
+            self.assertNotRegex(relative, r"[\\:]", "compiler input uses repository-relative POSIX paths")
+            parts = list(helper.parent.relative_to(root).parts)
+            for part in Path(relative).parts:
+                if part == "..":
+                    self.assertTrue(parts, "compiler input cannot escape its declared layout")
+                    parts.pop()
+                elif part != ".":
+                    parts.append(part)
+            self.assertEqual(tuple(parts), expected.relative_to(root).parts)
+            data = re.escape(item[0])
+            owned = r"\s*\.\s*(?:to_owned|to_string|into)\s*\(\s*\)"
+            checked = r"\s*\.\s*(?:unwrap\s*\(\s*\)|expect\s*\(\s*(?:" + literals + r")\s*\))"
+            if item[1] == "include_str":
+                expressions = [data + owned, r"String\s*::\s*from\s*\(\s*" + data + r"\s*\)"]
+            else:
+                expressions = [r"String\s*::\s*from_utf8\s*\(\s*" + data
+                               + r"\s*\.\s*to_vec\s*\(\s*\)\s*\)" + checked,
+                               r"std\s*::\s*str\s*::\s*from_utf8\s*\(\s*" + data
+                               + r"\s*\)" + checked + owned]
+            self.assertTrue(any(re.fullmatch(r"\s*(?:return\s+)?" + expression + r"\s*;?\s*", body, re.S)
+                                for expression in expressions),
+                            "fixed compiler SQL must be the returned data, not an error message or discarded input")
+
+        for getter, filename, digest in (
+            ("account_custody_finalizer_sql", "postgres-finalize-account-custody.sql",
+             "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8"),
+            ("account_credential_custody_finalizer_sql", "postgres-finalize-account-credentials.sql",
+             "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9"),
+        ):
+            with self.subTest(getter=getter):
+                expected = root / "ops" / filename
+                self.assertFalse(expected.is_symlink())
+                self.assertTrue(expected.is_file())
+                self.assertEqual(hashlib.sha256(expected.read_bytes()).hexdigest(), digest)
+                self.assertEqual(external.get("//ops:" + filename), "ops/" + filename)
+                literal = '"../../../../../ops/' + filename + '"'
+                include = "include_str!(" + literal + ")"
+                for control in (include + ".to_owned()", "String::from(" + include + ")",
+                                include + ".to_string()",
+                                include + ".into()",
+                                "return " + include.replace(literal, "r" + literal) + ".to_owned();",
+                                "String::from_utf8(include_bytes!(" + literal + ').to_vec()).expect(r#"/* // exact SQL */"#)',
+                                "std::str::from_utf8(include_bytes!(" + literal + ')).expect("UTF-8 SQL").to_owned()',
+                                "String::from_utf8(include_bytes!(" + literal + ').to_vec()).expect(r#"include_str!("unreviewed.sql")"#)',
+                                "std::str::from_utf8(include_bytes!(" + literal + ')).expect(r#"include_bytes!("unreviewed.sql")"#).into()',
+                                "String::from_utf8(include_bytes!(" + literal + ').to_vec()).expect("include_str!(\\\"unreviewed.sql\\\")")'):
+                    require_static_input(control, expected)
+                for corruption in (include.replace(filename, "unreviewed.sql") + ".to_owned()",
+                                   include + "; std::fs::read_to_string(path).unwrap()",
+                                   include + "; load_runtime_sql()",
+                                   include + "; env!(\"CARGO_MANIFEST_DIR\")",
+                                   include + '; "SELECT substituted".to_owned()',
+                                   "String::from((" + include + ', "substituted").1)',
+                                   include + '.to_owned() + "modified"',
+                                   include + '.to_owned().replace(r#"/*"#, &load_runtime_sql()).replace(r#"*/"#, "")',
+                                   include + "[1..].to_owned()",
+                                   'String::from_utf8(b"SELECT substituted".to_vec()).expect(' + include + ")",
+                                   'std::str::from_utf8(b"SELECT substituted").expect(' + include + ").to_owned()",
+                                   'include_str!("' + str(expected) + '").to_owned()',
+                                   'include_str!("../../../../../../' + root.name + "/ops/" + filename + '").to_owned()'):
+                    with self.assertRaises(AssertionError):
+                        require_static_input(corruption, expected)
+                bodies = re.findall(r"^pub fn " + getter + r"\(\) -> String \{\n(.*?)^\}",
+                                    source, flags=re.M | re.S)
+                self.assertEqual(len(bodies), 1, "existing owner getter and String API must remain unique")
+                require_static_input(bodies[0], expected)
+
     def test_compose_emits_its_semantic_manifest_input(self) -> None:
         source = Path(GENERATOR.REPO) / "backend/crates/contracts"
         with tempfile.TemporaryDirectory() as tmp:
@@ -95,6 +300,231 @@ class GeneratorContractsResourceTests(unittest.TestCase):
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_manager_serving_sql_inputs_reach_unit_and_auth_rest(self) -> None:
+        root = Path(GENERATOR.REPO)
+        local = "src/company_information_manager_current_policy_v1_custody_state.sql"
+        library = GENERATOR.RESOURCE_CONFIG["console-app"]
+        browser = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        expected = {
+            "ops/postgres-finalize-company-information-manager-current-policy-v1.sql": "4916eaf30459b7d28f17b4fbb4793f2159b82e5f9bf5b8102ec6b0abde9fc30d",
+            "ops/postgres-company-information-manager-current-policy-v1-custody-state.sql": "2ad10750d99ded7ff02acd5ddb10214eefa4063d7d0a14c2ca83e1db9e263853",
+        }
+        existing = ["ops/postgres-finalize-company-enrollment.sql", "ops/postgres-finalize-native-company-policy.sql",
+                    "ops/account-custody-migrations.sha384"]
+        for config in [library, browser]:
+            self.assertIn(local, config["srcs"], "Manager classifier is an actual Rust include_str input")
+            required = existing + list(expected)
+            if config is library:
+                required.remove("ops/postgres-company-information-manager-current-policy-v1-custody-state.sql")
+            for relative in required:
+                self.assertEqual(config["external"].get("//ops:" + Path(relative).name), relative,
+                                 "Every SQL and ledger include must reach the actual variant")
+            for relative, digest in expected.items():
+                source = root / relative
+                self.assertFalse(source.is_symlink())
+                self.assertTrue(source.is_file())
+                self.assertEqual(hashlib.sha256(source.read_bytes()).hexdigest(), digest)
+        self.assertEqual((root / "backend/app" / local).read_bytes(),
+                         (root / "ops/postgres-company-information-manager-current-policy-v1-custody-state.sql").read_bytes())
+        exports = [statement.value for statement in ast.parse((root / "ops/BUCK").read_text()).body
+                   if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call)
+                   and isinstance(statement.value.func, ast.Name) and statement.value.func.id == "export_file"]
+        for relative in expected:
+            name = Path(relative).name
+            matches = [{field.arg: ast.literal_eval(field.value) for field in call.keywords}
+                       for call in exports if any(field.arg == "name" and ast.literal_eval(field.value) == name
+                                                  for field in call.keywords)]
+            self.assertEqual(len(matches), 1, "Manager SQL needs exactly one native ops export")
+            self.assertEqual(matches[0]["visibility"], ["PUBLIC"])
+            self.assertEqual(matches[0].get("src", name), name)
+
+    def test_writer_ratchet_receives_workspace_and_topology_resources(self) -> None:
+        expected = GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/gate_detects_violation.rs", ""
+        )
+        self.assertGreater(len(expected), 100, "workspace resource oracle must not be empty")
+        self.assertEqual("backend/Cargo.toml", expected["//backend:Cargo.toml"])
+        expected["//ops:postgres-reconcile-topology.sh"] = "ops/postgres-reconcile-topology.sh"
+        self.assertTrue((Path(GENERATOR.REPO) / "ops/postgres-reconcile-topology.sh").is_file())
+        self.assertEqual(expected, GENERATOR.integration_external_resources(
+            "console-gate-writer-ownership", "tests/gate_detects_violation.rs", ""
+        ))
+        self.assertEqual({}, GENERATOR.integration_external_resources(
+            "console-gate-writer-ownership", "tests/unrelated.rs", ""
+        ))
+
+    def test_payroll_application_declares_existing_manifest_input(self) -> None:
+        package = Path(GENERATOR.REPO) / "backend/crates/payroll/application"
+        self.assertIn('include_str!("../Cargo.toml")', (package / "src/lib.rs").read_text())
+        resources = GENERATOR.RESOURCE_CONFIG.get("console-payroll-application", {})
+        declared = {
+            path.resolve()
+            for pattern in resources.get("srcs", [])
+            for path in package.glob(pattern)
+        }
+        self.assertIn((package / "Cargo.toml").resolve(), declared)
+
+    def test_private_group_navigation_finalizer_auth_rest_resource_is_complete(self) -> None:
+        target = "//ops:postgres-finalize-native-group-process-navigation-v1.sql"
+        relative = "ops/postgres-finalize-native-group-process-navigation-v1.sql"
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(config["external"].get(target), relative)
+        source = Path(GENERATOR.REPO) / relative
+        self.assertFalse(source.is_symlink(), "native finalizer must be a regular input")
+        self.assertTrue(source.is_file(), "native finalizer must exist before native execution")
+        self.assertEqual(
+            hashlib.sha256(source.read_bytes()).hexdigest(),
+            "4971a73e957da8dfe4f202aea3693d3d0ad0636b92a0a2785264c5d4f9d9fc70",
+        )
+        exports = []
+        for statement in ast.parse((Path(GENERATOR.REPO) / "ops/BUCK").read_text()).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id != "export_file":
+                continue
+            keywords = {keyword.arg: keyword.value for keyword in call.keywords}
+            if "name" in keywords and ast.literal_eval(keywords["name"]) == source.name:
+                exports.append(keywords)
+        self.assertEqual(len(exports), 1, "finalizer needs one exact native ops export")
+        self.assertEqual(ast.literal_eval(exports[0]["visibility"]), ["PUBLIC"])
+        if "src" in exports[0]:
+            self.assertEqual(ast.literal_eval(exports[0]["src"]), source.name)
+
+    def test_private_company_intake_guards_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-guards.sql"),
+            "ops/postgres-company-enrollment-guards.sql",
+        )
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_guards.rs").is_file())
+
+    def test_private_company_intake_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-intake.sql"),
+            "ops/postgres-company-enrollment-intake.sql",
+        )
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_owner.rs").is_file())
+
+    def test_private_company_schema_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-schema.sql"),
+            "ops/postgres-company-enrollment-schema.sql",
+        )
+        for path in [
+            "tests/auth_rest/fixtures/company-enrollment-schema-acl.sql",
+            "tests/auth_rest/fixtures/company-enrollment-schema-references.sql",
+        ]:
+            self.assertIn(path, config["srcs"])
+            self.assertTrue((Path(GENERATOR.REPO) / "backend/app" / path).is_file())
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_schema.rs").is_file())
+
+    def test_health_readiness_maps_its_existing_source_tripwire_inputs(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/health_readiness.rs")
+        self.assertIn("src/lib.rs", config["srcs"])
+        for package in ("auth-rest", "request-context"):
+            directory = "backend/crates/platform/" + package
+            self.assertEqual(directory + "/src", config["external"].get("//" + directory + ":crate-source-tree"))
+            self.assertTrue((Path(GENERATOR.REPO) / directory / "src/lib.rs").is_file())
+
+    def test_private_company_parser_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-input.sql"),
+            "ops/postgres-company-enrollment-input.sql",
+        )
+        for path in [
+            "tests/auth_rest/fixtures/company-enrollment-input-golden.sql",
+            "tests/auth_rest/fixtures/company-enrollment-input-malformed.sql",
+            "tests/auth_rest/fixtures/company-enrollment-input-boundary.sql",
+        ]:
+            self.assertIn(path, config["srcs"])
+            self.assertTrue((Path(GENERATOR.REPO) / "backend/app" / path).is_file())
+
+    def test_auth_rest_maps_literal_fixture_inputs(self) -> None:
+        app = Path(GENERATOR.REPO) / "backend/app"
+        fixture_root = (app / "tests/auth_rest/fixtures").resolve()
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        declared = {
+            resource.resolve()
+            for pattern in config["srcs"]
+            for resource in app.glob(pattern)
+        }
+        required = set()
+        for source in (app / "tests/auth_rest").rglob("*.rs"):
+            for literal in re.findall(r'include_(?:str|bytes)!\(\s*"([^"]+)"', source.read_text()):
+                resource = (source.parent / literal).resolve()
+                if resource.is_relative_to(fixture_root):
+                    self.assertTrue(resource.is_file(), f"missing fixture: {resource}")
+                    required.add(resource)
+        self.assertTrue(required, "must examine actual compile-time fixture inputs")
+        self.assertEqual(
+            [], sorted(str(path.relative_to(app)) for path in required - declared),
+            "auth_rest has undeclared compile-time fixture inputs",
+        )
+
+    def test_native_org_finalizer_maps_owning_sql_inputs_to_public_exports(self) -> None:
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/app/tests/auth_rest/native_org_unit_closed_phase_capture.rs"
+        parent = root / "backend/app/tests/auth_rest/native_company_provenance_pair_capture.rs"
+        self.assertIn('include!("native_org_unit_closed_phase_capture.rs");', parent.read_text())
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        required = set()
+        for source in [source]:
+            for literal in re.findall(r'include_(?:str|bytes)!\(\s*"([^"]+)"', source.read_text()):
+                resource = (source.parent / literal).resolve()
+                if resource.is_relative_to(root / "ops"):
+                    self.assertTrue(resource.is_file(), f"missing owning SQL input: {resource}")
+                    required.add(resource)
+        self.assertTrue(required, "must examine actual owning SQL inputs")
+        external = config["external"]
+        mapped = {(root / destination).resolve() for destination in external.values()}
+        self.assertEqual([], sorted(str(path.relative_to(root)) for path in required - mapped),
+                         "auth_rest has undeclared owning SQL inputs")
+        public_exports = set()
+        for statement in ast.parse((root / "ops/BUCK").read_text()).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id != "export_file":
+                continue
+            fields = {field.arg: ast.literal_eval(field.value) for field in call.keywords}
+            if fields.get("visibility") == ["PUBLIC"]:
+                public_exports.add("//ops:" + fields["name"])
+        for label, destination in external.items():
+            if (root / destination).resolve() in required:
+                self.assertIn(label, public_exports, f"owning SQL input is not publicly exported: {label}")
+
+    def test_layer_ratchet_receives_current_workspace_manifests_and_sources(self) -> None:
+        """The real-workspace ratchet must not run against an empty Buck input tree."""
+        external = GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/gate_detects_violation.rs", ""
+        )
+        expected = {"//backend:Cargo.toml": "backend/Cargo.toml"}
+        backend = Path(GENERATOR.REPO, "backend")
+        # Cargo also admits implicit path-dependency members outside its globs.
+        # Ask Cargo, independently of the generator's directory scan.
+        metadata = json.loads(subprocess.check_output(
+            ["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline"],
+            cwd=backend, text=True,
+        ))
+        directories = {Path(package["manifest_path"]).parent
+                       for package in metadata["packages"]
+                       if package["id"] in metadata["workspace_members"]}
+        self.assertTrue(directories)
+        for directory in directories:
+            package = Path(directory).relative_to(GENERATOR.REPO).as_posix()
+            expected[f"//{package}:Cargo.toml"] = f"{package}/Cargo.toml"
+            expected[f"//{package}:crate-source-tree"] = f"{package}/src"
+            buck = Path(directory, "BUCK").read_text(encoding="utf-8")
+            self.assertIn('name = "Cargo.toml",', buck, package)
+        self.assertEqual(expected, external)
+        self.assertEqual({}, GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/unrelated.rs", ""
+        ))
+
     def test_no_workspace_member_is_skipped(self) -> None:
         """`-ui` members were skipped while Leptos was unvendored.
 
@@ -296,6 +726,27 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             unmapped.append(str(resource.relative_to(GENERATOR.REPO)))
 
         self.assertEqual([], unmapped, "openapi_drift has unmapped include_str resources")
+
+    def test_openapi_generator_maps_every_registry_input(self) -> None:
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/crates/contracts/src/gen_registry.rs"
+        includes = re.findall(r'include_str!\(\s*"([^"]+)"', source.read_text())
+        resources = {(source.parent / name).resolve() for name in includes}
+        self.assertGreater(len(resources), 1700, "registry source census may not be empty")
+        self.assertTrue(all(path.is_file() for path in resources))
+        self.assertTrue(any(path.name.startswith(".") for path in resources), "hidden path inputs covered")
+        mappings = GENERATOR.RESOURCE_CONFIG["console-contracts"].get("external", {})
+        def missing(mapping):
+            roots = [(root / destination).resolve() for destination in mapping.values()]
+            return {path for path in resources if not any(path == base or path.is_relative_to(base) for base in roots)}
+        self.assertEqual(set(), missing(mappings), "native generator has unmapped registry inputs")
+        self.assertEqual(35, len(mappings), "shared plus all 34 face trees")
+        for target in ["//backend/openapi:shared-tree", "//backend/crates/payroll/rest:crate-openapi-tree"]:
+            reduced = {key: value for key, value in mappings.items() if key != target}
+            self.assertTrue(missing(reduced), f"omission of {target} must fail the oracle")
+        shared = (root / "backend/openapi/BUCK").read_text()
+        self.assertIn('name = "shared-tree"', shared)
+        self.assertIn('src = "shared"', shared)
 
     def test_openapi_fragment_globs_detect_tree_and_include_str(self) -> None:
         governance = Path(GENERATOR.REPO) / "backend/crates/governance/rest"
@@ -867,9 +1318,9 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             source_text,
             re.MULTILINE,
         )
-        self.assertEqual(164, len(ordinary_tests))
+        self.assertEqual(173, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
-        self.assertEqual(23, len(sqlx_tests))
+        self.assertEqual(26, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
         self.assertEqual(
             ("dev-auth",),
@@ -917,6 +1368,42 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             )
 
 
+    def test_native_cargo_roots_include_module_only_and_directory_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            (crate / "Cargo.toml").write_text('[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n')
+            (crate / "tests/cases").mkdir(parents=True)
+            (crate / "tests/native").mkdir()
+            (crate / "tests/suite.rs").write_text('#[path="cases/scenarios.rs"] mod scenarios;\n')
+            (crate / "tests/cases/scenarios.rs").write_text('#[test] fn nested_case() {}\n')
+            (crate / "tests/native/main.rs").write_text('#[test] fn directory_case() {}\n')
+            roots = GENERATOR.discovered_test_resource_keys(str(crate), "fixture")
+            self.assertEqual(roots, {
+                ("fixture", "test.integration", "tests/suite.rs"),
+                ("fixture", "test.integration", "tests/native/main.rs"),
+            })
+            _, helpers = GENERATOR.integration_test_sources(str(crate))
+            self.assertEqual(helpers, ["tests/cases/scenarios.rs"])
+            self.assertEqual(GENERATOR.integration_test_name("tests/native/main.rs"), "native")
+
+
+    def test_custom_cargo_test_discovery_and_name_collisions_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            base = '[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n'
+            for override in ('autotests=false\n', 'autotests=true\n', '\n[[test]]\nname="custom"\npath="custom.rs"\n'):
+                (crate / "Cargo.toml").write_text(base + override)
+                with self.subTest(override=override), self.assertRaisesRegex(ValueError, "custom Cargo test discovery"):
+                    GENERATOR.integration_test_sources(str(crate))
+            (crate / "Cargo.toml").write_text(base)
+            (crate / "tests/same").mkdir(parents=True)
+            (crate / "tests/same.rs").write_text('#[test] fn file_case() {}\n')
+            (crate / "tests/same/main.rs").write_text('#[test] fn directory_case() {}\n')
+            with self.assertRaisesRegex(ValueError, "colliding Cargo integration test names"):
+                GENERATOR.integration_test_sources(str(crate))
+
+
+
 class TestTaxonomy(unittest.TestCase):
     def test_every_test_has_exactly_one_type_and_resource_label(self) -> None:
         for package in (
@@ -956,6 +1443,32 @@ class TestTaxonomy(unittest.TestCase):
             GENERATOR.test_labels("backend/app", "test.e2e", False)
 
 class TestResourceClassification(unittest.TestCase):
+    def test_native_hr_bootstrap_cedar_reference_requires_no_database(self) -> None:
+        self.assertEqual(
+            "none",
+            GENERATOR.resource_requirement(
+                "console-platform-authz", "test.integration", "tests/cedar_sdk_identity.rs"
+            ),
+        )
+        self.assertEqual(
+            "postgres",
+            GENERATOR.resource_requirement(
+                "console-platform-authz", "test.integration", "tests/policy.rs"
+            ),
+        )
+        with self.assertRaisesRegex(ValueError, "missing reviewed resource metadata"):
+            GENERATOR.resource_requirement(
+                "console-platform-authz", "test.integration", "tests/unreviewed.rs"
+            )
+        self.assertEqual(
+            "none",
+            GENERATOR.resource_requirement(
+                "console-platform-authz",
+                "test.integration",
+                "tests/native_hr_bootstrap_cedar_contract.rs",
+            ),
+        )
+
     def test_benefit_and_facilities_units_are_hermetic_even_when_sources_mention_postgres(self) -> None:
         for package in ("console-benefit-rest", "console-facilities-rest"):
             self.assertFalse(GENERATOR.requires_postgres(package, "test.unit"))
@@ -1241,6 +1754,521 @@ class FeatureAndEnvPropagationTests(unittest.TestCase):
         # The fence: integration tests must NOT inherit the declaration.
         itest = blocks["probe-envmain-itest-it"]
         self.assertNotIn("CARGO_PKG_NAME", itest, itest)
+
+
+class ExplicitBinaryTargetTests(unittest.TestCase):
+    def render(self, manifest, files, package_path="backend/app", deps=None, named=None):
+        temporary = tempfile.TemporaryDirectory(prefix="explicit-bin-generator-")
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        package = root / package_path
+        package.mkdir(parents=True)
+        (package / "Cargo.toml").write_text(manifest)
+        for relative, contents in files.items():
+            destination = package / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(contents)
+        self.last_fixture_package = package
+        package_name = GENERATOR.load(package)["package"]["name"]
+        with patch.object(GENERATOR, "REPO", str(root)):
+            # Use the established interface: RED must be an omitted target,
+            # never a missing new helper or a changed call signature.
+            GENERATOR.emit(str(package), package_name, deps or [], named or {}, [], {})
+        generated = (package / "BUCK").read_text()
+        parsed = ast.parse(generated)
+        rules = []
+        for statement in parsed.body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if isinstance(call.func, ast.Name):
+                values = {keyword.arg: keyword.value for keyword in call.keywords}
+                if "name" in values:
+                    rules.append((call.func.id, values))
+        all_names = [ast.literal_eval(values["name"]) for _, values in rules]
+        self.assertEqual(len(all_names), len(set(all_names)), "duplicate generated target names")
+        return package, rules
+
+    def binary_rules(self, rules):
+        return {ast.literal_eval(values["name"]): values
+                for kind, values in rules if kind == "rust_binary"}
+
+    def assert_binary(self, values, package, relative_root, crate, library_target):
+        self.assertEqual(ast.literal_eval(values["crate"]), crate)
+        relative_package = "backend/" + str(package).split("/backend/", 1)[1]
+        self.assertEqual(ast.literal_eval(values["crate_root"]),
+                         relative_package + "/" + relative_root)
+        self.assertIn(library_target, ast.literal_eval(values["deps"]))
+        mapping = values["mapped_srcs"]
+        self.assertIsInstance(mapping, ast.Call)
+        self.assertEqual(mapping.func.id, "repo_mapped_srcs")
+        self.assertEqual(ast.literal_eval(mapping.args[0]), relative_package)
+        source_glob = mapping.args[1]
+        self.assertIsInstance(source_glob, ast.Call)
+        self.assertEqual(source_glob.func.id, "glob")
+        mapped = {str(path.relative_to(package))
+                  for pattern in ast.literal_eval(source_glob.args[0])
+                  for path in package.glob(pattern) if path.is_file()}
+        self.assertIn(relative_root, mapped, "binary entrypoint is not mapped into the action")
+
+    def test_real_application_declared_tools_preserve_roots_library_and_renamed_dependencies(self):
+        manifest = (Path(GENERATOR.REPO) / "backend/app/Cargo.toml").read_text()
+        files = {
+            "src/lib.rs": "pub fn reusable() {}\n",
+            "src/main.rs": "fn main() {}\n",
+            "src/bin/console_cedar_parity_report.rs": "fn main() {}\n",
+            "src/bin/console_deployment_operator.rs": "fn main() {}\n",
+        }
+        renamed = {"pg_transport": "//third-party/rust:tokio-postgres"}
+        package, rules = self.render(manifest, files,
+                                     deps=["//third-party/rust:tokio"], named=renamed)
+        binaries = self.binary_rules(rules)
+        self.assertEqual(set(binaries), {
+            "console-app", "console-app-dev-auth", "console-cedar-parity-report", "console-deployment-operator",
+        })
+        for binary, source in (
+            ("console-cedar-parity-report", "src/bin/console_cedar_parity_report.rs"),
+            ("console-deployment-operator", "src/bin/console_deployment_operator.rs"),
+        ):
+            self.assert_binary(binaries[binary], package, source,
+                               binary.replace("-", "_"), ":console-app-lib")
+            self.assertEqual(ast.literal_eval(binaries[binary]["named_deps"]), renamed)
+            self.assertEqual(ast.literal_eval(binaries[binary]["deps"]),
+                             ["//third-party/rust:tokio", ":console-app-lib"])
+
+    def test_real_contracts_declared_tool_links_library_without_default_main(self):
+        manifest = (Path(GENERATOR.REPO) / "backend/crates/contracts/Cargo.toml").read_text()
+        package, rules = self.render(manifest, {
+            "src/lib.rs": "pub fn compose() {}\n",
+            "src/bin/console_openapi_gen.rs": "fn main() {}\n",
+        }, package_path="backend/crates/contracts")
+        binaries = self.binary_rules(rules)
+        self.assertEqual(set(binaries), {"console-openapi-gen"})
+        self.assert_binary(binaries["console-openapi-gen"], package,
+                           "src/bin/console_openapi_gen.rs", "console_openapi_gen",
+                           ":console-contracts")
+        mapped = binaries["console-openapi-gen"]["mapped_srcs"]
+        external = next((keyword.value for keyword in mapped.keywords if keyword.arg == "external"), None)
+        self.assertIsNotNone(external, "native binary must receive its registry inputs")
+        actual = ast.literal_eval(external)
+        expected = GENERATOR.RESOURCE_CONFIG["console-contracts"].get("external", {})
+        self.assertTrue(expected, "missing input map cannot prove itself")
+        self.assertEqual(actual, expected)
+
+
+    def test_explicit_default_main_is_not_duplicated(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture"\npath="src/main.rs"\n')
+        _, rules = self.render(manifest, {
+            "src/lib.rs": "pub fn value() {}\n", "src/main.rs": "fn main() {}\n",
+        })
+        self.assertEqual(set(self.binary_rules(rules)), {"fixture"})
+
+    def test_required_features_cannot_be_silently_enabled_or_omitted(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[features]\noperator-tools=[]\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/operator.rs"\n'
+                    'required-features=["operator-tools"]\n')
+        with self.assertRaisesRegex(ValueError, "operator.*feature-gate modeling"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+
+    def test_duplicate_declared_names_are_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/first.rs"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/second.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate declared binary operator"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/first.rs": "",
+                                   "src/bin/second.rs": ""})
+
+    def test_missing_declared_entrypoint_is_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/missing.rs"\n')
+        with self.assertRaisesRegex(ValueError, "operator entrypoint is missing"):
+            self.render(manifest, {"src/lib.rs": ""})
+
+    def test_unmapped_outside_source_entrypoint_is_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="tools/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "explicit source mapping outside src"):
+            self.render(manifest, {"src/lib.rs": "", "tools/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_library_target(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture"\npath="src/bin/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate generated target"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_generated_feature_targets(self):
+        for target in ("fixture-mode", "fixture-lib-mode"):
+            with self.subTest(target=target):
+                manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                            '[[bin]]\nname="' + target + '"\npath="src/bin/operator.rs"\n')
+                with patch.dict(GENERATOR.FEATURE_LIBRARY_VARIANTS,
+                                {"fixture": {"mode": {"deps": {}}}}):
+                    with self.assertRaisesRegex(ValueError, "duplicate generated target"):
+                        self.render(manifest, {"src/lib.rs": "", "src/main.rs": "fn main() {}",
+                                               "src/bin/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_export_target_and_no_file_is_written(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="crate-source-tree"\npath="src/bin/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate generated target crate-source-tree"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+        self.assertFalse((self.last_fixture_package / "BUCK").exists())
+
+    def test_declared_tool_cannot_shadow_unit_target_and_no_file_is_written(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture-unit"\npath="src/bin/operator.rs"\n')
+        with patch.dict(GENERATOR.TEST_RESOURCE_REQUIREMENTS, {"fixture": {"unit": "none"}}):
+            with self.assertRaisesRegex(ValueError, "duplicate generated target fixture-unit"):
+                self.render(manifest, {"src/lib.rs": "#[cfg(test)] mod tests {}",
+                                       "src/bin/operator.rs": "fn main() {}"})
+        self.assertFalse((self.last_fixture_package / "BUCK").exists())
+
+
+
+
+class BrowserIntegrationVariantsTests(unittest.TestCase):
+    """Exercise real App generation without writing its shared BUCK file."""
+
+    @staticmethod
+    def _target_nodes(rendered):
+        targets = {}
+        for statement in ast.parse(rendered).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            fields = {field.arg: field.value for field in call.keywords}
+            if "name" not in fields:
+                continue
+            name = ast.literal_eval(fields["name"])
+            if name in targets:
+                raise AssertionError("duplicate generated target: " + name)
+            targets[name] = (call.func.id, fields, ast.get_source_segment(rendered, statement))
+        return targets
+
+    def _render_app(self, invalid_feature=None):
+        # Importantly, no replacement emit() implementation or future API assumption.
+        # Only the final BUCK write is captured; real manifest/source/dependency reads run.
+        app = Path(GENERATOR.REPO) / "backend/app"
+        manifest = GENERATOR.load(app)
+        first_party = {
+            GENERATOR.load(directory)["package"]["name"]:
+                "//{}:{}".format(Path(directory).relative_to(GENERATOR.REPO).as_posix(),
+                                 GENERATOR.load(directory)["package"]["name"])
+            for directory in GENERATOR.find_members()
+        }
+        deps, named = GENERATOR.map_deps(manifest.get("dependencies"), first_party)
+        dev_deps, dev_named = GENERATOR.map_deps(manifest.get("dev-dependencies"), first_party)
+        written = []
+        class Capture:
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                return False
+            def write(self, value):
+                written.append(value)
+                return len(value)
+        builtin_open = open
+        def guarded_open(filename, mode="r", *args, **kwargs):
+            if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
+                self.assertEqual(app / "BUCK", Path(filename))
+                self.assertEqual("w", mode)
+                return Capture()
+            return builtin_open(filename, mode, *args, **kwargs)
+        original_load = GENERATOR.load
+        def load(directory):
+            data = original_load(directory)
+            if Path(directory) == app and invalid_feature is not None:
+                data["features"] = dict(data.get("features", {}))
+                if invalid_feature == "missing":
+                    data["features"].pop("test-browser", None)
+                else:
+                    data["features"]["test-browser"] = ["dev-auth"]
+            return data
+        before = (app / "BUCK").read_bytes()
+        with patch.object(GENERATOR, "open", guarded_open, create=True), \
+             patch.object(GENERATOR, "load", load):
+            GENERATOR.emit(str(app), "console-app", sorted(deps), named,
+                           sorted(dev_deps), dev_named, version=manifest["package"].get("version"))
+        self.assertEqual(before, (app / "BUCK").read_bytes(), "generator test wrote shared BUCK")
+        self.assertEqual(1, len(written))
+        return written[0]
+
+    def test_manager_serving_multiline_group_lock_input_reaches_auth_rest_variants(self):
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/app/tests/auth_rest/native_company_information_manager_serving_custody_tests.rs"
+        literal = "../../../../ops/native-company-information/group-lock-v1.sql"
+        relative = "ops/native-company-information/group-lock-v1.sql"
+        target = "//ops:native-company-information/group-lock-v1.sql"
+        includes = re.findall(r'include_str!\(\s*"([^"]+)"', source.read_text())
+        self.assertEqual(1, includes.count(literal), "actual multiline Manager include must be examined")
+        fixture = (source.parent / literal).resolve()
+        self.assertEqual(root / relative, fixture)
+        self.assertFalse((root / relative).is_symlink())
+        self.assertTrue(fixture.is_file())
+        self.assertEqual("daee9a6d7f2e0b1e8992c327500f0e93a9641501c467bdaddac3bfaa19fac397",
+                         hashlib.sha256(fixture.read_bytes()).hexdigest())
+
+        rules = self._target_nodes(self._render_app())
+        variants = ["console-app-itest-auth_rest", "console-app-itest-auth_rest-browser"]
+        actual = {}
+        for variant in variants:
+            mapped = rules[variant][1]["mapped_srcs"]
+            explicit = mapped.args[1].left if isinstance(mapped.args[1], ast.BinOp) else mapped.args[1]
+            self.assertIn(source.relative_to(root / "backend/app").as_posix(), ast.literal_eval(explicit))
+            external = next(keyword.value for keyword in mapped.keywords if keyword.arg == "external")
+            actual[variant] = ast.literal_eval(external).get(target)
+        self.assertEqual({variant: relative for variant in variants}, actual,
+                         "actual ordinary and browser actions must map the Manager SQL fixture")
+
+        exports = []
+        for statement in ast.parse((root / "ops/BUCK").read_text()).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id != "export_file":
+                continue
+            fields = {keyword.arg: ast.literal_eval(keyword.value) for keyword in call.keywords}
+            if fields.get("name") == "native-company-information/group-lock-v1.sql":
+                exports.append(fields)
+        self.assertEqual(1, len(exports), "Manager fixture needs exactly one native ops export")
+        self.assertEqual(["PUBLIC"], exports[0]["visibility"])
+        self.assertEqual("native-company-information/group-lock-v1.sql",
+                         exports[0].get("src", exports[0]["name"]))
+
+    def test_manager_current_source_prerequisite_inputs_reach_auth_rest_variants(self):
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/app/tests/auth_rest/native_company_information_browser_source.rs"
+        expected = {
+            "group-lock-v1.sql": "daee9a6d7f2e0b1e8992c327500f0e93a9641501c467bdaddac3bfaa19fac397",
+            "selected-lock-v1.sql": "f60cc97a92df9ca446dc4bec2964981a3957cf18b4d81fd60f9c32826065598f",
+            "root-material-v1.sql": "f75d12df521b2d0ec6c69271ff6dfac4663e207890af0ccdeefdd39763dacbc6",
+            "manager-current-v1.sql": "607635bd51942c6c04f1fbdbe39c7a8ab414c9c6f19af94632a2f92e40980265",
+            "acl-v1.sql": "1e74e8bb66e9f61242c3ef79c122f99c8953a4495ba03ab56ac1d9121cd81ade",
+        }
+        includes = re.findall(r'include_str!\(\s*"([^"]+)"', source.read_text())
+        rules = self._target_nodes(self._render_app())
+        variants = ["console-app-itest-auth_rest", "console-app-itest-auth_rest-browser"]
+        exports = [
+            {field.arg: ast.literal_eval(field.value) for field in statement.value.keywords}
+            for statement in ast.parse((root / "ops/BUCK").read_text()).body
+            if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Name)
+            and statement.value.func.id == "export_file"
+        ]
+        for name, digest in expected.items():
+            relative = "ops/native-company-information/" + name
+            literal = "../../../../" + relative
+            target = "//ops:native-company-information/" + name
+            fixture = root / relative
+            self.assertEqual(1, includes.count(literal), "actual source include must be examined")
+            self.assertEqual(fixture, (source.parent / literal).resolve())
+            self.assertFalse(fixture.is_symlink())
+            self.assertTrue(fixture.is_file())
+            self.assertEqual(digest, hashlib.sha256(fixture.read_bytes()).hexdigest())
+            for variant in variants:
+                mapped = rules[variant][1]["mapped_srcs"]
+                explicit = mapped.args[1].left if isinstance(mapped.args[1], ast.BinOp) else mapped.args[1]
+                self.assertIn(source.relative_to(root / "backend/app").as_posix(), ast.literal_eval(explicit))
+                external = next(field.value for field in mapped.keywords if field.arg == "external")
+                self.assertEqual(relative, ast.literal_eval(external).get(target),
+                                 "actual ordinary and browser actions must map each source input")
+            matches = [export for export in exports if export.get("name") == "native-company-information/" + name]
+            self.assertEqual(1, len(matches), "each source input needs one native ops export")
+            self.assertEqual(["PUBLIC"], matches[0]["visibility"])
+            self.assertEqual("native-company-information/" + name, matches[0].get("src", matches[0]["name"]))
+
+    def test_real_app_browser_variants_clone_only_selected_native_test_targets(self):
+        manifest = GENERATOR.load(Path(GENERATOR.REPO) / "backend/app")
+        self.assertEqual([], manifest["features"]["test-browser"])
+        targets = self._target_nodes(self._render_app())
+        selected = ["auth_rest", "health_readiness"]
+        expected = {"console-app-itest-" + stem + "-browser" for stem in selected}
+        actual = {name for name, (_, fields, _) in targets.items()
+                  if "features" in fields
+                  and "test-browser" in ast.literal_eval(fields["features"])}
+        self.assertEqual(expected, actual,
+                         "NATIVE_BROWSER_VARIANTS_REQUIRED: actual generator must emit exactly two browser Rust tests")
+        for stem in selected:
+            ordinary = "console-app-itest-" + stem
+            browser = ordinary + "-browser"
+            ordinary_kind, ordinary_fields, _ = targets[ordinary]
+            kind, fields, _ = targets[browser]
+            self.assertEqual("rust_test", ordinary_kind)
+            self.assertEqual("rust_test", kind)
+            self.assertNotIn("test-browser", ast.literal_eval(ordinary_fields["features"])
+                             if "features" in ordinary_fields else [])
+            self.assertEqual(["test-browser"], ast.literal_eval(fields["features"]))
+            # The library graph and every declared compile-time resource stay identical.
+            ordinary_attrs = {key: ast.dump(value) for key, value in ordinary_fields.items()
+                              if key not in {"name", "features"}}
+            browser_attrs = {key: ast.dump(value) for key, value in fields.items()
+                             if key not in {"name", "features"}}
+            self.assertEqual(ordinary_attrs, browser_attrs)
+            deps = ast.literal_eval(fields["deps"])
+            self.assertIn(":console-app-lib", deps)
+            self.assertFalse(any("browser" in dependency for dependency in deps))
+            labels = ast.literal_eval(fields["labels"])
+            self.assertIn("test.integration", labels)
+            self.assertIn("resource.postgres", labels)
+            self.assertIn("needs-postgres", labels)
+            if stem == "auth_rest":
+                self.assertIn("generated", labels)
+        # Production and ordinary test targets are byte-preserved against the exact
+        # current generated face. Root separately compares every preimage block at integration.
+        current = self._target_nodes((Path(GENERATOR.REPO) / "backend/app/BUCK").read_text())
+        for name, (_, _, block) in current.items():
+            if name not in expected:
+                self.assertEqual(block, targets[name][2], "ordinary target drift: " + name)
+        self.assertEqual(set(current) | expected, set(targets))
+
+    def test_browser_variant_requires_an_explicit_inert_manifest_feature(self):
+        for fault in ("missing", "dependent"):
+            with self.subTest(fault=fault), self.assertRaisesRegex(ValueError, "inert.*test-browser|test-browser.*inert"):
+                self._render_app(invalid_feature=fault)
+
+    def test_mapped_pay_run_port_wrapper_requires_credential_safe_native_execution(self):
+        root = Path(GENERATOR.REPO)
+        name = "payroll-adapter-postgres-pay-run-port-as-runtime-role-pg"
+        wrapper = "//tools/buck:" + name
+        target = "//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-pay_run_port_as_runtime_role"
+        entries = json.loads((root / "tools/ci/postgres-cargo-map.json").read_text())["entries"]
+        matches = [entry for entry in entries if entry.get("buck_wrapper") == wrapper]
+        self.assertEqual(1, len(matches), "existing PayRun mapping must stay unique")
+        self.assertEqual(name, matches[0]["name"])
+        self.assertEqual(target, matches[0]["buck_inner"])
+        wrappers = self._target_nodes((root / "tools/buck/BUCK").read_text())
+        self.assertIn(name, wrappers, "PAY_RUN_NATIVE_WRAPPER_REQUIRED: " + name)
+        kind, fields, _ = wrappers[name]
+        self.assertEqual("sh_test", kind)
+        self.assertEqual({"name", "test", "args", "deps", "labels"}, set(fields))
+        self.assertEqual("run_test_with_postgres_env.sh", ast.literal_eval(fields["test"]))
+        self.assertEqual(["$(location " + target + ")"], ast.literal_eval(fields["args"]))
+        self.assertEqual([target], ast.literal_eval(fields["deps"]))
+        self.assertEqual(["test.integration", "resource.postgres", "needs-postgres"],
+                         ast.literal_eval(fields["labels"]))
+
+    def test_browser_wrappers_and_real_ci_producer_preserve_native_leaf_execution(self):
+        root = Path(GENERATOR.REPO)
+        wrappers = self._target_nodes((root / "tools/buck/BUCK").read_text())
+        for stem, slug in (("auth_rest", "auth-rest"), ("health_readiness", "health-readiness")):
+            name = "app-" + slug + "-browser-pg"
+            self.assertIn(name, wrappers, "NATIVE_BROWSER_WRAPPER_REQUIRED: " + name)
+            kind, fields, _ = wrappers[name]
+            self.assertEqual("sh_test", kind)
+            target = "//backend/app:console-app-itest-" + stem + "-browser"
+            self.assertEqual("run_test_with_postgres_env.sh", ast.literal_eval(fields["test"]))
+            self.assertEqual(["$(location " + target + ")"], ast.literal_eval(fields["args"]))
+            self.assertEqual([target], ast.literal_eval(fields["deps"]))
+            self.assertEqual(["test.integration", "resource.postgres", "needs-postgres"],
+                             ast.literal_eval(fields["labels"]))
+        # Parse the actual scheduled workflow: text/comment presence is insufficient.
+        node = "const fs=require('node:fs'),yaml=require('js-yaml');process.stdout.write(JSON.stringify(yaml.load(fs.readFileSync('.github/workflows/ci.yml','utf8'))));"
+        parsed = subprocess.run(["node", "-e", node], cwd=root, check=True,
+                                capture_output=True, text=True)
+        workflow = json.loads(parsed.stdout)
+        self.assertEqual(17, len(workflow["jobs"]))
+        backend = workflow["jobs"]["backend"]
+        self.assertEqual(["cargo", "buck-app", "buck-dev-auth"], backend["strategy"]["matrix"]["leg"])
+        expected = [{'name': 'Install pinned native browser prerequisites', 'id': 'browser-prerequisites', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'tools/browser/prepare_native_browser.sh'}, {'name': 'Native Account browser', 'id': 'account-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'for leaf in \\\n  account_browser::browser_business_oracle_requires_complete_lossless_unchanged_rows \\\n  account_browser::browser_login_history_oracle_requires_exact_key_and_retained_effects \\\n  account_browser::browser_global_oracle_requires_complete_owned_effects_and_immutable_tables; do\n  expected="${leaf}: test"$\'\\n\\n1 test, 0 benchmarks\'\n  if ! listing="$(tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact "${leaf}" 2>/dev/null)" || [[ "${listing}" != "${expected}" ]]; then\n    echo "native browser: exact oracle discovery failed" >&2\n    exit 1\n  fi\n  tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact "${leaf}"\ndone\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-sign-in.png 05-account-returned.png; do\n  evidence_path="${CONSOLE_BROWSER_JOURNEY_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Native Company creation browser', 'id': 'company-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png 05-company-workspace.png; do\n  evidence_path="${CONSOLE_COMPANY_BROWSER_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Native Company preview browser', 'id': 'company-preview-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'node --test tools/browser/company-preview.test.cjs\nnode --test tools/browser/native-header-sections.test.cjs tools/browser/company-navigation.test.cjs tools/browser/people-journey.test.cjs\nCONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-preview-input-preserved.png; do\n  evidence_path="${CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Native payroll hydration browser', 'id': 'hydration-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg\n# Require the retained evidence from a successful browser leaf.\nfor evidence_file in result.json owner-receipt.json authorized-before.png authorized-filter-1.png authorized-filter-2.png authorized-filter-3.png; do\n  evidence_path="${CONSOLE_HYDRATION_BROWSER_OUTPUT:?}/${evidence_file}"\n  if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then\n    echo "native browser: required retained evidence missing or invalid" >&2\n    exit 1\n  fi\ndone\n'}, {'name': 'Retain sanitized native browser evidence', 'id': 'native-browser-evidence', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'uses': 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a', 'with': {'name': 'native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}', 'path': '${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/result.json\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/01-public.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/02-terms.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/03-account-enrolled.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/04-sign-in.png\n${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/05-account-returned.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/result.json\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/01-public.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/02-terms.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/03-account-enrolled.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/04-company-created.png\n${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/05-company-workspace.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/result.json\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/01-public.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/02-terms.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/03-account-enrolled.png\n${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/04-company-preview-input-preserved.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/result.json\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/owner-receipt.json\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-before.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-1.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-2.png\n${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-3.png\n', 'if-no-files-found': 'error', 'retention-days': 7, 'include-hidden-files': False}}]
+        steps = backend["steps"]
+        producer_indices = []
+        for wanted in expected:
+            matches = [(index, step) for index, step in enumerate(steps) if step.get("name") == wanted["name"]]
+            self.assertEqual(1, len(matches), "REAL_NATIVE_BROWSER_PRODUCER_REQUIRED: " + wanted["name"])
+            index, actual = matches[0]
+            if wanted.get("id") == "native-browser-evidence":
+                retained = wanted["with"]["path"]
+                actual_path = actual["with"]["path"]
+                self.assertEqual(26, len(retained.splitlines()))
+                self.assertTrue(actual_path.startswith(retained), "original public uploader prefix changed")
+                additional = actual_path[len(retained):]
+                self.assertEqual(201, len(additional.splitlines()), "all inherited evidence paths required")
+                # Independently frozen from reviewed coverage-and-evidence-v2.json.
+                self.assertEqual('91d80ba4b89d64e205242a21e7db966be365a8966d1383e3b7dcfdf258826d55',
+                                 hashlib.sha256(additional.encode()).hexdigest(),
+                                 "exact ordered whole-path conditional upload suffix required")
+                wanted = {**wanted, "with": {**wanted["with"], "path": retained + additional}}
+            self.assertEqual(wanted, actual, "browser producer execution contract differs")
+            producer_indices.append(index)
+        inherited = [(index, step) for index, step in enumerate(steps)
+                     if step.get("name") == "Native inherited browser histories"]
+        self.assertEqual(1, len(inherited), "REAL_NATIVE_INHERITED_BROWSER_PRODUCER_REQUIRED")
+        inherited_index, inherited_step = inherited[0]
+        self.assertEqual(expected[1]["if"], inherited_step.get("if"))
+        self.assertEqual(".", inherited_step.get("working-directory"))
+        self.assertIsInstance(inherited_step.get("run"), str)
+        self.assertTrue(inherited_step["run"].strip())
+        self.assertEqual({"name", "if", "working-directory", "run"}, set(inherited_step),
+                         "inherited producer cannot add soft-failure or environment overrides")
+        # The JavaScript CI suite executes and corrupts this actual run body.
+        producer_indices.insert(-1, inherited_index)
+        self.assertEqual(list(range(producer_indices[0], producer_indices[0] + 7)), producer_indices)
+        self.assertEqual("Collect failures", steps[producer_indices[-1] + 1]["name"])
+        prerequisite = root / "tools/browser/prepare_native_browser.sh"
+        self.assertTrue(prerequisite.is_file(), "PINNED_BROWSER_PREREQUISITE_PRODUCER_REQUIRED")
+
+
+class NativeHydrationGenerationTests(unittest.TestCase):
+    """Exercise actual UI generation; capture only its final BUCK write."""
+
+    def test_ui_emits_isolated_hydration_and_validated_ssr_resources(self):
+        ui = Path(GENERATOR.REPO) / "backend/crates/payroll/ui"
+        manifest = GENERATOR.load(ui)
+        deps, named = GENERATOR.map_deps(manifest.get("dependencies"), {})
+        dev_deps, dev_named = GENERATOR.map_deps(manifest.get("dev-dependencies"), {})
+        written = []
+        class Capture:
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                return False
+            def write(self, value):
+                written.append(value)
+                return len(value)
+        builtin_open = open
+        def guarded_open(filename, mode="r", *args, **kwargs):
+            if any(flag in mode for flag in ("w", "a", "+", "x")):
+                self.assertEqual(ui / "BUCK", Path(filename))
+                self.assertEqual("w", mode)
+                return Capture()
+            return builtin_open(filename, mode, *args, **kwargs)
+        before = (ui / "BUCK").read_bytes()
+        with patch.object(GENERATOR, "open", guarded_open, create=True):
+            GENERATOR.emit(str(ui), "console-payroll-ui", sorted(deps), named,
+                           sorted(dev_deps), dev_named, version=manifest["package"].get("version"))
+        self.assertEqual(before, (ui / "BUCK").read_bytes())
+        self.assertEqual(1, len(written))
+        targets = BrowserIntegrationVariantsTests._target_nodes(written[0])
+        self.assertIn("console-payroll-ui-hydrate", targets,
+                      "NATIVE_HYDRATE_VARIANT_REQUIRED: actual generator omits hydration")
+        kind, fields, block = targets["console-payroll-ui-hydrate"]
+        self.assertEqual("rust_library", kind)
+        self.assertEqual(["hydrate", "islands"], ast.literal_eval(fields["features"]))
+        self.assertEqual("console_payroll_ui", ast.literal_eval(fields["crate"]))
+        self.assertEqual({"//third-party/rust/hydrate:leptos",
+                          "//third-party/rust/hydrate:serde",
+                          "//third-party/rust/hydrate:wasm-bindgen"},
+                         set(ast.literal_eval(fields["deps"])))
+        self.assertNotIn("validated", block, "producer must not depend on stale-bundle validator")
+        self.assertNotIn("pkg/", block, "producer must not compile committed output resources")
+        self.assertEqual("console-payroll-ui", ast.literal_eval(fields["env"])["CARGO_PKG_NAME"])
+        for name in ("console-payroll-ui", "console-payroll-ui-unit"):
+            _, ordinary, _ = targets[name]
+            self.assertEqual(["islands", "ssr"], ast.literal_eval(ordinary["features"]))
+            mapped = ordinary["mapped_srcs"]
+            self.assertIsInstance(mapped, ast.Call)
+            patterns = ast.literal_eval(mapped.args[1].args[0])
+            self.assertFalse(any(pattern.startswith("pkg/") for pattern in patterns),
+                             "SSR consumer still directly globs unchecked committed resources")
+            external = next(keyword.value for keyword in mapped.keywords if keyword.arg == "external")
+            self.assertEqual("backend/crates/payroll/ui/pkg",
+                             ast.literal_eval(external).get(":console-payroll-ui-validated-bundle"))
+        self.assertIn("console-payroll-ui-validated-bundle", targets)
+        self.assertIn("console-payroll-ui-wasm-bundle", targets)
+
+
 
 
 if __name__ == "__main__":

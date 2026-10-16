@@ -1,0 +1,15 @@
+{
+  "kind": "ops-acceptance-credentials-current-family-direct-owner-private-proposal",
+  "files_sha256": {
+    "README.md": "f3bb279532bbf1673fc2c807f4c0ece863d63e1eeb4608b96c77eb1911b6a0cb",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "be1e533fdc070a338295e07e7f781127e4e3c4eeff25ab300059fa3b32482e7b",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "07a1c948713e3687e70e5fd0565044d46149e435ef0552e8972e540810e9b68b",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "96133310d6f561e28476446b8c7d79432af947ddca1ab80f01e4070b9a2bd6a7",
+    "candidate.patch": "e36c99fa79977fc9621ed685d94a746326b36501be3388524633ca20d5978ce2",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "bdc7a7234e454684c5a0246ccef3771ba073f822b083365a7c70e7c5bd107b27",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "a339fe3072a073ada5ebd51ffbff4064bb07f4e7df72a7e983e717542e7bf2cb",
+    "verification.json": "0c73cfd82a9f14217e4f636da9da3b700715467fa43e94517f7574be9899d501"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

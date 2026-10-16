@@ -1,0 +1,184 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_46885" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_46885, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "audit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "field_visit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "well_known") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "board_ack_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_self_read") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "logistics_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "maintenance_chain_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workorder_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "mobile_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_route_telemetry") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_context_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "dispatch_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "realtime_ws") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "router_layers") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "registry_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "health_readiness") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "facilities_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "finance_gl_voucher_sod") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "action_inbox_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "consulting_engagement_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "submittable_definitions_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "platform_onboarding_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_run_read_surface") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "equipment_3r_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_manager_scope") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_ingest_checklist_gate") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_four_eyes_publish") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "tenant_context_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_graph_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notifications_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_kind_dynamics") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "search_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_kill_switch") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "benefit_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "recruiting_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_ontology_api") generated 1 warning (1 duplicate)
+[1m[92m   Compiling[0m console-app v0.1.0 (/private/tmp/console-client-release-20260919/backend/app)
+[1m[33mwarning[0m: `console-app` (test "evaluation_cycle_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_links_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notif_routing_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_finalize_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workbench_native_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "purchase_request_collection_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_people_create_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "org_change_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "intelligence_bind") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_resolve_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "attendance_persona_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "persona_ess_http") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_instance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 4.22s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_app-ed7da7255fd2532f)
+[1m[92m  Executable[0m unittests src/main.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_app-9aed4d0a061db0fd)
+[1m[92m  Executable[0m unittests src/bin/console_cedar_parity_report.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_cedar_parity_report-b7fe5119055c921b)
+[1m[92m  Executable[0m unittests src/bin/console_deployment_operator.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_deployment_operator-23c6e900d8bf44ba)
+[1m[92m  Executable[0m tests/account_migration.rs (/private/tmp/console-rust1981-owner-target/debug/deps/account_migration-030109e9f4f2d388)
+[1m[92m  Executable[0m tests/action_inbox_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/action_inbox_api-0961595bbca2211b)
+[1m[92m  Executable[0m tests/attendance_persona_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/attendance_persona_api-946d9ae3346ae9a3)
+[1m[92m  Executable[0m tests/audit_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/audit_api-900ad9e97d131da4)
+[1m[92m  Executable[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-c9fa847480459fe5)
+[1m[92m  Executable[0m tests/benefit_catalog_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/benefit_catalog_api-5b556ca6884d9003)
+[1m[92m  Executable[0m tests/board_ack_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/board_ack_api-25b5a407f168e5f0)
+[1m[92m  Executable[0m tests/cedar_freshness_mint.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_freshness_mint-1b0243db462f2bb4)
+[1m[92m  Executable[0m tests/cedar_parity_shadow.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_parity_shadow-43246064d33be69f)
+[1m[92m  Executable[0m tests/cedar_shadow_role_manage.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_shadow_role_manage-ab5528f3f768c751)
+[1m[92m  Executable[0m tests/compliance_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/compliance_api-1449ddc2b7bffbba)
+[1m[92m  Executable[0m tests/compliance_catalog_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/compliance_catalog_api-9dcbab8a85e95cb5)
+[1m[92m  Executable[0m tests/config.rs (/private/tmp/console-rust1981-owner-target/debug/deps/config-76a0773894f8323d)
+[1m[92m  Executable[0m tests/console_kill_switch.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_kill_switch-7cd3661575143b34)
+[1m[92m  Executable[0m tests/console_route_telemetry.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_route_telemetry-727067afb8ec60a6)
+[1m[92m  Executable[0m tests/consulting_engagement_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/consulting_engagement_api-987945ab070269a8)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_auth_persona_guard-84c1ead4fc7d7550)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard_feature.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_auth_persona_guard_feature-7131b75c1d65378f)
+[1m[92m  Executable[0m tests/dev_seed_notification_links.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_seed_notification_links-5f8c659466f0b30f)
+[1m[92m  Executable[0m tests/dispatch_pipeline_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dispatch_pipeline_api-5fcd976c4aac545d)
+[1m[92m  Executable[0m tests/equipment_3r_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/equipment_3r_api-16150e591b364c9d)
+[1m[92m  Executable[0m tests/evaluation_cycle_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/evaluation_cycle_api-410be6e3441b7be0)
+[1m[92m  Executable[0m tests/facilities_pilot_story.rs (/private/tmp/console-rust1981-owner-target/debug/deps/facilities_pilot_story-0c30dca83d0917f4)
+[1m[92m  Executable[0m tests/field_visit_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/field_visit_api-11257aa87d554aac)
+[1m[92m  Executable[0m tests/finance_gl_voucher_sod.rs (/private/tmp/console-rust1981-owner-target/debug/deps/finance_gl_voucher_sod-81871ab5eb7a9090)
+[1m[92m  Executable[0m tests/health_readiness.rs (/private/tmp/console-rust1981-owner-target/debug/deps/health_readiness-caf7069a8d531044)
+[1m[92m  Executable[0m tests/hr_attendance_manager_scope.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_attendance_manager_scope-77515de03d93b79d)
+[1m[92m  Executable[0m tests/hr_attendance_self_read.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_attendance_self_read-bf1c70e2a5ca350e)
+[1m[92m  Executable[0m tests/hr_ingest_checklist_gate.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_ingest_checklist_gate-d0edf3135e74b026)
+[1m[92m  Executable[0m tests/hr_people_create_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_people_create_api-9ae3ef1bc320ec9a)
+[1m[92m  Executable[0m tests/intelligence_bind.rs (/private/tmp/console-rust1981-owner-target/debug/deps/intelligence_bind-8834503426b90a1b)
+[1m[92m  Executable[0m tests/logistics_pilot_story.rs (/private/tmp/console-rust1981-owner-target/debug/deps/logistics_pilot_story-d5886836e1c3d8e6)
+[1m[92m  Executable[0m tests/m2_real_engine_drive.rs (/private/tmp/console-rust1981-owner-target/debug/deps/m2_real_engine_drive-a98787745c54dc5f)
+[1m[92m  Executable[0m tests/maintenance_chain_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/maintenance_chain_api-1308f6b85fd3e796)
+[1m[92m  Executable[0m tests/mobile_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/mobile_api-bb025407e37fa6cc)
+[1m[92m  Executable[0m tests/notif_routing_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/notif_routing_api-77fd429ac8b6b7b0)
+[1m[92m  Executable[0m tests/notifications_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/notifications_api-cef8b95011f51349)
+[1m[92m  Executable[0m tests/object_graph_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_graph_api-8cc12f8dc62842cf)
+[1m[92m  Executable[0m tests/object_links_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_links_api-a5ce2ab1fc810da5)
+[1m[92m  Executable[0m tests/object_ontology_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_ontology_api-947831859739b788)
+[1m[92m  Executable[0m tests/object_resolve_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_resolve_api-0cad4e5d3abbbea0)
+[1m[92m  Executable[0m tests/office_versions.rs (/private/tmp/console-rust1981-owner-target/debug/deps/office_versions-c2496b287bb9a7b2)
+[1m[92m  Executable[0m tests/openapi_drift.rs (/private/tmp/console-rust1981-owner-target/debug/deps/openapi_drift-b0fd69a00dc94609)
+[1m[92m  Executable[0m tests/openslo_files.rs (/private/tmp/console-rust1981-owner-target/debug/deps/openslo_files-f780f370490c6353)
+[1m[92m  Executable[0m tests/org_change_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/org_change_api-b3425f09521d3fe4)
+[1m[92m  Executable[0m tests/persona_ess_http.rs (/private/tmp/console-rust1981-owner-target/debug/deps/persona_ess_http-73533a3d5f7f2aef)
+[1m[92m  Executable[0m tests/platform_onboarding_e2e.rs (/private/tmp/console-rust1981-owner-target/debug/deps/platform_onboarding_e2e-fc966703256e2c25)
+[1m[92m  Executable[0m tests/purchase_request_collection_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/purchase_request_collection_api-521e216e88af3c95)
+[1m[92m  Executable[0m tests/realtime_ws.rs (/private/tmp/console-rust1981-owner-target/debug/deps/realtime_ws-6176054665e089c0)
+[1m[92m  Executable[0m tests/recruiting_pipeline_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/recruiting_pipeline_api-bc065db30279d9a7)
+[1m[92m  Executable[0m tests/registry_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/registry_api-cfe072892552e44f)
+[1m[92m  Executable[0m tests/router_layers.rs (/private/tmp/console-rust1981-owner-target/debug/deps/router_layers-7f40e0ca9252dbe8)
+[1m[92m  Executable[0m tests/search_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/search_api-3357319b59211077)
+[1m[92m  Executable[0m tests/submittable_definitions_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/submittable_definitions_api-5f8f757a7c321e20)
+[1m[92m  Executable[0m tests/tenant_context_e2e.rs (/private/tmp/console-rust1981-owner-target/debug/deps/tenant_context_e2e-15a5fd3160e1e616)
+[1m[92m  Executable[0m tests/well_known.rs (/private/tmp/console-rust1981-owner-target/debug/deps/well_known-b6d416aeaea8a57c)
+[1m[92m  Executable[0m tests/workbench_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workbench_api-cf137faf516c14e5)
+[1m[92m  Executable[0m tests/workbench_native_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workbench_native_api-4fc085d9bdf8e186)
+[1m[92m  Executable[0m tests/workflow_automation_triggers.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_automation_triggers-1e05610a6cf56db4)
+[1m[92m  Executable[0m tests/workflow_dynamics_branch.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_dynamics_branch-9a46b76232d40d16)
+[1m[92m  Executable[0m tests/workflow_four_eyes_publish.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_four_eyes_publish-f9996604bcccdfdf)
+[1m[92m  Executable[0m tests/workflow_object_context_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_object_context_api-e195102aafce324f)
+[1m[92m  Executable[0m tests/workflow_object_kind_dynamics.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_object_kind_dynamics-da2ae4a84f38cda6)
+[1m[92m  Executable[0m tests/workflow_run_read_surface.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_run_read_surface-2220494ab425b65f)
+[1m[92m  Executable[0m tests/workflow_runtime_finalize_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_runtime_finalize_api-b7d8e7ebb4bac255)
+[1m[92m  Executable[0m tests/workflow_runtime_instance_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_runtime_instance_api-9a49233db0781504)
+[1m[92m  Executable[0m tests/workorder_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workorder_api-51b7647501516cec)
+cargo-postgres: === app-auth-rest-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity -- --test-threads=1 --exact
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.31s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-c9fa847480459fe5)
+
+running 1 test
+test account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity ... FAILED
+
+failures:
+
+---- account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity stdout ----
+
+thread 'account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity' (65947593) panicked at app/tests/auth_rest/native_company_setup.rs:385:9:
+NATIVE_COMPANY_ENTRY: current designated Account cannot discover actual setup
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 371 filtered out; finished in 6.05s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`
+cargo-postgres-timing: {"name": "app-auth-rest-pg", "package": "console-app", "seconds": 8.918, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-auth-rest-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

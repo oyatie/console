@@ -1,0 +1,42 @@
+{
+  "reviewer": "/root/integration_tests",
+  "author": "/root/reference_inventory",
+  "verdict": "APPROVED_BOUNDED_SOURCE_TEST_CONTRACT",
+  "packet_manifest_sha256": "353a905291a6d4494c0c9876122816421e7b3af188ea805444353580f3f39df8",
+  "rust_source_sha256": "2ef863a2aecf8d9a4a794cf9eca35428eaf37108bca321ada985aead7aa39945",
+  "source_head": "66b2e949ba1e80005d50e205d8ecd2f04516254e",
+  "supersedes_hold_review_sha256": "7acd96fe8205ec32c5746a3a81cfe0c88e6c655264e964c3e6952af521827311",
+  "executed_tests": 0,
+  "repository_writes": false,
+  "authored_sqlx_leaves": 5,
+  "authored_pure_leaves": 1,
+  "checks": [
+    "All packet hashes and all current source-lock hashes verified exact.",
+    "Genuine designated/enrolled fixture precedes private parser/schema/intake installation; both unchanged custody classifiers must report profile_mismatch after installation.",
+    "Actual Business login and known session/family columns reused; inherited sqlx Connection/Executor/Row imports and static raw_sql inputs examined without compilation.",
+    "Material and prepare consume complete result sets requiring exactly1row; status0or1; existing-command cancel1row. Extra rows can no longer disappear through fetch_one.",
+    "Explicit plan observations bind new/existing/recovery/changed-recipient/absent commands to original recipient and immutable digest; nil recovery returns no recipient.",
+    "Cancellation successor compares complete non-intake histories, all other request raw bytes, and target full object with only state and terminal_at changed. All existing event raw bytes retained; exactly one complete9field revision2event tied to actual terminal_at/account/command/session.",
+    "Pure cancellation oracle supplies1positive and13corruptions covering immutable target fields, omitted/extra/rewritten unrelated requests, missing/wrong-time/duplicate events and exact-large-number corruption.",
+    "Cancellation timestamps and pending creation timestamps constrained by before/after database clock observations.",
+    "Capacity verifies every16admitted input/digest/designation/event tuple, exact cancellation, then old-row-preserving single replacement request/event; final16pending/1cancelled/18events only supplementary.",
+    "Injected event fault requires actual pending request, nontransactional fault witness, complete rollback census, and retry on identical command.",
+    "Blocking witness accurately limited to owner/Account blocking; command advisory fence proof remains separately outstanding.",
+    "The impossible designation-transfer/global256 fixture removed from claims; genesis-only designation/tombstone behavior acknowledged."
+  ],
+  "scope": "Approval of exact authored source/fixtures/oracles and bounded interface refinements; not runtime acceptance, SQL-body approval, serving profile admission, authenticated adapter acceptance or full release.",
+  "remaining_holds": [
+    "Root must integrate exact private resource/Buck mappings and compile/discover/run1pure+5SQLx leaves, reporting actual counts and meaningful owner-bound RED/GREEN.",
+    "Private intake SQL implementation requires independent source/security review; no placeholder serving functions or profile reseal.",
+    "P4 full role/current-family refusals; P5 exact advisory fence/otherlock classes, deadlines and unknown outcomes; P6 deployment256 cap; P7 exact expiry/cleanup; P8 real signed credentials after waits remain required and unexecuted.",
+    "Deployment256 positive history has no admitted designation-transfer or configurable-lower-limit owner; singleton16account cap cannot reach256.",
+    "Native topology, catalog, assignment, effect receipts, Company browser journey and release qualification remain separate."
+  ],
+  "risk_controls": {
+    "pre_mortem": "Broad table exclusions or row counts hide immutable-history loss; incomplete SQL result consumption hides duplicate results.",
+    "blast_radius": "Private intake owner tests and exact bounded interface refinement only.",
+    "detection": "Full census and exact request/event histories; fault and corruption controls; native runtime evidence pending.",
+    "rollback": "Discard disposable DB and revert prospective test/resource additions together without resealing historical custody or command bytes.",
+    "stop": "Unreviewed source changes, altered historical artifacts, fabricated successful prerequisites, missing actual test execution or profile activation."
+  }
+}

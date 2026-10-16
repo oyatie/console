@@ -1,0 +1,25 @@
+{
+  "kind": "platform-source-two-object-prospective-capture-driver-round3",
+  "status": "AUTHORED_NOT_EXECUTED_PENDING_MACHINERY_REVIEW",
+  "predecessor_manifest_sha256": "603ec032ae2a2aa467b9afb2639ef3c395c54e4f2b17ced7a05588f04c43b290",
+  "files_sha256": {
+    "README.md": "0609a8f701d12733cabca1e12bc0f2918dba7649b5b66f8cecc5c128a0495075",
+    "capture-map.json": "2d3156e9805758077e609e5eb296814318b1b60c712f31b9cfff830ab19c4446",
+    "capture.py": "671049c2304ed621dd1abf171b74be08285dca76f1ae5b20057fb82822ea5f5b",
+    "checked.sql": "d217984b3a0c6a94dc3552ef5c124f54b8d62ac3b4c004a6e664aa3c993488a2",
+    "historical.sql": "74c8e2a912e75b3b4e2dc85ca6c1acb4893fd513483ee1d83ede14ba88ff2f46",
+    "inputs.json": "f526389beb1b2acaa96e9aed905d068da7b89c9c490ee088770e3244e3fe005b",
+    "install.sql": "6965be5e8d2b873bcbb4f49d72399850ef3c58dfaabd3c4dfdb56877b178eb2a",
+    "metadata.sql": "8752adaad8ccae80c6e4e88624c61b826610d1f6fa4522fc277b9e8225aa65c8",
+    "observer.sql": "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc",
+    "prospective.sql": "5ae32e8583ed7a8072f33a1fc82c4ad7c9f89725d67137c60919b7d210e827ac",
+    "retained-metadata.json": "7c5f9250a85a5b612b61defe3becf4d65e1f007247f8dad77d7a03617f8c2f4d",
+    "run-capture.sh": "cb4c7052daffce9915f705af9ea03d0b6f5661bb36136ec6b2f3cb97e9ef3f97",
+    "runner-preimage.sh": "0cad14fc74a61c09afd26edba2f926c6593bb06e108aeef1f733bedcc85b5b49",
+    "selection.json": "a89513f72f4b774e298c2e5193db66fa936b6be3a75e29207339c1973ab5d3d2",
+    "source-custody.json": "a2ba7344d9306f108f09e352924dca8b356091d4b0b77dd9bb22a06e1ae159f2",
+    "source-snippet.py": "6c8efb6b777e9d87c298e3203964ea5203918a3facb0f9de4d5cd1bd87f77f7f",
+    "test_capture_oracle.py": "4f0d21ea4621cec0d02b95e1fb82ae220167f8c0928d4306044b01df376bf765",
+    "verification.json": "b60d88bca14656ea93e3b9d731bd6c86d1ab97cf95572b4b3e966548a52a0eab"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "kind": "value-free-transition-failure-diagnostics",
+  "preimage_sha256": "3136975710d53eebda6d72a6dc790f086b67c234518645d7f6c4719f6d693d50",
+  "candidate_sha256": "bfcdae24886325305af8934f54cbd04f7aad9a8c2e27b788d2596be766bcb0b8",
+  "purpose": "Only structural metadata paths and mutation boolean; same exact equality/original classifier assertions; no values, normalization or tolerance",
+  "runtime_executed": 0,
+  "prior_manifest_sha256": "116ee61c4319e9a9bbc3bb27764d90c31d343bb5e59256ca7a730613bc7557c8",
+  "correction": "Bound both traversal loops at32 emitted paths, preserving exact equality. Rustfmt only thereafter."
+}

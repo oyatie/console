@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root",
+  "verdict": "approve acceptance-only source tests",
+  "manifest_sha256": "464e8790860d1009d26b0ec29a67a23bd1c83b2bdf35a5ef11fb95acf7a8253c",
+  "checks": [
+    "direct source inactive and Account fence have exact isolated deltas",
+    "panic-safe fixture restoration precedes error propagation",
+    "missing Account corruption preserves catalog and restores exact original row",
+    "real owner finite unauthorized/unavailable refusal and same original token recovery",
+    "existing list helpers reused with bounded test-only visibility"
+  ],
+  "runtime_tests_executed": 0,
+  "remaining": [
+    "initial mountedRED/admission",
+    "actual runtime results",
+    "retained list regression"
+  ]
+}

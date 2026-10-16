@@ -1,0 +1,9 @@
+{
+  "sqlx_leaves": 1,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 new source passed",
+  "existing_relay_fields_types_bodies_tests_preserved": true,
+  "shared_changes": "scoped visibility only, narrow reexports, one additive child",
+  "composes_C3": "3c16ca966e0fd93cf0379efb1541206103f26fdcb6c425e32235a8a6623d814b"
+}

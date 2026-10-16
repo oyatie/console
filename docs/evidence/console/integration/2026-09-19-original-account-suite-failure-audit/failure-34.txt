@@ -1,0 +1,2 @@
+thread 'account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins' (64275051) panicked at backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:384:10:
+actual production Account custody finalizer: Io(Custom { kind: UnexpectedEof, error: "expected to read 5 bytes, got 0 bytes at EOF" })

@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact one-line native Unavailable retry source; runtime acceptance pending",
+  "base_sha": "477e3eeb1359482e7580fbb9f4145741ff1d6939",
+  "source_path": "backend/crates/payroll/ui/src/native_account.rs",
+  "preimage_sha256": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
+  "candidate_sha256": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+  "design_manifest_sha256": "5e83498ffc907e4c5294336a6e7215ba07dd6f05df885e16a6ff2872dac000fc",
+  "findings": [],
+  "evidence": [
+    "Mechanical exact substitution proves only primaryUnavailable Retryhref changes/account\u2192emptyrelativehref; allremaining bytes unchanged.",
+    "ExistingCSPbase-uri none/no-base, privacyheaders, nativepagestatuses/admission/route modes and sharedrenderer API unchanged. No newquery/redirectinput, handler or mutation.",
+    "Independent inspection of firstactualbrowserreport confirms13freshGET retryhistories sameorigin/path/query includingfragment cases and focusedEnter; observed189pass2fail are retained, not relabeled successfulsuite.",
+    "Firstbrowserharness failedconsoleURLmatcher because documentconsolelocation may include fragment while networkresponse URL does not; product not changed in response. Separate exactmatcher review/rerun required.",
+    "Viewed keyboardfocus screenshot: clear visiblefocus and unchanged Korean unavailablefeedback; boundedvisualdecision ADOPT preservedroute recovery."
+  ],
+  "limits": [
+    "Source acceptance only. Native realAuth/terms recoverytests still running, correctedbrowserrun pending.",
+    "No configuredauthenticatedbrowser,fullCompany/workspace,accessibility or release acceptance."
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_EXACT_SEVEN_HISTORY_TESTS",
+  "manifest_sha256": "a89e38cd2854d4a2bf6431bdcbd8c04c6a7eeb29f1f1863f44cc829cc182164d",
+  "source_sha256": "101c1389a21cca89fbd4b627b1c84b77db850bded953d904dcc9897b5b602bcf",
+  "basis": [
+    "Actual pg_blocking_pids edges and statement identity establish ordered waits; polling does not substitute elapsed sleep for evidence.",
+    "Reader-first retains subject/family through actual projection, real revoker and supplemental nonwriting exact-family probe are joined before outcome assertions.",
+    "Signed and family clocks explicitly observed before deadline at actual wait and then after deadline before release; no use of transaction-start clock.",
+    "Independent Company uses only A subject guard, genuine CompanyB enrollment/nonempty projection, four-second bounded completion and continuing A edge.",
+    "All read-only batches compare complete table snapshots; real logout effects match exact reviewed terminal/audit oracle."
+  ],
+  "runtime_executed": 0,
+  "limits": [
+    "Seven proposed tests require actual execution and functioning timing prerequisites.",
+    "One controlled CompanyB progress history is not workload qualification.",
+    "No global bound mint or other owner acceptance."
+  ]
+}

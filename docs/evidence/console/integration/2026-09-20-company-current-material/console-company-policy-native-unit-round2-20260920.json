@@ -1,0 +1,14 @@
+{
+  "head": "8cb1e65ee3a65bbddc48a5b8c9d1ad8b14848c3d",
+  "command": [
+    "tools/buck2",
+    "test",
+    "//backend/crates/platform/authz:console-platform-authz-unit",
+    "//backend/crates/identity/application:console-identity-application-unit",
+    "//backend/crates/identity/domain:console-identity-domain-unit"
+  ],
+  "exit": 0,
+  "seconds": 13.66,
+  "log": "/private/tmp/console-company-policy-native-unit-round2-20260920.log",
+  "log_sha256": "d4e8dc1784fd669a7adf39fecfb5c590a878564a6881c68e2e235501395f59f1"
+}

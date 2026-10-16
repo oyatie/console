@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_test_candidate_review",
+  "candidate": "/private/tmp/console-payroll-list-recovery-test-round1-20260921.rs",
+  "candidate_sha256": "a6c8a9e75a8ec1b771fbf9ab92d5804842b0aad68a9cebd5c20fda718402be66",
+  "verdict": "APPROVED for test-only adoption/discovery and semantic RED execution; not implementation or workflow acceptance",
+  "intended_leaf": "authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty",
+  "new_leaf_count": 1,
+  "tests_executed_by_reviewer": 0,
+  "evidence": [
+    "Exact candidate hash verified; every reused helper and imported type exists in current authorized module, including list_read_audits.",
+    "Existing restricted Auth/Business pools and canonical owning CreateRun helper establish genuine router prerequisites before injection. Fixture Bearer is explicitly compatibility-only.",
+    "Two successful actual reads require2committed list-read audits before disposable audit INSERT trigger is created; no missing schema/broken authentication is mistaken for RED.",
+    "Fault target is exactly payroll_run.list_read audit insertion, after query/auth. JSON500 is a fault positive control and absence of run identity prevents returning the otherwise loaded data.",
+    "SSR requires Failure plus actual reload text/path, excludes Empty/runIDs/WASM/internal error text; unauthenticated/invalid/MEMBER callers must remain byte-equal omission shell.",
+    "Trigger/function are removed before same-owner reopen; visible actual record and exactly1additional committed audit prove recovery. Existing tests are unchanged.",
+    "Disposable sqlx test database contains trigger even on intended RED; no product database or fixture route modified. Failed RED does not execute cleanup but test database isolation contains it."
+  ],
+  "design_binding": "/private/tmp/console-payroll-list-owner-design-20260921.md",
+  "design_sha256": "0128eba826e4a9b3eaa93103c99e4a5c87d9582c17b15b00cdc5f145f5c3b3f5",
+  "remaining_holds": [
+    "Discover exactly1new leaf and execute against functioning prerequisites; current semantic failure expected at swallowed SSR Failure assertion",
+    "Independent implementation review must establish same-owner stage-aware outcomes and removal of stale App payroll-floor inference",
+    "Current-revocation/authority-unavailable cases and relevant existing authorization/API tests remain required evidence; this single leaf does not prove all authorization races",
+    "Native Account navigation/actual payroll workflow and full release acceptance remain separate required work"
+  ]
+}

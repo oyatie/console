@@ -1,0 +1,20 @@
+{
+  "base_sha": "d0528469417cacce7a707e8d9714dac63f165829",
+  "source_preimages": {
+    "rust-toolchain.toml": "c0c15a86182f7cc8348ab8ab214722d4a43d915c1545b7cb0410a8b9f1c8ff81",
+    "toolchains/rust/lock.bzl": "6b7426ded245eb51ce5da05d89a13cadc86964123c8ba3ddc329baa428b07f66",
+    "scripts/lib/rust-pin.mjs": "60a2913be78a67d7cda813db2ce3f1a143e1a2b3d4c715690dfe8c6134fc3e7e",
+    "scripts/lock-rust-toolchain.mjs": "0fa93d675407b212243725891063a9140694c201c9d4f29df6202e8cc541c9a6",
+    "scripts/lock-rust-toolchain.test.mjs": "d81f411a1802fdc6f257ab839e6bb6824d5f628c13faffd73b481164d1f7ccad",
+    "scripts/check-toolchain-pin.mjs": "eefd13d947bc2f4d43e329160ffa4a216ef922a15b4a1542f4bafe8933172ec5",
+    "scripts/check-toolchain-pin.test.mjs": "d3351df41760cbf16129c8f8113d09c3df99b6d120c59b3eeb4ebbb13ce09868"
+  },
+  "proposal_files": {
+    "DESIGN.md": "44f4508d196d520b6d31c1afb6cca925d95e4d042c711ed2c1e5cdab4ff1d3ba",
+    "probe.mjs": "62eb7e89920d4bacce86faed5d5cbfcf7db1fbd848e6ba0882954404be115013",
+    "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
+    "lock.bzl": "ec7f7c7b1a0ea4e3bd67cec7eb9fa70820e7b13eb41af75c605a006451b629d9",
+    "channel-rust-1.98.1.toml": "a7c8774a5fd8441c997d94c029776cbc5eb111e9d72ab5d256fa69866644347e"
+  },
+  "mechanical_guide": "Replace only channel in root pin; regenerate lock through existing owner. Probe test commit precedes fanoutadmit; sourceimplementation after exactapproval."
+}

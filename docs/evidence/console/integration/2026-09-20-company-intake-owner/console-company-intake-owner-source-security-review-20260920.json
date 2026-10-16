@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_PRIVATE_PENDING_OWNER_SOURCE_FOR_RUNTIME_VERIFICATION",
+  "base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "files": {
+    "ops/generate-account-custody.py": "419c30ed6f010e3a6b73424d57a8690f22eeee530f5a1f4649f451e567ee231c",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+    "ops/BUCK": "e3e22c78b92ddc4eb0690f00e61e7b0305aaf0b1f2b42ca6da34c94c87aa68b2",
+    "tools/buck/gen_first_party.py": "abca07c051a039a398a019ba931957f00e4847e7713acfda3d0f845022bc8a1b",
+    "backend/app/BUCK": "1fa7ae72e2533a50e6e45dbadb3076caf610963d2dea41b604b5f7137fccd1fa"
+  },
+  "resolved_findings": [
+    "INTAKE-OWNER-ACL-DEFAULTS: each exact pg_proc regprocedure now enumerates every named direct ACL grantee and revokes it after fixed PUBLIC revoke, then grants only owner and runtime. No interpolated external identifier; fixed signature and quote_ident-equivalent format(%I). Custom-default runtime fixture remains required."
+  ],
+  "checks": [
+    "All prior generator source byte-identical after deleting exactly new function and ninth output registration. Existing historical/profile bytes not reinterpreted or resealed.",
+    "Generated appBUCK differs only69new test-source appearances and2new intake mappings; removing those yields exact base bytes. Existing broad shared-auth-test source expansion behavior retained, not redesigned.",
+    "Four SECURITY DEFINER/UNSAFE/VOLATILE functions, console_account_owner, fixed pg_catalog/pg_temp, row_security on and1second lock timeout; exact signatures, no defaults/overloads supplied.",
+    "Immutable original input plan, sorted exclusive affected Account locks, current native family shared lock and postwait snapshot/restart. NULL recovery caller-only plan; no fence in material.",
+    "New prepare retains actual designation/current native consent, Account guards before designation before capacity before command fence, full tuple authority. Replay bypasses new capacity/eligibility while retaining current Account/family check.",
+    "Request/event insertion atomic; cancellation target state/time plus one event, expiry terminal bytes cleared and system attribution. Recovery absence zero rows, pending bytes exact, terminal identifiers hidden, COMMITTED fails closed until actual effect owner exists."
+  ],
+  "findings": [],
+  "limits": [
+    "Source approval only, no reviewer builds/tests/SQL execution. Root must retain actual runtime counts and failures; final commit/evidence requires exact binding.",
+    "Custom-default ACL/current/revoked direct calls(P4), remaining lock/unknown histories(P5), unreachable deployment256(P6), actual expiry/maintenance(P7), opaque credential/Auth HTTP(P8), complete Company effects and release qualification remain open.",
+    "No workflow milestone/release/exposure acceptance."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "kind": "independent_implementation_source_review",
+  "candidate_manifest": "/private/tmp/console-ui-org-payroll-review-candidate-20260921/manifest.json",
+  "candidate_manifest_sha256": "befafcb3f2641f6e8016ee0af927c899a60e368a23a29ccbb003859c876eeccc",
+  "base": "1a647146cb90e9d3d17edfa612ced6fe0ded5b6a",
+  "verdict": "APPROVED exact bounded source implementation; runtime/browser acceptance pending",
+  "evidence": [
+    "All3 source hashes match immutable snapshot and inspected root. lib.rs diff only module declarations, existing body delegation and replaced Companies/OrgUnits removal.",
+    "Duplicate identity index retains None after any number of duplicate entries; duplicate records cannot seed roots/edges. Their descendants remain outside root traversal and therefore unresolved. No ambiguous duplicate href emitted.",
+    "Every row appears exactly once in either visited preorder or unresolved complement. Single-parent graph means cycles/self-links cannot be reached from a genuine root; they remain unresolved. Iterative traversal and flat list DOM avoid recursive stack/indentation growth.",
+    "Sibling order follows supplied vector deterministically; algorithm uses one index and adjacency/visited vectors rather than repeated whole-vector scans.",
+    "Absent/ambiguous parent labels never create ancestor records or links. Company cards remain separate without invented unit-company relation. Missing registration/name labels are explicit.",
+    "Company/unit sections preserve each offered/empty/failure distinction with local retry; all omitted returns no body. Rows-empty normalizes to empty.",
+    "Payroll wraps unchanged AuthorizedRuns once, carries no mirrored per-run data or new authority/control. Guide clearly distinguishes approval/instruction export from external settlement. Empty/failure/omitted remain independent truthful states."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "browser_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Exact admitted probe and all7workflow/original regression execution after compiler lease",
+    "Integrated shared/People candidate all native leaves green",
+    "Actual browser restricted-policy, filter, 320px/200percent zoom, keyboard and visual critique",
+    "Authentic rebuilt source-bundle custody",
+    "Full organization/payroll owning workflow and release acceptance"
+  ]
+}

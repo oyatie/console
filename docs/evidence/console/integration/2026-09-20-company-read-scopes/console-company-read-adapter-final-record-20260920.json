@@ -1,0 +1,41 @@
+{
+  "head": "203116497472dfb88d77998e4536771161bd9664",
+  "source_manifest": "/private/tmp/console-company-read-adapter-implementation-20260920.json",
+  "sources_unchanged_since_tests": true,
+  "native_postgres": {
+    "receipt": "/private/tmp/console-company-auth-read-native-verification-20260920.json",
+    "executed": 4,
+    "passed": 4,
+    "discovered_per_binary": 511,
+    "filtered_per_run": 510
+  },
+  "native_unit": {
+    "executed": 13,
+    "passed": 13
+  },
+  "generator": {
+    "first": {
+      "passed": 67,
+      "failed": 1,
+      "reason": "Newly tracked dormant HTTP test required regenerated App source mapping staged in index."
+    },
+    "successor": {
+      "passed": 68,
+      "failed": 0
+    }
+  },
+  "final_checks": "/private/tmp/console-company-read-adapter-final-verification-20260920.json",
+  "artifacts": "/private/tmp/console-company-read-adapter-native-artifacts-20260920.json",
+  "static_count": {
+    "declared": 3121,
+    "baseline_changed": false,
+    "gate_exit": 0,
+    "log": "/private/tmp/console-company-read-adapter-count-red-20260920.log",
+    "note": "Filename reserved before execution; actual run was GREEN. Static attributes do not count all included nested module tests; native list supplies actual discovery."
+  },
+  "limits": [
+    "SQL projection and context candidate owners remain unimplemented.",
+    "PgOrgStore runtime, HTTP, SSR, Company creation and all five MVP workflows are not accepted.",
+    "No release qualification or exposure."
+  ]
+}

@@ -1,0 +1,294 @@
+{
+  "status": "PRIVATE_INTAKE_GUARDS_VERIFIED_NOT_SERVING",
+  "implementation_commit": "5092e9df265833a7708d5e59b7482ae84e42eab5",
+  "test_commit": "458fb682eee64bb72af264bfe2b542343d0acff7",
+  "members": [
+    {
+      "path": "console-company-guards-verification-20260920.json",
+      "sha256": "48b643b1617e62b93b3d0453fd41b31e712a04032e41bafb575c298340dda76e",
+      "original_path": "/private/tmp/console-company-guards-verification-20260920.json",
+      "original_sha256": "48b643b1617e62b93b3d0453fd41b31e712a04032e41bafb575c298340dda76e",
+      "original_bytes": 6724
+    },
+    {
+      "path": "console-company-guards-implementation-source-lock-20260920.json",
+      "sha256": "ea0b3a11e631515eebe98e35432d15219c1f8ac9290183d25f1dd9ae50880fe6",
+      "original_path": "/private/tmp/console-company-guards-implementation-source-lock-20260920.json",
+      "original_sha256": "ea0b3a11e631515eebe98e35432d15219c1f8ac9290183d25f1dd9ae50880fe6",
+      "original_bytes": 580
+    },
+    {
+      "path": "console-company-guards-native-results-20260920.json",
+      "sha256": "d01a338c64c4d6a16c27d2b30e434b869727a682490d28c6264749151708ae40",
+      "original_path": "/private/tmp/console-company-guards-native-results-20260920.json",
+      "original_sha256": "d01a338c64c4d6a16c27d2b30e434b869727a682490d28c6264749151708ae40",
+      "original_bytes": 1381
+    },
+    {
+      "path": "console-company-guards-binary-20260920.json",
+      "sha256": "b92f02e73893d6353fb366a49e315a1231e7b3127071146100142c2743c569a8",
+      "original_path": "/private/tmp/console-company-guards-binary-20260920.json",
+      "original_sha256": "b92f02e73893d6353fb366a49e315a1231e7b3127071146100142c2743c569a8",
+      "original_bytes": 498
+    },
+    {
+      "path": "console-company-guards-binary-discovery-20260920.log.gz",
+      "sha256": "7d08745761f23a952b88d25ece6480e433e7d36bf0a3de186fca4ffb7cbd6654",
+      "original_path": "/private/tmp/console-company-guards-binary-discovery-20260920.log",
+      "original_sha256": "94757c708b486315e9c6e9ed0f218f499d61f21b61ee31e6dd2b35b39fb9d3b0",
+      "original_bytes": 57239
+    },
+    {
+      "path": "console-company-guards-buck-generator-20260920.log.gz",
+      "sha256": "a209302d943436fb8a4dc57afa6bce61851b450854b282ecd8ad3d65f37152ae",
+      "original_path": "/private/tmp/console-company-guards-buck-generator-20260920.log",
+      "original_sha256": "ed28f58b89c954d93e63a3ae7346c7ce4ba01c2c6d7cad2f1018b74f5d9e20f3",
+      "original_bytes": 167
+    },
+    {
+      "path": "console-company-guards-preservation-20260920.log.gz",
+      "sha256": "05c140e72d8c46b16540e8dc435029730fe5cdda62e8357cbca3e99039299d3f",
+      "original_path": "/private/tmp/console-company-guards-preservation-20260920.log",
+      "original_sha256": "26a2157691aecf52871e13521306b611618cafe5bfc90d41154d52b360a51897",
+      "original_bytes": 98
+    },
+    {
+      "path": "console-company-guards-generation-check-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-guards-generation-check-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-guards-diff-check-20260920.log.gz",
+      "sha256": "490f70fc729c412fb4530871885a3c7cbf7f6b871925c93ac664973d5efe5ebf",
+      "original_path": "/private/tmp/console-company-guards-diff-check-20260920.log",
+      "original_sha256": "19eaf43821a7660ec323a87c8457bf74823beb296c39f5e01aa8a683aa50f061",
+      "original_bytes": 7
+    },
+    {
+      "path": "console-native-company-enrollment-lane-guards-20260920.json",
+      "sha256": "6e1f2e46387fc26cc9968d77e9861add387bb694404089c9731d7c16b6d886c3",
+      "original_path": "/private/tmp/console-native-company-enrollment-lane-guards-20260920.json",
+      "original_sha256": "6e1f2e46387fc26cc9968d77e9861add387bb694404089c9731d7c16b6d886c3",
+      "original_bytes": 8666
+    },
+    {
+      "path": "console-company-intake-guards-round2-security-review-20260920.json",
+      "sha256": "ec67d42d8b5bae05d6cde8fd14b903028a085cb645e07f1b6fd26390dbfd5f36",
+      "original_path": "/private/tmp/console-company-intake-guards-round2-security-review-20260920.json",
+      "original_sha256": "ec67d42d8b5bae05d6cde8fd14b903028a085cb645e07f1b6fd26390dbfd5f36",
+      "original_bytes": 3880
+    },
+    {
+      "path": "console-company-intake-guards-round2-integration-tests-review-20260920.json",
+      "sha256": "05a3d1ce702bbb504110b2a0f05e8aa73a3e378a09ff3be4b91cd791b2223ab6",
+      "original_path": "/private/tmp/console-company-intake-guards-round2-integration-tests-review-20260920.json",
+      "original_sha256": "05a3d1ce702bbb504110b2a0f05e8aa73a3e378a09ff3be4b91cd791b2223ab6",
+      "original_bytes": 2286
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-security-review-20260920.json",
+      "sha256": "d835e30a4f1c2fc72c6479e19eee170f3bf5362869aaf0add0a4b4b50bb05cd1",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-security-review-20260920.json",
+      "original_sha256": "d835e30a4f1c2fc72c6479e19eee170f3bf5362869aaf0add0a4b4b50bb05cd1",
+      "original_bytes": 1656
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-round1-integration-tests-review-20260920.json",
+      "sha256": "94ff5a029d50f04d49fbd161466e92f97f49a0f89e6a2165cfef63af0e336755",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-round1-integration-tests-review-20260920.json",
+      "original_sha256": "94ff5a029d50f04d49fbd161466e92f97f49a0f89e6a2165cfef63af0e336755",
+      "original_bytes": 1496
+    },
+    {
+      "path": "console-company-intake-guards-format-composition-integration-tests-review-20260920.json",
+      "sha256": "3ce325ca55622b53006b5cc95b07e3c5a1bb203caa34cc1a312c56d20c37ac2d",
+      "original_path": "/private/tmp/console-company-intake-guards-format-composition-integration-tests-review-20260920.json",
+      "original_sha256": "3ce325ca55622b53006b5cc95b07e3c5a1bb203caa34cc1a312c56d20c37ac2d",
+      "original_bytes": 1727
+    },
+    {
+      "path": "console-company-intake-guards-lane-expansion-security-review-20260920.json",
+      "sha256": "1b5c5c0f8e4ba75dda8aa5ca6d7c2bda65f2efa1e420fea73c27686fd61fdac0",
+      "original_path": "/private/tmp/console-company-intake-guards-lane-expansion-security-review-20260920.json",
+      "original_sha256": "1b5c5c0f8e4ba75dda8aa5ca6d7c2bda65f2efa1e420fea73c27686fd61fdac0",
+      "original_bytes": 2885
+    },
+    {
+      "path": "console-company-intake-guards-implementation-source-security-review-20260920.json",
+      "sha256": "4bcd629a9ac4bb042f241d32e746d099e6052c3c59764a5ec18646ca4f722ef4",
+      "original_path": "/private/tmp/console-company-intake-guards-implementation-source-security-review-20260920.json",
+      "original_sha256": "4bcd629a9ac4bb042f241d32e746d099e6052c3c59764a5ec18646ca4f722ef4",
+      "original_bytes": 4017
+    },
+    {
+      "path": "console-company-intake-guards-implementation-integration-tests-review-20260920.json",
+      "sha256": "29e89be12fbc1b6a2b897f33e6d7a96ceab32330118156a3ce0034f8e09acf1e",
+      "original_path": "/private/tmp/console-company-intake-guards-implementation-integration-tests-review-20260920.json",
+      "original_sha256": "29e89be12fbc1b6a2b897f33e6d7a96ceab32330118156a3ce0034f8e09acf1e",
+      "original_bytes": 3332
+    },
+    {
+      "path": "console-company-intake-guards-final-security-review-20260920.json",
+      "sha256": "cd36058551463e461349360164b262ef656013f8abb3e2681f0df71dad394ee4",
+      "original_path": "/private/tmp/console-company-intake-guards-final-security-review-20260920.json",
+      "original_sha256": "cd36058551463e461349360164b262ef656013f8abb3e2681f0df71dad394ee4",
+      "original_bytes": 8642
+    },
+    {
+      "path": "console-company-intake-guards-final-integration-tests-review-20260920.json",
+      "sha256": "9a303e61a5f2127bcfc35a570f09142f858d80185d2bc8292c41fd51d73613c4",
+      "original_path": "/private/tmp/console-company-intake-guards-final-integration-tests-review-20260920.json",
+      "original_sha256": "9a303e61a5f2127bcfc35a570f09142f858d80185d2bc8292c41fd51d73613c4",
+      "original_bytes": 6204
+    },
+    {
+      "path": "console-company-signed-evidence-archive-security-review-20260920.json",
+      "sha256": "71812cc0ba4f0355cb5cc1c21b1e3c439174cc4b257a731798dabfc011bb65ae",
+      "original_path": "/private/tmp/console-company-signed-evidence-archive-security-review-20260920.json",
+      "original_sha256": "71812cc0ba4f0355cb5cc1c21b1e3c439174cc4b257a731798dabfc011bb65ae",
+      "original_bytes": 1850
+    },
+    {
+      "path": "console-company_intake_guards_catalog_and_real_prepare_cancel_remain_valid-native-20260920.log.gz",
+      "sha256": "ba2de53e3c876be5f718986956b40c386d36803f05f3bf84faf9e537bca1f782",
+      "original_path": "/private/tmp/console-company_intake_guards_catalog_and_real_prepare_cancel_remain_valid-native-20260920.log",
+      "original_sha256": "7c0afc4e8578b70245b63e23145e0fe09c9a4591c8b7061c4e54b3209613251e",
+      "original_bytes": 4472
+    },
+    {
+      "path": "console-company_intake_guards_owner_rewrites_and_partial_transition_fail-native-20260920.log.gz",
+      "sha256": "de84281145b9ca7c7456600ab3aa94c03b8e14281a3f7844437ff8b85f14733e",
+      "original_path": "/private/tmp/console-company_intake_guards_owner_rewrites_and_partial_transition_fail-native-20260920.log",
+      "original_sha256": "fd3d99d6b0163a1eb82277b70b5c4c453a9b975c6836f7088bd1d6bb89d19979",
+      "original_bytes": 2902
+    },
+    {
+      "path": "console-company_intake_guards_missing_event_fails_deferred_forcing_and_commit-native-20260920.log.gz",
+      "sha256": "af3eaede8dc58bf911350f2971c998de89359d66cb34bf8a7f8a86e71b19fdb9",
+      "original_path": "/private/tmp/console-company_intake_guards_missing_event_fails_deferred_forcing_and_commit-native-20260920.log",
+      "original_sha256": "9ee56a87e121dfabbf9b0f3ce0209941904b658a1ccc33e91e3c2e50a105c994",
+      "original_bytes": 2948
+    },
+    {
+      "path": "console-company_intake_guards_final_inserted_event_cannot_change_time-native-20260920.log.gz",
+      "sha256": "7cffe488e3a237a9a5f43d6e274a63b3bbfdd500b8559717f65667fa7c5fb570",
+      "original_path": "/private/tmp/console-company_intake_guards_final_inserted_event_cannot_change_time-native-20260920.log",
+      "original_sha256": "82d9fd64dba582c38bcb6950fcb2e57855f399fe07d91b9e58cfd40d8b56a5ef",
+      "original_bytes": 2589
+    },
+    {
+      "path": "console-company_intake_guards_nonempty_private_install_is_not_retroactive_acceptance-native-20260920.log.gz",
+      "sha256": "91ae6edd09bf8124f8a902bf169c02da59f63d840b145340e9fb2fd72917812b",
+      "original_path": "/private/tmp/console-company_intake_guards_nonempty_private_install_is_not_retroactive_acceptance-native-20260920.log",
+      "original_sha256": "cdb40a317d032b5846767ecbb2e7b3111f6881267e1ca22984faaed1c429f70c",
+      "original_bytes": 2885
+    },
+    {
+      "path": "console-company_intake_guards_install_rechecks_empty_after_real_prepare_wait-native-20260920.log.gz",
+      "sha256": "f4f29aac93be79fb3a72eddebee0036278a383f6f039f3b8b890e2c74654285b",
+      "original_path": "/private/tmp/console-company_intake_guards_install_rechecks_empty_after_real_prepare_wait-native-20260920.log",
+      "original_sha256": "6391d4af2aaab6f07876080651b98fcb9402f8cba22f71c3263fe44824c61872",
+      "original_bytes": 2538
+    },
+    {
+      "path": "console-company-intake-guards-20260920-round2/CONTRACT.md.log.gz",
+      "sha256": "1421c0122aadb389b76882f81a8f36e10ae740a2aa994f51a6de7c7fd5f45df7",
+      "original_path": "/private/tmp/console-company-intake-guards-20260920-round2/CONTRACT.md",
+      "original_sha256": "024358b4ce49e1d11cb282f9b930006193c2c0ce8a72bdf7a754ceab49fc9778",
+      "original_bytes": 14056
+    },
+    {
+      "path": "console-company-intake-guards-20260920-round2/MANIFEST.json",
+      "sha256": "274c42ecf71fd2fed78015dac47e74093cb91625237d6cdf120bef1d7b0fce33",
+      "original_path": "/private/tmp/console-company-intake-guards-20260920-round2/MANIFEST.json",
+      "original_sha256": "274c42ecf71fd2fed78015dac47e74093cb91625237d6cdf120bef1d7b0fce33",
+      "original_bytes": 965
+    },
+    {
+      "path": "console-company-intake-guards-20260920-round2/catalog.json",
+      "sha256": "a67826d75c419426254098db79aa5d811f81e53de1be544d4abd6003bdff05dd",
+      "original_path": "/private/tmp/console-company-intake-guards-20260920-round2/catalog.json",
+      "original_sha256": "a67826d75c419426254098db79aa5d811f81e53de1be544d4abd6003bdff05dd",
+      "original_bytes": 5403
+    },
+    {
+      "path": "console-company-intake-guards-20260920-round2/native_company_intake_guards.rs.log.gz",
+      "sha256": "0646f6d29af08fc88d718987bf93e77aea1a6367e49f42e6d992b8bf336aefc6",
+      "original_path": "/private/tmp/console-company-intake-guards-20260920-round2/native_company_intake_guards.rs",
+      "original_sha256": "27cd2865c06dbe2ff368ef3cbb80f6aded864d9b6035f45bc579cee9845addf3",
+      "original_bytes": 22760
+    },
+    {
+      "path": "console-company-intake-guards-20260920-round2/preserved-predecessors.json",
+      "sha256": "c19979550991d1142d82a3843b655b00f953d5d3924b6f0f03c2457069772dac",
+      "original_path": "/private/tmp/console-company-intake-guards-20260920-round2/preserved-predecessors.json",
+      "original_sha256": "c19979550991d1142d82a3843b655b00f953d5d3924b6f0f03c2457069772dac",
+      "original_bytes": 1048
+    },
+    {
+      "path": "console-company-intake-guards-20260920-round2/source-lock.json",
+      "sha256": "390c32a79f98cd666db707e45d6372047385f232ec176cfc3c2809a84663d9ec",
+      "original_path": "/private/tmp/console-company-intake-guards-20260920-round2/source-lock.json",
+      "original_sha256": "390c32a79f98cd666db707e45d6372047385f232ec176cfc3c2809a84663d9ec",
+      "original_bytes": 845
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/CONTRACT.md.log.gz",
+      "sha256": "054e05c4e6693024355eec3e06e49fc8148b77ce273a839b4cbb566777cfa7bb",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/CONTRACT.md",
+      "original_sha256": "7a9d3a234cf20d884f72c83fd7112655a83bdb3cb1707a16081b1fd488ad0495",
+      "original_bytes": 2337
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/MANIFEST.json",
+      "sha256": "d4da697a1cd3194173084188345871dca262378bd1a226690094d6100025817e",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/MANIFEST.json",
+      "original_sha256": "d4da697a1cd3194173084188345871dca262378bd1a226690094d6100025817e",
+      "original_bytes": 953
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/buck-test-method.py.log.gz",
+      "sha256": "aa4242f99b4319ea72e6e472da4eb5d0a2b0fd43e37ec2d7063bdca33f635ff7",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/buck-test-method.py",
+      "original_sha256": "994b40b7959da80223b78b255556d44532d7c090ddcaf1797c040a5a96329a65",
+      "original_bytes": 484
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/source-lock.json",
+      "sha256": "7554e2eb35c7c6f6ab73aeae03ba2a2ead4e404b0545a541993cf34f2358b337",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/source-lock.json",
+      "original_sha256": "7554e2eb35c7c6f6ab73aeae03ba2a2ead4e404b0545a541993cf34f2358b337",
+      "original_bytes": 958
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/test_company_enrollment_input_generator.py.log.gz",
+      "sha256": "68fda6b7ad4c7b008205a0f1fab77f31e764e5f51673b42778ca3120e81c3b0c",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/test_company_enrollment_input_generator.py",
+      "original_sha256": "632010c33c33ea262af9ddfe380b2825ad4aa5c337f8428785b30fbd040bd745",
+      "original_bytes": 4651
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/test_company_enrollment_input_generator.py.patch.log.gz",
+      "sha256": "0fa9fceefe3cf9199374287ca8ae3885f6aab2ca0fcba15598dd57e0a13fa374",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/test_company_enrollment_input_generator.py.patch",
+      "original_sha256": "31f9f85c0bf7c0e4fed07710f67e1e567adfbc8277c8b3c505082bc15a707b94",
+      "original_bytes": 3465
+    },
+    {
+      "path": "console-company-intake-guard-generator-tests-20260920-round1/test_gen_first_party.py.patch.log.gz",
+      "sha256": "5f3f01d0da803fa1a577ec2280ececcc375127c11e9e3c20618193ee8e54e9b6",
+      "original_path": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/test_gen_first_party.py.patch",
+      "original_sha256": "c3c9cad49176a910134d1f11902e72b4f38d99bdcc1350ab8dbef91ea2fa9695",
+      "original_bytes": 858
+    }
+  ],
+  "verification": "console-company-guards-verification-20260920.json",
+  "remaining_holds": [
+    "Uninstalled private guards; enclosing Company HTTP acceptance remains RED",
+    "168hour request expiry positive has no admitted clock mechanism; terminal payload cleanup absent",
+    "Populated rollout and complete Company effect/receipt owner remain outstanding",
+    "Disposable PostgreSQL harness disables durability; not recovery or production qualification"
+  ]
+}

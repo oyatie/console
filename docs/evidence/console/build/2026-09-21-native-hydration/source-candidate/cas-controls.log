@@ -1,0 +1,15 @@
+test_absent_bindgen_action_remains_prerequisite_failure (__main__.ActionBindingControls.test_absent_bindgen_action_remains_prerequisite_failure) ... ok
+test_absent_compiler_action_remains_prerequisite_failure (__main__.ActionBindingControls.test_absent_compiler_action_remains_prerequisite_failure) ... ok
+test_cas_relocation_accepts_full_identical_bytes_and_records_both_paths (__main__.ActionBindingControls.test_cas_relocation_accepts_full_identical_bytes_and_records_both_paths) ... ok
+test_changed_published_pair_still_rejects (__main__.ActionBindingControls.test_changed_published_pair_still_rejects) ... ok
+test_duplicate_actual_input_selector_rejects (__main__.ActionBindingControls.test_duplicate_actual_input_selector_rejects) ... ok
+test_mismatching_actual_input_rejects_even_with_emitted_path_elsewhere_in_argv (__main__.ActionBindingControls.test_mismatching_actual_input_rejects_even_with_emitted_path_elsewhere_in_argv) ... ok
+test_missing_actual_input_selector_rejects (__main__.ActionBindingControls.test_missing_actual_input_selector_rejects) ... ok
+test_missing_consumed_file_rejects (__main__.ActionBindingControls.test_missing_consumed_file_rejects) ... ok
+test_non_wasm_consumed_bytes_reject (__main__.ActionBindingControls.test_non_wasm_consumed_bytes_reject) ... ok
+test_same_path_remains_accepted (__main__.ActionBindingControls.test_same_path_remains_accepted) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.029s
+
+OK

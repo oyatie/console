@@ -11,6 +11,9 @@ use std::sync::Arc;
 
 use console_kernel_core::OrgId;
 use console_platform_provisioning::BootstrapCredentialStore;
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use time::{Duration, OffsetDateTime};
 use tokio::sync::Barrier;
@@ -30,21 +33,24 @@ async fn seed_user(pool: &PgPool) -> uuid::Uuid {
 
 /// Concurrent redeems both succeed (verify-only); concurrent registration-consumes
 /// burn the code EXACTLY once.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn concurrent_consume_burns_the_otp_exactly_once(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let business = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let store = BootstrapCredentialStore;
     let now = OffsetDateTime::now_utc();
 
     let issue = store
-        .issue_for_zero_credential_user(&pool, user_id, OrgId::knl(), now, Duration::hours(24))
+        .issue_for_zero_credential_user(&business, user_id, OrgId::knl(), now, Duration::hours(24))
         .await
         .unwrap();
 
     // Two concurrent redeems both succeed: a redeem verifies, it never consumes.
     let barrier = Arc::new(Barrier::new(2));
     let (store_a, store_b) = (store, store);
-    let (pool_a, pool_b) = (pool.clone(), pool.clone());
+    let (pool_a, pool_b) = (auth.clone(), auth.clone());
     let (token_a, token_b) = (
         issue.token.as_str().to_owned(),
         issue.token.as_str().to_owned(),
@@ -74,7 +80,7 @@ async fn concurrent_consume_burns_the_otp_exactly_once(pool: PgPool) {
     // Two concurrent registration-consumes: exactly one matches the open row.
     let barrier = Arc::new(Barrier::new(2));
     let (store_a, store_b) = (store, store);
-    let (pool_a, pool_b) = (pool.clone(), pool.clone());
+    let (pool_a, pool_b) = (auth.clone(), auth.clone());
     let (barrier_a, barrier_b) = (Arc::clone(&barrier), Arc::clone(&barrier));
     let consume_a = tokio::spawn(async move {
         barrier_a.wait().await;
@@ -121,7 +127,7 @@ async fn concurrent_consume_burns_the_otp_exactly_once(pool: PgPool) {
     // A subsequent redeem is rejected: the code is dead.
     assert!(
         store
-            .redeem_otp(&pool, issue.token.as_str(), now)
+            .redeem_otp(&auth, issue.token.as_str(), now)
             .await
             .is_err(),
         "a consumed code must not redeem again"

@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "author": "/root/integration_tests",
+  "decision": "approved-supplemental-test-source-only",
+  "manifest_sha256": "5be5a8a8f754ee792b1a8355c72b92524a3b48078beb34b0d8ab80584bcdeca0",
+  "design_manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "findings": [],
+  "checks": [
+    "All6 file hashes verified; parent preimage exact initialopsround2, candidate preserves parent bytes plus child declaration.",
+    "groups ACCESS EXCLUSIVE stalls actual health query after source; telemetry ACCESS EXCLUSIVE stalls adoption. Exact console_rt PID/query/blocker/ungranted AccessShareLock required; adoption also retains groups/work_orders health-dependency locks.",
+    "Three independent exact Company/User/Account FOR UPDATE probes prove incompatible retained source guards on actual reader before wait release, repeated at release.",
+    "Observed DB deadline, narrowed genuine signed claims and pre-expiry real positive establish signed expiry; no fabricated family or caller timestamp.",
+    "Distinct downstream telemetry/audit barriers stay held until401response: first expiry must suppress adoption, second must suppress auditINSERT. Missing intermediate check cannot hide behind later401rollback.",
+    "Bounded owned task cleanup and all blocker/probe rollback; dedicated observer avoids5slot owner-pool starvation and PID reuse.",
+    "Success exact14/6projection and20fieldaudit/allstate; expiry exact401private/noecho/zeroeffects; identical original bearer recovery after cleanup.",
+    "TwoSQLx leaves each retained-success+expiry and onepure positive/history corruption control; current list/shared fixture helpers unchanged."
+  ],
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Root integrate only after listsealed and initialopsownerRED/admission sequence; compile/discover3 and execute actual histories after owner implementation.",
+    "Actual platform family retention, malformed/bound inputs, after-audit expiry, timeout/COMMITloss and remaining ops tests are outside this bounded packet.",
+    "RawSQLgrant and fullrelease qualification not accepted."
+  ]
+}

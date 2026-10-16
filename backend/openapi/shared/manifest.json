@@ -4,6 +4,10 @@
   "security_schemes": [
     "basicAuth",
     "bearerAuth",
+    "nativeAccountEnrollment",
+    "nativeAccountLogin",
+    "nativeAccountRefresh",
+    "nativeAccountSession",
     "officeCallbackToken",
     "officeDocumentServerToken"
   ],

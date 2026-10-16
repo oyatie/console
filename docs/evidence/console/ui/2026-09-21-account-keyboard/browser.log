@@ -1,0 +1,30 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T17:25:50.308-04:00] Build ID: 0c02867d-4b2c-4def-b764-994ce7616466
+[2026-09-21T17:25:50.312-04:00] File changed (since mergebase): root//rustfmt.toml
+[2026-09-21T17:25:50.312-04:00] Directory changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-shared-account-theme
+[2026-09-21T17:25:50.312-04:00] File changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-shared-account-theme/design.json
+[2026-09-21T17:25:50.312-04:00] 28 additional file change events (since mergebase)
+[2026-09-21T17:25:50.312-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T17:25:57.409-04:00] Waiting on root//third-party/rust:strum-0.27 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 706 other actions
+[2026-09-21T17:26:05.208-04:00] Waiting on root//third-party/rust:pest-2 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 360 other actions
+[2026-09-21T17:26:09.000-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T17:26:09.020-04:00] Build ID: 231b6ee7-cacb-42bd-aac3-4c810e1675d5
+[2026-09-21T17:26:09.021-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T17:26:16.022-04:00] Waiting on root//third-party/rust:cedar-policy-core-4-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __ld_shim.sh), and 794 other actions
+[2026-09-21T17:26:23.421-04:00] Waiting on root//third-party/rust:regex-syntax-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 400 other actions
+[2026-09-21T17:26:30.522-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T17:26:37.164-04:00] ✓ Pass: root//tools/buck:app-auth-rest-browser-pg (8.4s)
+[2026-09-21T17:26:37.164-04:00] ---- STDOUT ----
+[2026-09-21T17:26:37.164-04:00]
+[2026-09-21T17:26:37.164-04:00] running 1 test
+[2026-09-21T17:26:37.164-04:00] test account_browser::native_entry_real_browser_enroll_logout_login ... ok
+[2026-09-21T17:26:37.164-04:00]
+[2026-09-21T17:26:37.164-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 522 filtered out; finished in 8.35s
+[2026-09-21T17:26:37.164-04:00]
+[2026-09-21T17:26:37.164-04:00]
+[2026-09-21T17:26:37.164-04:00] ---- STDERR ----
+[2026-09-21T17:26:37.164-04:00]
+[2026-09-21T17:26:37.174-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

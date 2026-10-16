@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_TEST_AND_IMPLEMENTATION_CONTRACT",
+  "base_sha": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+  "packet": "/private/tmp/console-native-browser-mirror-20260920-round2",
+  "scope": "Two-file local verifier repair; not browser, Company enrollment, release or production acceptance.",
+  "packet_sha256": {
+    "CONTRACT.md": "22ac9ba332eeb9de2c57040f271aa5248d0e9ecd7ffee2441af58b4a780d432e",
+    "test-addition.mjs": "7f8e48ccd37d55e32dabfef057c25c344ec4d27f87275852e81d16a6bd80a64f",
+    "lane.json": "272fa83ef5cc18928f092f4f3df68ee90c451dc36e4b5e6dd2a128e959ba387e",
+    "source-lock.json": "65216e69ae26d01fe8605a97d7dce7393ebdd36534b5095d0cf3555ecfef822e"
+  },
+  "findings": [],
+  "evidence": [
+    "Both live source hashes match packet lock; actual run helper invokes bash -o pipefail without -e and returns process status; main consumes helper status.",
+    "Four exact CI step names, root cwd, isolated Buck2 PostgreSQL commands and owner-receipt retention checks are present. db dispositions with no overrides preserve those commands.",
+    "Installer explicitly checks Linux x86_64 and writable GITHUB_ENV. ci-only classification is honest only with prepared local driver/hash/fresh-output prerequisites.",
+    "Added regression calls actual run helper, not a mirror. Ordinary failure and failing pipeline must return1 without executing a trailing file write; success control must execute the same write.",
+    "Exporting existing run is visibility-only test seam. Adding bash -e while retaining pipefail closes failing-Buck/successful-tail false-green path and matches hosted default CI shell semantics.",
+    "Existing15 tests remain required; proposed total17. Round1 retained log records15executed,11passed,4failed,0skipped from missing5classifications; no new test execution performed by reviewer."
+  ],
+  "conditions": [
+    "Commit exact reviewed test additions, existsSync import and visibility-only export before behavior implementation; retain prior test semantics.",
+    "Implementation only5PLAN entries and bash -e addition, no workflow/browser/harness edits or command overrides.",
+    "Run same node --test scripts/verify.test.mjs probe and retain17executed counts; rerun original npm run verify. Record any independent failures truthfully.",
+    "Green fast verification is not execution of db/browser journeys and cannot clear those release requirements."
+  ],
+  "note": "Round2 explicit shell change supersedes the inherited no-runner-changes wording in its mechanical guide. No permission inferred for other runner edits.",
+  "executed_by_reviewer": []
+}

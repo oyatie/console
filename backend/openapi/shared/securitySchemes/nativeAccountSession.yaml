@@ -1,0 +1,6 @@
+type: apiKey
+in: cookie
+name: __Host-console_account_session
+description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Lax; no Domain. Max-Age
+  uses the actual signed expiry, capped at 900 seconds. Browser credentials are not returned in JSON.
+  Any Authorization header is refused; legacy console_refresh is not native Account authority.

@@ -1,0 +1,8 @@
+{
+  "base": "ea9f6aa47",
+  "original_sha256": "1e67619879e54c881b88b37c7c0509356468ac4062cefdd8811c8dd7b0e2a69b",
+  "candidate_sha256": "a7d57d61ad4dc61d81625f006bf919ed58c62f003c3a9d369efa79462ff49dba",
+  "reason": "SQLx0.9 SqlSafeStr requires explicit audit of dynamic fixture DDL. Only typed UserId and platform OrgId UUID Display values enter fixed literals. Assertions/witness semantics unchanged.",
+  "runtime_tests_executed": 0,
+  "previous_probe": "compile prerequisite failure, not implementation admission"
+}

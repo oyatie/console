@@ -1,0 +1,21 @@
+{
+  "source_count": 6,
+  "new_leaf_count": 6,
+  "binding_keys": 8,
+  "qualification_count": 14,
+  "matrix_rows": 3,
+  "quote_membership_checks": 28,
+  "size_and_hash_checks": 18,
+  "combined_leaf_count": 366,
+  "all_dependencies_resolve": true,
+  "acyclic_dependencies": true,
+  "runtime_tests_executed": 0,
+  "implementation_accepted": false,
+  "patch_applied": true,
+  "structural_validator_control": {
+    "capability_count": 27,
+    "candidate_sha": "5a954d1232856cf6daabc83263225bcef43e4e01",
+    "verdict": "STRUCTURALLY_VALID_HOLD_PRESERVED"
+  },
+  "structural_validator_caveat": "Default permissive resolvers exercise schema and reference consistency only; not tracked-source, signed candidate train, implementation, runtime or production acceptance."
+}

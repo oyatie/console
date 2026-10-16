@@ -1,0 +1,20 @@
+[
+  {
+    "leaf": "account_browser::deployment_operator_designation::company_setup::intake_owner::company_intake_sql_pending_history_and_event_fault_are_atomic",
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-lint-native-1-20260920.log",
+    "log_sha256": "663c261be055660f0e035b74db641c2a757f03e2d322ff96085e2bf30b631c4e"
+  },
+  {
+    "leaf": "account_browser::deployment_operator_designation::company_setup::intake_owner::integrity_guards::company_intake_guards_catalog_and_real_prepare_cancel_remain_valid",
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-lint-native-2-20260920.log",
+    "log_sha256": "aba7dfb0cc8f10c7a42ceaaf07fd099ad7914e87b2f2dadc66553830b8116fe6"
+  },
+  {
+    "leaf": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_signed_current_credentials_prepare_reopen_and_cancel_exact_history",
+    "exit": 0,
+    "log": "/private/tmp/console-company-intake-lint-native-3-20260920.log",
+    "log_sha256": "a501d3c188e081aa1352ca6ae1a34881a86353a8047f435197a59ccc622d7a0d"
+  }
+]

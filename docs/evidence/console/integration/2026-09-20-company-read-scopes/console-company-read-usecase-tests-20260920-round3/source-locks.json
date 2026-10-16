@@ -1,0 +1,53 @@
+{
+  "source_head": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "files": [
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/identity/application/src/company_policy.rs",
+      "sha256": "ef5acf302f16745806be52858e867c0b489aff2956b296f1a65cf5e576b16f43"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/src/company_policy.rs",
+      "sha256": "faeb010d736e769f1728187b1647bd9cd94df7e5130e155f1e9517516d454b0b"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "sha256": "9de9329a4f89d31c8c9d50458313b9c1fe9cad1d3f984a523ec695c2800d0027"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/Cargo.toml",
+      "sha256": "1333d04135bfcc0d1bd537ccb446af22e693ca7e12b6e7c7a1a38bbff81fb06f"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/authz/BUCK",
+      "sha256": "9b200e2a212172ba20a75ef950867fee826bdf8e9d14aef36b692f7574487447"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/tests/auth_rest/native_company_setup.rs",
+      "sha256": "46d132ab76777cfdab8db769a2c0ce615ca965ffc59b159a402981d4b9b1072a"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/manifest.json",
+      "sha256": "5a8cbcc363333e8bf279eaf69280e48ccae5fe96bd3df1316c3adf2c07a30db6"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/MATERIAL.md",
+      "sha256": "dcd80b9b64acdecfbd00f24ffe6f479cf4dd01667d86c90bcca0c222111175c3"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/DISCOVERY.md",
+      "sha256": "570e9c7d9ecdcd4cad296e29e5eff2c02b560b21d47dbdb2cea57c8c206fc820"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/PORTS.rs",
+      "sha256": "6d93b1bd1bf0c416ae1e880191458a0e1382db9c279b8b0e54177155c0646d29"
+    },
+    {
+      "path": "/private/tmp/console-current-company-policy-20260920-round3/native_company_policy_http_tests.rs",
+      "sha256": "78ef4226318c026dfb046e3114dca76139cfbd1cac0215b6a7f76302ce7b198e"
+    },
+    {
+      "path": "/private/tmp/console-company-exact-owner-candidate-20260919-round2/native-company-catalog-v1.json",
+      "sha256": "edaf6dd5473957b00082396327491a4286b81bae1fb4ad3c30454dcea239066e"
+    }
+  ]
+}

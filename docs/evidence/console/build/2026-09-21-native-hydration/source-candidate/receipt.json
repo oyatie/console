@@ -1,0 +1,218 @@
+{
+  "candidate": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "implementation_commit": "d59e4d6a1bae6ae7a7ed6492c61516f6f49877ef",
+  "scope": "native hydration producer and SSR library/test resource validation on macOS arm64",
+  "result": "accepted build boundaries; not browser or release qualification",
+  "evidence": {
+    "source-review.json": {
+      "sha256": "32210c38b98aa60cecdabeea54650de0cd74fc10aad3f735ee4b48130c7af761",
+      "source": "/private/tmp/console-native-hydration-final-source-review-20260921/REVIEW.json"
+    },
+    "oracle-root-review.json": {
+      "sha256": "ada279e8a45177e3039a597519bf00ba0275deba794840c503b5a94800d347f1",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/cas-successor-root-review.json"
+    },
+    "oracle-proposal.json": {
+      "sha256": "c2472a7424543792172363a0f8b463d5362957e34a86f29f74bed2e4e8558566",
+      "source": "/private/tmp/console-native-hydration-cas-oracle-proposal-round3-20260921/manifest.json"
+    },
+    "independent-evidence-review.txt": {
+      "sha256": "bc06d252fb54c20649ed58455b1d4806ea71b3995be2ad11607a566e58ba7911",
+      "source": "/private/tmp/console-native-hydration-exact-evidence-integration-review-20260921/REVIEW.md"
+    },
+    "independent-evidence-manifest.json": {
+      "sha256": "ff1a2b58ac654f48300514fe60153d6677a4c2a0868a8ac94333909e02e1ef27",
+      "source": "/private/tmp/console-native-hydration-exact-evidence-integration-review-20260921/manifest.json"
+    },
+    "producer-fixture.json": {
+      "sha256": "37967e4297749ee062e84af2eccd64501270202cbc94e659f713a1ac5d09bc26",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/fixture.json"
+    },
+    "producer-command.json": {
+      "sha256": "8a7516710ba3d71b37b5538b9780384a877641b89d974c28d25595f03e193326",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer.command.json"
+    },
+    "producer-build.log": {
+      "sha256": "ad478c508b7e39dd564fcb74ed9b64bd89209b7ed89f1a768e218090aef41a5f",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer.stderr"
+    },
+    "producer-result.log": {
+      "sha256": "88adb3a99711577ffc51f77cd3be0ec6f73a7b5f2795408141aa51ffb0e81b75",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/exact-producer-4522eb42.log"
+    },
+    "native-compiler-actions.json": {
+      "sha256": "ac566618f8cfe1c34269eb7d351c633cc7e487aa879db74e1c25e109a3f12d43",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/native-compiler-actions.json"
+    },
+    "native-bindgen-actions.json": {
+      "sha256": "5ea9d8bd4b32a87ae1dffcfc7e606717202e96d37fa0c5c483ad7b832d618264",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/native-bindgen-actions.json"
+    },
+    "published-output-hashes.json": {
+      "sha256": "524dd47cb96a5edc9b399506e6a149d7c76e08a8d41a49ec0b3ee1d52ce0545a",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/published-output-hashes.json"
+    },
+    "consumer-fixture.json": {
+      "sha256": "37967e4297749ee062e84af2eccd64501270202cbc94e659f713a1ac5d09bc26",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/fixture.json"
+    },
+    "consumer-corruption.json": {
+      "sha256": "d296936a35f957b89654e703be2573ffe9a51dd67251381e533ec73dc76bf7b9",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/corruption.json"
+    },
+    "consumer-result.log": {
+      "sha256": "8a32e58bfe242a22922652299ffb52e76a8c367a5d74bd15942bdc731e434986",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/exact-consumer-4522eb42.log"
+    },
+    "ui-tests.log": {
+      "sha256": "bdf3fe24e5c11746bf0300ac5f8949989c1e66cc397c6ddb5185501cebedb077",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/native-ui-tests-4522eb42.log"
+    },
+    "generator-tests.log": {
+      "sha256": "5843c3e3cd02f19b9028dc01b3ea25fb03ba6acc15b7108ff3f826e6fea50457",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/generator-tests-final.log"
+    },
+    "checker-tests.log": {
+      "sha256": "5100d64ed003ac38e51ff1da8fcbdd2fa43e1b5436df943ce6af725d2ac86cbe",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/checker-tests-final.log"
+    },
+    "helper-tests.log": {
+      "sha256": "6224660e6bfb0caa8bcb4c28340b2d8b1bffe667e1b0870c9a6bcda5ae756f89",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/helper-tests-final.log"
+    },
+    "cas-controls.log": {
+      "sha256": "e5d8333ced613ed9fe34dbec9d49e41436729b8423530708b590acacbd851432",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/cas-controls-adopted.log"
+    },
+    "interrupted-broad-verification.json": {
+      "sha256": "46f0fae90f92801350ed6b10f75a67f3564d2efe58c0db56550b159b4bbab54d",
+      "source": "/private/tmp/console-approved-hydration-patches-20260921/repository-verify-invalidation.json"
+    },
+    "consumer-positive-0.command.json": {
+      "sha256": "989ec5766776599fcf2895304b2dc073b2eba4233ccceb0e96ea8afcabbcfd87",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-0.command.json"
+    },
+    "consumer-positive-0.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-0.stdout"
+    },
+    "consumer-positive-0.stderr.log": {
+      "sha256": "36d420697e930a3b82a1be5732eee46b202c18c9c122fd6960a9276c675161fe",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-0.stderr"
+    },
+    "consumer-positive-1.command.json": {
+      "sha256": "555e4c7c3cd911dc5e28ddda547a0600f0bc4ac0606ad10d3f4554d3afce9b2f",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-1.command.json"
+    },
+    "consumer-positive-1.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-1.stdout"
+    },
+    "consumer-positive-1.stderr.log": {
+      "sha256": "3dda2019f3e3561144fe8fd276ad85d902e5e48e03e2c52c826e00598ed6fa48",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-positive-1.stderr"
+    },
+    "consumer-corrupted-0.command.json": {
+      "sha256": "9f4ebd2b16217f5b4738c04c9463bc30121b71d810e25e8b6bb3abb475dfbe18",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-0.command.json"
+    },
+    "consumer-corrupted-0.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-0.stdout"
+    },
+    "consumer-corrupted-0.stderr.log": {
+      "sha256": "d7f2bc810f4c8208257d690de94eaa0b4b2842bc4e8a0e2607125e7d1c208366",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-0.stderr"
+    },
+    "consumer-corrupted-1.command.json": {
+      "sha256": "de7b442a3a8bab16bc8208c42134974687eef4eb295b5ebe59151f2eb510207b",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-1.command.json"
+    },
+    "consumer-corrupted-1.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-1.stdout"
+    },
+    "consumer-corrupted-1.stderr.log": {
+      "sha256": "b8339bfa7e3ec2f326187f94095e11dac211757ffa50eb341434aafd24d57db5",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-corrupted-1.stderr"
+    },
+    "consumer-repaired-0.command.json": {
+      "sha256": "989ec5766776599fcf2895304b2dc073b2eba4233ccceb0e96ea8afcabbcfd87",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-0.command.json"
+    },
+    "consumer-repaired-0.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-0.stdout"
+    },
+    "consumer-repaired-0.stderr.log": {
+      "sha256": "104080fa58a19bde8c701a5146ba5c631c90fa7180a89a3246345f0bccafeced",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-0.stderr"
+    },
+    "consumer-repaired-1.command.json": {
+      "sha256": "555e4c7c3cd911dc5e28ddda547a0600f0bc4ac0606ad10d3f4554d3afce9b2f",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-1.command.json"
+    },
+    "consumer-repaired-1.stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-1.stdout"
+    },
+    "consumer-repaired-1.stderr.log": {
+      "sha256": "f4044ad8b5d7c9e8561f3cd3057acbd881730924fdbd761c7adee9668acfce60",
+      "source": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/evidence/consumer-repaired-1.stderr"
+    },
+    "compiler-response.args.txt": {
+      "sha256": "e231ae78609c2e9fc2f46b51e9e516a2ad4743011e5cd1f19b5bb5094353ba40",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root/buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/e231ae78609c2e9f/CPPL/console_payroll_ui-link-diag.args"
+    },
+    "linker-wrapper.sh.txt": {
+      "sha256": "1ea735db75389080168346713ab9c4b22decbd86a054cdfa678a64988f88f65a",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root/buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/1ea735db75389080/linker_wrapper.sh"
+    },
+    "producer-actions.jsonl": {
+      "sha256": "8beaf9d0ee17c0cda8c03d41429f870c9aee1c77987dd553f92dad5e05e52ecc",
+      "source": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/actions-0.stdout"
+    },
+    "independent-producer-checks.json": {
+      "sha256": "18c3fb0de638f7b703aa631c6f083c51ca7145a37a2dab30cd26bc3136eddc04",
+      "source": "/private/tmp/console-native-hydration-exact-evidence-integration-review-20260921/producer-checks.json"
+    },
+    "independent-consumer-checks.json": {
+      "sha256": "23a3d2355f6057af07ea8c3499692e536b42a06149243831178f754a32796b00",
+      "source": "/private/tmp/console-native-hydration-exact-evidence-integration-review-20260921/consumer-checks.json"
+    }
+  },
+  "verified": {
+    "producer_actual_local_actions": 1029,
+    "producer_cache_hits": 0,
+    "cargo_requests": 0,
+    "consumer_positive_builds": 2,
+    "consumer_corrupt_builds_rejected": 2,
+    "consumer_repaired_builds": 2,
+    "archived_regular_files_restored": 8200,
+    "ui_tests": {
+      "passed": 28,
+      "ignored": 0
+    },
+    "generator_tests": {
+      "passed": 70,
+      "ignored": 0
+    },
+    "checker_tests": {
+      "passed": 19,
+      "skipped": 0
+    },
+    "helper_tests": {
+      "passed": 12
+    },
+    "cas_oracle_synthetic_controls": {
+      "passed": 10
+    }
+  },
+  "limits": [
+    "The integration branch has newer UI and payroll source; its regenerated candidate requires separate evidence.",
+    "Synthetic helper/oracle controls are not product or browser acceptance.",
+    "Cross-host output reproducibility, browser hydration and deployment qualification remain open.",
+    "The broad repository verifier was interrupted after a reviewed source successor invalidated its initial candidate; no whole-repository pass is claimed."
+  ],
+  "history": "Original admission/test commits and reviewed approval artifacts remain unchanged; this is additive evidence."
+}

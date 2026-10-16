@@ -1,0 +1,33 @@
+{
+  "status": "READ_ONLY_NAMESPACE_COMPARISON",
+  "image": "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56",
+  "docker_context": "colima-console-release-20260919",
+  "container": "disposable --rm --network none --user postgres; single-user backend, no listening port",
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "-i",
+    "--network",
+    "none",
+    "--user",
+    "postgres",
+    "--entrypoint",
+    "bash",
+    "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56",
+    "-ceu",
+    "initdb -D /tmp/company-lock-probe --auth-local=trust --auth-host=reject >/dev/null; exec postgres --single -D /tmp/company-lock-probe template1"
+  ],
+  "stdin": "SELECT version(), hashtext('console.audit-chain') AS audit_namespace, 1128615506 AS proposed_enrollment_namespace, hashtext('console.audit-chain') <> 1128615506 AS distinct_namespaces;\n",
+  "exit_code": 0,
+  "rows": 1,
+  "audit_namespace": 1069617922,
+  "proposed_enrollment_namespace": 1128615506,
+  "distinct": true,
+  "raw_log_sha256": "0db047f8013abd552f3ba8ef47c97bcb1cd07c630a137eeeaa02cf88ac2630a5",
+  "limits": [
+    "Current inventoried two-int namespace separation only",
+    "Hash-based command keys can still conservatively collide; tuple equality remains identity",
+    "No intake implementation or production qualification"
+  ]
+}

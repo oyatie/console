@@ -1,0 +1,56 @@
+[
+  {
+    "lane": "native-browser-producer",
+    "base": "ebcb46e871dbff99cf18169ff9c2269ffc35dce5",
+    "owner": "/root",
+    "probe": "python3 tools/buck/test_gen_first_party.py BrowserIntegrationVariantsTests",
+    "immutable_target": "Exactly two native Buck browser test variants, real wrappers and four direct CI leaf producers using pinned browser prerequisites; preserve ordinary coverage and credentials",
+    "allow": [
+      "tools/buck/gen_first_party.py",
+      "backend/app/BUCK",
+      "tools/buck/BUCK",
+      "tools/buck/test_needs_postgres.sh",
+      "tools/browser",
+      ".github/workflows/ci.yml",
+      "scripts/check-ci-preflight.mjs",
+      "backend/app/tests/auth_rest/native_entry_browser.rs",
+      "backend/app/tests/auth_rest/native_company_browser.rs",
+      "backend/app/tests/health_readiness.rs"
+    ],
+    "mechanical_guide": "Apply approved round3 native browser producer proposal with rebased approved tests; root is sole repository/generated/CI writer. Keep all61existing generator tests and9exact wrapper cases. Portable Rust custody changes4assertions only. Never claim Company browser success while its product route remains unfinished. No dark baseline expansion. Installer fail closed on unreviewed platform/digests.",
+    "pre_mortem": [
+      "fake producer or zero selected tests counted passing",
+      "browser metadata passed as shell code or credential file keys",
+      "driver hashes self-approved or original tests lost"
+    ],
+    "detection": [
+      "reviewed actual generator3methods",
+      "real harness6browser transport cases",
+      "CI exhaustive mutations",
+      "native leaf discovery and actual missing-prerequisite failures",
+      "per-leaf browser execution and independent source review"
+    ],
+    "rollback": "Revert only lane changes; retain immutable historical driver/test evidence and ordinary producers. Local temp staging is disposable.",
+    "stop_conditions": [
+      "preimage/source drift",
+      "missing pins",
+      "credential exposure",
+      "zero tests",
+      "unreviewed semantic oracle changes"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "reviews": [
+      "/private/tmp/console-native-browser-producer-tests-round3-security-review-20260920.json",
+      "/private/tmp/console-native-browser-integration-tests-review-20260920.json"
+    ],
+    "remaining_holds": [
+      "Company creation and historical preview oracles conflict and need independent semantic successor",
+      "Linux runtime qualification separate from local macOS",
+      "five-area MVP not complete",
+      "no production exposure"
+    ]
+  }
+]

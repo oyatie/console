@@ -1,0 +1,115 @@
+{
+  "owner": "/root",
+  "base": "4b31c70eaeb5623bb417ae7749a21fbcae0d98e8",
+  "decision": "integrate independently approved exact acceptance packets",
+  "checks": [
+    "every packet member hash verified",
+    "every shared preimage compared against exact sequential composition before any writes",
+    "new paths absent before their packet",
+    "prior parent includes preserved through exact composition",
+    "no production edits"
+  ],
+  "packets": [
+    {
+      "packet": "console-platform-ops-projection-tests-20260920-round1",
+      "manifest_sha256": "5be5a8a8f754ee792b1a8355c72b92524a3b48078beb34b0d8ab80584bcdeca0",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-credential-tests-20260920-round1",
+      "manifest_sha256": "036033e304d76bee15d4b4fbea13cb29acc4cd37718599fa70974133892da257",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-transport-tests-20260920-round2",
+      "manifest_sha256": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-current-source-tests-20260920-round1",
+      "manifest_sha256": "464e8790860d1009d26b0ec29a67a23bd1c83b2bdf35a5ef11fb95acf7a8253c",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_current_source.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-family-history-tests-20260920-round1",
+      "manifest_sha256": "fec0bf3f5c3bdf19ce43b5a7339f3761b77db35359157e80ebf5d7fcb3d3f6b8",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-expiry-progress-tests-20260920-round1",
+      "manifest_sha256": "3c16ca966e0fd93cf0379efb1541206103f26fdcb6c425e32235a8a6623d814b",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs",
+        "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_expiry_progress.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-commit-loss-tests-20260920-round1",
+      "manifest_sha256": "f9fdd692d4b6caecfda79e1bbb5992417718b2a6d2af5ed5346d0fe906e38b0f",
+      "paths": [
+        "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs",
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+        "backend/app/tests/auth_rest/legacy_platform_list_locks.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_commit_loss.rs",
+        "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs"
+      ]
+    },
+    {
+      "packet": "console-platform-ops-retained-fixtures-20260920-round1",
+      "manifest_sha256": "f8337558ad6106d00753d412979ba8f56e92ff411bc2a52e100e8f8679aa3027",
+      "paths": [
+        "backend/app/tests/console_route_telemetry.rs",
+        "backend/crates/platform/platform-rest/tests/ops_dashboard.rs"
+      ]
+    }
+  ],
+  "integrated_hashes": {
+    "backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs": "a320265c7755fc8e9c2c46e711eab1059157e6f422dcdcfb2f1257412c950837",
+    "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "96133310d6f561e28476446b8c7d79432af947ddca1ab80f01e4070b9a2bd6a7",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "463b82646f4678eaea4ef014361636ec62009de4cb973ed22aee12817fc9f610",
+    "backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "bf9e3c6d436dee39c650336676dc1f5c3a8e6b336ba4d926e40c533772947f56",
+    "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "46baf534433dd37a5d9fc1919d0b87e5b1ce46e9a8be1b63cefa318d5cab0436",
+    "backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "3b82337acd9886b09a370dc35111e4bdd81af1a52b2a0331a4b3ad865c601a2d",
+    "backend/app/tests/auth_rest/legacy_platform_ops_current_source.rs": "9c7950154d25027333a17f565d4b2afacb2f3d987500eed776ebd938ca30988a",
+    "backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs": "31fc766da7b7b8d0a49e391fefa529b1685b1ad5e492cc5ced6d121cd123bfe4",
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "5b3d782778a937572f6b4ef96dc75aed42bab7642bd4c5e261f01b9455700496",
+    "backend/app/tests/auth_rest/legacy_platform_ops_expiry_progress.rs": "9a1b9c17601315ee57820497e9922955b3dd4cafd1217af87e6d99ebb34b4388",
+    "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs": "0b0a7106afd6695c366c3f40b8520ca7d66b5d79cc2d0d9ab9d28d9753cab207",
+    "backend/app/tests/auth_rest/legacy_platform_ops_commit_loss.rs": "ef8de9dffa9815b15783538bf17b060acb5a4b4dba2ace9b4b5d17afdf0c0a49",
+    "backend/app/tests/console_route_telemetry.rs": "ce17b2255c832b429a1c6333970ba01b0ceb78c1613a1826d5333bbacdb76852",
+    "backend/crates/platform/platform-rest/tests/ops_dashboard.rs": "2d92ab96df3b6aa278cea4f70825dfa38d673742ee1f7eaf786dc6909ce63f59"
+  },
+  "runtime_counts": "not yet observed; expected25ops plus retained30list and3legacy leaves",
+  "holds": [
+    "actual runtime/fullstate/waits/commit recovery",
+    "affected retained list regression",
+    "clippy",
+    "priorcfd snapshot intermittency release HOLD"
+  ]
+}

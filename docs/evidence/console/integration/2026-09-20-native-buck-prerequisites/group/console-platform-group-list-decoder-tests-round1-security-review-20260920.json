@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact Group decoder test packet source for root integration and verification; runtime acceptance pending",
+  "manifest_sha256": "62e216d2f105535692c399f1d8f461cb3429b4763c5c24b8e5ff95d4c6a0f0f1",
+  "reviewed_compatible_head": "4adfcc52d564ba41953ac4eb3206c38d83d7e49f",
+  "candidate_hashes": {
+    "candidate/backend/app/tests/auth_rest/legacy_platform_group_credentials.rs": "a845ec25a81d14d5d98d5554f5c2e54f3b1069c5f043650d42b552051c2d31b1",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_group_decoder.rs": "bf3698eb2922c2c2b164066ee6fd56a9540bee77aa91404f7c46b2310729665b"
+  },
+  "custody": {
+    "packet_members_verified": 6,
+    "current_source_pins_verified": 6,
+    "existing_credentials_prefix_preserved": true,
+    "only_parent_delta": "Additive legacy_platform_group_decoder child include"
+  },
+  "checks": [
+    "Genuine existing finalized fixture and direct/mounted successful reads precede any substitution; expected 8/4 projection remains independent raw Group/Company base rows.",
+    "Exactly one original member id expression is replaced in the existing function body. One fixture UUID becomes a fixed non-UUID string; other UUIDs serialize identically as text. Actual restricted Business raw query decodes generic JSON and must equal the original projection with only that one field changed.",
+    "Original function definition and pg_proc fields/OID/owner/config/security/volatility/parallel metadata, canonical ACL, dependencies, shared dependencies, description and security labels are captured. During injection only exact expected prosrc may differ.",
+    "Direct owner, actual GET and actual HEAD each wait on a held groups ACCESS EXCLUSIVE barrier. Existing waiting_on verifies console_rt PID, exact blocker edge and platform_list_groups query; pending-task and clean-PID requirements prevent timer-only evidence.",
+    "Releasing the barrier permits real successful SQL with malformed nested member identity; direct requires GroupListUnavailable, GET requires exact503 JSON, HEAD requires empty503. Both HTTP paths enforce existing strict privacy and reject reflected credentials, malformed identifier and SQL function name.",
+    "Every failed attempt requires all public table/raw audit bytes unchanged and injected catalog unchanged. Independent raw SQL succeeds both before and after attempts, ruling out invalid JSON syntax, missing projection or SQL exception as the intended witness.",
+    "Task/barrier handles live outside panic capture. Normal completion uses existing bounded finish, whose timeout aborts and joins the task; captured failures release retained barrier and abort/join any pending task before clean-PID checks and DDL restoration.",
+    "Restoration uses original function definition in a transaction with2second lock and5second statement timeout. Exact restored definition/catalog and complete no-effect history are checked before rethrowing a captured failure.",
+    "Same database and original credential then pass raw projection, direct owner and mounted recovery with existing strict20field audit/all-state checks. Final success requires all three observed attempts; no response, audit, cleanup or recovery omission is silently accepted.",
+    "No production hook, historical migration edit, new grant, source helper change, test weakening, alternate auth fixture or external target. Existing credentials test bytes preserved exactly."
+  ],
+  "findings": [],
+  "static_sqlx_leaves": 1,
+  "runtime_executed_by_reviewer": 0,
+  "compiled_or_formatted_by_reviewer": false,
+  "remaining_holds": [
+    "Root must format/compile and execute the actual SQLx leaf; formatting or compiler successors must preserve the reviewed semantics and be recorded.",
+    "Generated source inclusion and exact composed test hashes require root serialization.",
+    "This source review does not establish Group concurrency, selected-family source retention, unknown-COMMIT recovery, full supplemental acceptance or release qualification.",
+    "Raw SQL authority and prior source-snapshot reliability HOLD remain separate."
+  ]
+}

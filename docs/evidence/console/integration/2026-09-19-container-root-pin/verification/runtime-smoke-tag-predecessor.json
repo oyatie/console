@@ -1,0 +1,73 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "--detach",
+    "--network",
+    "none",
+    "--name",
+    "console-release-smoke-b3736bc6f8d2",
+    "console-client-release:8efec5b0"
+  ],
+  "container": "02067f66bf10e61249ff5fe6694e81cf8ca9b1c072d161de17241c4587f397e6",
+  "expected_database_mode": "not_configured",
+  "product_workflow_qualification": false,
+  "configuration": {
+    "network_mode": "none",
+    "port_bindings": {},
+    "user": "10001",
+    "image": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7"
+  },
+  "healthz": {
+    "command": [
+      "docker",
+      "exec",
+      "02067f66bf10e61249ff5fe6694e81cf8ca9b1c072d161de17241c4587f397e6",
+      "curl",
+      "--silent",
+      "--show-error",
+      "--max-time",
+      "1",
+      "--write-out",
+      "\n%{http_code}",
+      "http://127.0.0.1:8080/healthz"
+    ],
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "service": "console-app",
+      "role": "api"
+    }
+  },
+  "readyz": {
+    "command": [
+      "docker",
+      "exec",
+      "02067f66bf10e61249ff5fe6694e81cf8ca9b1c072d161de17241c4587f397e6",
+      "curl",
+      "--silent",
+      "--show-error",
+      "--max-time",
+      "1",
+      "--write-out",
+      "\n%{http_code}",
+      "http://127.0.0.1:8080/readyz"
+    ],
+    "status": 200,
+    "body": {
+      "status": "ready",
+      "service": "console-app",
+      "role": "api",
+      "database": "not_configured",
+      "leave_command_database": "not_configured",
+      "ontology_command_database": "not_configured",
+      "platform_force_command_database": "not_configured"
+    }
+  },
+  "result": "pass: isolated no-database process smoke only",
+  "cleanup": {
+    "remove_exit": 0,
+    "absence_exit": 1,
+    "absence_stderr": "error: no such object: 02067f66bf10e61249ff5fe6694e81cf8ca9b1c072d161de17241c4587f397e6"
+  }
+}

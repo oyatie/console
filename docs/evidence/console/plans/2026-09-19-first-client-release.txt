@@ -1,0 +1,212 @@
+# Console implementation and first client release
+
+## 1. Release contract
+
+The first client release requires **the full Foundry capability inventory, complete Console business workflows, and a polished native Leptos experience**. Account setup and the first payroll workflow are internal milestones.
+
+Decisions established:
+
+- One operator-managed Group tenant, six Companies, 2,000 people.
+- South Korean employment and payroll requirements.
+- Payroll calculates, obtains approval, issues statements, exports payment instructions, and reconciles externally executed payments.
+- Direct payment execution follows later through the same payment ownership and instruction contracts.
+- Foundry’s classical model development and operations are required. AIP remains on the separate Intelligence roadmap.
+- UI maturity, accessibility, operational recovery, and security are acceptance requirements throughout delivery.
+
+Freeze the Foundry reference inventory against supported public capabilities as of **2026-09-19**. Expand the existing family ledger into actual capabilities, connector/runtime/SDK support matrices, user journeys, dependencies, and executable acceptance criteria. Retired applications may be satisfied by successor workflows; explicitly requested capabilities remain required regardless of vendor lifecycle labels. Missing capabilities remain release blockers.
+
+Reconcile this plan into the existing PRODUCT, ROADMAP, and DELIVERY authorities. Maintain one release inventory with separate states for planned, implemented, integration accepted, production-qualified, and released. Do not create another competing roadmap.
+
+## 2. Product experience and UI acceptance
+
+### Workspace and navigation
+
+Use one cohesive workspace with labeled navigation groups for **Work, People, Communications, Data, and Administration**, with contextual destinations beneath them. Payroll must remain directly discoverable. Navigation reflects current policy without becoming an authorization mechanism.
+
+- **Work:** assigned tasks, approvals, deadlines, pending outcomes, and recoverable interruptions.
+- **People:** recruiting, people, employment, organization, attendance, labor, and payroll.
+- **Communications:** persistent messenger, mail, and calendar destinations with independent navigation.
+- **Data:** objects, datasets, pipelines, analyses, sheets, documents, applications, and models.
+- **Administration:** policy, identity, integrations, schemas, resources, packages, and operations.
+
+Use the same interaction grammar across internal users, applicants, former workers, and external participants. Their available information and actions differ through policy.
+
+### Reusable workflow layout
+
+Every substantial workflow provides:
+
+1. A clear subject, Company or Group scope, effective period, status, and accountable owner.
+2. Context-prefilled typed inputs and actual object references.
+3. Required evidence, relevant annotations, discrepancies, and consequences beside the decision.
+4. Distinct draft, submitted, pending, committed, rejected, conflicting, and uncertain outcomes.
+5. Persistent URLs, reopening, history, and an accountable recovery path.
+
+Sustained work uses full pages; short actions may use dialogs. Communications must not replace the business inspector or discard working context. Wide layouts can show input and evidence together; narrower layouts preserve both through accessible navigation. Only genuinely tabular surfaces may require horizontal scrolling.
+
+### Visual and Leptos implementation
+
+Consolidate the existing conflicting styles into a small shared visual system: Korean-readable typography, spacing, semantic colors, tabular numbers, controls, focus, validation, status, and responsive layout. Start with one complete light theme.
+
+Build native Leptos components and authorized view models. Keep `view!` compositions readable and extract demonstrated repeated patterns. Do not introduce a universal screen generator or another frontend framework.
+
+Ordinary navigation, content, and forms render through SSR. Hydrate only interactions that require browser state, such as object selection, collaborative editing, and live conversations. Static collections must not ship unnecessary islands. Use normal product routes; do not restore `/_ui`.
+
+### Iterative design method
+
+For every delivered journey:
+
+- Compare the existing implementation with relevant interview, prototype, image, and industry references.
+- Implement the proposed improvement against the real owner and database.
+- Exercise it in the browser with realistic content and restricted permissions.
+- Capture screenshots and obtain independent visual and interaction critique.
+- Record adopt, adapt, or reject against task outcomes.
+
+Test discoverability, consequence comprehension, completion, assistance, and recovery with representative users across distinct task and permission contexts. Small formative studies uncover defects; they do not establish population-wide usability.
+
+The game analogy means visible goals, understandable available actions, truthful feedback, and preserved progress over persistent entities.
+
+## 3. Architecture and shared contracts
+
+### Directional ownership
+
+Converge every release-reachable workflow on:
+
+`Leptos / HTTP / worker entry → application use case → domain rules and application-owned ports → persistence or integration adapter`
+
+The application root composes dependencies. SQL, transport handling, and business transitions must not migrate into it merely to satisfy dependency checks.
+
+Reuse the architecture improvements already present on `dev`. Close demonstrated App/Platform bypasses, direct lifecycle mutations, and source-inclusion workarounds as their owners are integrated. Extend architecture checks to catch actual bypasses; a passing manifest gate alone is insufficient.
+
+Each business fact and transition has one canonical writer. UI, APIs, imports, automation, and operational tools invoke that owner.
+
+### Identity, policy, and resource scope
+
+- Account identity persists independently of Employment.
+- Group is tenancy; Company remains the legal business boundary.
+- Job titles, rank, employment location, and organizational hierarchy confer no implicit authority.
+- Cedar governs resources, fields, actions, grants, delegation, schema administration, sharing, and operational access.
+- Authentication and current authorization context are constructed server-side. Client identifiers select a requested resource, never establish authority.
+- Navigation, search, previews, SSR, hydration, downloads, subscriptions, and exports use authorized projections.
+
+Introduce explicit ownership for **Group-scoped datasets, analyses, applications, and model artifacts**. They may combine authorized Company sources without becoming mixed-Company payroll truth or bypassing Company policy. Derived resources inherit source restrictions unless a separately authorized release rule permits broader disclosure.
+
+Group business operations orchestrate Company-owned child commands with individual outcomes and recovery.
+
+### Objects, drafts, actions, and interfaces
+
+Extend existing contracts to provide:
+
+- Stable object, property, relationship, item, and resource identities.
+- Versioned schemas, effective dates, provenance, and exact money/time representations.
+- Draft entities with durable changes, checkpoints, comparison, replay, and append-only restoration.
+- Typed commands carrying command identity and expected revisions.
+- Shared validation and authorization between preflight and execution.
+- Durable receipts distinguishing confirmed results, conflicts, known failures, and unknown outcomes.
+- Versioned events and resumable subscriptions that recheck current disclosure authority.
+
+Preserve compatible API routes through the same use cases. Serialize contract generation and migration changes. Never reinterpret historical command bytes or reseal historical records to accommodate a new codec.
+
+### Payroll and future payment execution
+
+Reuse payroll’s existing owning boundary. Separate:
+
+- Approved payroll obligation and immutable instruction revision.
+- Export artifact, destination, totals, and delivery attempt.
+- External acknowledgement and settlement evidence.
+- Reconciliation, exceptions, returns, and corrections.
+
+Exporting or downloading instructions never marks wages paid. Future bank integration consumes the same approved instruction and reconciliation model, adding delivery attempts without creating another payroll writer.
+
+### Data execution and concurrency
+
+Retain PostgreSQL as the initial authoritative business substrate. Complete bounded comparisons before committing new dataset formats or collaborative protocols.
+
+Compare existing transaction/revision mechanisms, narrow sequencing, and collaboration algorithms using the same correctness histories and workloads. Reject mechanisms that lose acknowledged changes, violate policy or attribution, duplicate effects, starve unrelated work, or exceed the agreed envelope. Select the simplest passing option; document the measured replacement trigger.
+
+Use stable cell/property identities. Merge independent edits only when shared invariants remain valid; conflicting edits receive explicit resolution. Structural changes and formula recalculation require versioned dependencies and deterministic recovery.
+
+User code, notebooks, containers, and imported models execute outside the trusted Console process. Give them scoped data access, controlled egress, isolated resources, cancellation, and durable output publication—not authentication or payroll database credentials.
+
+## 4. Delivery sequence
+
+Every milestone includes its working Leptos interface, owning use cases, persistence, security, recovery, and acceptance evidence.
+
+| Milestone | Deliverable | Exit condition |
+|---|---|---|
+| **0. Establish one integrated baseline** | Reconcile current protected `dev` with accepted Account/session work and the Company candidate. Preserve staged work, historical migrations, custody fingerprints, and existing tests. Complete the release inventory and reproducible database/browser environment. | One exact candidate, working prerequisites, known defects, real owner-bound RED probes, and an executable dependency order. |
+| **1. Enter and administer a real workspace** | Account registration/login/recovery; Company and Group setup; populated context discovery; policy grant/revoke administration; first coherent workspace and visual system. | A real Account creates or accesses authorized work, reopens it, and correctly loses access after revocation. No disabled enrollment workflow or unconditional `501` remains exposed. |
+| **2. Complete the first governed payroll journey** | Typed source entry, durable drafts, submission, independent review, source repair, supersession, ownership transfer, Group progress, nonpayable publication, and historical correction. Bring approvals, notifications, and required files into this milestone. | Browser input reaches its owner, survives reopening, receives review, publishes the exact reviewed result, and supports correction and failure recovery. |
+| **3. Complete people and employment** | Applicant access, recruiting decisions, offers/contracts, onboarding, employment and nonemployee engagements, effective-dated organization/assignment changes, cross-Company servicing, departure, and post-departure certificates. | Complete lifecycle journeys preserve history, attribution, restricted fields, and persistent Account access. All alternative mutation routes enforce the same rules. |
+| **4. Complete attendance, labor, and production payroll** | Calendars, shifts, time capture/corrections, leave and rescheduling, overtime/coverage, close/reopen, labor cases, wage calculation, allowances, deductions, insurance/filing workflows, severance, statements, export, and reconciliation. | Independently validated Korean rule applicability and calculations; exceptions and corrections work without rewriting approved history. Unsupported required pilot cases remain blockers. |
+| **5. Complete common work and external participation** | Native messenger, mail, calendar, files/document workspaces, approvals, assignment/continuity, notifications, external participation, and governed sharing. | Real delivery, threading, attachments, reconnect, retention, revocation, and handoff work across business objects. External participants have usable narrow access. |
+| **6. Complete the operational data platform** | Dataset/media resources; versioning and branches; catalogued connectors; batch, incremental/CDC, streaming and federated access; visual/code transforms; isolated execution; scheduling, cancellation, backfills, quality, and lineage. | A source can be connected, transformed, published, inspected, failed, repaired, and replayed with reproducible inputs and authorized results. |
+| **7. Complete Ontology, Actions, and analytical work** | Type/property/link/interface management, backing mappings, schema evolution, object sets, functions, rules, automation, search, graph exploration, BI, time-series, geospatial, and multimodal analysis. | The same governed objects and actions work consistently across operational and analytical surfaces, including derived-data restrictions. |
+| **8. Complete Fusion, documents, and application development** | Concurrent sheets, formulas, structure edits, dataset refresh, object writeback, history and file compatibility; ontology-aware collaborative documents; visual application building, reusable views, custom extensions, SDKs/APIs, code workspaces, and custom endpoints. | Users complete real analytical and application-building tasks, including conflicts, reconnect, publication, and rollback. Office-file storage alone does not satisfy sheets. |
+| **9. Complete models, distribution, and SaaS administration** | Classical model training/import, experiments, evaluation, promotion, batch/live inference, simulation and optimization; versioned product packages, installation/upgrades, resource quotas, usage/cost, federation, administration, and resource observability. | Models and packaged applications preserve dependency identity, permissions, reproducibility, monitoring, upgrade safety, and rollback. Tenant onboarding/offboarding covers the assembled product. |
+| **10. Qualify the complete release** | Integrated functional, UX, security, migration, load, recovery, supply-chain, and operational qualification on the deployment candidate. | Every required release leaf and cross-product journey has accepted evidence; blocking findings are resolved; the concrete release is ready for the separate exposure decision. |
+
+This is dependency ordering, not a backend-first waterfall. After shared contracts are established, people/payroll, communications, and data-platform work can progress independently. Dataset/application/model/package version identities must precede the executions they describe.
+
+Use bounded subagent implementation and independent review assignments. Follow the repository’s current lane admission rules, maintain one writer per root, and serialize migrations, lockfiles, generated contracts, CI, and authority records. Continue to the next ready dependency after each accepted milestone.
+
+## 5. Verification and production qualification
+
+### Gates
+
+| Gate | Required evidence |
+|---|---|
+| **Before implementation** | Exact design/test candidate; clear owner and interfaces; reviewed fixtures and oracles; executable RED at the actual boundary; functioning prerequisites; migration and recovery design. |
+| **Before workflow acceptance** | Real browser → authentication → current policy → owning transaction → durable effects → response → reopening. Independent correctness, security, failure, usability, and performance evidence. |
+| **Before client exposure** | Complete release inventory; exact built artifact; deployment-equivalent qualification; populated migrations; recovery drills; working monitoring and support; no unresolved release blockers. |
+
+Reuse valid existing approvals and evidence. Semantic test changes return to independent review. Missing infrastructure, zero executed tests, and failures behind an unrelated missing schema do not qualify a lane.
+
+### Required test scenarios
+
+- Cross-tenant denial and separately governed cross-Company access.
+- Restricted salary fields, confidential links, search/previews, exports, and subscription revocation.
+- Multiple Accounts representing the same natural person in approval independence checks.
+- Stale revisions, simultaneous changes, duplicate requests, lost responses, interrupted commits, cancellation, and unknown outcomes.
+- Temporary/permanent transfer at actual task granularity, including no eligible replacement.
+- Payroll partial settlement, rejection, duplicate statement imports, unmatched payments, corrected instructions, and ambiguous delivery.
+- Pipeline checkpoint recovery, schema drift, backfills, sandbox isolation, and resource starvation.
+- Sheet same-cell conflicts, independent edits, row/column changes, formula fanout, and reconnect.
+- Model and application promotion, rollback, dependency upgrades, and source-policy changes.
+- Populated migrations, mixed-version readers/writers, resumable backfills, retention, deletion, and legal holds.
+- Korean IME, keyboard-only use, screen-reader semantics, long text, large datasets, 320px reflow, and 200% zoom.
+
+Review the evidence machinery itself. Positive controls and injected corruption must demonstrate that missing requests, omitted effects, incomplete histories, and stale artifacts are detected. Verus proofs must name their executable boundary and trusted assumptions.
+
+### Workload and operating targets
+
+Start qualification with the existing pilot hypotheses: 80 active sessions, 40 editors, 2,000 attendance submissions within 60 seconds, balanced and heavily skewed Company populations, and twelve months of history.
+
+Run mixed workloads for 60 minutes, then bursts, saturation, and recovery. Add ingestion, backfills, analytical queries/exports, transformations, model jobs, formula recalculation, and subscription catch-up. Measure hot-object and hot-cell contention separately.
+
+Initial server-side targets are:
+
+- Context reads: p95 ≤250 ms, p99 ≤1 second.
+- Draft saves and time submissions: p95 ≤500 ms, p99 ≤2 seconds.
+- Review attempts: ≤5 seconds.
+- Company execution: ≤30 seconds; Group completion: ≤300 seconds.
+- Valid interactive error/timeout rate: ≤0.1% within the admitted envelope.
+
+These are qualification targets, not current measurements. Count rejected and timed-out useful work honestly. Evaluate 50,000- and 1,000,000-person datasets with explicit saturation and architecture-change triggers; employee count alone does not select a mechanism.
+
+### Deployment and recovery
+
+Reuse the existing application, workers, CNPG, object storage, and observability stack. Qualify two application replicas and three independently placed database instances, with the required synchronous standby and bounded rollout.
+
+Resolve the current connection-budget defect: authenticated blue/green deployment can demand at least 68 connections against a 60-connection configuration before operational reserve. Verify every pool, worker, observer, migration, and rollout allocation.
+
+Unify PostgreSQL versions through compatibility testing; retain Rust 1.98.1 and the verified TLS configuration. Pin the tested application, SSR/WASM, dependencies, and deployment artifacts.
+
+Require:
+
+- No loss of acknowledged state under the qualified primary/failure-domain loss scenario.
+- Ordinary-data disaster RPO ≤5 minutes and recovery readmission target ≤4 hours.
+- Fenced recovery and current-authority reconciliation before service resumes.
+- Tested restoration of database security objects, files, datasets, model artifacts, checkpoints, keys, and package metadata.
+- Separate software rollback, data restoration, and irreversible-effect reconciliation procedures.
+
+Production exposure follows qualification of this assembled release. No individual milestone, attractive screen, or passing subset closes the Console delivery objective.

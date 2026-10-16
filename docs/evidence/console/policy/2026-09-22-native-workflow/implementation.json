@@ -1,0 +1,25 @@
+{
+  "decision": "APPROVE bounded application workflow implementation",
+  "reviewer": "/root/policy_browser_tests",
+  "base": "0a2cac738",
+  "files": {
+    "backend/crates/identity/application/src/company_policy/workflow.rs": "04c411dd69c217980d9315f22bcba8b944ee1c9e6357583048b08ccc2c9678a0",
+    "backend/crates/identity/application/src/company_policy.rs": "9134f5e53929e6aa2d81fe381d8e0641c93e8a6dc13debc0f4c8ed0171a1c8fa",
+    "backend/crates/platform/authz/src/native_business_policy_unit_tests.rs": "5244bba49cf361fbbb1effc98d13abf5ea26bcd5ad885238b5fa268bff3d7a9d",
+    "backend/crates/platform/authz/src/native_workflow_usecases_tests.rs": "02c1627bc96f1b493a3b7c3328fa7c45819c7129c237faea9a9a3f9e1c3c4dfc"
+  },
+  "findings": [],
+  "verified": [
+    "Exact reviewed public API implemented without Auth/SQL/HTTP dependency; selected Company strict match before real policy decision.",
+    "Accept uses exact command recipient; other modes use checked administrative Account. Required policy errors map unavailable; denial maps opaque NotFound.",
+    "All four entry usecases acquire retained scope, authorize before operation, await consuming finish before returning; Form passes exact already-issued proof by reference.",
+    "Acceptance NotVisible is rejected BEFORE finish, so malformed result neither commits nor starts B.",
+    "Submit awaits successful A return/release, returns exact replayed terminal with inserted=false or starts separate selector-only B. No automatic retry/replacement input; unknown A/B propagates.",
+    "Mount is additive2lines and module export1line; installed13test source exact reviewed round2 bytes."
+  ],
+  "runtime_tests_executed_by_reviewer": 0,
+  "limits": [
+    "Pending root native Buck execution, actual adapter strict output parsing/final Auth+Cedar/SQL closure, command histories and browser acceptance.",
+    "Public typed view fields intentionally rely on checked owning adapter; this application implementation is not a new SQL trust boundary."
+  ]
+}

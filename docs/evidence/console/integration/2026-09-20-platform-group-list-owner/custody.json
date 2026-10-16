@@ -1,0 +1,74 @@
+{
+  "round1/manifest.json": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round1/manifest.json",
+    "sha256": "87e3bb9a52de7998ff3b73da6ed3e01bd55cad3da4fdaad2ddc4526ef41c59b3"
+  },
+  "round1/DESIGN.txt": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round1/DESIGN.md",
+    "sha256": "c66cd03505ad56950089cf3ecc6693c6989ba0db089a605c12c665cfef295cb9"
+  },
+  "round1/CENSUS.txt": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round1/CENSUS.md",
+    "sha256": "fcae984dd22a9f56c8e5e90e08cefa3c123ebec62846d56a650339064ef9c4ef"
+  },
+  "round1/source-pins.json": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round1/source-pins.json",
+    "sha256": "b83defb394faef58f31bbdcc0fa529ff2a763698d4f65ba84a137a6a1c2f516d"
+  },
+  "round2/manifest.json": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round2/manifest.json",
+    "sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2"
+  },
+  "round2/DESIGN.txt": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round2/DESIGN.md",
+    "sha256": "a1d858465156868aee8c81a983edbda0497df3fc44b8b291cac5ce9a4888b72c"
+  },
+  "round2/CENSUS.txt": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round2/CENSUS.md",
+    "sha256": "fcae984dd22a9f56c8e5e90e08cefa3c123ebec62846d56a650339064ef9c4ef"
+  },
+  "round2/source-pins.json": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round2/source-pins.json",
+    "sha256": "b83defb394faef58f31bbdcc0fa529ff2a763698d4f65ba84a137a6a1c2f516d"
+  },
+  "round2/revision.json": {
+    "source": "/private/tmp/console-platform-group-list-design-20260920-round2/revision.json",
+    "sha256": "45bab449576f8d57909254822ee924735a4b30c47510ea1b173b72e83d4915f5"
+  },
+  "console-platform-group-list-design-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round1-security-review-20260920.json",
+    "sha256": "e11a1f46e655903f838a185f9048b6283389853419f4cf14d14059c3941129fc"
+  },
+  "console-platform-group-list-design-round2-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round2-security-review-20260920.json",
+    "sha256": "6f6f9ad194acd9553d4e03f79c7df4680c14bf45eb50b8ec3fcd25908494d625"
+  },
+  "console-platform-group-list-design-round3-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round3-security-review-20260920.json",
+    "sha256": "129b3251cbc12b93f41a05fc7542c02c4761060bca459268337c73cb49dded72"
+  },
+  "console-platform-group-list-design-round4-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round4-security-review-20260920.json",
+    "sha256": "a7a4283329d033643d0f8464da201ac4395358454bbfe35e457b1cd96f6d040b"
+  },
+  "console-platform-group-list-design-round1-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round1-root-review-20260920.json",
+    "sha256": "385838e2551c0dbd4065851d47830289dd5884517646f38b61208fcd92e8588b"
+  },
+  "console-platform-group-list-design-round2-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round2-root-review-20260920.json",
+    "sha256": "c24c37cfae0c14a0485554faab2be796651a9fbaf3b7be9b1c4ed3d9c8ec3e95"
+  },
+  "console-platform-group-list-design-round3-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-round3-root-review-20260920.json",
+    "sha256": "66e257ec9caeff9389cc6a342eace5f02b015f613b844ab929ae19d1ca33ff11"
+  },
+  "console-platform-group-list-design-fourth-final-integration-tests-confirmation-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-fourth-final-integration-tests-confirmation-20260920.json",
+    "sha256": "55987b86ea789ddec3bbabcf7f970e807aff686503a5642f11103b83f7a5b594"
+  },
+  "console-platform-group-list-design-consensus-root-20260920.json": {
+    "source": "/private/tmp/console-platform-group-list-design-consensus-root-20260920.json",
+    "sha256": "187893015bf741a2ee288904d0dc0ca816c6efb7a113fea76340593e584dd53f"
+  }
+}

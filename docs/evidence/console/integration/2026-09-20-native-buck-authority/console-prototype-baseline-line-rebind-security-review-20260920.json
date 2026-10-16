@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact mechanical baseline line rebind454 to538; no new residual admitted",
+  "file": "scripts/prototype-chain-lookup-baseline.json",
+  "preimage_sha256": "a62b2c6ff1d8108db1cfc194142619b0f25d06a070860afb61df9ae1873ad3d9",
+  "candidate_sha256": "a864d87ad0e3675f51911a5f403abf4c802f980a59c77d16a9e9d039f664c280",
+  "historical_baseline_commit": "c2ee1e4eebefdd73e47962dfe4ea33b48bf67f8c",
+  "current_subject_sha256": "7c978ed3799c8fc0cfc72e093f0930c4d3dd18b084fd7f0d64dd8b49aeb0dd25",
+  "checks": [
+    "At historical baseline commit the recorded required_outcomes?.[area] snippet occurs exactly once at line454. Current identical snippet occurs exactly once at538.",
+    "Exact candidate is only literal line number454\u2192538. Parsed object differs only in this one entry line; file,kind,key,snippet,reason,three-entry count and all other values retained.",
+    "Actual full verify log reports same subject at538 unknown and old454 stale; scanned102,findings3,unknown1,stale1. This is source location drift, not a new admitted lookup or expanded allowance.",
+    "Checker IDs bind file,line,kind,key,snippet. Rebinding location preserves exact existing residual identity and future unknown/stale detection; no checker/test alteration."
+  ],
+  "required_followup": [
+    "Record actual owner RED on clean successor and admit exact baseline edit.",
+    "Rerun unchanged checker tests and live census; preserve full previous verification failure.",
+    "No wider baseline regeneration or source/test changes in this lane."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "repository_mutations_by_reviewer": 0,
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Essentialism / YAGNI",
+    "Red Team"
+  ]
+}

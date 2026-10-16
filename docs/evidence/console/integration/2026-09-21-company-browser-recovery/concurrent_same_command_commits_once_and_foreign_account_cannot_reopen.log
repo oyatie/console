@@ -1,0 +1,28 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T23:02:33.094-04:00] Build ID: 342b714b-28b0-4ba1-a71b-76b1d6aa2021
+[2026-09-21T23:02:33.094-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T23:02:40.191-04:00] Waiting on root//third-party/rust:_zerocopy-derive-0.8 (prelude//platforms:default#11a256c53bf8083e) -- action (write linker_wrapper.sh), and 691 other actions
+[2026-09-21T23:02:47.292-04:00] Waiting on root//third-party/rust:base16ct-0.2.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write base16ct-0.2.0.crate_unpack.sh), and 675 other actions
+[2026-09-21T23:02:54.391-04:00] Waiting on root//third-party/rust:hybrid-array-0.4 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 198 other actions
+BUILD SUCCEEDED
+[2026-09-21T23:02:58.131-04:00] Build ID: 8786f2bc-abb5-430b-9067-f76e69cac0c1
+[2026-09-21T23:02:58.132-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T23:03:05.224-04:00] Waiting on root//backend -- loading package file tree, and 1 other actions
+[2026-09-21T23:03:12.224-04:00] Waiting on root//third-party/rust:email_address-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 569 other actions
+[2026-09-21T23:03:19.624-04:00] Waiting on root//third-party/rust:_prost-derive-0.14 (prelude//platforms:default#11a256c53bf8083e) -- action (write linker_wrapper.sh), and 688 other actions
+[2026-09-21T23:03:27.224-04:00] Waiting on root//third-party/rust:serde_core-1 (prelude//platforms:default#11a256c53bf8083e) -- action (write LPPL/serde_core-link-diag.args), and 301 other actions
+[2026-09-21T23:03:34.324-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-21T23:03:41.625-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-21T23:03:44.634-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (12.9s)
+[2026-09-21T23:03:44.634-04:00] ---- STDOUT ----
+[2026-09-21T23:03:44.634-04:00]
+[2026-09-21T23:03:44.634-04:00] running 1 test
+[2026-09-21T23:03:44.634-04:00] test account_browser::deployment_operator_designation::company_setup::concurrent_same_command_commits_once_and_foreign_account_cannot_reopen ... ok
+[2026-09-21T23:03:44.634-04:00]
+[2026-09-21T23:03:44.634-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 516 filtered out; finished in 12.71s
+[2026-09-21T23:03:44.634-04:00]
+[2026-09-21T23:03:44.634-04:00]
+[2026-09-21T23:03:44.634-04:00] ---- STDERR ----
+[2026-09-21T23:03:44.634-04:00]
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

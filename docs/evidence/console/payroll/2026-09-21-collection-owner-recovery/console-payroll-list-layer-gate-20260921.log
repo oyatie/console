@@ -1,0 +1,17 @@
+[2026-09-21T15:54:21.065-04:00] Build ID: d3702ebc-6288-4821-bedb-0bb624ebfc79
+[2026-09-21T15:54:21.097-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:54:28.151-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:54:35.351-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:54:42.451-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:54:49.551-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:54:56.652-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:55:03.751-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:55:10.852-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:55:17.952-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:55:25.052-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 build --local-only //tools/buck:app-health-readiness-pg] to finish]
+[2026-09-21T15:55:36.110-04:00] Cache hits: 0%
+[2026-09-21T15:55:36.110-04:00] Commands: 2 (cached: 0, remote: 0, local: 2)
+[2026-09-21T15:55:36.110-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+console-gate-layer-boundary: checking workspace at /private/tmp/console-mvp-dev-integrate-20260921/backend
+console-gate-layer-boundary: PASSED — 176 workspace crates checked, 0 violations

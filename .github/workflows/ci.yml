@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
+      classification_ready: ${{ steps.path_class.outcome == 'success' && steps.path_class.outputs.path_class != '' && (steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false') }}
       path_class: ${{ steps.path_class.outputs.path_class }}
       docs_only: ${{ steps.path_class.outputs.docs_only }}
       run_heavy: ${{ steps.path_class.outputs.run_heavy }}
@@ -108,11 +109,11 @@ jobs:
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' && steps.path_class.outputs.path_class == 'release-metadata-only' }}
         run: npm run check:doc-links
 
-      # DotSlash + Rust follow classification so thin path classes can skip them without
-      # reading an empty steps.path_class output (GHA evaluates if before later steps).
+      # DotSlash supports the always-run native metadata checks. Rust and compilation
+      # retain their heavy-path guards after classification.
       - name: Install pinned DotSlash runtime
         id: dotslash
-        if: ${{ !cancelled() && steps.checkout.outcome == 'success' && steps.path_class.outputs.run_heavy == 'true' }}
+        if: ${{ !cancelled() && steps.checkout.outcome == 'success' }}
         run: tools/buck/install_dotslash.sh
 
       - name: Install Rust toolchain for Cargo.lock consistency
@@ -148,7 +149,7 @@ jobs:
       - name: Buck impact planner regression
         id: buck-impact-planner
         if: ${{ !cancelled() && steps.npm-ci.outcome == 'success' }}
-        run: python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests
+        run: python3 -m unittest -v tools.buck.impact.test_plan tools.buck.test_gen_first_party.GeneratorCliTests tools.buck.test_gen_first_party.GeneratorContractsResourceTests tools.buck.test_gen_first_party.BrowserIntegrationVariantsTests
 
       - name: Console route inventory regression
         id: route-inventory
@@ -255,7 +256,7 @@ jobs:
     name: Domain crates — unit tests
     runs-on: ubuntu-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 20
     env:
       # MUST match the cache writer (`backend`'s cargo leg). rust-cache folds every
@@ -387,7 +388,7 @@ jobs:
             -p console-dispatch-rest -p console-docs-adapter-postgres -p console-docs-rest \
             -p console-evaluation-adapter-postgres -p console-facilities-rest -p console-financial-rest \
             -p console-gate-dev-auth-absence -p console-gate-iac-tier -p console-gate-layer-boundary \
-            -p console-gate-tenant-isolation -p console-gate-vendor-lockin -p console-identity-rest \
+            -p console-gate-tenant-isolation -p console-gate-vendor-lockin \
             -p console-inventory-adapter-postgres -p console-inventory-rest -p console-leave-adapter-postgres \
             -p console-leave-rest -p console-ontology-adapter-postgres -p console-ontology-rest \
             -p console-payroll-rest -p console-platform-email -p console-platform-jobs \
@@ -401,16 +402,9 @@ jobs:
             -p console-ontology-canonical-adapter-postgres -p console-orgchange-adapter-postgres \
             -p console-gate-writer-ownership -p console-identity-adapter-postgres
           check_status "domain --lib sweep"
-          # Its own invocation, and deliberately NOT also in the sweep above.
-          # The executed-tests ratchet keys a test binary by (crate_root,
-          # feature set), and this crate's Buck face declares islands+ssr --
-          # the same set Cargo applies by default. An invocation leaving them
-          # implicit keys a different binary, so the real one reads as
-          # executing nowhere and the ratchet calls it a test that cannot fail.
-          # Naming them makes the two identities the same; listing the crate
-          # in both places would compile and run the same 8 tests twice and
-          # leave a bare key the ratchet cannot see, because it only checks
-          # defined-minus-executed.
+          # Keep one explicit islands+ssr invocation; the ratchet includes
+          # manifest defaults when resolving both implicit and explicit features.
+          # Adding this crate to the sweep would execute the same tests twice.
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
             -p console-payroll-ui --features islands,ssr
           check_status "payroll-ui --lib"
@@ -438,6 +432,21 @@ jobs:
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-authz --test cedar_pbac_readiness_cases --test cedar_pbac_legacy_only_observe_and_record
           check_status "cedar_pbac"
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-authz --test cedar_diagnostic_fail_closed
+          check_status "cedar_diagnostic_fail_closed"
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-authz --test cedar_sdk_identity
+          check_status "cedar_sdk_identity"
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-request-context --test native_error_envelope
+          check_status "native_error_envelope"
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-audit-chain --test ed25519_compatibility
+          check_status "ed25519_compatibility"
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-provisioning --test account_historical_consent
+          check_status "account_historical_consent"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-attendance-domain --test range_and_history
           check_status "range_and_history"
@@ -512,6 +521,7 @@ jobs:
     name: Test PostgreSQL — app
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -570,6 +580,7 @@ jobs:
     name: Test PostgreSQL — platform
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -628,6 +639,7 @@ jobs:
     name: Test PostgreSQL — ontology
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -686,6 +698,7 @@ jobs:
     name: Test PostgreSQL — domain adapters A
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -744,6 +757,7 @@ jobs:
     name: Test PostgreSQL — domain adapters B
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -824,19 +838,19 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Preflight failure non-evaluation
-        if: ${{ needs.preflight.result != 'success' }}
+        if: ${{ needs.preflight.outputs.classification_ready != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'PostgreSQL reachability not evaluated because preflight result=%s\n' "${{ needs.preflight.result }}"
       - name: Path-class skip proof
-        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}
+        if: ${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'false' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Require all PostgreSQL reachability facets
-        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}
+        if: ${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           test "${{ needs.postgres-reachability-app.result }}" = success &&
           test "${{ needs.postgres-reachability-platform.result }}" = success &&
@@ -857,7 +871,7 @@ jobs:
     name: Company conformance — generic-engine regression
     runs-on: ubuntu-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 35
 
     steps:
@@ -895,7 +909,7 @@ jobs:
     name: Generated faces — full required drift authority
     runs-on: macos-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 35
 
     steps:
@@ -954,7 +968,7 @@ jobs:
     name: Backend — ${{ matrix.leg }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     # Three legs run in PARALLEL. Measured on merge_group run 32402124838 this
     # job was the 17m critical path of a 19m CI run, and three steps were 757s
     # of its ~1,070s of work: the dev-auth PostgreSQL suites (355s), clippy
@@ -1432,7 +1446,11 @@ jobs:
         id: authz-unit
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
-        run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity
+        run: |
+          env -u DATABASE_URL tools/buck2 test \
+            //backend/crates/platform/authz:console-platform-authz-unit \
+            //backend/crates/platform/provisioning:console-platform-provisioning-unit \
+            //backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity //backend/crates/payroll/ui:console-payroll-ui-itest-react_people //backend/crates/identity/application:console-identity-application-itest-native_hr_policy_parser_contract //backend/crates/platform/authz:console-platform-authz-itest-native_hr_bootstrap_cedar_contract
 
       - name: Buck2 console-app unit suite
         id: app-unit
@@ -1460,7 +1478,422 @@ jobs:
         run: |
           tools/buck/test_needs_postgres.sh --num-threads=1 \
             //tools/buck:app-inline-postgres \
-            //tools/buck:app-dev-auth-persona-guard-postgres
+            //tools/buck:app-dev-auth-persona-guard-postgres \
+            //tools/buck:identity-rest-unit-pg
+
+      - name: Install pinned native browser prerequisites
+        id: "browser-prerequisites"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: "tools/browser/prepare_native_browser.sh"
+
+      - name: Native Account browser
+        id: "account-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          for leaf in \
+            account_browser::browser_business_oracle_requires_complete_lossless_unchanged_rows \
+            account_browser::browser_login_history_oracle_requires_exact_key_and_retained_effects \
+            account_browser::browser_global_oracle_requires_complete_owned_effects_and_immutable_tables; do
+            expected="${leaf}: test"$'\n\n1 test, 0 benchmarks'
+            if ! listing="$(tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact "${leaf}" 2>/dev/null)" || [[ "${listing}" != "${expected}" ]]; then
+              echo "native browser: exact oracle discovery failed" >&2
+              exit 1
+            fi
+            tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact "${leaf}"
+          done
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-sign-in.png 05-account-returned.png; do
+            evidence_path="${CONSOLE_BROWSER_JOURNEY_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native Company creation browser
+        id: "company-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png 05-company-workspace.png; do
+            evidence_path="${CONSOLE_COMPANY_BROWSER_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native Company preview browser
+        id: "company-preview-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          node --test tools/browser/company-preview.test.cjs
+          node --test tools/browser/native-header-sections.test.cjs tools/browser/company-navigation.test.cjs tools/browser/people-journey.test.cjs
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-preview-input-preserved.png; do
+            evidence_path="${CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native payroll hydration browser
+        id: "hydration-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json authorized-before.png authorized-filter-1.png authorized-filter-2.png authorized-filter-3.png; do
+            evidence_path="${CONSOLE_HYDRATION_BROWSER_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native inherited browser histories
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: .
+        run: |
+          set -euo pipefail
+          umask 077
+          node --test tools/browser/account-controller.test.cjs tools/browser/account-company-handoff.test.cjs tools/browser/account-company-handoff-protocol.test.cjs tools/browser/company-information-manager-current.test.cjs tools/browser/group-invalid-form.test.cjs tools/browser/people-journey.test.cjs
+          require_inherited_browser_discovery() {
+            local leaf="$1" listing expected
+            expected="${leaf}: test"$'\n\n1 test, 0 benchmarks'
+            if ! listing="$(env -u DATABASE_URL tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact "${leaf}" 2>/dev/null)" || [[ "${listing}" != "${expected}" ]]; then
+              echo "native browser: exact inherited discovery failed" >&2
+              exit 1
+            fi
+            printf 'native browser: discovered %s exactly once\n' "${leaf}"
+          }
+          # Begin inherited evidence guard
+          require_inherited_browser_evidence() {
+            local root="$1" ancestor evidence_file evidence_path
+            shift
+            [[ -d "${root}" && ! -L "${root}" ]] || return 1
+            ancestor="${root}"
+            while [[ "${ancestor}" != / ]]; do
+              [[ ! -L "${ancestor}" ]] || return 1
+              ancestor="$(dirname "${ancestor}")"
+            done
+            for evidence_file in "$@"; do
+              [[ "${evidence_file}" =~ ^[a-zA-Z0-9_.-]+$ && "${evidence_file}" != . && "${evidence_file}" != .. ]] || return 1
+              evidence_path="${root}/${evidence_file}"
+              if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+                echo "native browser: required inherited evidence missing or invalid" >&2
+                return 1
+              fi
+            done
+          }
+          # End inherited evidence guard
+          for leaf in \
+            account_browser::deployment_operator_designation::company_setup::policy_audit_oracle_rejects_missing_extra_wrong_fields_and_sql_json_null_confusion \
+            account_browser::deployment_operator_designation::company_setup::policy_participant_content_oracle_rejects_same_cardinality_corruption \
+            account_browser::deployment_operator_designation::company_setup::policy_browser_wire_expectation_matches_independent_frozen_vectors \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::people_effect_census_requires_every_effect_and_preserves_unrelated_history \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::native_directory_shape_oracle_rejects_employment_facts_and_false_provenance \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::native_receipt_linkage_oracle_rejects_same_count_wrong_identity_or_digest \
+            account_browser::deployment_operator_designation::company_setup::native_people_browser::people_action_oracle_uses_actual_dispatch_target_column \
+            account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_projection_rejects_noncanonical_or_mismatched_values; do
+            require_inherited_browser_discovery "${leaf}"
+            env -u DATABASE_URL tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact "${leaf}"
+          done
+          leaf=account_browser::deployment_operator_designation::company_setup::native_group_process_browser::group_result_xid8_wire_matches_exact_postgresql_json_text
+          require_inherited_browser_discovery "${leaf}"
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT="${leaf}" tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          stage="$(dirname "${CONSOLE_COMPANY_BROWSER_DRIVER:?}")"
+          while IFS='|' read -r tag leaf basename evidence_files screenshots; do
+            require_inherited_browser_discovery "${leaf}"
+            parent="$(mktemp -d "${stage}/outputs/inherited-${tag}.XXXXXX")"
+            requested="${parent}/requested"
+            actual="${parent}/${basename}"
+            node tools/browser/publish-history-output.cjs "${tag}" "${stage}" "${parent}" "${GITHUB_ENV:?}"
+            started="${SECONDS}"
+            CONSOLE_COMPANY_BROWSER_OUTPUT="${requested}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT="${leaf}" tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+            printf 'native browser: %s migration/bootstrap and test seconds=%s\n' "${tag}" "$((SECONDS - started))"
+            started="${SECONDS}"
+            read -r -a public_files <<< "${evidence_files}"
+            require_inherited_browser_evidence "${actual}" "${public_files[@]}"
+            node - "${actual}" "${screenshots}" "${tag}" <<'RESULT'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const [root, screenshots, tag] = process.argv.slice(2);
+          const file = path.join(root, 'result.json');
+          const stat = fs.lstatSync(file);
+          assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.size > 0 && stat.size <= 1048576);
+          const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+          assert.equal(value.status, 'BROWSER_LEAF_PASSED');
+          assert.equal(value.cleanup?.confirmed, true);
+          assert.deepEqual(value.screenshots, screenshots.split(' '));
+          if (tag === 'account-controller') {
+            const names = ['native-first', 'react-first', 'keyboard-before-react', 'autofill-before-react',
+              'eventless-value-before-react', 'ime-before-react', 'preclaim-focus', 'partial-bind-rollback',
+              'capability-denied', 'freeze-at-csrf'];
+            assert.ok(Array.isArray(value.controller?.records));
+            assert.deepEqual(value.controller.records.map(record => record.name), names);
+          }
+          RESULT
+            printf 'native browser: %s public retention seconds=%s\n' "${tag}" "$((SECONDS - started))"
+          done <<'HISTORIES'
+          people|account_browser::deployment_operator_designation::company_setup::native_people_real_browser_register_reopen_and_revoke|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png people-directory-320.png people-workspace-next-task.png people-workspace-next-task-320.png people-registration-desktop.png people-pending-320.png people-detail-desktop.png people-detail-320.png people-search-match-320.png people-search-miss-320.png react-people-delayed-ime-input-320.png react-people-delayed-scroll-320.png react-people-precommit-focus-320.png react-people-failed-load-320.png react-people-failed-render-320.png react-people-decoder-registration-unmodified-320.png react-people-decoder-registration-invalid-json-320.png react-people-decoder-registration-unknown-version-320.png react-people-decoder-registration-extra-envelope-field-320.png react-people-decoder-registration-unknown-page-kind-320.png react-people-decoder-registration-extra-page-field-320.png react-people-decoder-registration-extra-scope-field-320.png react-people-decoder-registration-invalid-scope-boolean-320.png react-people-decoder-registration-malformed-company-id-320.png react-people-decoder-registration-nil-company-id-320.png react-people-decoder-registration-uppercase-company-id-320.png react-people-decoder-registration-malformed-command-id-320.png react-people-decoder-registration-malformed-expectation-id-320.png react-people-decoder-registration-numeric-revision-320.png react-people-decoder-registration-noncanonical-revision-320.png react-people-decoder-registration-large-revision-string-320.png react-people-decoder-registration-unicode-scalar-boundary-320.png react-people-decoder-registration-unicode-scalar-overflow-320.png react-people-decoder-registration-oversized-name-320.png react-people-decoder-registration-oversized-number-320.png react-people-decoder-registration-extra-form-field-320.png react-people-decoder-registration-extra-expectation-field-320.png react-people-decoder-registration-invalid-nullable-field-320.png react-people-decoder-registration-invalid-proof-type-320.png react-people-decoder-registration-registration-conflict-valid-320.png react-people-decoder-registration-registration-conflict-extra-field-320.png react-people-decoder-registration-request-not-visible-valid-320.png react-people-decoder-registration-request-not-visible-extra-field-320.png react-people-decoder-registration-uncertain-valid-320.png react-people-decoder-registration-uncertain-extra-field-320.png react-people-decoder-registration-hostile-text-320.png react-people-decoder-terminal-unmodified-320.png react-people-decoder-terminal-unknown-outcome-kind-320.png react-people-decoder-terminal-extra-terminal-field-320.png react-people-decoder-terminal-terminal-proof-injection-320.png react-people-decoder-terminal-rejected-valid-320.png react-people-decoder-terminal-rejected-proof-injection-320.png react-people-decoder-terminal-conflicting-valid-320.png react-people-decoder-terminal-conflicting-proof-injection-320.png react-people-decoder-terminal-cancelled-valid-320.png react-people-decoder-terminal-cancelled-proof-injection-320.png react-people-decoder-terminal-expired-valid-320.png react-people-decoder-terminal-expired-proof-injection-320.png react-people-decoder-terminal-malformed-terminal-id-320.png react-people-decoder-directory-unmodified-320.png react-people-decoder-directory-nullable-record-fields-320.png react-people-decoder-directory-oversized-record-collection-320.png react-people-decoder-directory-malformed-record-id-320.png react-people-decoder-directory-extra-record-field-320.png react-people-decoder-directory-numeric-record-revision-320.png react-people-decoder-directory-invalid-record-nullable-field-320.png react-people-decoder-directory-invalid-after-cursor-320.png react-people-decoder-directory-unsafe-next-href-320.png react-people-decoder-directory-detail-valid-320.png react-people-decoder-directory-detail-extra-field-320.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png people-directory-320.png people-workspace-next-task.png people-workspace-next-task-320.png people-registration-desktop.png people-pending-320.png people-detail-desktop.png people-detail-320.png people-search-match-320.png people-search-miss-320.png react-people-delayed-ime-input-320.png react-people-delayed-scroll-320.png react-people-precommit-focus-320.png react-people-failed-load-320.png react-people-failed-render-320.png react-people-decoder-registration-unmodified-320.png react-people-decoder-registration-invalid-json-320.png react-people-decoder-registration-unknown-version-320.png react-people-decoder-registration-extra-envelope-field-320.png react-people-decoder-registration-unknown-page-kind-320.png react-people-decoder-registration-extra-page-field-320.png react-people-decoder-registration-extra-scope-field-320.png react-people-decoder-registration-invalid-scope-boolean-320.png react-people-decoder-registration-malformed-company-id-320.png react-people-decoder-registration-nil-company-id-320.png react-people-decoder-registration-uppercase-company-id-320.png react-people-decoder-registration-malformed-command-id-320.png react-people-decoder-registration-malformed-expectation-id-320.png react-people-decoder-registration-numeric-revision-320.png react-people-decoder-registration-noncanonical-revision-320.png react-people-decoder-registration-large-revision-string-320.png react-people-decoder-registration-unicode-scalar-boundary-320.png react-people-decoder-registration-unicode-scalar-overflow-320.png react-people-decoder-registration-oversized-name-320.png react-people-decoder-registration-oversized-number-320.png react-people-decoder-registration-extra-form-field-320.png react-people-decoder-registration-extra-expectation-field-320.png react-people-decoder-registration-invalid-nullable-field-320.png react-people-decoder-registration-invalid-proof-type-320.png react-people-decoder-registration-registration-conflict-valid-320.png react-people-decoder-registration-registration-conflict-extra-field-320.png react-people-decoder-registration-request-not-visible-valid-320.png react-people-decoder-registration-request-not-visible-extra-field-320.png react-people-decoder-registration-uncertain-valid-320.png react-people-decoder-registration-uncertain-extra-field-320.png react-people-decoder-registration-hostile-text-320.png react-people-decoder-terminal-unmodified-320.png react-people-decoder-terminal-unknown-outcome-kind-320.png react-people-decoder-terminal-extra-terminal-field-320.png react-people-decoder-terminal-terminal-proof-injection-320.png react-people-decoder-terminal-rejected-valid-320.png react-people-decoder-terminal-rejected-proof-injection-320.png react-people-decoder-terminal-conflicting-valid-320.png react-people-decoder-terminal-conflicting-proof-injection-320.png react-people-decoder-terminal-cancelled-valid-320.png react-people-decoder-terminal-cancelled-proof-injection-320.png react-people-decoder-terminal-expired-valid-320.png react-people-decoder-terminal-expired-proof-injection-320.png react-people-decoder-terminal-malformed-terminal-id-320.png react-people-decoder-directory-unmodified-320.png react-people-decoder-directory-nullable-record-fields-320.png react-people-decoder-directory-oversized-record-collection-320.png react-people-decoder-directory-malformed-record-id-320.png react-people-decoder-directory-extra-record-field-320.png react-people-decoder-directory-numeric-record-revision-320.png react-people-decoder-directory-invalid-record-nullable-field-320.png react-people-decoder-directory-invalid-after-cursor-320.png react-people-decoder-directory-unsafe-next-href-320.png react-people-decoder-directory-detail-valid-320.png react-people-decoder-directory-detail-extra-field-320.png
+          policy|account_browser::deployment_operator_designation::company_setup::native_company_real_browser_policy_grant_payroll_reopen_revoke|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png
+          policy-startup|account_browser::deployment_operator_designation::company_setup::native_policy_startup_tests::native_policy_verified_startup_drives_browser_current_reader_after_epoch_advance|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png 06-policy-install-preflight.png policy-before-grant.png policy-grant-reopened.png policy-active-320.png policy-revoked-reopened.png payroll-navigation-receipt-320.png payroll-navigation-workspace-320.png payroll-navigation-workspace-desktop.png payroll_read.png payroll_reopened.png payroll_denied.png policy-administration-retained.png
+          account-controller|account_browser::deployment_operator_designation::company_setup::native_account_controller_browser::real_browser_account_controller_promotion_and_frozen_administrator|account-controller|result.json owner-receipt.json 01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png controller-native-first.png controller-react-first.png controller-keyboard-before-react.png controller-autofill-before-react.png controller-eventless-value-before-react.png controller-ime-before-react.png controller-preclaim-focus.png controller-partial-bind-rollback.png controller-capability-denied.png controller-freeze-at-csrf.png|01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png
+          account-handoff|account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_own_reference_selects_independent_company_administrator|account-company-handoff|result.json owner-receipt.json 01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png|01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png
+          company-manager|account_browser::deployment_operator_designation::company_setup::native_account_company_handoff_browser::real_browser_company_information_manager_current_uses_actual_nonoperator_manager_without_effects|company-information-manager-current|result.json owner-receipt.json 01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png|01-own-account-reference.png 02-selected-administrator.png 03-operator-creation-history.png 04-administrator-company-reopened.png
+          group-process|account_browser::deployment_operator_designation::company_setup::native_group_process_real_browser_adopt_reopen_suspend_replace|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-process-adopt-320.png group-process-adopt-desktop.png group-process-adopted.png group-process-suspended.png group-process-replacement-320.png group-process-replaced.png group-process-own-receipt-after-revoke.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-process-adopt-320.png group-process-adopt-desktop.png group-process-adopted.png group-process-suspended.png group-process-replacement-320.png group-process-replaced.png group-process-own-receipt-after-revoke.png
+          group-correction|account_browser::deployment_operator_designation::company_setup::native_group_invalid_form_real_browser_correct_same_command_and_reopen|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-correction-invalid-320.png group-correction-focused-320.png group-correction-corrected-320.png group-correction-adopted.png group-correction-own-receipt-after-revoke.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-correction-invalid-320.png group-correction-focused-320.png group-correction-corrected-320.png group-correction-adopted.png group-correction-own-receipt-after-revoke.png
+          group-held|account_browser::deployment_operator_designation::company_setup::native_group_navigation_held_real_browser_transport_fence|requested|result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-held-form-before-correction-320.png group-held-form-submission-interrupted.png|01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png company-workspace-desktop.png 05-company-workspace.png company-policy-root-320.png company-policy-root-desktop.png group-held-form-before-correction-320.png group-held-form-submission-interrupted.png
+          HISTORIES
+
+      - name: Retain sanitized native browser evidence
+        id: native-browser-evidence
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}
+          path: |
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/result.json
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/01-public.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/02-terms.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/03-account-enrolled.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/04-sign-in.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/05-account-returned.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/result.json
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/01-public.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/02-terms.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/03-account-enrolled.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/04-company-created.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/05-company-workspace.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/result.json
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/01-public.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/02-terms.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/03-account-enrolled.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/04-company-preview-input-preserved.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/result.json
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-before.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-1.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-2.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-3.png
+            ${{ env.CONSOLE_INHERITED_PEOPLE_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/06-policy-install-preflight.png
+            {0}/policy-before-grant.png
+            {0}/policy-grant-reopened.png
+            {0}/policy-active-320.png
+            {0}/policy-revoked-reopened.png
+            {0}/payroll-navigation-receipt-320.png
+            {0}/payroll-navigation-workspace-320.png
+            {0}/payroll-navigation-workspace-desktop.png
+            {0}/payroll_read.png
+            {0}/payroll_reopened.png
+            {0}/payroll_denied.png
+            {0}/policy-administration-retained.png
+            {0}/people-directory-320.png
+            {0}/people-workspace-next-task.png
+            {0}/people-workspace-next-task-320.png
+            {0}/people-registration-desktop.png
+            {0}/people-pending-320.png
+            {0}/people-detail-desktop.png
+            {0}/people-detail-320.png
+            {0}/people-search-match-320.png
+            {0}/people-search-miss-320.png
+            {0}/react-people-delayed-ime-input-320.png
+            {0}/react-people-delayed-scroll-320.png
+            {0}/react-people-precommit-focus-320.png
+            {0}/react-people-failed-load-320.png
+            {0}/react-people-failed-render-320.png
+            {0}/react-people-decoder-registration-unmodified-320.png
+            {0}/react-people-decoder-registration-invalid-json-320.png
+            {0}/react-people-decoder-registration-unknown-version-320.png
+            {0}/react-people-decoder-registration-extra-envelope-field-320.png
+            {0}/react-people-decoder-registration-unknown-page-kind-320.png
+            {0}/react-people-decoder-registration-extra-page-field-320.png
+            {0}/react-people-decoder-registration-extra-scope-field-320.png
+            {0}/react-people-decoder-registration-invalid-scope-boolean-320.png
+            {0}/react-people-decoder-registration-malformed-company-id-320.png
+            {0}/react-people-decoder-registration-nil-company-id-320.png
+            {0}/react-people-decoder-registration-uppercase-company-id-320.png
+            {0}/react-people-decoder-registration-malformed-command-id-320.png
+            {0}/react-people-decoder-registration-malformed-expectation-id-320.png
+            {0}/react-people-decoder-registration-numeric-revision-320.png
+            {0}/react-people-decoder-registration-noncanonical-revision-320.png
+            {0}/react-people-decoder-registration-large-revision-string-320.png
+            {0}/react-people-decoder-registration-unicode-scalar-boundary-320.png
+            {0}/react-people-decoder-registration-unicode-scalar-overflow-320.png
+            {0}/react-people-decoder-registration-oversized-name-320.png
+            {0}/react-people-decoder-registration-oversized-number-320.png
+            {0}/react-people-decoder-registration-extra-form-field-320.png
+            {0}/react-people-decoder-registration-extra-expectation-field-320.png
+            {0}/react-people-decoder-registration-invalid-nullable-field-320.png
+            {0}/react-people-decoder-registration-invalid-proof-type-320.png
+            {0}/react-people-decoder-registration-registration-conflict-valid-320.png
+            {0}/react-people-decoder-registration-registration-conflict-extra-field-320.png
+            {0}/react-people-decoder-registration-request-not-visible-valid-320.png
+            {0}/react-people-decoder-registration-request-not-visible-extra-field-320.png
+            {0}/react-people-decoder-registration-uncertain-valid-320.png
+            {0}/react-people-decoder-registration-uncertain-extra-field-320.png
+            {0}/react-people-decoder-registration-hostile-text-320.png
+            {0}/react-people-decoder-terminal-unmodified-320.png
+            {0}/react-people-decoder-terminal-unknown-outcome-kind-320.png
+            {0}/react-people-decoder-terminal-extra-terminal-field-320.png
+            {0}/react-people-decoder-terminal-terminal-proof-injection-320.png
+            {0}/react-people-decoder-terminal-rejected-valid-320.png
+            {0}/react-people-decoder-terminal-rejected-proof-injection-320.png
+            {0}/react-people-decoder-terminal-conflicting-valid-320.png
+            {0}/react-people-decoder-terminal-conflicting-proof-injection-320.png
+            {0}/react-people-decoder-terminal-cancelled-valid-320.png
+            {0}/react-people-decoder-terminal-cancelled-proof-injection-320.png
+            {0}/react-people-decoder-terminal-expired-valid-320.png
+            {0}/react-people-decoder-terminal-expired-proof-injection-320.png
+            {0}/react-people-decoder-terminal-malformed-terminal-id-320.png
+            {0}/react-people-decoder-directory-unmodified-320.png
+            {0}/react-people-decoder-directory-nullable-record-fields-320.png
+            {0}/react-people-decoder-directory-oversized-record-collection-320.png
+            {0}/react-people-decoder-directory-malformed-record-id-320.png
+            {0}/react-people-decoder-directory-extra-record-field-320.png
+            {0}/react-people-decoder-directory-numeric-record-revision-320.png
+            {0}/react-people-decoder-directory-invalid-record-nullable-field-320.png
+            {0}/react-people-decoder-directory-invalid-after-cursor-320.png
+            {0}/react-people-decoder-directory-unsafe-next-href-320.png
+            {0}/react-people-decoder-directory-detail-valid-320.png
+            {0}/react-people-decoder-directory-detail-extra-field-320.png', env.CONSOLE_INHERITED_PEOPLE_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/06-policy-install-preflight.png
+            {0}/policy-before-grant.png
+            {0}/policy-grant-reopened.png
+            {0}/policy-active-320.png
+            {0}/policy-revoked-reopened.png
+            {0}/payroll-navigation-receipt-320.png
+            {0}/payroll-navigation-workspace-320.png
+            {0}/payroll-navigation-workspace-desktop.png
+            {0}/payroll_read.png
+            {0}/payroll_reopened.png
+            {0}/payroll_denied.png
+            {0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/06-policy-install-preflight.png
+            {0}/policy-before-grant.png
+            {0}/policy-grant-reopened.png
+            {0}/policy-active-320.png
+            {0}/policy-revoked-reopened.png
+            {0}/payroll-navigation-receipt-320.png
+            {0}/payroll-navigation-workspace-320.png
+            {0}/payroll-navigation-workspace-desktop.png
+            {0}/payroll_read.png
+            {0}/payroll_reopened.png
+            {0}/payroll_denied.png
+            {0}/policy-administration-retained.png', env.CONSOLE_INHERITED_POLICY_STARTUP_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-own-account-reference.png
+            {0}/02-selected-administrator.png
+            {0}/03-operator-creation-history.png
+            {0}/04-administrator-company-reopened.png
+            {0}/controller-native-first.png
+            {0}/controller-react-first.png
+            {0}/controller-keyboard-before-react.png
+            {0}/controller-autofill-before-react.png
+            {0}/controller-eventless-value-before-react.png
+            {0}/controller-ime-before-react.png
+            {0}/controller-preclaim-focus.png
+            {0}/controller-partial-bind-rollback.png
+            {0}/controller-capability-denied.png
+            {0}/controller-freeze-at-csrf.png', env.CONSOLE_INHERITED_ACCOUNT_CONTROLLER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-own-account-reference.png
+            {0}/02-selected-administrator.png
+            {0}/03-operator-creation-history.png
+            {0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_ACCOUNT_HANDOFF_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-own-account-reference.png
+            {0}/02-selected-administrator.png
+            {0}/03-operator-creation-history.png
+            {0}/04-administrator-company-reopened.png', env.CONSOLE_INHERITED_COMPANY_MANAGER_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/company-policy-root-320.png
+            {0}/company-policy-root-desktop.png
+            {0}/group-process-adopt-320.png
+            {0}/group-process-adopt-desktop.png
+            {0}/group-process-adopted.png
+            {0}/group-process-suspended.png
+            {0}/group-process-replacement-320.png
+            {0}/group-process-replaced.png
+            {0}/group-process-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_PROCESS_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/company-policy-root-320.png
+            {0}/company-policy-root-desktop.png
+            {0}/group-correction-invalid-320.png
+            {0}/group-correction-focused-320.png
+            {0}/group-correction-corrected-320.png
+            {0}/group-correction-adopted.png
+            {0}/group-correction-own-receipt-after-revoke.png', env.CONSOLE_INHERITED_GROUP_CORRECTION_OUTPUT) || '' }}
+            ${{ env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT && format('{0}/result.json
+            {0}/owner-receipt.json
+            {0}/01-public.png
+            {0}/02-terms.png
+            {0}/03-account-enrolled.png
+            {0}/04-company-created.png
+            {0}/company-workspace-desktop.png
+            {0}/05-company-workspace.png
+            {0}/company-policy-root-320.png
+            {0}/company-policy-root-desktop.png
+            {0}/group-held-form-before-correction-320.png
+            {0}/group-held-form-submission-interrupted.png', env.CONSOLE_INHERITED_GROUP_HELD_OUTPUT) || '' }}
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
 
       - name: Collect failures
         if: ${{ !cancelled() }}
@@ -1482,7 +1915,7 @@ jobs:
     name: Migration expand/contract rehearsal — 0165 ontology key-revision, 0166 leave
     runs-on: ubuntu-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     # Serial integration execution avoids cluster-global role mutation races.
     #
     # NOTE: the "full workspace" this number was originally sized for no longer
@@ -1677,6 +2110,7 @@ jobs:
     name: Repo gates — ADR / foundation / domain maturity
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 20
 
     steps:
@@ -1789,6 +2223,7 @@ jobs:
     name: API contract — text-only contract checks
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 30
 
     steps:
@@ -1829,6 +2264,7 @@ jobs:
     name: Kubernetes manifests — render / hardening / NetworkPolicy preflight
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 15
 
     steps:

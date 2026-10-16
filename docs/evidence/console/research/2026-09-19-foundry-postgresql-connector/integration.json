@@ -1,0 +1,20 @@
+{
+  "base_sha": "4879267898a4c3982be9764bce065e120e9224f2",
+  "before_registry_sha256": "f4e726b850cf35773eb4ca5c0bda908e6b6be7a3942b38e6de21e16245b0642c",
+  "after_registry_sha256": "3afca46440aa9c9a5ee4315651f477d71c333fb304b946565ff79404b61a8f43",
+  "leaves_before": 401,
+  "leaves_after": 401,
+  "prior_values_preserved": true,
+  "states": "planned_only",
+  "limits": [
+    "Historicalfreeze qualifications/exhaustivecoverage and implementation acceptance remain open."
+  ],
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "272bc135021f2cf1a8ef493a621cb5b0d31497d2b777f38b2c49cabdce7005b4"
+  }
+}

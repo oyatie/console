@@ -1,0 +1,19 @@
+{
+  "source_count": 22,
+  "new_leaf_count": 14,
+  "binding_keys": 19,
+  "function_signatures": 202,
+  "qualification_count": 26,
+  "quote_membership_checks": 250,
+  "all_dependencies_resolve": true,
+  "new_duplicate_ids": false,
+  "runtime_tests_executed": 0,
+  "implementation_accepted": false,
+  "source_raw_compressed_size_checks": 66,
+  "candidate_patch_applies": true,
+  "combined_dependency_graph_acyclic": true,
+  "combined_leaf_count": 187,
+  "exported_structural_validator_controls_executed": 1,
+  "structural_verdict": "STRUCTURALLY_VALID_HOLD_PRESERVED",
+  "structural_scope": "Default source resolver and synthetic candidate SHA; no immutable source train, production source custody, or release qualification proved."
+}

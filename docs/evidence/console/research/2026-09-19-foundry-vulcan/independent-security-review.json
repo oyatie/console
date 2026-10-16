@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE bounded Vulcan planned scope with explicit historical-validity HOLD",
+  "proposal_sha256": "373471cd82da3796bd62a24aa45a476e52c62d3588c90d8c367978582fd37c52",
+  "manifest_sha256": "15a814af3e9e667581d81bdff1613ee48edbcb2c585b6292210a37d158464a0a",
+  "findings": [],
+  "evidence": [
+    "All manifest hashes,5raw+compressed sourcecustodies and134quote bindings independently verified. Embedded announcement JSON record equals saved vendor-datedSeptember8record.",
+    "Actual NYlocal retrievaldates independently checked: overview pre-cutoff,4other sources post-cutoff. Exact historicaldetails remain HOLD; vendor-datedavailability assertion is not represented as immutable September19page custody.",
+    "8plannedonly leaves/null executable bindings; geometry source-policy, media isolation, strictfinitecoordinates/units/shape/identity, serverattribution and canonicalAction revisions/receipts explicit.",
+    "Styling/transforms/scene-tree/widget outputs inherit restrictedsourcefields and currentrevocation; UIcontrols/clientIDs cannot confer authorization. Vendor permissiveinvalidunit/transform fallbacks are explicitly not Console correctness.",
+    "No physicalaccuracy, numericalcalibration, mediafidelity, accessible3Dcontrol, performance or implementation claims."
+  ],
+  "limits": [
+    "Approval is additive plannedinventory/referencequalification only. Exact schema/camera/formatdefaults require historicalsource qualification and independent runtime oracles.",
+    "Serialized integration must merge against latest registry, not overwrite separately approved FlowCapture additions; reported394count is candidatebase-relative.",
+    "FullFoundry freeze/exhaustiveness and every executable acceptance remain open."
+  ]
+}

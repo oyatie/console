@@ -1,0 +1,14 @@
+# Round2 additions and exact finite clarifications
+
+Base packet files API.rs.txt, DESIGN.md and FORM-CONTRACT.md retained byte-identical. Four additive test leaves supplement the original nine; original test functions remain byte-identical after rustfmt. Scripted fixture adds only requested selector and source Company controls. Zero builds or tests executed by this reviewer.
+
+Required semantics:
+
+- Acceptance NotVisible is impossible owner output and must produce Unavailable; submit must not open B, regardless of inserted flag.
+- Selected/source Company mismatch is MaterialUnavailable mapped to workflow Unavailable before calling a scope operation. Never replace selected Company with a foreign returned Company.
+- Accept/Grant uses the exact original command recipient in real native bootstrap Cedar. A distinct nonadmitted recipient is denied; same source/command with the admitted recipient is a positive control.
+- Form return remains withheld when finish fails, including after exact already-issued proof has been passed to finish.
+- execute_v1 zero rows after current authorization maps to opaque NotFound. It means no visible command/result, never proves noncommit. Do not synthesize terminal or retry form. Unconfirmed remains reserved for actual commit uncertainty. Status NotVisible remains the frozen explicit no-write state.
+- UI Company name comes from actual authorized read_company_identity; current permission form and original command history are separately composed from their authorized owners. No Company name/operator/current state is synthesized from a historical result or requested selector.
+
+FORM-CONTRACT.md's exact8-column operator-only accessor is approved as a finite contract. Implementation, SQL controls and browser acceptance require separate review. No runtime or business-history proof is claimed by these scripted application tests.

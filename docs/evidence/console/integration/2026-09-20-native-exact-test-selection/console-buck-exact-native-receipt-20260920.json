@@ -1,0 +1,25 @@
+{
+  "source_head": "90257f0a32941309ea154926fbae8bd3f31ca49d",
+  "scope": "actual Buck-built pure identity test through unchanged credential loader; no PostgreSQL execution claimed",
+  "wrapper_sha256": "7e4a53d254a3fc2a3583b235201d004b3615b6f8d991259dde47315c5a1f0805",
+  "results": [
+    {
+      "case": "positive",
+      "exact_test": "company::tests::accepted_vectors_match_exact_independent_bytes_and_decode",
+      "exit": 0,
+      "log": "/private/tmp/console-buck-exact-native-positive-20260920.log",
+      "sha256": "bc2ed2f06c27e27564a52e571228bad4c399f1285fbe7b13222bc5ab1ca1c32b"
+    },
+    {
+      "case": "missing",
+      "exact_test": "company::tests::intentionally_missing_discovery_control",
+      "exit": 1,
+      "log": "/private/tmp/console-buck-exact-native-missing-20260920.log",
+      "sha256": "c58e8c3f879a77923f5c8e166ff2cbfcd3b8bf93b5ffc562a39c7f24a704011e"
+    }
+  ],
+  "limits": [
+    "ignored tests are not force-run and discovery is not proof of unignored execution",
+    "browser driver execution remains separate"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "prospective actual-boundary RED admission evidence accepted; root may release original bounded Company writer after exact handoff",
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "clean_admission_root": "/private/tmp/console-company-admission-repair-20260921",
+  "implementation_root": "/private/tmp/console-client-release-20260919",
+  "evidence_sha256": {
+    "console-company-admission-backtrace-probe-20260921.log": "70458e859e314c65fb89e0d7263f7c0c93699c93666370fcc3f3d470072ff2c4",
+    "console-company-admission-backtrace-admit-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-company-admission-backtrace-spec-20260921.json": "63a883df3512206de91d185fd850fad15f2366981a99269f0493d9dc0f0a6592",
+    "console-company-admission-backtrace-buck-20260921.sh": "6a9917bb51bc1e357bbb2ebb84e758cfda9dbe6787d66affa8bdce181e0d5777",
+    "console-company-owner-renewal-red-20260921.log": "e7b533ab83470090fe7802c1ee1ce5cc6a0c1697ee832dd98ee7135ecedfe8fb",
+    "console-company-admission-repair-probe-20260921.log": "dcf4e528ecb01f1586e7eb1d85cf64f3ee304ba6c1d1fac4b19941d46f48773f"
+  },
+  "test": "account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials",
+  "runtime": {
+    "executed": 1,
+    "passed": 0,
+    "failed": 1,
+    "ignored": 0,
+    "filtered": 516,
+    "elapsed_seconds": 10.49,
+    "infra_failures": 0,
+    "build_failures": 0,
+    "timeouts": 0,
+    "fatal": 0
+  },
+  "boundary": {
+    "actual_http": 404,
+    "expected_http": 201,
+    "request": "POST /api/v2/companies/enroll",
+    "stack_frames": [
+      "Response::json",
+      "company_setup::committed",
+      "company_setup_commits_once_reopens_and_preserves_account_credentials"
+    ],
+    "source_proof": "native_company_setup.rs exact test calls designated() then all_rows() before first committed(submit(...),CREATED). Later replay expects200. Therefore Account/designation/database prerequisites completed and failure is real nativeCompany enrollment boundary."
+  },
+  "preservation": [
+    "Clean detached base verified before and after diagnostic.",
+    "Old invalid Docker permission failure and generic admitted logs remain historical evidence; this prospective review does not validate that prior handoff.",
+    "No source, test, or assertion edits in diagnostic; same reviewed exact test and root constraints."
+  ],
+  "holds": [
+    "This is RED lane admission, not implementation/workflow/release acceptance. Original full probe must pass with durable effects and reopening.",
+    "No new allowlist paths or migration/custody/contract authority are granted; exact successors remain required.",
+    "Root retains final writer handoff and shared resource lease.",
+    "All previously recorded release and hydration holds remain unchanged."
+  ]
+}

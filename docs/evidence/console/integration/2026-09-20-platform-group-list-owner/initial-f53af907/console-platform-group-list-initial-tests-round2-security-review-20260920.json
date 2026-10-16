@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE initial Group test source round2 for root integration/compile and actual probe; no implementation admission",
+  "manifest_sha256": "23360a1fc1d91ba528a1bf2acb1f5ffb74bbdc5651f586e013297626522847ad",
+  "base": "95e48111ad23abc1ebec7f1a0bd396b2deca4871",
+  "candidate_hashes": {
+    "candidate/backend/app/tests/auth_rest/legacy_platform_group_reads.rs": "3ff0c9dfa0ec1ebb5d60b4ad5b8fa6519eaa4de51b9a03bf7e4dc8d2f3f1026a",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "f3bdc2e5ceb6d0c3e069655077c36d813fb381abb27c75312679ca3d5163314b"
+  },
+  "superseded_round1": "Do not integrate: invalidprimitivecast parentheses; round2 removes only those2bytes, all semantics unchanged.",
+  "checks": [
+    "All8packet hashes verified; parentpreimage equals current exactbytes; only additive childmoduleinclude; newmodule absent.",
+    "Actual mounted Appuses genuine finalized Business/Auth OTP/passkey parentfixture and originalBearer; no futureunimplementedAPI, mockedprincipal or claimedruntime.",
+    "Four realGroup-of-one roots and4companies; existing owningSQLassign creates2/0/1/1topology; membership correlation asserted before test.",
+    "Independent rawgroups/organizations oracle excludes actualsentinelGroup/platformCompany; exact8/4keys; tiedcreationUUIDordering, emptyGroup, lifecycle statuses and longKoreantext.",
+    "Positive and same-tokenrecovery checked first; committedMEMBER marker precedes hostclock/auditwindow comparisons, so initialREDcan expose actualcurrentrole denial gap.",
+    "ExactGroupaction/target validated before adapting only2discriminators into unchanged20fieldauditoracle; RawValuehistorybytes and allnonaudittables preserved; exactly1newaudit and newID/trace.",
+    "Two purepositive/negativecontrols cover each8/4/20field, missing/extra/reorderedentities, count/sentinel/privatefield corruption, oldhistoryreserialization/rewrites and otherdurableeffects.",
+    "No existingleaf/assertion/modification, no generated/production/SQL/history changes."
+  ],
+  "static_tests": {
+    "sqlx": 1,
+    "pure": 2,
+    "executed_by_reviewer": 0,
+    "compiled_or_discovered_by_reviewer": 0
+  },
+  "remaining_holds": [
+    "Root compile and actualcleanmounted roleRED required; missingprerequisite/compilefailure does not admitimplementation.",
+    "Initial3leaves do not cover completeGroupacceptance; approvedsupplementalcurrent-source/family/lock/decode/transport/unknowncommit/recoveryhistories and retainedregressions remain required.",
+    "Privacy GETHEAD not claimed by initialprobe; separatelyreviewed transporttests must exercise it.",
+    "RawSQL and otherowners/source-snapshot/fullreleaseHOLDs remain."
+  ]
+}

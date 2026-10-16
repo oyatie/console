@@ -1,0 +1,204 @@
+'use strict';
+// Real Console browser leaf. TLS relay forwards bytes to the parent's actual axum listener.
+// Parent owns DB truth and must acknowledge every checkpoint. No mock routes or cookies.
+const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');
+const tls=require('node:tls');const net=require('node:net');const readline=require('node:readline');
+const {execFileSync}=require('node:child_process');const {once}=require('node:events');
+const EXECUTABLE='/Users/jasonlee/Library/Caches/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-mac-arm64/chrome-headless-shell';
+const EXECUTABLE_SHA='7687bff7cb2db075f250e6d5848bbc8838cac3802ac3952a899c574f8eccab45';
+const PLAYWRIGHT='/private/tmp/console-root-entry-browser-smoke-20260919-round2/runtime/node_modules/playwright';
+const TERMS=[{kind:'test.account.service',title:'테스트 서비스 약관'},{kind:'test.account.privacy',title:'테스트 개인정보 안내'}];
+const MUTATION_PATHS=['/api/v2/auth/registration/start','/api/v2/auth/registration/finish'];
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+function nonnil(value){return typeof value==='string'&&UUID.test(value)&&value!=='00000000-0000-0000-0000-000000000000';}
+function documentPaths(result){return ['/','/account/register','/account','/account','/account/companies/new'];}
+function completeDocuments(result){const expected=documentPaths(result);return !!expected&&result.document_failures===0&&Array.isArray(result.documents)&&result.documents.length===expected.length&&result.documents.every((row,index)=>row&&Object.keys(row).sort().join(',')==='method,ordinal,path,redirected,status,url_exact'&&row.ordinal===index+1&&row.method==='GET'&&row.path===expected[index]&&row.redirected===false&&row.status===200&&row.url_exact===true);}
+function observeDocuments(page,origin,result){
+ const owners=new Map();
+ function isDocument(request){return request.frame()===page.mainFrame()&&(request.resourceType()==='document'||request.isNavigationRequest());}
+ page.on('request',request=>{try{
+  if(!isDocument(request))return;
+  const url=new URL(request.url());
+  const allowed=['/','/account/register','/account','/account/companies/new'].includes(url.pathname)||/^\/account\/companies\/requests\/[0-9a-f-]{36}$/.test(url.pathname)||/^\/companies\/[0-9a-f-]{36}$/.test(url.pathname);
+  const canonical=allowed&&url.origin===origin&&!url.search&&!url.hash&&!url.username&&!url.password;
+  const row={ordinal:result.documents.length+1,method:request.method(),path:canonical?url.pathname:'<unexpected>',redirected:request.redirectedFrom()!==null,status:null,url_exact:false};
+  if(owners.has(request)||request.resourceType()!=='document'||!request.isNavigationRequest())result.document_failures++;
+  owners.set(request,row);result.documents.push(row);
+ }catch{result.document_failures++;}});
+ page.on('response',response=>{try{const request=response.request();if(!isDocument(request))return;const row=owners.get(request);if(!row||row.status!==null){result.document_failures++;return;}row.status=response.status();row.url_exact=response.url()===origin+row.path;row.redirected ||= request.redirectedFrom()!==null;if(row.status!==200||row.redirected||!row.url_exact)result.document_failures++;}catch{result.document_failures++;}});
+ page.on('requestfailed',request=>{try{if(isDocument(request))result.document_failures++;}catch{result.document_failures++;}});
+}
+// Observe every HTTP mutation request reported by this BrowserContext, including
+// its pages/popups/workers. Safe GET/HEAD/OPTIONS are outside this mutation census.
+// Service workers are blocked. This is not operating-system or WebSocket egress proof.
+function observeMutations(context,origin,result){
+ const seen=new WeakSet();
+ context.on('request',request=>{try{
+  const method=request.method();if(['GET','HEAD','OPTIONS'].includes(method))return;
+  if(seen.has(request)){result.unexpected_mutations++;return;}seen.add(request);
+  const url=new URL(request.url());
+  const canonical=url.origin===origin&&!url.search&&!url.hash&&!url.username&&!url.password&&MUTATION_PATHS.includes(url.pathname);
+  const allowed=method==='POST'&&canonical;
+  result.mutations.push({ordinal:result.mutations.length+1,method:method==='POST'?'POST':'<unexpected>',path:allowed?url.pathname:'<unexpected>'});
+  if(allowed)result.posts[url.pathname]++;else result.unexpected_mutations++;
+ }catch{result.unexpected_mutations++;}});
+}
+function completeMutations(result){return result.unexpected_mutations===0&&Array.isArray(result.mutations)&&result.mutations.length===MUTATION_PATHS.length&&result.mutations.every((row,index)=>row&&Object.keys(row).sort().join(',')==='method,ordinal,path'&&row.ordinal===index+1&&row.method==='POST'&&row.path===MUTATION_PATHS[index])&&MUTATION_PATHS.every(path=>result.posts?.[path]===1);}
+function scrub(env){return Object.fromEntries(Object.entries(env).filter(([k])=>!['DEBUG','PWDEBUG','NODE_DEBUG'].includes(k)));}
+function requireFact(value,code){if(value!==true){const e=new Error(code);e.code=code;throw e;}}
+function delayLimit(promise,ms){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>{const e=new Error('TIMEOUT');e.code='TIMEOUT';reject(e);},ms);})]).finally(()=>clearTimeout(timer));}
+function validOrigin(origin){try{const u=new URL(origin);return u.protocol==='https:'&&u.hostname==='localhost'&&/^\d+$/.test(u.port)&&Number(u.port)>0&&Number(u.port)<=65535&&u.pathname==='/'&&!u.search&&!u.hash&&!u.username&&!u.password;}catch{return false;}}
+function validCheckpointCommand(value,phase){return value?.kind==='CONTINUE'&&value.phase===phase&&Object.keys(value).sort().join(',')==='kind,phase';}
+function completeObservations(r){return completeDocuments(r)&&completeMutations(r)&&r.browser_version==='151.0.7922.34'&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')==='ENROLLED,PREVIEW_PRESERVED'&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','preview_has_no_form','preview_enter_preserved','business_input_not_stored'].every(key=>r[key]===true)&&Array.isArray(r.preview_enters)&&r.preview_enters.length===2&&r.preview_enters.every((e,i)=>e.field===['name','slug'][i]&&e.no_requests===true&&e.url_unchanged===true&&e.history_unchanged===true&&e.inputs_preserved===true);}
+function leafStatus(r){return !r.failure&&completeObservations(r)&&r.cleanup?.confirmed===true?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';}
+function publicError(error){const allowed=new Set(['TIMEOUT','OWNER_PROTOCOL','OWNER_EOF','OWNER_REFUSED','PREREQUISITE','TLS_RELAY_FAILED','UI_PUBLIC_ENTRY_MISSING','UI_LINK_MISSING','TERMS_CONTROL','REGISTRATION_WIRE','REGISTRATION_EFFECT','RESIDENT','COOKIE_SECURITY','SECRET_DISCLOSURE','ACCOUNT_SSR','LOGOUT_EFFECT','LOGIN_WIRE','LOGIN_EFFECT','EXTERNAL_REQUEST','OBSERVATION_INCOMPLETE','REFLOW_320','KEYBOARD_FOCUS','KEYBOARD_DISCOVERY','KEYBOARD_SKIP','KEYBOARD_TERMS','COMPANY_ENTRY','COMPANY_FORM','COMPANY_WIRE','COMPANY_RESULT','COMPANY_WORKSPACE','COMPANY_REOPEN','INPUT_PRESERVATION','BUSINESS_STORAGE']);if(allowed.has(error?.code))return error.code;const network=String(error?.message??'').match(/\bnet::(ERR_[A-Z0-9_]{1,76})\b/);if(network)return network[1];if(error?.name==='TimeoutError')return 'BROWSER_TIMEOUT';if(error?.name==='SyntaxError')return 'INVALID_JSON';if(error?.name==='TypeError')return 'BROWSER_TYPE_ERROR';if(/No (?:resource with given identifier found|data found for resource with given identifier)/.test(String(error?.message??'')))return 'RESPONSE_BODY_UNAVAILABLE';if(String(error?.message??'').includes('Execution context was destroyed'))return 'BROWSER_CONTEXT_DESTROYED';return 'UNCLASSIFIED_FAILURE';}
+
+// Same observer and teardown are used by the real driver and machinery-only controls.
+function watchOwner(reader,cancel){
+ reader.on('line',line=>{try{if(JSON.parse(line)?.kind==='ABORT')cancel('OWNER_REFUSED');}catch{cancel('OWNER_PROTOCOL');}});
+ reader.on('close',()=>cancel('OWNER_EOF'));
+}
+async function closeOwnedBrowser(launchPromise){
+ if(!launchPromise)return {confirmed:true,pid:null};
+ let server,child;
+ try{server=await delayLimit(launchPromise,11000);child=server.process();}catch{return {confirmed:false,pid:null};}
+ if(!child)return {confirmed:false,pid:null};
+ const exited=()=>child.exitCode!==null||child.signalCode!==null;
+ let closeResolved=false;
+ try{await delayLimit(server.close(),5000);closeResolved=true;}catch{}
+ if(closeResolved&&!exited()){try{await delayLimit(once(child,'exit'),3000);}catch{}}
+ // A resolved close is not exit evidence. Persist with the exact owned kill.
+ if(!exited()){try{await delayLimit(server.kill(),5000);}catch{}}
+ if(!exited()){try{await delayLimit(once(child,'exit'),3000);}catch{}}
+ return {confirmed:exited(),pid:child.pid};
+}
+
+// Native browser memory retention keeps original responses available across navigation.
+//1MiB total is configured; per-resource bound is requested, not independently certified.
+function configureResponseRetention(cdp){return cdp.send('Network.configureDurableMessages',{maxTotalBufferSize:1048576,maxResourceBufferSize:262144});}
+
+function certificateArgs(files){return ['req','-new','-x509','-newkey','ec','-pkeyopt','ec_paramgen_curve:P-256','-pkeyopt','ec_param_enc:named_curve','-nodes','-keyout',files[0],'-out',files[1],'-days','1','-config',files[2]];}
+
+async function main(backendPort,out){
+ requireFact(/^\d+$/.test(backendPort)&&Number(backendPort)>0&&Number(backendPort)<=65535&&path.isAbsolute(out),'PREREQUISITE');
+ fs.mkdirSync(out,{mode:0o700});
+ const result={kind:'REAL_NATIVE_COMPANY_PREVIEW_BROWSER_DEPENDENCY',node_version:process.version,checkpoints:[],screenshots:[],documents:[],document_failures:0,posts:Object.fromEntries(MUTATION_PATHS.map(p=>[p,0])),external_requests:0,unexpected_mutations:0,mutations:[],cleanup:{confirmed:false},limits:['Chromium151 virtual resident authenticator and automatic presence only; no human or physical-device picker proof.','Ephemeral-SPKI localhost TLS termination and unencrypted owned loopback upstream are test topology, not production TLS/HA certification.','Mutation census observes BrowserContext HTTP request events for pages/popups/workers; service workers are blocked. GET/HEAD/OPTIONS, WebSocket messages and operating-system egress are not certified.','Two independent DB checkpoints plus actual parent-owned designation required. Preview is unreleased; Company command, grant/revoke and recovery remain separate requirements.','Keyboard discovery and320px geometric reflow are observed on mounted pages; this is not human usability, screen-reader, contrast or complete WCAG certification.']};
+ let relay,server,browserProcess,reader,finalized,launchPromise;let finalizing=false;let cancelled=false;const sockets=new Set();
+ const files=['fixture.key','fixture.crt','fixture.cnf'].map(n=>path.join(out,n));
+ const emit=value=>process.stdout.write(JSON.stringify(value)+'\n');
+ let cleanupPromise;
+ async function cleanup(){if(cleanupPromise)return cleanupPromise;cleanupPromise=(async()=>{
+   let relayClosed=true;
+   const closed=await closeOwnedBrowser(launchPromise);const browserClosed=closed.confirmed;
+   if(closed.pid!==null)result.browser_pid=closed.pid;
+   for(const s of sockets)s.destroy();
+   if(relay){try{await delayLimit(new Promise(resolve=>relay.close(resolve)),2000);}catch{relayClosed=false;}}
+   for(const file of files){try{fs.unlinkSync(file);}catch(e){if(e.code!=='ENOENT')relayClosed=false;}}
+   reader?.close();result.cleanup={confirmed:browserClosed&&relayClosed,browser_process_exited:browserClosed,relay_closed:relayClosed};
+ })();return cleanupPromise;}
+ async function finish(){if(finalized)return finalized;finalizing=true;finalized=(async()=>{await cleanup();result.status=leafStatus(result);fs.writeFileSync(path.join(out,'result.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});emit({kind:'RESULT',status:result.status,result_path:path.join(out,'result.json')});process.exitCode=result.status==='BROWSER_LEAF_PASSED'?0:2;})();return finalized;}
+ function requestCancel(code){if(finalizing||cancelled)return;cancelled=true;result.failure={stage:'owner_cancel',code};void cleanup().catch(()=>{result.cleanup={confirmed:false};});}
+ const watchdog=setTimeout(async()=>{requestCancel('TIMEOUT');await finish();process.exit(2);},90000);
+ let stage='prerequisites';
+ try{
+  const env=scrub(process.env);delete process.env.DEBUG;delete process.env.PWDEBUG;delete process.env.NODE_DEBUG;
+  requireFact(crypto.createHash('sha256').update(fs.readFileSync(EXECUTABLE)).digest('hex')===EXECUTABLE_SHA,'PREREQUISITE');
+  requireFact(JSON.parse(fs.readFileSync(path.join(PLAYWRIGHT,'package.json'),'utf8')).version==='1.63.0','PREREQUISITE');
+  const {chromium}=require(PLAYWRIGHT);
+  fs.writeFileSync(files[2],'[req]\nprompt=no\ndistinguished_name=dn\nx509_extensions=ext\n[dn]\nCN=localhost\n[ext]\nsubjectAltName=DNS:localhost\n',{mode:0o600,flag:'wx'});
+  execFileSync('/usr/bin/openssl',certificateArgs(files),{stdio:'ignore',env,timeout:10000});
+  const key=fs.readFileSync(files[0]);const cert=fs.readFileSync(files[1]);
+  const spki=crypto.createHash('sha256').update(new crypto.X509Certificate(cert).publicKey.export({type:'spki',format:'der'})).digest('base64');
+  relay=tls.createServer({key,cert,ALPNProtocols:['http/1.1']},downstream=>{
+   if(!['127.0.0.1','::ffff:127.0.0.1','::1'].includes(downstream.remoteAddress)){downstream.destroy();return;}
+   sockets.add(downstream);downstream.on('close',()=>sockets.delete(downstream));
+   const upstream=net.createConnection({host:'127.0.0.1',port:Number(backendPort)});sockets.add(upstream);upstream.on('close',()=>sockets.delete(upstream));
+   downstream.on('error',()=>upstream.destroy());upstream.on('error',()=>{result.relay_failure=true;downstream.destroy();});
+   downstream.on('close',()=>upstream.destroy());upstream.on('close',()=>downstream.destroy());
+   downstream.pipe(upstream);upstream.pipe(downstream);
+  });
+  relay.on('tlsClientError',error=>{result.tls_client_error=true;result.tls_client_error_code=/^[A-Z0-9_]{1,80}$/.test(error?.code??'')?error.code:'UNKNOWN';});
+  await new Promise((resolve,reject)=>{relay.once('error',reject);relay.listen(0,'127.0.0.1',resolve);});
+  const origin=`https://localhost:${relay.address().port}`;requireFact(validOrigin(origin),'PREREQUISITE');
+  for(const file of files)fs.unlinkSync(file); // Private test key stays memory-only after TLS initialization.
+  reader=readline.createInterface({input:process.stdin,crlfDelay:Infinity});const input=reader[Symbol.asyncIterator]();
+  watchOwner(reader,requestCancel);
+  async function receive(){const line=await delayLimit(input.next(),20000);requireFact(!line.done,'OWNER_EOF');let value;try{value=JSON.parse(line.value);}catch{requireFact(false,'OWNER_PROTOCOL');}requireFact(value?.kind!=='ABORT','OWNER_REFUSED');return value;}
+  emit({kind:'READY',origin,rp_id:'localhost',tls_spki_sha256:spki,upstream_port:Number(backendPort)});
+  stage='owner_start';const start=await receive();requireFact(start.kind==='START'&&Object.keys(start).length===1,'OWNER_PROTOCOL');
+  stage='browser_launch';requireFact(!cancelled,'OWNER_REFUSED');launchPromise=chromium.launchServer({headless:true,executablePath:EXECUTABLE,timeout:10000,env,args:['--disable-background-networking','--disable-component-update','--no-proxy-server',`--ignore-certificate-errors-spki-list=${spki}`]});server=await launchPromise;
+  browserProcess=server.process();result.browser_pid=browserProcess.pid;emit({kind:'BROWSER_OWNED',pid:browserProcess.pid,executable_sha256:EXECUTABLE_SHA});requireFact(!cancelled,'OWNER_REFUSED');
+  const browser=await chromium.connect(server.wsEndpoint(),{timeout:10000});result.browser_version=browser.version();requireFact(result.browser_version==='151.0.7922.34','PREREQUISITE');
+  const context=await browser.newContext({serviceWorkers:'block',viewport:{width:320,height:900}});
+  await context.route('**/*',route=>{if(new URL(route.request().url()).origin===origin)return route.continue();result.external_requests++;return route.abort('blockedbyclient');});
+  observeMutations(context,origin,result);
+  const observedRequests=[];context.on('request',request=>observedRequests.push({method:request.method(),url:request.url()}));
+  const page=await context.newPage();page.setDefaultTimeout(8000);observeDocuments(page,origin,result);
+  const cdp=await context.newCDPSession(page);await configureResponseRetention(cdp);await cdp.send('WebAuthn.enable',{enableUI:false});
+  const auth=await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});
+  const api=(method,p)=>page.waitForResponse(r=>r.url()===origin+p&&r.request().method()===method,{timeout:10000}).catch(()=>null);
+  async function reflow320(){return page.evaluate(()=>document.documentElement.clientWidth===320&&Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)<=321);}
+  async function focusVisible(locator){return locator.evaluate(element=>{
+   const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
+   return document.activeElement===element&&element.matches(':focus-visible')&&rect.width>0&&rect.height>0&&rect.left>=0&&rect.right<=innerWidth+1&&rect.top>=0&&rect.bottom<=innerHeight+1&&style.outlineStyle!=='none'&&parseFloat(style.outlineWidth)>=2&&style.outlineColor!=='transparent'&&!/rgba\([^)]*,\s*0\)/.test(style.outlineColor);
+  });}
+  async function tabTo(locator,maxTabs=12){
+   requireFact(await locator.count()===1,'KEYBOARD_DISCOVERY');
+   for(let count=0;count<maxTabs;count++){
+    await page.keyboard.press('Tab');
+    if(await locator.evaluate(element=>document.activeElement===element)){requireFact(await focusVisible(locator),'KEYBOARD_FOCUS');return;}
+   }
+   requireFact(false,'KEYBOARD_DISCOVERY');
+  }
+  async function checkpoint(phase,account){emit({kind:'CHECKPOINT',phase,account_id:account});const command=await receive();requireFact(validCheckpointCommand(command,phase),'OWNER_PROTOCOL');result.checkpoints.push(phase);}
+  async function secretFree(){const cookies=await context.cookies(origin);const secrets=cookies.filter(c=>c.name.startsWith('__Host-console_account_')).map(c=>c.value);const html=await page.content();const storage=await page.evaluate(()=>JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}));requireFact(secrets.every(s=>s.length>0&&!html.includes(s)&&!storage.includes(s)),'SECRET_DISCLOSURE');result.literal_secret_absent=true;return cookies;}
+  async function capture(name){await page.screenshot({path:path.join(out,name),fullPage:true});result.screenshots.push(name);}
+  stage='public_entry';const publicResponse=await page.goto(origin+'/',{waitUntil:'domcontentloaded',timeout:8000});result.root_status=publicResponse?.status();requireFact(result.root_status===200,'UI_PUBLIC_ENTRY_MISSING');result.reflow_root_320=await reflow320();requireFact(result.reflow_root_320,'REFLOW_320');await capture('01-public.png');
+  requireFact(await page.getByRole('link',{name:'로그인',exact:true}).count()===1,'UI_LINK_MISSING');
+  stage='keyboard_public_entry';const skip=page.getByRole('link',{name:'본문 바로가기',exact:true});await page.keyboard.press('Tab');requireFact(await skip.count()===1&&await focusVisible(skip),'KEYBOARD_FOCUS');await page.keyboard.press('Enter');
+  result.keyboard_skip=await page.locator('#main-content').evaluate(element=>document.activeElement===element);requireFact(result.keyboard_skip,'KEYBOARD_SKIP');
+  const registerLink=page.getByRole('link',{name:'계정 만들기',exact:true});await tabTo(registerLink,6);await page.keyboard.press('Enter');await page.waitForURL(origin+'/account/register');result.keyboard_registration=true;
+  result.reflow_register_320=await reflow320();requireFact(result.reflow_register_320,'REFLOW_320');
+  stage='keyboard_terms';for(const item of TERMS){const box=page.getByRole('checkbox',{name:item.title,exact:true});requireFact(await box.count()===1&&!(await box.isChecked()),'TERMS_CONTROL');await tabTo(box);await page.keyboard.press('Space');requireFact(await box.isChecked(),'KEYBOARD_TERMS');await page.keyboard.press('Space');requireFact(!(await box.isChecked()),'KEYBOARD_TERMS');await page.keyboard.press('Space');requireFact(await box.isChecked(),'KEYBOARD_TERMS');}result.keyboard_terms=true;
+  await capture('02-terms.png');
+  stage='keyboard_registration_submit';await tabTo(page.getByRole('button',{name:'패스키로 계정 만들기',exact:true}),8);
+  stage='registration';const registrationStart=api('POST',MUTATION_PATHS[0]);const registrationFinish=api('POST',MUTATION_PATHS[1]);
+  await page.keyboard.press('Enter');result.keyboard_registration_submit=true;
+  stage='registration_start_response';const startedResponse=await registrationStart;requireFact(startedResponse?.status()===200,'REGISTRATION_WIRE');stage='registration_start_body';const started=await startedResponse.json();
+  stage='registration_wire';const creation=started.public_key_options?.publicKey;result.registration_wire=creation?.authenticatorSelection?.residentKey==='required'&&creation?.authenticatorSelection?.requireResidentKey===true&&creation?.authenticatorSelection?.userVerification==='required'&&typeof creation?.user?.id==='string';requireFact(result.registration_wire,'REGISTRATION_WIRE');
+  const handle=Buffer.from(creation.user.id,'base64url');requireFact(handle.length===16,'REGISTRATION_WIRE');const hex=handle.toString('hex');const account=`${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+  stage='registration_finish_response';const finishedResponse=await registrationFinish;requireFact(finishedResponse?.status()===201,'REGISTRATION_EFFECT');stage='registration_finish_body';const finished=await finishedResponse.json();stage='registration_finish_identity';requireFact(finished.account?.account_id===account,'REGISTRATION_EFFECT');
+  stage='registration_account_navigation';await page.waitForURL(origin+'/account');stage='registration_account_active';await page.locator('[data-account-state="active"]').waitFor();stage='registration_account_state';requireFact(await page.locator('[data-account-state="active"]').count()===1&&await page.locator('[data-context-state="empty"]').count()===1,'ACCOUNT_SSR');
+  result.reflow_account_320=await reflow320();requireFact(result.reflow_account_320,'REFLOW_320');
+  stage='registration_credentials_read';const credentials=await cdp.send('WebAuthn.getCredentials',{authenticatorId:auth.authenticatorId});stage='registration_credentials_verify';result.resident=credentials.credentials.length===1&&credentials.credentials[0].isResidentCredential===true&&credentials.credentials[0].rpId==='localhost'&&Buffer.from(credentials.credentials[0].userHandle,'base64').equals(handle);credentials.credentials.length=0;requireFact(result.resident,'RESIDENT');
+  stage='registration_secret_check';const cookies=await secretFree();const access=cookies.find(c=>c.name==='__Host-console_account_session');const refresh=cookies.find(c=>c.name==='__Host-console_account_refresh');result.cookie_security=!!access&&!!refresh&&access.httpOnly&&refresh.httpOnly&&access.secure&&refresh.secure&&access.path==='/'&&refresh.path==='/'&&access.sameSite==='Lax'&&refresh.sameSite==='Strict';requireFact(result.cookie_security,'COOKIE_SECURITY');
+  stage='registration_checkpoint';await capture('03-account-enrolled.png');
+  emit({kind:'CHECKPOINT',phase:'ENROLLED',account_id:account});
+  requireFact(validCheckpointCommand(await receive(),'DESIGNATED'),'OWNER_PROTOCOL');result.checkpoints.push('ENROLLED');
+  stage='company_entry';await page.reload({waitUntil:'domcontentloaded'});
+  const setup=page.getByRole('link',{name:'회사 업무 공간 만들기',exact:true});await tabTo(setup,16);await page.keyboard.press('Enter');await page.waitForURL(origin+'/account/companies/new');result.keyboard_company_entry=true;
+  requireFact(await page.getByText('기존 회사가 사용할 콘솔 업무 공간을 등록합니다.',{exact:true}).count()===1,'COMPANY_FORM');
+  const companyName='브라우저로 만든 연결 회사 <연구 & 본사>';const slug=`browser-${account.replaceAll('-','')}`;
+  const nameInput=page.getByRole('textbox',{name:'회사 이름',exact:true});const slugInput=page.getByRole('textbox',{name:'업무 공간 식별자',exact:true});
+  requireFact(await nameInput.count()===1&&await slugInput.count()===1&&await page.getByText('관리할 계정: 내 계정',{exact:true}).count()===1,'COMPANY_FORM');
+  result.preview_has_no_form=await page.locator('form,[type="submit"],[data-native-action]').count()===0;requireFact(result.preview_has_no_form,'COMPANY_FORM');
+  result.reflow_setup_320=await reflow320();requireFact(result.reflow_setup_320,'REFLOW_320');
+  await nameInput.fill(companyName);await slugInput.fill(slug);await page.waitForLoadState('networkidle');
+  result.preview_enters=[];
+  for(const [field,input] of [['name',nameInput],['slug',slugInput]]){
+   await input.focus();const before={url:page.url(),requests:observedRequests.length,history:await page.evaluate(()=>history.length)};
+   await page.keyboard.press('Enter');await page.waitForTimeout(350);
+   const evidence={field,no_requests:observedRequests.length===before.requests,url_unchanged:page.url()===before.url,history_unchanged:await page.evaluate(()=>history.length)===before.history,inputs_preserved:await nameInput.inputValue()===companyName&&await slugInput.inputValue()===slug};
+   result.preview_enters.push(evidence);requireFact(Object.entries(evidence).filter(([key])=>key!=='field').every(([,value])=>value===true),'INPUT_PRESERVATION');
+  }
+  result.preview_enter_preserved=true;
+  result.business_input_not_stored=await page.evaluate(({name,slug})=>!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(name)&&!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(slug),{name:companyName,slug});requireFact(result.business_input_not_stored,'BUSINESS_STORAGE');
+  await secretFree();await capture('04-company-preview-input-preserved.png');
+  await checkpoint('PREVIEW_PRESERVED',account);
+  requireFact(!result.relay_failure&&!result.tls_client_error,'TLS_RELAY_FAILED');requireFact(result.external_requests===0,'EXTERNAL_REQUEST');requireFact(completeObservations(result),'OBSERVATION_INCOMPLETE');
+  await cdp.send('WebAuthn.removeVirtualAuthenticator',{authenticatorId:auth.authenticatorId});await cdp.detach();
+ }catch(error){result.failure??={stage,code:publicError(error)};}
+ finally{clearTimeout(watchdog);await finish();}
+}
+module.exports={completeMutations,observeMutations,completeDocuments,observeDocuments,validOrigin,validCheckpointCommand,completeObservations,leafStatus,scrub,watchOwner,closeOwnedBrowser,certificateArgs,publicError,configureResponseRetention};
+if(require.main===module)main(process.argv[2],process.argv[3]).catch(()=>{process.stderr.write('Company UI browser producer initialization failed; no acceptance result.\n');process.exitCode=2;});

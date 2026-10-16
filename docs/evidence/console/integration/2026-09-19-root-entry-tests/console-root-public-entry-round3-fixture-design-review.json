@@ -1,0 +1,29 @@
+{
+  "kind": "independent-root-public-entry-fixture-strategy-design-review",
+  "reviewer": "/root/integration_tests",
+  "candidate_manifest_sha256": "bf6dcece1d90f51676e00f4771744abccec1ce43a095f0eb62b80f75c88e2c51",
+  "incorporated_round2_manifest_sha256": "b51847ae66168edc06b50d9b57000879e411ca2ffdd3ecbc0f5b627013c76cbb",
+  "status": "APPROVE_DESIGN_LEVEL_FIXTURE_STRATEGY_ONLY",
+  "findings": [],
+  "source_inputs_verified": 9,
+  "conclusions": [
+    "Retained public-root test correctly proves no-credential discoverability/private framing/no-effects, but is insufficient for new presence-classification branches.",
+    "Four old health-readiness root-body expectations are real semantic conflicts; preserve every bearer/island/field-disclosure deny assertion, change only explicitly reviewed root presentation expectations, and remove early-success masking by independently asserting each protected route.",
+    "Root projection true/errors delegate existing owner with full original headers/method, preserving configuration/document/Authorization/cookie/session precedence; successful false only selects legacy/public.",
+    "Exact staticHEAD200/nativeHEAD405/legacyunchanged behavior is specified; no method-driven credential mutation.",
+    "Shared private parser factoring keeps current API parse_cookies Authorization-first rejection and strict limits; no raw parser or identity values enter App."
+  ],
+  "required_test_candidate": [
+    "Unrelated cookies public plus legacyBearer/unrelated cookie authorized equivalence",
+    "All four native cookie categories and actual active native session",
+    "Expired/revoked access never consumes refresh or becomes protected identity",
+    "Malformed/duplicate native and mixedBearer/oversize precedence compared to actual native owner",
+    "Cross-site subresource/document metadata denial",
+    "Missing Auth/context unavailable stays unavailable; noPublic fallback",
+    "Static/native/legacyHEAD exact behavior and unchanged /work",
+    "Retained original root public test byte-identical; four health expectations narrow reviewed correction"
+  ],
+  "tests_executed": 0,
+  "repository_edits": 0,
+  "not_approved": "No exact new fixture/test source exists in this design packet; independent test review and current executable RED remain prerequisites. No source implementation or UI/browser acceptance approved."
+}

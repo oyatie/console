@@ -1,0 +1,27 @@
+{
+  "status": "implemented dependency; policy browser workflow remains RED; not integration acceptance",
+  "base": "4f50a432836dfc99998af93a822ff08591dcc72c",
+  "source_sha256": {
+    "backend/crates/identity/application/src/company_policy.rs": "4b121495d8ed39adb5d75e4e9a82a6685f302fa86c9860e26af84bcc778842eb",
+    "backend/crates/identity/application/src/company_policy/business.rs": "753ea89752811d06a00634a6c6ca3ce55f60a563b94a4df2da93bb450778b890",
+    "backend/crates/identity/application/src/company_policy/business/tests.rs": "ec8df9b76bab0d5fdde4c0e7bd24552516adc2d4e75de4e79706eaccb384d32c"
+  },
+  "native_target": "//backend/crates/identity/application:console-identity-application-unit",
+  "tests": {
+    "discovered": 20,
+    "executed": 20,
+    "passed": 20,
+    "failed": 0,
+    "new_independent_codec_tests": 8
+  },
+  "previous_attempt": "Unsupported --test-threads argument rejected by Buck test executor; zero tests; preserved separately",
+  "browser_red": "After actual registration and Company UI creation/reopen, missing policy entry; mandatory fanout admission on clean base successful",
+  "scope": "Exact new immutable business policy codec only; no old command bytes, dependencies, database schema or historical tests changed",
+  "remaining": [
+    "policy writer/current readers",
+    "typed native Account audit",
+    "real policy forms/payroll access",
+    "complete five-module MVP",
+    "full release qualification"
+  ]
+}

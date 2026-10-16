@@ -1,0 +1,31 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-20T12:52:24.296-04:00] Build ID: 803e81e9-7425-4f8e-bbdf-7c5126f3b800
+[2026-09-20T12:52:24.296-04:00] File changed (since mergebase): root//docs/specs/foundation-gates.md
+[2026-09-20T12:52:24.296-04:00] File changed (since mergebase): root//docs/specs/review-fix-merge-governance.md
+[2026-09-20T12:52:24.296-04:00] File changed (since mergebase): root//docs/CI-GATES.md
+[2026-09-20T12:52:24.296-04:00] 4 additional file change events (since mergebase)
+[2026-09-20T12:52:24.296-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:52:31.393-04:00] Waiting on root//third-party/rust:aws-lc-sys-0.45 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 571 other actions
+[2026-09-20T12:52:38.493-04:00] Waiting on root//third-party/rust:linked_hash_set-0.1.6.crate (prelude//platforms:default#39893c7e49283da4) -- action (write linked_hash_set-0.1.6.crate_unpack.sh), and 706 other actions
+[2026-09-20T12:52:46.294-04:00] Waiting on root//third-party/rust:icu_locale_core-2.2.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write icu_locale_core-2.2.0.crate_unpack.sh), and 372 other actions
+[2026-09-20T12:52:52.430-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-20T12:52:52.526-04:00] Build ID: 6bbf3d16-840e-4229-9d21-9915a001fa7b
+[2026-09-20T12:52:52.528-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:52:59.626-04:00] Waiting on root//third-party/rust:encoding_rs-0.8.35.crate (prelude//platforms:default#39893c7e49283da4) -- action (write encoding_rs-0.8.35.crate_unpack.sh), and 579 other actions
+[2026-09-20T12:53:06.726-04:00] Waiting on root//third-party/rust:iana-time-zone-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 759 other actions
+[2026-09-20T12:53:14.027-04:00] Waiting on root//third-party/rust:chacha20-0.10 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 345 other actions
+[2026-09-20T12:53:19.122-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (0.1s)
+[2026-09-20T12:53:19.122-04:00] ---- STDOUT ----
+[2026-09-20T12:53:19.122-04:00]
+[2026-09-20T12:53:19.122-04:00] running 1 test
+[2026-09-20T12:53:19.122-04:00] test legacy_platform_list_reads::histories::legacy_platform_group_reads::group_projection_oracle_rejects_every_field_topology_and_order_corruption ... ok
+[2026-09-20T12:53:19.122-04:00]
+[2026-09-20T12:53:19.122-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 475 filtered out; finished in 0.00s
+[2026-09-20T12:53:19.122-04:00]
+[2026-09-20T12:53:19.122-04:00]
+[2026-09-20T12:53:19.122-04:00] ---- STDERR ----
+[2026-09-20T12:53:19.122-04:00]
+[2026-09-20T12:53:19.220-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

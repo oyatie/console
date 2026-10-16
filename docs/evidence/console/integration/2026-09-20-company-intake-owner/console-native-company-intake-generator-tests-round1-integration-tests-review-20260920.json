@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_SOURCE_TEST_SUCCESSOR_ONLY",
+  "packet_manifest_sha256": "8db1e4cd72d86b22529649da158d634d80ef4867c00c60ce436b79313b871d72",
+  "source_head": "66b2e949ba1e80005d50e205d8ecd2f04516254e",
+  "executed_tests": 0,
+  "repository_writes": false,
+  "checks": [
+    "All packet hashes and source-lock preimages match.",
+    "In-memory exact patch applies and complete preservation-test projection matches.",
+    "All66 existing Buck methods source-byte-identical; one resource method adds67th.",
+    "All8predecessor disk hashes verified:6historical+parser+newly frozen schema. Existing digest/equality/declaration/UNINSTALLED assertions retained.",
+    "Exact generated output roster admits solely9th private intake file, with function/disk equality and all4finite function declarations excluded from8predecessors.",
+    "New Buck test maps exact existing auth_rest external intake resource path and requires actual owner-test source."
+  ],
+  "buck_test_postimage_sha256": "0cb3d455f5f063db378b3c8f51261b1f9a8e4c8d801a1321ecf4297928c998a8",
+  "limits": [
+    "Marker checks prove generator separation only; no SQL body, profile reseal or serving install approved here.",
+    "Root must execute preservation test and67Buck generator tests on exact integrated candidate; runtime and owner tests separate.",
+    "Owner round2source review is separately recorded; remaining security, clocks, global capacity, real credential and effect requirements remain HOLD."
+  ],
+  "risk_controls": {
+    "pre_mortem": "Output expansion hides predecessor rewrites or missing resources masquerade as owner RED.",
+    "blast_radius": "One preservation-method successor and one additive resource regression.",
+    "detection": "8frozen digests/exact9output roster plus precise resource mapping.",
+    "rollback": "Revert prospective additions together, retaining historical bytes/evidence.",
+    "stop": "Changed source preimages, historical hash drift, stub owner, absent independent review or zero executed tests treated as success."
+  }
+}

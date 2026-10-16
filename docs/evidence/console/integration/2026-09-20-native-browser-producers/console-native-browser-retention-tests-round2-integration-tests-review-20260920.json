@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/integration_tests",
+  "author": "/root/reference_inventory",
+  "verdict": "APPROVED_SOURCE_TEST_CONTRACT_ONLY",
+  "candidate": "/private/tmp/console-native-browser-retention-tests-20260920-round2",
+  "manifest_sha256": "68c36f9726d6c6fa7bf0077a6cbbfe64207325a9005c7009798b48614d676d0c",
+  "source_head": "6697a1dc4903d22ea071d37d32e9767e80e6b41c",
+  "executed_tests": 0,
+  "repository_writes": false,
+  "facts": [
+    "Verified all packet manifest hashes and all source-lock hashes before root integration.",
+    "Round1 omitted the exact generator-test semantic successor; round2 repairs that omission.",
+    "Python AST/source comparison preserves65 test methods, with64 byte-identical and exactly the existing browser-producer contract method updated.",
+    "Four existing browser leaf commands and Account three-oracle prefix retain their execution identity; fixed evidence guards append after successful leaves.",
+    "Closed26 file retention set matches four browser drivers and Rust owner-receipt filenames:8JSON and18PNG.",
+    "Existing collector reads all failed step IDs, including newly named uploader; uploader condition permits partial evidence after leaf failure while prerequisites must succeed.",
+    "Mutation arithmetic preserves137 run steps/411 run mutations and adds one action:41actions/82bypass mutations/250identity-input-interleaving mutations.",
+    "Focused synthetic guard test has4positive plus78negative calls:every26file is independently absent,empty,symlinked. No browser execution is substituted by these probes.",
+    "Multiline path mutation now consumes scalar continuation lines and explicitly requires changed/deleted path YAML remain parseable.",
+    "After root applied reviewed source, read-only structural calculation confirmed six expected producer names, exact four gate-run locks versus Python expected runs and workflow, and exact focused-test appended bytes."
+  ],
+  "postimage_sha256": {
+    ".github/workflows/ci.yml": "58328feaf707cdd01a5295e2bc75dacec27c8753c9a86497bf728f984e316d84",
+    "scripts/check-ci-preflight.mjs": "363a98836b8c5af580f2183ca12f947a258f7808a009e8be514e72dbd5388784",
+    "scripts/check-ci-preflight.test.mjs": "5c144f1f79072f6f578ba4db8a7415dcdeda0627532308c89115b89848f8aee8",
+    "tools/buck/test_gen_first_party.py": "4c34fe6e3f648fa4871dc1042cae62af24a0939f904bdb6c2b84f205893e222e"
+  },
+  "remaining_holds": [
+    "Root must execute integrated generator65methods, CI preflight tests including82guard cases, and existing required checks.",
+    "Hosted upload and artifact download/readback are not demonstrated by source review or local shell tests.",
+    "Confidentiality verdict belongs to independent integration_security review. Hydration diagnostics use a closed roster, but cases.requests retain token-filtered pathnames and asset_responses retain full loopback asset URLs; no stronger all-fields sanitization is claimed here.",
+    "Company creation correctness, current grant/revoke administration, product journeys, human usability, production qualification and full release remain separate incomplete requirements."
+  ],
+  "risk_controls": {
+    "pre_mortem": "Missing or partial evidence mistaken for successful retention; accidental test weakening during exact workflow successor.",
+    "blast_radius": "Four browser evidence guards, one backend artifact action, gate and test contracts only.",
+    "detection": "Exact allowlist/action contracts, per-file corruption probes, unchanged collector sees upload failures.",
+    "rollback": "Revert prospective CI/gate/test quartet together; preserve already-retained evidence.",
+    "stop": "Changed unreviewed preimages, changed driver semantics, weakened probes, or failed required checks."
+  }
+}

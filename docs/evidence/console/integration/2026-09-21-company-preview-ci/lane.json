@@ -1,0 +1,31 @@
+[
+  {
+    "lane": "company-preview-machinery-ci-registration-20260921",
+    "owner": "/root",
+    "base": "6bb0d4ce213be694492a90c120cdd37b33c6bffb",
+    "immutable_target": "e0bbf9e6a8be1a81aaf03a3f7cc61bb61b01e0398c191bc3d7031f2e7f2496a2",
+    "probe": "node --test --test-name-pattern='requires Company preview machinery execution' scripts/check-ci-preflight.test.mjs",
+    "allow": [
+      ".github/workflows/ci.yml",
+      "scripts/check-ci-preflight.mjs"
+    ],
+    "guide": "Add exactly one reviewed Node command in existing browser CI step and exact preflight mirror. Approved tests already committed. Preserve guards, real Buck browser invocation, fail-fast semantics and evidence.",
+    "premortem": "machinery controls stay unexecuted or failure swallowed",
+    "blast_radius": "one existing Company browser CI step",
+    "detection": "positive exact command and four corruption controls; full preflight/generator suites",
+    "rollback": "restore isolated two source originals preserving evidence",
+    "stop_conditions": [
+      "source drift",
+      "unreviewed semantics",
+      "missing executable or green original probe"
+    ],
+    "reviews": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "Company full workflow",
+      "MVP"
+    ]
+  }
+]

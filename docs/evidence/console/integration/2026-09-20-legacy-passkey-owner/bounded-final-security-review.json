@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_BOUNDED_IMPLEMENTED_PRIMITIVE_SOURCE_AND_FOCUSED_AVAILABILITY_FIX",
+  "base_sha": "58a2ab041584ce652db70d4476468d06a61f2d61",
+  "source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "af1722074e362b58568233053eff3b8547655bbfe3611d2f31a463d12a90848a",
+    "backend/crates/platform/auth/src/lib.rs": "23cf57fa20090ed35c95f02410d911b78869dab6c1bb81677341b0e73e4050df",
+    "backend/crates/platform/auth-rest/src/lib.rs": "c12a322d26b797f075b4ac33bcb9e83e4d5200af6a0056d8ccab3f9f0754e78a",
+    "backend/crates/platform/auth/src/legacy_self_read_tests.rs": "5d13ee4a190161380c7af8b4f17af68db2c4f6dc835f30e1c5224fc82da86a85",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_reads.rs": "248c5f57df8651b8189e49bb1916dd303ca27c32cc86a5ade7dbe084fc915a50",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_availability.rs": "cee2ec1ea3bb6ec9d7b4b5098d2f1e4c2034a79d2c7d769837f72586d491ba66"
+  },
+  "predecessor_review_sha256": "99e7b564fa4ade704847d754126ab5f27ac10dfb846b9e5ac6e7b62595ce2f46",
+  "closed_finding": {
+    "id": "SELF-ABSENT-POOL-1",
+    "evidence": "Actual mounted HTTP focused leaf failed at status 503 versus expected 401, then same leaf passed after the no-pool branch used the existing real pure verifier.",
+    "red": "1 executed, 0 passed, 1 failed, 380 filtered, 7.60 seconds",
+    "green": "1 executed, 1 passed, 0 failed, 380 filtered, 8.08 seconds"
+  },
+  "runtime_logs_sha256": {
+    "/private/tmp/console-legacy-passkey-availability-red-20260920.log": "fcca7f9bf1cc0014b17f4db74cf7be188b6761b6576a889174ead2753bb230d4",
+    "/private/tmp/console-legacy-passkey-availability-green-20260920.log": "a463d42158f3ec768f062a20f8fc02bf9f25000a79dc03ab1b9f2b4a9c00ff35"
+  },
+  "accepted": [
+    "Auth owner and export hashes are unchanged from initial reviewed implementation; exact initial source decisions are retained.",
+    "REST correction is limited to an absent Auth pool branch: cryptographically invalid token is 401, valid token is 503; services absent retains existing unconfigured literal.",
+    "Configured path still verifies once inside actual Auth owner; no duplicate self-purpose, current identity, family dispatch, or expanded authority surface.",
+    "Response privacy decoration covers both branches.",
+    "Private unit file and availability leaf exactly match previously approved source hashes."
+  ],
+  "scope": "Bounded source and focused runtime acceptance sufficient to retain the implemented primitive and evidence. This is not complete owner integration acceptance, finite Platform policy acceptance, workflow acceptance, or release acceptance.",
+  "remaining_holds": [
+    "Extended real HTTP rotation, reuse, native-family, purpose, historical, time, and projection recovery cases require independent test approval and actual execution.",
+    "Reader/revoker lock histories, after-wait and after-projection expiry, and independent Company progress require observed real PostgreSQL blocking and verified cleanup.",
+    "Complete milestones 0\u201310 remain open; direct bound production mint is not changed by this primitive."
+  ],
+  "review_method": "Read-only exact source diff, predecessor hashes, approved test packet, and actual runtime log inspection. No reviewer builds or database executions. Applied Red Team, Day-2, blast radius, and zero-trust to the authorization and availability boundary."
+}

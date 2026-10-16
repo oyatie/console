@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/policy_browser_tests",
+  "decision": "APPROVE bounded round2 SQL source; runtime qualification remains pending",
+  "manifest_sha256": "718f137f87e9cbac6b3c5f8dc2a67ae5f788e629ca3226a597ca806783c327b4",
+  "files_verified": 16,
+  "findings": [],
+  "resolved": [
+    {
+      "id": "R1",
+      "evidence": [
+        "All4 INVOKER participant wrappers call private helpers only under actual canonical owner roles, preserving old current_user/fallback behavior. Generic insert guard permits old null pointer flow while explicitly denying nonowner native pointer.",
+        "Common native install audit handoff is finite catalog marker only; separate ALWAYS definer guard now demands positive exact-frame validation for marker. Definer protected-audit validator independently still checks same frame. Private helper serving EXECUTE grants are absent.",
+        "Exact role rollback RED log shows42501 participant_admit; GREEN log shows INSERT0 1,SET CONSTRAINTS,ROLLBACK. These are actual read logs, not reviewer rerun."
+      ]
+    }
+  ],
+  "form8_review": [
+    "Exact approved8 nullable columns, single row after current operator material; no changes to material27 orPayroll11.",
+    "Source material retains Group-first current Account/family/designation/Company/catalog scope; form honors selectedCompany GUC and restores on success/error.",
+    "Actual catalog ref and exact current business role/assignment revision, plus owner effects/clause custody; no preflight or mutation; expired/revoked intervals remain unchanged and visible to authorized operator.",
+    "Partial role/assignment state faults; absent catalog+role returns allnull; installed with no grant only installedObject. Same role-bound finite ACL as other public owner accessors."
+  ],
+  "preservation": "Mechanically verified all old wrapper differences against round1 are only intended role gates and finite audit marker. Other11SQL files unchanged; new form appended tocommands and finite ACL additions only. Historical fallback bodies retained.",
+  "logs": {
+    "/private/tmp/console-native-policy-sql-admission-20260922/legacy-rollback-red.log": "36e44bfa1fc15597bb9b9d1c0fb4e9340b31f26c49651e9d6561baa4329510d4",
+    "/private/tmp/console-native-policy-sql-admission-20260922/legacy-rollback-green.log": "f3455a05120e40651ca454e767414925905d9b22d55478ad71e406b5f5612ee6"
+  },
+  "reviewer_runtime_tests_executed": 0,
+  "remaining": [
+    "Custody generator/profile/atomic installer review and actual source binding",
+    "Actual form8 owner controls including allnull/installed/current/revoked/expired/successor operator/denial/corruption",
+    "Common Rust native acceptance/completion/install audit positive and corruption controls, especially finite marker forgery/missingtarget",
+    "Native/legacy enrollment and retained legacy Ontology positive controls beyond one role INSERT",
+    "Actual A/B durable commands, replay, rejection, uncertainty, complete effect inventory and browser acceptance"
+  ]
+}

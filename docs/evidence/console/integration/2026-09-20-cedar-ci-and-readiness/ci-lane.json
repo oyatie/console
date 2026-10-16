@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "cedar-sdk-ci-execution",
+    "owner": "/root",
+    "base_sha": "ac7a847f54c897cbbdcaafc28c36cc1724c1d3c3",
+    "immutable_target": "Execute full Cedar SDK regression target in domain-unit and track its two source tests",
+    "allowed_paths": [
+      ".github/workflows/ci.yml",
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "probe": "node --test --test-name-pattern 'Cedar SDK identity workflow reachability' scripts/check-executed-tests.test.mjs",
+    "mechanical_guide": "Add one locked manifest-path console-platform-authz --test cedar_sdk_identity command and immediately check_status cedar_sdk_identity adjacent to retained Cedar invocations; add one baseline2entry. Preserve all previous CI commands and collector.",
+    "reviewer": "/root/integration_tests",
+    "test_manifest": "95fbaaa5fe1a3c96033201e416b5bffb2f48698fcbf2367a239ef8fbce556ed8",
+    "pre_mortem": "Static declaration or filtered/list-only command masquerades as execution",
+    "blast_radius": "One CI command and one static baseline source",
+    "detection": "Actual workflow parser3tests plus10negative controls/full15tests/full existing owner gate",
+    "rollback": "Revert bounded invocation and matching baseline entry together; preserve history",
+    "stop_conditions": [
+      "Unrelated CI removal",
+      "Unreviewed baseline reduction",
+      "Owner probe not executable"
+    ],
+    "remaining_holds": [
+      "Full release qualification",
+      "Actual hosted CI execution"
+    ]
+  }
+]

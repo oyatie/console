@@ -1,0 +1,64 @@
+tags: [company]
+operationId: cancelNativeCompanyEnrollment
+summary: Cancel a pending Company enrollment
+description: >-
+  Attempts the owning cancellation transition for this Account's original command. It cannot undo
+  a committed Company; the returned outcome is authoritative. The body must contain zero bytes or exactly the two bytes {}; whitespace variants are refused.
+  Content-Type must be exactly application/json, including for a zero-byte body. After an uncertain response, reopen
+  the command. Native handler responses use private no-store JSON with Vary: Cookie, Origin.
+  Authentication uses only the native Account session cookie. Any Authorization header or duplicate
+  recognized Account cookie is refused. Combined Cookie field bytes, including separators, are bounded
+  to 16 KiB. Current authority is established by the owning transaction, not by supplied identifiers.
+  The outer application timeout can return JSON 408 without the native handler's private headers;
+  a timed-out mutation must be reconciled through its original command before retrying.
+security:
+- nativeAccountSession: []
+parameters:
+- name: command_id
+  in: path
+  required: true
+  description: Non-nil canonical lowercase hyphenated command UUID.
+  schema: {type: string, format: uuid, minLength: 36, maxLength: 36, pattern: '^(?!00000000-0000-0000-0000-000000000000$)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'}
+- name: Origin
+  in: header
+  required: true
+  description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+  schema: {type: string, format: uri}
+- name: Sec-Fetch-Site
+  in: header
+  required: false
+  schema: {type: string, enum: [same-origin]}
+- name: X-Console-CSRF
+  in: header
+  required: true
+  description: Current opaque proof bound to the same Account session and generation.
+  schema: {type: string, minLength: 1, maxLength: 4096}
+requestBody:
+  required: false
+  content:
+    application/json:
+      schema: {type: object, additionalProperties: false, maxProperties: 0}
+responses:
+  '200':
+    description: Current terminal or committed command outcome.
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeCompanyEnrollmentStatus'
+          - type: object
+            properties:
+              outcome: {type: string, enum: [COMMITTED, CANCELLED, EXPIRED]}
+  '400': {description: Ambiguous credentials., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '401': {description: Invalid Account authentication., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '403': {description: CSRF, origin, or ownership denial., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '404': {description: Command absent or denied by omission., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '409': {description: Command conflict or uncertain commit; inspect status., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '413': {description: Body or CSRF proof exceeds 4096 bytes or combined Cookie fields exceed 16 KiB., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '422': {description: Invalid command UUID or exact body bytes or Content-Type framing., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '408':
+    description: Outer application request timeout; no absence or rollback is implied.
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/ErrorBody'}
+  '503': {description: Current enrollment authority unavailable., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}

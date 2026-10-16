@@ -1,0 +1,713 @@
+//! Native Account documents. Inputs are safe projections composed by the app.
+use super::native_workspace_header::{self, NavigationMode};
+use leptos::prelude::*;
+
+/// Optional Policy-root destinations, projected independently by their owners.
+/// A Company name is present only after a current identity read succeeds.
+#[derive(Default)]
+pub struct CompanyPolicyNavigation {
+    pub company_name: Option<String>,
+    pub show_people_navigation: bool,
+    pub show_people_create_navigation: bool,
+    pub show_payroll_navigation: bool,
+}
+
+/// Only finalized current Group-owner projections may populate this list.
+#[derive(serde::Serialize)]
+pub struct GroupNavigation {
+    pub group: String,
+    pub label: String,
+}
+
+#[derive(serde::Serialize)]
+pub struct TermsItem {
+    pub kind: String,
+    pub title: String,
+    pub content_url: String,
+    pub content: String,
+}
+
+#[derive(serde::Serialize)]
+#[serde(tag = "kind", content = "companies", rename_all = "snake_case")]
+pub enum ContextState {
+    Empty,
+    Companies(Vec<(String, String)>),
+    Unavailable,
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CompanySetupEligibility {
+    Eligible,
+    Ineligible,
+    Unavailable,
+}
+
+#[derive(serde::Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum Page {
+    Public,
+    SignIn,
+    Register {
+        version: String,
+        items: Vec<TermsItem>,
+    },
+    Account {
+        account_id: String,
+        context: ContextState,
+        can_logout: bool,
+        company_setup: CompanySetupEligibility,
+    },
+    CompanySetup {
+        account_id: String,
+        command_id: Option<String>,
+    },
+    CompanyCreated {
+        command_id: String,
+        receipt_id: String,
+        administrative_account_id: String,
+        company: Option<(String, String)>,
+    },
+    CompanyPending {
+        command_id: String,
+        name: String,
+        slug: String,
+        account_id: String,
+        group_id: Option<String>,
+    },
+    CompanyTerminal {
+        command_id: String,
+        expired: bool,
+    },
+    CompanyUncertain,
+    #[serde(skip)]
+    Company {
+        org_id: String,
+        name: String,
+        slug: String,
+        show_policy_navigation: bool,
+        show_payroll_navigation: bool,
+        show_people_navigation: bool,
+        show_people_create_navigation: bool,
+        show_payroll_policy_navigation: bool,
+        people_policy: Option<Vec<super::native_policy::PolicyAction>>,
+    },
+    #[serde(skip)]
+    CompanyPolicy {
+        org_id: String,
+        action_keys: Vec<&'static str>,
+        delegable_action_keys: Vec<&'static str>,
+    },
+    Refused,
+    Unavailable,
+}
+
+#[component]
+fn AttemptStatus() -> impl IntoView {
+    view! {
+        <p id="native-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
+        <p id="native-error" class="error" role="alert" hidden></p>
+        <button id="native-cancel" class="button secondary" type="button" hidden>"취소"</button>
+        <button id="native-recheck" class="button secondary" type="button" hidden>"결과 다시 확인"</button>
+        <button id="native-retry-finish" class="button secondary" type="button" hidden>"같은 요청 다시 제출"</button>
+        <a id="native-continue" class="text-link" href="/account" hidden>"로그인으로 확인"</a>
+        <a id="native-reload-terms" class="text-link" href="/account/register" hidden>"새 약관 확인"</a>
+        <noscript><p class="notice">"패스키를 사용하려면 이 브라우저에서 JavaScript를 허용해 주세요. 약관과 안내는 그대로 읽을 수 있습니다."</p></noscript>
+    }
+}
+
+#[component]
+fn AccountReference(account: String) -> impl IntoView {
+    view! {
+        <section class="workspace-state account-reference" aria-labelledby="account-reference-title">
+            <h2 id="account-reference-title">"내 계정 참조"</h2>
+            <p id="account-reference-help">"이 참조를 공유하면 권한이 있는 운영자가 관리할 계정으로 선택할 수 있습니다. 로그인 비밀이나 사람의 신원 증명, 업무 권한이 아닙니다."</p>
+            <label for="own-account-reference">"내 계정 참조"</label>
+            <input id="own-account-reference" type="text" data-account-reference="" value=account readonly aria-describedby="account-reference-help" spellcheck="false"/>
+            <button class="button secondary" type="button" data-account-copy="">"계정 참조 복사"</button>
+            <p class="status" role="status" aria-live="polite" data-account-copy-status=""></p>
+        </section>
+    }
+}
+
+#[component]
+fn CompanyRecipient(account: String) -> impl IntoView {
+    view! {
+        <fieldset class="account-recipient">
+            <legend>"관리할 계정"</legend>
+            <label class="recipient-choice"><input type="radio" name="administrator_mode" value="self" data-company-recipient-mode="" checked/>"내 계정"</label>
+            <label class="recipient-choice"><input type="radio" name="administrator_mode" value="other" data-company-recipient-mode=""/>"다른 계정"</label>
+            <div data-company-other="" hidden>
+                <label for="company-administrator-reference">"관리할 계정 참조"</label>
+                <input id="company-administrator-reference" name="administrative_account_reference" type="text" data-company-administrator-reference="" disabled autocomplete="off" autocapitalize="none" spellcheck="false" minlength="36" maxlength="36" aria-describedby="company-recipient-help"/>
+            </div>
+            <section class="workspace-state" aria-labelledby="company-recipient-title">
+                <h2 id="company-recipient-title">"선택한 관리 계정"</h2>
+                <p class="account-id" data-company-selected-account="">{account}</p>
+                <p id="company-recipient-help">"이 계정에 이 회사의 정보 열람과 제한된 권한 관리 기능을 연결합니다. 급여·인사 권한과 운영자 권한은 포함되지 않습니다."</p>
+            </section>
+        </fieldset>
+    }
+}
+
+fn body(
+    page: Page,
+    policy_navigation: &CompanyPolicyNavigation,
+    groups: Vec<GroupNavigation>,
+) -> AnyView {
+    match page {
+        Page::Public => view! {
+            <section class="entry-card welcome">
+                <p class="eyebrow">"CONSOLE"</p>
+                <h1>"하나의 계정으로,"<br/>"업무를 이어가세요."</h1>
+                <p class="lead">"로그인하면 지금 사용할 수 있는 업무 공간을 확인할 수 있습니다."</p>
+                <div class="actions">
+                    <a class="button primary" href="/account">"로그인"</a>
+                    <a class="button secondary" href="/account/register">"계정 만들기"</a>
+                </div>
+                <p class="supporting">"아직 연결된 회사나 업무가 없어도 계정을 만들 수 있습니다."</p>
+            </section>
+        }.into_any(),
+        Page::SignIn => view! {
+            <section class="entry-card" data-account-state="anonymous">
+                <p class="eyebrow">"다시 만나서 반갑습니다"</p>
+                <h1>"Console에 로그인"</h1>
+                <p class="lead">"기기에 저장된 패스키로 본인의 계정에 로그인하세요."</p>
+                <form data-native-action="login">
+                    <label for="native-account-choice">"패스키 계정 선택"</label>
+                    <input id="native-account-choice" type="text" autocomplete="username webauthn" aria-describedby="native-choice-help"/>
+                    <p id="native-choice-help" class="supporting">"아래 버튼을 누른 뒤 이 입력란에서 브라우저가 제안하는 패스키를 선택하세요. 이름이나 이메일을 입력할 필요는 없습니다."</p>
+                    <button class="button primary wide" type="button" data-native-submit disabled>"패스키로 로그인"</button>
+                    <AttemptStatus/>
+                </form>
+                <p class="other-path">"처음 방문하셨나요? "<a href="/account/register">"계정 만들기"</a></p>
+            </section>
+        }.into_any(),
+        Page::Register { version, items } => {
+            let terms = items.into_iter().enumerate().map(|(index, item)| {
+                let id = format!("native-terms-{index}");
+                view! {
+                    <article class="terms-item">
+                        <label class="check-label" for=id.clone()>
+                            <input id=id.clone() type="checkbox" data-terms-kind=item.kind required/>
+                            <span>{item.title}</span>
+                        </label>
+                        <details>
+                            <summary>"약관 내용 보기"</summary>
+                            <div class="terms-content">{item.content}</div>
+                            <a href=item.content_url target="_blank" rel="noopener noreferrer">"문서 새 창으로 열기"</a>
+                        </details>
+                    </article>
+                }
+            }).collect_view();
+            view! {
+                <section class="entry-card registration" data-account-state="anonymous">
+                    <p class="eyebrow">"내 계정의 시작"</p>
+                    <h1>"계정 만들기"</h1>
+                    <p class="lead">"약관을 확인하고 패스키를 만드세요. 회사 소속이나 직책은 지금 입력하지 않습니다."</p>
+                    <form data-native-action="register" data-terms-version=version>
+                        <fieldset>
+                            <legend>"필수 약관을 각각 확인해 주세요"</legend>
+                            {terms}
+                        </fieldset>
+                        <p class="supporting">"다음 단계에서 기기의 화면 잠금이나 보안 키로 패스키를 만듭니다."</p>
+                        <button class="button primary wide" type="button" data-native-submit disabled>"패스키로 계정 만들기"</button>
+                        <AttemptStatus/>
+                    </form>
+                    <p class="other-path">"이미 계정이 있나요? "<a href="/account">"로그인"</a></p>
+                </section>
+            }.into_any()
+        },
+        Page::Account { account_id, context, can_logout, company_setup } => {
+            let setup = match company_setup {
+                CompanySetupEligibility::Eligible => view! {
+                    <a class="button primary" href="/account/companies/new">"회사 업무 공간 만들기"</a>
+                }.into_any(),
+                CompanySetupEligibility::Ineligible => ().into_any(),
+                CompanySetupEligibility::Unavailable => view! {
+                    <section class="workspace-state" role="alert">
+                        <h2>"업무 공간 등록을 확인할 수 없습니다"</h2>
+                        <p>"잠시 후 다시 확인해 주세요."</p>
+                        <a href="">"다시 확인"</a>
+                    </section>
+                }.into_any(),
+            };
+            let workspace = match context {
+                ContextState::Companies(companies) => view! {
+                    <section class="workspace-state" data-context-state="populated">
+                        <h2>"회사 업무 공간"</h2>
+                        <ul>{companies.into_iter().map(|(id, name)| view! {
+                            <li><a href=format!("/companies/{id}")>{name}</a></li>
+                        }).collect_view()}</ul>
+                    </section>
+                }.into_any(),
+                ContextState::Empty => view! {
+                    <section class="workspace-state" data-context-state="empty">
+                        <span class="state-label">"연결된 회사 없음"</span>
+                        <h2>"계정은 준비되었습니다"</h2>
+                        <p>"현재 이 계정으로 접근할 수 있는 회사 업무 공간이 없습니다. 업무 접근 권한이 연결되면 이곳에서 이어갈 수 있습니다."</p>
+                        <a href="/account">"다시 확인"</a>
+                    </section>
+                }.into_any(),
+                ContextState::Unavailable => view! {
+                    <section class="workspace-state" data-context-state="unavailable" role="alert">
+                        <span class="state-label">"다시 확인이 필요합니다"</span>
+                        <h2>"회사 업무 공간을 확인할 수 없습니다"</h2>
+                        <p>"계정 로그인은 확인했지만 회사 업무 접근 정보를 불러오지 못했습니다. 잠시 후 다시 확인해 주세요."</p>
+                        <a href="/account">"다시 확인"</a>
+                    </section>
+                }.into_any(),
+            };
+            let group_work = (!groups.is_empty()).then(|| view! {
+                <section class="workspace-state" aria-labelledby="account-group-work-title">
+                    <h2 id="account-group-work-title">"그룹 관리"</h2>
+                    <ul>{groups.into_iter().map(|group| view! {
+                        <li>
+                            <p>{group.label}</p>
+                            <a href=format!("/groups/{}/identity", group.group)>"그룹 신원 확인"</a>
+                        </li>
+                    }).collect_view()}</ul>
+                </section>
+            }.into_any());
+            view! {
+                <section class="entry-card" data-account-state="active">
+                    <p class="eyebrow">"내 CONSOLE"</p>
+                    <h1>"계정에 로그인했습니다"</h1>
+                    <AccountReference account=account_id/>
+                    {workspace}
+                    {group_work}
+                    {setup}
+                    {can_logout.then(|| view! {
+                        <form data-native-action="logout" class="logout-form">
+                            <button class="button secondary" type="button" data-native-submit disabled>"로그아웃"</button>
+                            <AttemptStatus/>
+                        </form>
+                    })}
+                </section>
+            }.into_any()
+        },
+        Page::CompanySetup { account_id, command_id } => view! {
+            <section class="entry-card" data-company-setup="" aria-labelledby="company-setup-title">
+                <p class="eyebrow">"내 CONSOLE"</p>
+                <h1 id="company-setup-title">"회사 업무 공간 만들기"</h1>
+                <p class="lead">"기존 회사가 사용할 콘솔 업무 공간을 등록합니다."</p>
+                {command_id.as_ref().map(|_| view! {
+                    <p class="notice">"이 계정에 저장된 요청을 찾지 못했습니다. 입력 내용을 다시 확인하고 제출하면 현재 주소의 같은 요청 번호를 사용합니다."</p>
+                })}
+                <form data-company-enrollment="" data-account-id=account_id.clone() data-command-id=command_id>
+                    <fieldset>
+                        <legend>"회사 업무 공간 정보"</legend>
+                        <label for="company-name">"회사 이름"</label>
+                        <input id="company-name" name="name" type="text" autocomplete="organization" required maxlength="256" aria-describedby="company-name-help"/>
+                        <p id="company-name-help" class="supporting">"업무에서 사용하는 회사 이름을 입력하세요."</p>
+                        <label for="company-slug">"업무 공간 식별자"</label>
+                        <input id="company-slug" name="slug" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required maxlength="63" pattern=r"[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?" aria-describedby="company-slug-help"/>
+                        <p id="company-slug-help" class="supporting">"영문 소문자와 숫자, 하이픈(-)으로 입력하세요. 처음과 끝에는 하이픈을 사용할 수 없습니다."</p>
+                    </fieldset>
+                    <CompanyRecipient account=account_id.clone()/>
+                    <button class="button primary wide company-submit" type="submit" disabled>"회사 업무 공간 만들기"</button>
+                    <p id="company-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
+                    <p id="company-error" class="error" role="alert" hidden></p>
+                    <a id="company-result" class="text-link" hidden>"요청 결과 확인"</a>
+                    <noscript><p class="notice">"업무 공간을 등록하려면 이 브라우저에서 JavaScript를 허용해 주세요."</p></noscript>
+                </form>
+                <a href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyCreated { command_id, receipt_id, administrative_account_id, company } => view! {
+            <section class="entry-card" data-company-outcome="committed">
+                <p class="eyebrow">"회사 업무 공간"</p>
+                <h1>"생성 완료"</h1>
+                <p class="lead">"요청이 처리되었습니다. 이 주소에서 결과를 다시 확인할 수 있습니다."</p>
+                <dl class="request-reference"><dt>"관리할 계정 참조"</dt><dd>{administrative_account_id}</dd><dt>"요청 번호"</dt><dd>{command_id}</dd><dt>"처리 기록"</dt><dd>{receipt_id}</dd></dl>
+                {company.map(|(id, name)| view! {
+                    <section class="workspace-state"><h2>{name}</h2>
+                        <a class="button primary" href=format!("/companies/{id}")>"업무 공간 열기"</a>
+                    </section>
+                })}
+                <a href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyPending { command_id, name, slug, account_id, group_id } => view! {
+            <section class="entry-card" data-company-outcome="pending">
+                <p class="eyebrow">"저장된 등록 요청"</p><h1>"아직 생성이 완료되지 않았습니다"</h1>
+                <p class="lead">"입력한 내용이 저장되어 있습니다. 같은 요청으로 다시 시도하면 중복으로 만들지 않습니다."</p>
+                <form data-company-enrollment="" data-account-id=account_id.clone() data-command-id=command_id.clone() data-group-id=group_id>
+                    <label for="company-name">"회사 이름"</label>
+                    <input id="company-name" name="name" value=name readonly/>
+                    <label for="company-slug">"업무 공간 식별자"</label>
+                    <input id="company-slug" name="slug" value=slug readonly/>
+                    <label for="company-retained-administrator">"관리할 계정 참조"</label>
+                    <input id="company-retained-administrator" type="text" value=account_id.clone() readonly/>
+                    <dl class="request-reference"><dt>"요청 번호"</dt><dd>{command_id.clone()}</dd></dl>
+                    <button class="button primary wide company-submit" type="submit" disabled>"같은 요청으로 다시 시도"</button>
+                    <p class="supporting">"등록 요청을 취소하면 다시 제출할 수 없습니다. 이미 생성이 완료된 업무 공간은 취소되지 않습니다."</p>
+                    <button class="button secondary" type="button" data-company-cancel disabled>"등록 요청 취소"</button>
+                    <p id="company-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
+                    <p id="company-error" class="error" role="alert" hidden></p>
+                    <a id="company-result" class="text-link" hidden>"요청 결과 확인"</a>
+                    <noscript><p class="notice">"다시 제출하려면 이 브라우저에서 JavaScript를 허용해 주세요."</p></noscript>
+                </form>
+                <a href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyUncertain => view! {
+            <section class="entry-card" data-company-outcome="uncertain">
+                <p class="eyebrow">"원래 요청 확인"</p><h1>"아직 결과를 확인할 수 없습니다"</h1>
+                <p class="lead">"요청이 처리 중일 수 있습니다. 새로 등록하지 말고 이 주소에서 같은 요청의 결과를 다시 확인해 주세요."</p>
+                <a class="button primary" href="">"같은 요청 결과 다시 확인"</a>
+                <a class="text-link" href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyTerminal { command_id, expired } => view! {
+            <section class="entry-card" data-company-outcome=if expired { "expired" } else { "cancelled" }>
+                <p class="eyebrow">"회사 등록 요청"</p>
+                <h1>{if expired { "요청이 만료되었습니다" } else { "요청이 취소되었습니다" }}</h1>
+                <p class="lead">"이 요청으로 생성된 회사 업무 공간은 없습니다."</p>
+                <dl class="request-reference"><dt>"요청 번호"</dt><dd>{command_id}</dd></dl>
+                <a class="button primary" href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, show_people_navigation, show_people_create_navigation, mut people_policy } => {
+            use super::native_policy::{Operation, Subject};
+            let shortcut_owns_create_grant = !show_people_create_navigation
+                && people_policy.as_ref().is_some_and(|actions| actions.iter().any(|action| {
+                    action.subject == Subject::PeopleCreate && matches!(action.operation, Operation::Grant)
+                }));
+            let shortcut_owns_install = !show_people_create_navigation
+                && people_policy.as_ref().is_some_and(Vec::is_empty);
+            let next_task = if show_people_create_navigation {
+                Some(("사람 등록", format!("/companies/{org_id}/people/new"),
+                    "이름과 사번을 확인한 뒤 회사 사람 목록에 등록합니다. 고용과 발령은 별도 업무입니다."))
+            } else if people_policy.as_ref().is_some_and(|actions| actions.iter().any(|action| {
+                action.subject == Subject::PeopleCreate && matches!(action.operation, Operation::Grant)
+            })) {
+                Some(("사람 등록 권한 연결", format!("/companies/{org_id}/policy/people-directory/create/grant"),
+                    "등록할 담당 계정과 권한의 종료 시각을 확인하세요. 연결한 뒤 사람을 등록할 수 있습니다."))
+            } else if people_policy.as_ref().is_some_and(Vec::is_empty) {
+                Some(("사람 권한 설정 시작", format!("/companies/{org_id}/policy/people-directory/install"),
+                    "사람 등록과 열람 권한을 준비합니다. 준비만으로 계정에 권한이 생기지 않습니다."))
+            } else {
+                None
+            };
+            if shortcut_owns_create_grant {
+                // The shortcut owns this action; keep distinct card destinations.
+                if let Some(actions) = people_policy.as_mut() {
+                    actions.retain(|action| action.subject != Subject::PeopleCreate
+                        || !matches!(action.operation, Operation::Grant));
+                }
+            }
+            let show_people_policy_card = people_policy.is_some() && !shortcut_owns_install;
+            view! {
+            <div class="company-home" data-company-id=org_id.clone()>
+                <div class="page-heading">
+                    <p class="page-eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
+                    <p class="page-description">"현재 계정으로 열 수 있는 회사 업무를 선택하세요."</p>
+                    <details class="company-identifier"><summary>"업무 공간 식별자"</summary><p>{slug}</p></details>
+                </div>
+                {next_task.map(|(label, href, consequence)| view! {
+                    <section class="company-next-task" aria-labelledby="company-next-task-title">
+                        <div><h2 id="company-next-task-title">"바로가기"</h2><p>{consequence}</p></div>
+                        <a class="policy-button" href=href>{label}</a>
+                    </section>
+                })}
+                {(show_payroll_navigation || show_people_navigation).then(|| view! {
+                    <section class="company-group" aria-labelledby="company-people-title">
+                        <h2 id="company-people-title">"사람과 조직"</h2>
+                        <nav class="company-destinations" aria-label="사람과 조직">
+                            {show_people_navigation.then(||view! {<article class="company-destination" data-company-destination="people"><h3><a href=format!("/companies/{org_id}/people")>"사람"</a></h3><p>"등록된 사람의 정보와 사번을 확인하세요."</p></article>})}
+                            {show_payroll_navigation.then(||view! {<article class="company-destination company-payroll" data-company-destination="payroll">
+                                <h3><a href=format!("/companies/{org_id}/payroll")>"급여"</a></h3>
+                                <p>"산정 기간별 급여 회차와 준비 상태, 증빙과 검토 이력을 확인하세요."</p>
+                            </article>})}
+                        </nav>
+                    </section>
+                })}
+                {(show_policy_navigation || show_payroll_policy_navigation || show_people_policy_card).then(|| view! {
+                    <section class="company-group" aria-labelledby="company-admin-title">
+                        <h2 id="company-admin-title">"관리"</h2>
+                        <nav class="company-destinations" aria-label="회사 관리">
+                            {show_policy_navigation.then(|| view! {
+                                <article class="company-destination" data-company-destination="policy">
+                                    <h3><a href=format!("/companies/{org_id}/policy")>"권한 관리"</a></h3>
+                                    <p>"이 회사에서 현재 계정에 연결된 사용 조항과 위임 상한에 포함된 조항을 확인하세요."</p>
+                                </article>
+                            })}
+                            {people_policy.as_ref().filter(|_| show_people_policy_card).map(|actions| view! {
+                                <article class="company-destination" data-company-destination="people-policy">
+                                    <h3><a href=format!("/companies/{org_id}/policy/people-directory/install")>"사람 등록·열람 권한"</a></h3>
+                                    <p>"사람 정보를 볼 수 있는 권한과 새로 등록할 수 있는 권한을 각각 관리하세요."</p>
+                                    <div class="policy-actions">{super::native_policy::people_action_links(&org_id, actions)}</div>
+                                </article>
+                            })}
+                            {show_payroll_policy_navigation.then(|| view! {
+                                <article class="company-destination" data-company-destination="payroll-policy">
+                                    <h3><a href=format!("/companies/{org_id}/policy/payroll-read/install")>"급여 목록 열람 권한"</a></h3>
+                                    <p>"급여 목록을 볼 수 있는 계정과 기간을 확인하고, 열람 권한을 연결하거나 회수하세요."</p>
+                                </article>
+                            })}
+                        </nav>
+                    </section>
+                })}
+                {(!show_payroll_navigation && !show_people_navigation && !show_people_create_navigation && !show_policy_navigation && !show_payroll_policy_navigation && people_policy.is_none()).then(|| view! {
+                    <section class="panel company-empty" data-company-destinations="empty">
+                        <h2>"이 화면에서 열 수 있는 업무가 없습니다"</h2>
+                        <p>"내 업무 공간 목록에서 다른 회사를 선택하거나 담당자에게 업무 권한을 확인해 주세요."</p>
+                    </section>
+                })}
+            </div>
+            }.into_any()
+        },
+        Page::CompanyPolicy { org_id, action_keys, delegable_action_keys } => view! {
+            <div class="company-policy-root" data-company-id=org_id.clone()>
+                <div class="page-heading">
+                    <p class="page-eyebrow">{policy_navigation.company_name.clone().unwrap_or_else(|| format!("회사 ID {org_id}"))}</p>
+                    <h1>"권한 관리"</h1>
+                    <p class="page-description">"이 회사에서 현재 계정에 연결된 사용 조항과 위임 상한을 확인하세요."</p>
+                </div>
+                <section class="panel">
+                    <h2>"연결된 사용 조항"</h2>
+                    <div class="policy-panel-body">
+                        <ul>{action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
+                    </div>
+                </section>
+                <section class="panel">
+                    <h2>"위임 상한에 포함된 조항"</h2>
+                    <div class="policy-panel-body">
+                        <ul>{delegable_action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
+                    </div>
+                </section>
+                <p class="page-description">"조항이 연결되어 있어도 실행이나 위임 시 현재 정책과 적용 범위를 다시 확인합니다."</p>
+                <p class="page-description">"회사 정보 조항은 이름과 업무 공간 식별자를 대상으로 합니다. 급여·인사 정보와 다른 회사의 권한은 포함되지 않습니다."</p>
+                {policy_navigation.company_name.as_ref().map(|_| view! {
+                    <div class="policy-actions">
+                        <a class="policy-button secondary" href=format!("/companies/{org_id}")>"회사 업무 공간으로"</a>
+                    </div>
+                })}
+            </div>
+        }.into_any(),
+        Page::Refused => view! {
+            <section class="entry-card">
+                <p class="eyebrow">"요청 확인"</p><h1>"이 요청을 열 수 없습니다"</h1>
+                <p class="lead">"Console의 로그인 화면에서 다시 시작해 주세요."</p>
+                <a class="button primary" href="/account">"로그인 화면으로"</a>
+            </section>
+        }.into_any(),
+        Page::Unavailable => view! {
+            <section class="entry-card" role="alert">
+                <p class="eyebrow">"잠시 기다려 주세요"</p><h1>"지금은 계정을 확인할 수 없습니다"</h1>
+                <p class="lead">"계정이나 약관 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."</p>
+                <a class="button primary" href="">"다시 시도"</a>
+                <a class="text-link" href="/">"시작 화면으로"</a>
+            </section>
+        }.into_any(),
+    }
+}
+
+fn company_action_label(key: &str) -> &'static str {
+    match key {
+        "context.discover" => "업무 공간 찾기",
+        "company.identity.read" => "회사 이름과 식별자 열람",
+        "company.policy.read" => "회사 권한 열람",
+        "company.policy.assign" => "제한된 열람 권한 연결",
+        "company.policy.revoke" => "연결한 열람 권한 해제",
+        _ => "등록된 기능",
+    }
+}
+
+pub fn render(page: Page) -> String {
+    render_with_policy_navigation(page, CompanyPolicyNavigation::default())
+}
+
+pub fn render_with_policy_navigation(
+    page: Page,
+    policy_navigation: CompanyPolicyNavigation,
+) -> String {
+    render_with_navigation(page, policy_navigation, Vec::new())
+}
+
+fn render_with_navigation(
+    page: Page,
+    policy_navigation: CompanyPolicyNavigation,
+    groups: Vec<GroupNavigation>,
+) -> String {
+    let company_workspace = matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. });
+    #[cfg(feature = "ssr")]
+    let projection = if company_workspace {
+        None
+    } else {
+        #[derive(serde::Serialize)]
+        struct Projection<'a> {
+            version: u8,
+            page: &'a Page,
+            groups: &'a [GroupNavigation],
+        }
+        serde_json::to_string(&Projection {
+            version: 1,
+            page: &page,
+            groups: &groups,
+        })
+        .ok()
+    };
+    #[cfg(not(feature = "ssr"))]
+    let projection: Option<String> = None;
+    let title = match &page {
+        Page::Public => "Console · 업무의 연결",
+        Page::SignIn => "로그인 · Console",
+        Page::Register { .. } => "계정 만들기 · Console",
+        Page::Account { .. } => "내 계정 · Console",
+        Page::CompanySetup { .. } => "회사 업무 공간 만들기 · Console",
+        Page::CompanyCreated { .. }
+        | Page::CompanyPending { .. }
+        | Page::CompanyTerminal { .. }
+        | Page::CompanyUncertain => "회사 등록 요청 · Console",
+        Page::Company { .. } => "회사 업무 공간 · Console",
+        Page::CompanyPolicy { .. } => "권한 관리 · Console",
+        Page::Refused => "요청 확인 · Console",
+        Page::Unavailable => "다시 시도 · Console",
+    };
+    let navigation = match &page {
+        Page::Company {
+            org_id,
+            show_policy_navigation,
+            show_people_navigation,
+            show_people_create_navigation,
+            show_payroll_navigation,
+            ..
+        } => Some((
+            org_id.as_str(),
+            true,
+            *show_policy_navigation,
+            *show_people_navigation,
+            *show_people_create_navigation,
+            *show_payroll_navigation,
+            false,
+        )),
+        Page::CompanyPolicy { org_id, .. } => Some((
+            org_id.as_str(),
+            policy_navigation.company_name.is_some(),
+            true,
+            policy_navigation.show_people_navigation,
+            policy_navigation.show_people_create_navigation,
+            policy_navigation.show_payroll_navigation,
+            true,
+        )),
+        _ => None,
+    };
+    let header = navigation.map(|(org_id, company_link, policy_link, people_read, people_create, payroll, policy_current)| {
+        native_workspace_header::render(
+            |mode| view! {
+                {(people_read || people_create || (payroll && mode == NavigationMode::Desktop)).then(|| view! {
+                    <p class="nav-group">"사람과 조직"</p>
+                    <nav aria-label="사람과 조직 탐색">
+                        {people_read.then(|| view! {<a href=format!("/companies/{org_id}/people")>"사람"</a>})}
+                        {people_create.then(|| view! {<a href=format!("/companies/{org_id}/people/new")>"사람 등록"</a>})}
+                        {(payroll && mode == NavigationMode::Desktop).then(|| view! {<a href=format!("/companies/{org_id}/payroll")>"급여"</a>})}
+                    </nav>
+                })}
+                <p class="nav-group">"관리"</p>
+                <nav aria-label="회사 업무 탐색">
+                    {company_link.then(|| view! {
+                        <a href=format!("/companies/{org_id}") aria-current=(!policy_current).then_some("page")>"회사 업무 공간"</a>
+                    })}
+                    {policy_link.then(|| view! {
+                        <a href=format!("/companies/{org_id}/policy") aria-current=policy_current.then_some("page")>"권한 관리"</a>
+                    })}
+                </nav>
+            }.into_any(),
+            payroll.then(|| (format!("/companies/{org_id}/payroll"), false)),
+        )
+    });
+    let content = body(page, &policy_navigation, groups);
+    if company_workspace {
+        let html = view! {
+            <html lang="ko"><head><meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>{title}</title><link rel="stylesheet" href="/assets/workspace.css"/>
+            </head><body class="workspace company-workspace">
+                <a class="skip-link" href="#main-content">"본문 바로가기"</a>
+                {header}
+                <main id="main-content" tabindex="-1">{content}</main>
+            </body></html>
+        }
+        .to_html();
+        return format!("<!DOCTYPE html>{html}");
+    }
+    let html = view! {
+        <html lang="ko">
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>{title}</title>
+                <link rel="stylesheet" href="/assets/native-account.css"/>
+                <script type="module" src="/assets/native-account.js"></script>
+            </head>
+            <body>
+                <a class="skip-link" href="#main-content">"본문 바로가기"</a>
+                <header class="entry-header"><a class="brand" href="/" aria-label="Console 시작 화면">"Console"<span class="brand-dot" aria-hidden="true"></span></a></header>
+                <main id="main-content" tabindex="-1">{content}</main>
+                <footer class="entry-footer">"필요한 업무와 정보가 한곳에."</footer>
+            </body>
+        </html>
+    }.to_html();
+    let mut html = format!("<!DOCTYPE html>{html}");
+    if let Some(projection) = projection {
+        let projection = projection
+            .replace('&', "\\u0026")
+            .replace('<', "\\u003c")
+            .replace('>', "\\u003e")
+            .replace('\u{2028}', "\\u2028")
+            .replace('\u{2029}', "\\u2029");
+        html = html.replacen("</head>", "<link rel=\"stylesheet\" href=\"/assets/account.css\"/><script src=\"/assets/account-guard.js\"></script></head>", 1);
+        if let Some(start) = html
+            .find("<body")
+            .and_then(|start| html[start..].find('>').map(|end| start + end + 1))
+        {
+            html.insert_str(start, "<div id=\"console-account-fallback\">");
+            html = html.replacen("</body>", &format!("</div><script id=\"console-account-bootstrap\" type=\"application/json\">{projection}</script><script src=\"/assets/account.js\" type=\"module\"></script></body>"), 1);
+        }
+    }
+    html
+}
+
+#[cfg(feature = "ssr")]
+pub fn document(page: Page, status: axum::http::StatusCode) -> axum::response::Response {
+    document_with_policy_navigation(page, status, CompanyPolicyNavigation::default())
+}
+
+#[cfg(feature = "ssr")]
+pub fn document_with_policy_navigation(
+    page: Page,
+    status: axum::http::StatusCode,
+    navigation: CompanyPolicyNavigation,
+) -> axum::response::Response {
+    document_with_navigation(page, status, navigation, Vec::new())
+}
+
+#[cfg(feature = "ssr")]
+pub fn document_with_group_navigation(
+    page: Page,
+    status: axum::http::StatusCode,
+    groups: Vec<GroupNavigation>,
+) -> axum::response::Response {
+    document_with_navigation(page, status, CompanyPolicyNavigation::default(), groups)
+}
+
+#[cfg(feature = "ssr")]
+fn document_with_navigation(
+    page: Page,
+    status: axum::http::StatusCode,
+    navigation: CompanyPolicyNavigation,
+    groups: Vec<GroupNavigation>,
+) -> axum::response::Response {
+    let policy = if matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. }) {
+        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    } else {
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    };
+    super::ssr::private_document(
+        render_with_navigation(page, navigation, groups),
+        status,
+        policy,
+    )
+}

@@ -1,0 +1,13 @@
+{
+  "reviewer": "root",
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "manifest_sha256": "7626e709c015401bb19084c5301afcddfddb677534da22c4baabd2b172392837",
+  "diagnosis": "Actual fault10 mutationfalse; actual index relpages/reltuples paths drift.",
+  "checks": [
+    "Same operator transaction locks all public r/p/m before first affected baseline, outside fault savepoints.",
+    "Exact held ShareLock IDs/backend/mode and index parent coverage; no snapshot normalization.",
+    "Real extra default grantAuth; actual changed metadata is prerequisite to classifier assertion.",
+    "Historical full rows/pins/DDL/ACL/equality assertions intact; crosscommit limitations explicit."
+  ],
+  "runtime_executed": 0
+}

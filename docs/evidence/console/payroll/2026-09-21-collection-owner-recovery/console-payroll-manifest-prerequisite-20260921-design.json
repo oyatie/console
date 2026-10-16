@@ -1,0 +1,18 @@
+{
+  "owner": "/root",
+  "base": "2445cacbf22cca2859dad9f5a04d50c010073e91 + reviewed payroll implementation pending commit",
+  "problem": "Retained unchanged application_manifest_forbids_framework_deps cannot compile because Cargo.toml is absent from native mapped sources. Batch build failed, zero tests executed.",
+  "solution": "Reuse RESOURCE_CONFIG srcs:[Cargo.toml], same mechanism as console-intelligence-application; regenerate only affected application BUCK. No Rust/test semantics, locks, versions, SQL, or toolchain changes.",
+  "probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_payroll_application_declares_existing_manifest_input",
+  "verification": [
+    "Exact generator probe RED then GREEN",
+    "All existing generator tests unchanged plus new test",
+    "Actual Buck application-unit tests compiled and executed",
+    "Retained PostgreSQL HTTP/isolation suites"
+  ],
+  "test_sha256": "5b072d59ec0703077b502c4b3c3018fe5aa796baa3fd8d364cc2a832135fb697",
+  "pre_mortem": "Generator claim green while actual rustc cannot consume manifest; require native test execution.",
+  "rollback": "Revert additive resource mapping without removing existing tests; preserve failure evidence.",
+  "stop": "Unexpected graph changes, authority change, unreviewed oracle edits",
+  "limits": "Generator resource check is semantic RED; earlier rustc build failure is prerequisite evidence only."
+}

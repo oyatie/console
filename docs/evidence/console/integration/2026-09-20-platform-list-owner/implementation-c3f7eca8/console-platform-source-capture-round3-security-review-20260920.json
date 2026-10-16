@@ -1,0 +1,44 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Four exact prospective Platform source custody profile pins only; no runtime/release acceptance",
+  "reviewer": "integration_security",
+  "driver_manifest_sha256": "5ddacd584438203dbfd17ce601d4f8fe9ad30aca0f5034f6d239d8d179e1322e",
+  "artifacts_sha256": {
+    "plain-capture.json": "9f36c805261dc7733108043c595a7d4d2fc5d957dd6d8ec919977affb11d35b6",
+    "plain-UNVERIFIED-capture.json": "b0e106ca18dc7f91f3bdcb51aa649eb9d381db17aabeb928c39037f57e3489b1",
+    "plain-UNVERIFIED-restored.json": "16197c57bcfa88cb1b4b9bc1dc59bfe9465420628c222a6cf9148ec6bcea24a4",
+    "plain-capture.sql": "1765bc37f3cc43418d3bd4f2f51172b9a79d8c8fdcb83a797424e353132ff8b2",
+    "observer-capture.json": "bfc66510027db81e2cbbdd458dbd5e81bc3671c6d93d3197be0ef5b08c1fe316",
+    "observer-UNVERIFIED-capture.json": "d3d7d9729c22df4cda418d77b0f1cb3280225be0db9059122e56dcd803925114",
+    "observer-UNVERIFIED-restored.json": "16197c57bcfa88cb1b4b9bc1dc59bfe9465420628c222a6cf9148ec6bcea24a4",
+    "observer-capture.sql": "aeee41aa42ef2337fb4c0d74dba7a7f9702287d2721235465336859a232bc769",
+    "capture-result.json": "f4416b6cfd88ccb59105691b022034ec07e4bad510e902751bb2ab42231ef25c",
+    "owner-red.stdout.log": "317acf6e31b59a8046de8f79119055d5ef807fa2d141f22019c7841241479996",
+    "owner-red.stderr.log": "625388e4a0275e0a079e733e42a58449f498a36341affde4f149006872644c80"
+  },
+  "profiles": {
+    "plain": [
+      "0f2db80a4afeacb1d6d6aaf0bbaef9d8f7968e77500322cf691774f02d88e8ea",
+      "5aee358ff0bea94268d40b5f16f86779952ea95a74cab48cbf99984eedf6e2da"
+    ],
+    "observer": [
+      "93236c9a9e850db234f4dc777553e4eb829bbb76a0f6cc27551f761cc28bffe7",
+      "475c1f9a43b402539e0469f31adc6f06848669abfa34c08350aa1ee006664103"
+    ]
+  },
+  "independent_checks": [
+    "Exact source inputs and raw capture-to-approved output preservation",
+    "307 public tables identical before observer/after bridge in each variant",
+    "All captured historical/prospective server-text hashes recomputed and JSON-equated",
+    "Independent full metadata normalization only one new function and one exact helper ACL grant",
+    "Exact new helper body/signature/owner/flags/config/ACL checked",
+    "Prior historical fingerprints unchanged, prospective startup rights false before/true after",
+    "Separate-connection restored records equal exact original metadata+rows+bothprofiles for both variants",
+    "Actual retained baseline test executed1failed1 at intended role denial, expected101 preserved"
+  ],
+  "remaining_holds": [
+    "Finalizer/generated exact candidate review",
+    "Actual Platform owner and finalizer runtime tests",
+    "Full release qualification"
+  ]
+}

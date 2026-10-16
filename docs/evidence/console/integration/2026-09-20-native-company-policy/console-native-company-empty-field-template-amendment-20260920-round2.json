@@ -1,0 +1,31 @@
+{
+  "status": "BOUNDED_REPRESENTATION_AMENDMENT_INDEPENDENTLY_APPROVED",
+  "author": "/root/reference_inventory",
+  "supersedes_statement_only": "Empty permitted-field clause rendered as [].containsAll(context.requested_fields)",
+  "runtime_evidence": "Root reports native prerequisite7 executed:5pass,2fail because strict Cedar SDK cannot type empty-set literal. This author did not execute or inspect log.",
+  "replacement": {
+    "empty_field_clause": "context.requested_fields.isEmpty()",
+    "nonempty_field_clause": "<fixed canonical nonempty permitted PropertyRef set>.containsAll(context.requested_fields)"
+  },
+  "semantic_contract": "The empty permitted set authorizes the action only if requested_fields is empty. No properties disclosed. Any nonempty requested field set denies. This is set-theoretically equivalent to empty-set containsAll and resolves the strict Cedar type inference failure without allowing warnings or loosening schema.",
+  "unchanged": [
+    "Exact native-company-authorization-2026-09-19.1 schema bytes and five actions",
+    "Principal, Company and object-type equality guards",
+    "Nonempty exact-field and same-action correlation checks",
+    "Strict existing compiler rejects all validation warnings/errors",
+    "Empty projection requirement and mutation input authorization are separate owner checks",
+    "Historical schemas/codecs/policy bytes remain unchanged; no record reseal"
+  ],
+  "required_followup": [
+    "Root reruns all seven unchanged behavioral assertions and the existing authz regression suite; independent fixture representation review is now recorded.",
+    "Eventual finite native compiler branches only on canonical clause field-set emptiness",
+    "Preserve original failed packet/log; no retroactive GREEN"
+  ],
+  "repository_edits": 0,
+  "runtime_executions": 0,
+  "supersedes_sha256": "fc4dd28691f2e8f02abcd29e74a6a9fd411203d1bc77b797702779f5ffcca55e",
+  "independent_review": {
+    "path": "/private/tmp/console-company-cedar-empty-predicate-security-review-20260920.json",
+    "sha256": "30f866542762640d9bc18845b4782b4bb8e4a715e032cd13f78dfa2b22237937"
+  }
+}

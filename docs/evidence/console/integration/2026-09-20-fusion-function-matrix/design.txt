@@ -1,0 +1,113 @@
+# Design proposal round3: one bounded Fusion function support entry
+
+Status: private orchestration design only. No implementation admission, repository mutation, tests, runtime execution, source fetch, state promotion, or release claim. Root owns review routing and every eventual registry/checker/test/generated-artifact edit. Source inputs were observed at `5ce1fa20be7f8457d982c9073eb664cc1c331820`; `source-custody.json` pins the exact inspected files. The registry remains SHA256 `568e4701f7306a2af006887758103d6f408778cb12f8e66ccd49439b5b575431`.
+
+## Existing owners and actual consumers
+
+- `scripts/console/validate-console-truth-ledger.mjs:249` owns `validateReleaseInventory`; the exported `validateConsoleTruthLedger` calls it at line617 before recording its whole-registry validation digest. Failed revalidation deletes the old attestation at entry. The release checker currently permits planned, unbound states only; this proposal preserves that refusal.
+- Lines343–392 validate support matrices. Runtime rows require unique runtime name, valid source ID, nonempty reference_status, console_acceptance `not established` and command null. Nested reference_capabilities and arbitrary catalogue fields are currently ignored. Appending202 data rows alone would not validate their completeness, signature bytes or lifecycle.
+- `scripts/console/validate-console-truth-ledger.test.mjs:17` loads the current repository registry. Its first test validates that actual file. Lines693–784 exercise release corruption and nonmutation through the same exported boundary. Reuse this owner and style; do not create a second checker that can disagree with the gate.
+- The CLI and `scripts/console/plan-fanout.mjs:594` call the same exported validator. The planner schedules the historical top-level capabilities, not these release leaves; adding the support row grants no lane admission. `isValidatedConsoleTruthLedger` binds the whole-registry digest, so digest-visible mutations of the added row invalidate content binding automatically. Serialization-invisible added own keys require explicit revalidation to revoke the prior attestation; the bounded checker does not change this existing digest-only API.
+- `.github/workflows/ci.yml:183` runs this existing validator test file, followed by planner regression. `package.json` exposes the existing CLI. No CI entry point, package, planner or reader API is needed. The CLI still requires the genuine C/T/M authority train; a fixture SHA used by existing local structural tests is not a replacement.
+- `promotionAuthorityDigests` and planner registryDigest include the whole registry. The additive row necessarily changes current authority digests. Keep old immutable receipts intact as historical evidence; root performs any required exact-candidate rebind. Do not rewrite old receipts or source revision fields to disguise that change.
+- Registry/scripts are already serialized roots in `tools/ci/assess-tip-contention.mjs`. This remains one writer and one release authority.
+
+## Smallest proposed representation
+
+Append exactly one row to `/release_inventory/support_matrices/runtimes/entries`. Existing runtime support already includes typed function signatures, sheet/application formats and execution capabilities. A Fusion formula evaluator is a concrete runtime surface; no new top-level matrix family or second registry is needed.
+
+`prospective-runtime-row.json` is the full reviewable data payload, not an applied patch. Its fields are:
+
+| Field | Contract |
+|---|---|
+| runtime | Exact unique identity `Fusion formula functions` |
+| reference_status | Exact conservative statement: frozen202-entry reference catalogue, lifecycle retained, Console execution unverified |
+| source | Existing `fusion-function-library` source |
+| console_acceptance / command | `not established` / null, unchanged meaning |
+| function_catalog | Exact ordered202-row copy of the approved proposal's function_catalog, with all six original row fields preserved verbatim |
+| semantics_status | `not_bound` |
+| unqualified_semantics | Nine explicit null dimensions, applying to every function until separately reviewed: runtime/library versions, type/coercion, null/error, optional/variadic arguments, locale/timezone/precision, dependencies/recalculation, effects/authority/recovery, concurrency/reconnect, and lifecycle/successor equivalence |
+
+Each copied catalogue record already has section, signature, reference_lifecycle, required_leaf, console_acceptance and source_binding. Keep those objects byte-equivalent as parsed values; do not parse/rewrite signature syntax, normalize names, drop experimental/deprecated markers, deduplicate by callable name, invent versions or copy parent acceptance states into a second ledger. The original five leaves remain the acceptance owners. Count after this addition:89 runtime rows,401 leaves, all existing leaf states unchanged.
+
+Known finite decomposition:158 Core,17 Action,6 Validation,4 Chart,17 Time series signatures.184 are unmarked,15 experimental,3 deprecated. All202 signatures are unique in this frozen catalogue, but literal signature identity is the rule; future overloads must not be merged by function name. Unmarked is not a GA claim. Action functions are not proof of general Ontology writeback. This record does not select a formula engine, concurrency protocol, package or framework.
+
+The immutable source proposal SHA256 is `3c9c66bcb2026a5ef94a32d4a0a7672bf9bc9f794316be36ac5eb3461910029e`. Its independent review verified the ordered202 h4 headings against the captured HTML, including sections and lifecycle markers. Reuse that review and the pinned source bytes; no new HTML parser or network recapture is needed. The design-computed ordered canonical catalogue digest is `520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee`. Root independently confirmed this digest using the existing JS canonicalJsonDigest serialization; final round4 reviewers must bind that same immutable catalogue and current consumer contract before design approval. The pin belongs in the checker, not a caller-supplied field the registry can change along with corrupted data.
+
+## Narrow checker change
+
+Add one focused branch inside the existing validateReleaseInventory after sources/leaves/bindings and runtime rows have been established. Keep the existing exported interface, source resolver, generic support loops, five-state refusal, freeze partial_snapshot requirement and validation-attestation lifecycle unchanged.
+
+The branch must:
+
+1. Require exactly one runtime row under the exact Fusion identity. The generic runtime uniqueness check already rejects duplicates; explicit presence prevents deleting the entire matrix while retaining a green release ledger. Historical frozen receipts are not revalidated as if they were current registry candidates; the new current inventory contract requires this row.
+2. Require the exact eight top-level row keys and conservative source/status/acceptance/command/semantics values. Require the exact nine unqualified_semantics keys with null values. Extra state/receipt/acceptance override fields cannot silently claim support.
+3. Require an ordered202-entry array. Before hashing, require each catalogue record to have exactly the six own enumerable keys `section`, `signature`, `reference_lifecycle`, `required_leaf`, `console_acceptance`, `source_binding`; require source_binding to have exactly the six pinned own enumerable keys `source_id`, `artifact_path`, `sha256`, `quote`, `matching`, `scope`. Explicit expected key sets catch an extra property with value undefined or a function, which JSON.stringify could otherwise omit. Existing typed checks and the pinned catalogue protect their values. Then check the immutable reviewed canonical digest of the complete original row objects with the existing canonicalJsonDigest helper. The digest detects omissions, duplicate replacement, reordering and changed literal/section/lifecycle/leaf/acceptance/binding values; the explicit key checks close serialization-invisible additions. Never derive the expected digest from the candidate itself or accept a client-declared expected digest. This is the parsed JSON-data contract plus its known exported-object own-key controls, not a generic recursive schema or arbitrary JavaScript-object sandbox.
+4. For every row, resolve its required_leaf to one of the existing five formula-library leaves; retain console_acceptance `not established`. Invoke the existing source-binding identity/path/digest validator. Require its exact source_binding object to be present under that required_leaf in reference_freeze.source_bindings; this detects removing or altering the previously retained shared quote even if the new catalogue stays intact. This is membership enforcement, not a claim that the whole shared-binding array is unique. The frozen catalogue itself must contain exactly its202 reviewed records; duplicate catalogue records are rejected. No duplicate-shared-binding rejection is claimed or added by this bounded design.
+5. Leave every other row and old release value untouched. Do not add a general recursive schema engine, generic “all nested fields are verified” claim, new source-loading API, or a second promotion verifier.
+
+This is exact structural/reference-catalogue enforcement. The existing source resolver only proves a tracked regular file, not gzip/raw-byte identity or historical vendor authenticity. The focused test fixture must separately check the existing proposal and captured gzip/raw bytes against reviewed hashes before using them as an oracle. Reuse the independently reviewed heading extraction; the catalogue pin does not magically prove general Foundry exhaustiveness or runtime function semantics.
+
+## Reviewed test candidate and genuine RED boundary
+
+Before implementation admission, root freezes the prospective row, independently confirmed digest, checker contract and tests, and obtains the required independent test review. The only planned source owners are:
+
+- `docs/program/console-capability-registry.json`: single additive row, root serialized authority write.
+- `scripts/console/validate-console-truth-ledger.mjs`: narrow existing-owner branch.
+- `scripts/console/validate-console-truth-ledger.test.mjs`: additive controls at the exported owner.
+
+No new fixture file is necessary: the already retained proposal and HTML gzip are immutable fixture inputs. Node standard-library crypto/zlib suffice for byte checks. No existing test is removed or weakened.
+
+For a red design/test candidate on the current checker, construct a clone of the actual current registry containing the exact prospective row (append only if the row is not yet integrated; otherwise demand the integrated row exactly equals the reviewed payload). Establish its positive baseline through validateConsoleTruthLedger first. Change one literal signature, then require the same exported boundary to reject with a release-inventory/Fusion diagnostic. The full required attestation history is specified below; checking only a mutated object's changed digest does not prove deletion. The current checker ignores that nested signature and accepts it, so this gives a real owner-bound RED without missing helpers, imports, source files or new infrastructure. Root must execute it; this design has not run it and does not predeclare its result.
+
+Suggested exact future probe after the test candidate exists:
+
+`node --test --test-name-pattern='Fusion catalogue rejects changed signature' scripts/console/validate-console-truth-ledger.test.mjs`
+
+Source-custody failure, missing fixture, zero matched tests, a generic unrelated validator failure or absent required test code is a prerequisite failure, never lane RED. Root alone invokes tools/lanes/fanout.py admit/run after the repository's required reviews. This packet is no admission substitute.
+
+### Required same-object attestation history
+
+A named control, `Fusion catalogue failed revalidation revokes attestation after same-object restoration`, must execute this complete ordered history through the existing exported functions:
+
+1. Retain one outer registry object, save its exact positive values/keys and canonical serialized bytes, successfully validate that object and require isValidatedConsoleTruthLedger(same_object) true.
+2. Mutate only its Fusion signature; require isValidatedConsoleTruthLedger(same_object) false before attempting revalidation. This checks whole-registry content binding only.
+3. Attempt validateConsoleTruthLedger on that same mutated outer object and require the actual Fusion-specific rejection, not an unrelated prerequisite error.
+4. Restore the exact original positive values and keys in place on the SAME outer object, without calling the validator during restoration or replacing that outer object. Require object identity unchanged, deep equality with the saved positive shape, and identical saved canonical serialized bytes. Remove any injected extra key rather than relying on JSON serialization to hide it.
+5. Before any new validation, require isValidatedConsoleTruthLedger(same_object) STILL false. The content digest is now exactly the formerly accepted digest; only this observation distinguishes deleted validation authority from a stale WeakMap entry whose digest was merely hidden by changed content.
+6. Explicitly validate that same fully restored positive object successfully; only then require isValidatedConsoleTruthLedger(same_object) true again.
+
+No helper may clear validation state, replace the outer object, quietly revalidate during restoration, or skip step5. This complete history applies to digest-visible negative mutations. Serialization-invisible own-key additions follow the separate history below. The named control makes the lifecycle claim visible even if the remaining cases are parameterized. A test implementation that only observes false on changed bytes does not satisfy this design.
+
+### Serialization-invisible own-key history
+
+For an extra own enumerable undefined/function-valued property in a catalogue record or its binding, the existing stable/JSON.stringify representation omits the property. Its canonical bytes and ledger digest remain unchanged, so current isValidatedConsoleTruthLedger can remain true before revalidation. Do not require pre-revalidation false or expand the global digest/attestation API to create that guarantee.
+
+1. Successfully validate one positive outer registry object; save exact positive values/keys and canonical bytes; require validated true.
+2. Inject a neutral extra own enumerable property directly in memory, with undefined or a function value. Prove the extra persists in Object.keys and as an own property, while canonical serialized bytes remain identical to the accepted bytes. Do not round-trip the mutated object through JSON or use a special property such as toJSON.
+3. Call the actual exported validator on that SAME outer object. Require rejection at the Fusion exact-key boundary and then require validated false.
+4. Remove the injected extra key and restore the exact original values/keys IN PLACE on that SAME outer object, without intervening validation. Prove unchanged outer identity, exact restored shape/key equality and identical saved canonical bytes; validated must STILL be false.
+5. Explicit successful revalidation of that restored object is required to restore validated true.
+
+Both variants preserve the decisive post-rejection, post-restoration false observation. Only the pre-revalidation content-binding observation differs. Apply this distinction to every invisible variant, including N20/N26; ordinary added JSON-visible values follow the digest-visible history. No helper may clear private state, replace the outer object, or implicitly validate during restoration.
+
+`oracle-roster.json` names the positive and corruption coverage. Every negative starts with a passing reviewed positive fixture, mutates only the intended new catalogue/support binding, and follows its digest-visible or serialization-invisible same-object failed-revalidation/restoration history above through the actual exported validator. Extra own enumerable undefined/function-valued properties must be injected in memory into both a catalogue row and its binding, because serializing the fixture first would erase the fault. At least the changed-signature probe must fail on the old checker and pass after the owning fix. Retain the first current-file structural test and run the complete existing test file after integration; report discovered/executed counts rather than presuming104 remains its total. Run planner regression because the validated registry digest changes; broaden only for demonstrated affected paths.
+
+## Additive preservation and completion of this bounded artifact
+
+Before applying the row, pin exact preimage registry and checker/test files. After applying, remove only the newly appended Fusion runtime row from a parsed candidate copy and require deep equality with the exact preimage registry. This integration-time proof checks all401 leaves/states, existing88 runtime rows,245 connectors,6 SDK rows, other matrices, source arrays/bindings, authorities, historical metadata and exclusions without inventing a perpetual whole-registry baseline. Record the expected row-count delta and202/202 catalogue equality. Existing immutable receipts, proposal bytes, historical migrations/commands and production code remain unchanged.
+
+The bounded artifact is complete only after design/test approval, actual boundary RED, admission, exact additive implementation, same-probe GREEN, complete owner and affected-consumer regressions, independent preservation/source review, and root's exact candidate record. Its accepted result is a checked planned reference matrix, not formula implementation, workflow integration acceptance, complete Foundry freeze, any milestone exit, or client exposure.
+
+Pre-mortem: a decorative unchecked nested list; deriving the oracle from mutated input; omitting whole row; erasing lifecycle labels; accepting shared binding loss; parser normalization changing signatures; silently promoting unknown semantics; or counterfeit C/T/M context. Detection: actual-owner RED, checker-owned immutable digest, whole-row presence/exact keys, existing binding checks plus exact shared binding membership, frozen-source custody, nonmutation and corruption controls, whole-registry additive proof and independent review. Blast radius is the existing reference validator and one planned data row. Rollback is exact preimages before acceptance; never rewrite historical evidence or weaken the new tests. Stop on source/digest/preimage mismatch, changed existing values, failed positive prerequisites, unreviewed semantics or concurrent writer.
+
+Reasoning lenses: Essentialism and Chesterton's Fence. Reuse the actual gate and its conservative unbound-state refusal; add only the finite source catalogue and the validation it currently lacks.
+
+## Successor custody and review rounds
+
+Round1 remains immutable at manifest SHA256 `aff055193ab0b7cb58c9f15f95d7ecf6583076c41baa7dc3899763230bbc3834`. This round changes design/control requirements only. `prospective-runtime-row.json` and `source-custody.json` are byte-identical to round1: all202 rows, literal signatures, lifecycle labels, source bindings, unknown semantic cells and pins are unchanged.
+
+Two concrete findings are incorporated: integration_tests' FUSION-DESIGN-ATTESTATION-RESTORE (round2 receipt SHA256 `26699592f6eb26da30c5db25b4f244f064e67ef0440ffa77cc9733a0f64c158a`) and integration_security's serialization-invisible own-key gap. Root independently confirmed the JS catalogue digest and current exact shared bindings. Round3 independent tests/security source-and-consumer review must inspect this same sealed successor; after resolving any findings through another immutable successor, round4 consensus remains required before any test code authoring. No review is represented as implementation admission.
+
+
+Round3 correction: round2 remains immutable at manifest SHA256 `03def8cfbfc80f188cd998b5e00925e0f5a6d9612524800465cda3b2b271ccf3`. Independent round3 tests review receipt SHA256 `ba453225b023a44a51e196902e92ef946228e390276b6fe8cf1af1d9f16d9298` identified FUSION-DESIGN-INVISIBLE-PREVALIDATION; security independently confirmed it. This successor distinguishes digest-visible signature changes from serialization-invisible own-key additions and preserves both exact-key rejection and same-object restoration revocation. It changes design/oracle/provenance only. Prospective data and source custody remain byte-identical. Final round4 tests/security consensus reviews must bind this same sealed packet; no test code or implementation has been authored by this task.

@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root",
+  "kind": "final_bounded_design_and_test_adoption_review",
+  "design_sha256": "4c9ced745b76a51ecb84535176204cc06d96693fa88c55afd8aa7ee4b925ebd2",
+  "test_sha256": "cda15a1dbbf9e00b07705c81e1eab25c426f70b4513e05642d9d9ed6ab3ddc01",
+  "verdict": "APPROVE exact collection owner and stage-aware recovery design; approved test-only adoption precedes RED admission; no implementation until semantic RED",
+  "mandatory_refinement": "Preserve existing DB error sanitation before application boundary; never reuse generic From<PgPayrollError> for KernelError because it includes raw DB error strings. Retain domain error mapping. Exact JSON envelope assertion in test round2 is mandatory.",
+  "reviews": [
+    "/private/tmp/console-payroll-list-recovery-test-round1-integration-review-20260921.json",
+    "/private/tmp/console-payroll-list-design-security-review-round3-20260921.json",
+    "/private/tmp/console-payroll-list-test-security-review-round2-20260921.json"
+  ],
+  "checks": [
+    "Current callers traced:2 App compositions and3 REST test helpers",
+    "Existing with_audits query/read-event sequence retained; unauthorized and auth-unavailable errors omitted only in SSR",
+    "Actual1leaf HTTP regression uses positive controls before audit-trigger fault; no renderer-only admission",
+    "Read DTO ownership moves inward with adapter reexports; no SQL in App or application",
+    "Constructor patch cbb41605 rejected for wrong nested argument; corrected mechanical candidate still required"
+  ],
+  "remaining": [
+    "Exact1leaf discovery and semantic RED through fanout.py",
+    "Preserve all existing tests and native build variants",
+    "Independent implementation review and actual native regression execution",
+    "Native Account/business authorization, browser UX acceptance and full release"
+  ]
+}

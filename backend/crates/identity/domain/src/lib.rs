@@ -10,6 +10,11 @@
 use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
+pub use console_kernel_core::AccountId;
+
+pub mod group_process;
+pub mod qualification;
+
 /// Maximum length (Unicode scalar values) of a user's display name.
 pub const MAX_DISPLAY_NAME_CHARS: usize = 200;
 /// Maximum length (Unicode scalar values) of a phone string.
@@ -205,3 +210,6 @@ mod tests {
         assert!(normalize_directory_search(Some(&too_long)).is_err());
     }
 }
+
+#[cfg(test)]
+mod account_id_compatibility_tests;

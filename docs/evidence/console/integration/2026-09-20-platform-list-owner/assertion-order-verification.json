@@ -1,0 +1,25 @@
+{
+  "kind": "reviewed-direction-assertion-order-only",
+  "source_head": "1909ff426216c0f8b0621d5e4347847aa8f7b68e",
+  "preimage_sha256": "bb6ca1a47b8a9a1466db210941b8115feaedbef297e27200212d44847a28b095",
+  "candidate_sha256": "bae1032f1aaf0bb3159af2358d6405a0457a4af5b8bc6efe2d7608b03cb9cfde",
+  "all_original_assertions_byte_identical": true,
+  "only_two_assertions_moved": true,
+  "new_assertion": "recovery200 and identical nonempty metadata prerequisite before role403",
+  "oracle_and_diagnostic_helpers_unchanged": true,
+  "runtime_executed_by_author": 0,
+  "repository_writes": 0,
+  "diagnostic_log_sha256": "976d9a5ee99eee1246ad39dc6538c01e6279ead8bbe9ff6630669638138158fa",
+  "observed": {
+    "owner_tests_executed": 1,
+    "behavior_red_reached": false,
+    "only_mismatch": "occurred_at below DB request window",
+    "occurred_at_from_start_us": -7723,
+    "created_at_from_start_us": 5014,
+    "window_us": 9730,
+    "other19fields_match": true,
+    "prior_rows_preserved": true,
+    "added_audit_count": 1,
+    "only_audit_table_changed": true
+  }
+}

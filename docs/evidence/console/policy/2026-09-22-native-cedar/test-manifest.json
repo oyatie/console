@@ -1,0 +1,50 @@
+{
+  "status": "ROUND2_FINITE_API_TEST_SOURCE_FOR_INDEPENDENT_REVIEW",
+  "author": "/root/policy_browser_tests",
+  "base_head": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "test_count": 11,
+  "executed_tests": 0,
+  "cedar_compiled": 0,
+  "rustfmt_parsed": 1,
+  "product_writes": 0,
+  "artifacts": {
+    "API.md": "d6d99af9ea022a119d5c5a9aca9ff54c7d3f394b223bb621432e52f14567bf35",
+    "current-read-CONTRACT-round2.md": "34f71a0dd7bc8fa83744765b176cef3ea433bf4444f3538b102f0dc6503b28d9",
+    "native-business-bootstrap-v1.cedar": "25ec7cbd092432c38ed25944edd609e67d2da529e21ac47b5dd9146fd451db82",
+    "native-business-bootstrap-v1.cedarschema": "58d413453cca9e8f67206a73c95dcb33fc020a794a3615f96da2107bac7d40b7",
+    "native-payroll-collection-read-v1.cedar": "f861ad6a2b9e41471a9c17dc880ef925bcab32c7c0e074b8bd6aa0686e83cfa8",
+    "native-payroll-collection-read-v1.cedarschema": "5eba76196c0203980310cad04bc64ffa0cb65fac3bc18b9a1416fb84c213ac34",
+    "native_business_policy_unit_tests.rs": "fc388180d03354201a8b4301c2e1118c1e7a408a67e0fc3b25329988789cf6a2"
+  },
+  "references": {
+    "/private/tmp/console-native-policy-auth-cedar-freeze-20260921/manifest.json": "927a624653376768715318521ab68b25e4c5ce14916898a4f37385419bb4a4b3",
+    "/private/tmp/console-native-policy-sql-contract-round2-20260921/manifest.json": "3c0700bba02ce830368ff825e327f183c1a032c4dca6d5277de7e220bc52378d",
+    "/private/tmp/console-native-policy-sql-contract-round2-20260921/contract.json": "739bfcf02ed8f33b900842d3c319139cfb96d58c72570a7b1e95c13f4edccc1b",
+    "/private/tmp/console-native-business-manifest-20260921/capability-contract.json": "c27d3d24c93dfb0521fed0400c62424d64e89593a98bac9964d1b11b57bf5a5c",
+    "/private/tmp/console-native-policy-current-reads-20260922/CONTRACT.md": "eeb6fca691e9ce935e3eed5502b0194d073edb4103d3b2288d9a6e1cd094ab73"
+  },
+  "source": {
+    "backend/crates/identity/application/src/company_policy.rs": "d8dd8c9d80427462293871ff29047c249dbf8cd3746c5b1c3aebd28b9ac7cbb7",
+    "backend/crates/identity/application/src/company_policy/business.rs": "753ea89752811d06a00634a6c6ca3ce55f60a563b94a4df2da93bb450778b890",
+    "backend/crates/platform/authz/src/company_policy.rs": "e1b59dbfb46bc43d7ad894a74ad1b4390486e8e250ce9de659ee00abe2364205",
+    "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs": "769662d27e803cb21942225de84dfc840fcc966bba90bd9627b9adbfbee25440",
+    "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs": "8f6d2cb933111eada7b742d15d532b1c3bf4a1d7b9ff267701413f9fdb797e2e",
+    "backend/app/tests/auth_rest/native_company_policy_http_tests.rs": "b8aacd9edc190727e14c1b25b911c51f868b6a152671598ed0c428935068ba58"
+  },
+  "boundary": [
+    "SQL bootstrap27columns preserved; no extra authority/consent flags or publication policy.",
+    "Existing CompanyPolicyDecisionPort gains2 required finite methods, no default bodies.3 existing implementations must explicitly handle/delegate them.",
+    "Source binding compares actual Auth/session and current transaction xid/PID/database timestamp; no detached authority.",
+    "Pure fixtures are deliberate code vectors. Current designation/consent/custody/lock proof remains SQL owner obligation.",
+    "Production method tests instrument actual SDK calls; literal compiled-resource tests independently cover source predicates and every omitted field.",
+    "Literal inactive recipient vector checks maintenance remains permitted; actual recipient_ineligible terminal still needs owning transaction proof.",
+    "Only rustfmt parsing and mechanical hash/field count checks executed; missing imports are not RED."
+  ],
+  "predecessor_manifest_sha256": "2f1306fe06fe83b28835488916eac9d5d4db879792e6a9baf8c29a46952e9772",
+  "changes": [
+    "Preserve SQL27 bootstrap exactly. Payroll owner signature appends only actual finite assignment_valid_from/assignment_valid_until,9to11columns.",
+    "Remove invented property-key labels and NativePayrollPropertyRow; use exact18 distinct owner-proven PropertyRefs with explicit registered_clauses mapping.",
+    "Checked payroll authority retains newest independent binding DBclock with observed_at() getter; new stale-acquisition/current-expiry test requires denial.",
+    "Explicit mapping for every application payroll source field; no protected raw-table reads or request-inferred data."
+  ]
+}

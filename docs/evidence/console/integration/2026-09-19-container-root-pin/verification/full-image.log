@@ -1,0 +1,2650 @@
+#0 building with "colima-console-release-20260919" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.63kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.1s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+#3 resolve docker.io/docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32 done
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+#5 DONE 0.3s
+
+#6 [builder  1/13] FROM docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa
+#6 resolve docker.io/library/rust:1.98-bookworm@sha256:9a73a5088750b4c95158ab26629c854c3d6fc4b173cb7bc8079ad252d8ed7bfa done
+#6 sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 23.63MB / 23.63MB 0.6s done
+#6 sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 64.50MB / 64.50MB 2.9s done
+#6 sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 48.38MB / 48.38MB 2.4s done
+#6 extracting sha256:db86109db3a878cad2671ab822c9b43afbab6a5e1a67658d760dc0b15e7b75d5 0.6s done
+#6 extracting sha256:7fea2228218a869ae6619766dc4aae2d5e251700ebac01541d63cafea4bc7fc7 0.2s done
+#6 sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 182.04MB / 182.04MB 4.5s done
+#6 extracting sha256:742d423df6ec83a05afd11c678f055935985f615115c46681d670810438c3732 0.8s done
+#6 sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 203.19MB / 203.19MB 5.1s done
+#6 extracting sha256:9873f9cf3f97d8317bea39be5130389ca496910902e4c4327c227d606b57511d 1.5s done
+#6 extracting sha256:df8fe434ff680a26b9e7ef5bf768dce7b45822269aeb251afc29ec66eed39a75 1.2s done
+#6 DONE 7.8s
+
+#7 [builder  2/13] WORKDIR /workspace/backend
+#7 DONE 0.3s
+
+#8 [internal] load .dockerignore
+#8 transferring context: 798B done
+#8 DONE 0.0s
+
+#9 [internal] load build context
+#9 transferring context: 42.20MB 0.7s done
+#9 DONE 0.7s
+
+#10 [builder  3/13] COPY rust-toolchain.toml /workspace/rust-toolchain.toml
+#10 DONE 0.0s
+
+#11 [builder  4/13] COPY backend/Cargo.toml backend/Cargo.lock ./
+#11 DONE 0.0s
+
+#12 [builder  5/13] COPY backend/.sqlx ./.sqlx
+#12 DONE 0.0s
+
+#13 [builder  6/13] COPY backend/app ./app
+#13 DONE 0.0s
+
+#14 [runtime 1/3] FROM docker.io/library/debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+#14 resolve docker.io/library/debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171 0.0s done
+#14 sha256:75782e20ea1f4a9d9259bc20a5ecbbea8d5943bf5370bf0f5727900728f1cc9a 28.12MB / 28.12MB 0.4s done
+#14 extracting sha256:75782e20ea1f4a9d9259bc20a5ecbbea8d5943bf5370bf0f5727900728f1cc9a
+#14 ...
+
+#15 [builder  7/13] COPY backend/ci ./ci
+#15 DONE 0.0s
+
+#16 [builder  8/13] COPY backend/crates ./crates
+#16 DONE 0.1s
+
+#17 [builder  9/13] COPY backend/openapi ./openapi
+#17 DONE 0.0s
+
+#18 [builder 10/13] COPY third-party/rust/vendor /workspace/third-party/rust/vendor
+#18 DONE 0.0s
+
+#19 [builder 11/13] COPY docs/reference /workspace/docs/reference
+#19 DONE 0.0s
+
+#20 [builder 12/13] COPY docs/specs /workspace/docs/specs
+#20 DONE 0.0s
+
+#21 [builder 13/13] RUN rustc -Vv && cargo build --locked --release -p console-app
+#21 0.093 info: syncing channel updates for 1.98.1-aarch64-unknown-linux-gnu
+#21 0.196 info: latest update on 2026-09-03 for version 1.98.1 (48a229cea 2026-09-01)
+#21 0.201 info: downloading 3 components
+#21 1.637 rustc 1.98.1 (48a229cea 2026-09-01)
+#21 1.637 binary: rustc
+#21 1.637 commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+#21 1.637 commit-date: 2026-09-01
+#21 1.637 host: aarch64-unknown-linux-gnu
+#21 1.637 release: 1.98.1
+#21 1.637 LLVM version: 22.1.8
+#21 1.687     Updating crates.io index
+#21 3.819  Downloading crates ...
+#21 3.846   Downloaded async-channel v1.9.0
+#21 3.847   Downloaded apalis-sql v1.0.0-rc.9
+#21 3.847   Downloaded asn1-rs-impl v0.2.0
+#21 3.849   Downloaded ascii-canvas v4.0.0
+#21 3.851   Downloaded adler2 v2.0.1
+#21 3.851   Downloaded asn1-rs-derive v0.5.1
+#21 3.851   Downloaded aead v0.5.2
+#21 3.851   Downloaded arrayvec v0.5.2
+#21 3.851   Downloaded atoi_simd v0.17.0
+#21 3.852   Downloaded const-str v1.1.0
+#21 3.853   Downloaded allocator-api2 v0.2.21
+#21 3.855   Downloaded apalis-core v1.0.0-rc.9
+#21 3.857   Downloaded ar_archive_writer v0.5.2
+#21 3.858   Downloaded asn1-rs v0.6.2
+#21 3.861   Downloaded crypto-common v0.1.7
+#21 3.861   Downloaded aho-corasick v1.1.4
+#21 3.863   Downloaded home v0.5.12
+#21 3.864   Downloaded html-escape v0.2.15
+#21 3.864   Downloaded aes v0.8.4
+#21 3.866   Downloaded hmac v0.13.0
+#21 3.866   Downloaded http-body v1.0.1
+#21 3.867   Downloaded httpdate v1.0.3
+#21 3.867   Downloaded ryu v1.0.23
+#21 3.868   Downloaded async-lock v3.4.2
+#21 3.869   Downloaded base16 v0.2.1
+#21 3.870   Downloaded nonempty v0.12.0
+#21 3.870   Downloaded attribute-derive-macro v0.10.5
+#21 3.871   Downloaded block-buffer v0.12.1
+#21 3.871   Downloaded async-trait v0.1.89
+#21 3.873   Downloaded autocfg v1.5.1
+#21 3.873   Downloaded axum v0.8.9
+#21 3.876   Downloaded ident_case v1.0.1
+#21 3.877   Downloaded inventory v0.3.24
+#21 3.877   Downloaded sha1 v0.11.0
+#21 3.878   Downloaded attribute-derive v0.10.5
+#21 3.879   Downloaded bumpalo v3.20.3
+#21 3.881   Downloaded bytemuck v1.25.0
+#21 3.882   Downloaded async-once-cell v0.5.4
+#21 3.882   Downloaded atoi v2.0.0
+#21 3.883   Downloaded inout v0.1.4
+#21 3.883   Downloaded bit-set v0.8.0
+#21 3.884   Downloaded codepage v0.1.2
+#21 3.884   Downloaded crossbeam-queue v0.3.12
+#21 3.885   Downloaded konst_macro_rules v0.2.19
+#21 3.885   Downloaded any_spawner v0.3.0
+#21 3.886   Downloaded base16ct v0.2.0
+#21 3.886   Downloaded base64urlsafedata v0.5.5
+#21 3.887   Downloaded block-padding v0.3.3
+#21 3.887   Downloaded cfg_aliases v0.2.1
+#21 3.888   Downloaded compression-core v0.4.32
+#21 3.888   Downloaded cpufeatures v0.3.0
+#21 3.889   Downloaded itoa v1.0.18
+#21 3.889   Downloaded keccak v0.1.6
+#21 3.890   Downloaded hydration_context v0.4.0-beta
+#21 3.890   Downloaded block-buffer v0.10.4
+#21 3.891   Downloaded ipnet v2.12.2
+#21 3.892   Downloaded cfg-if v1.0.4
+#21 3.892   Downloaded imagesize v0.14.0
+#21 3.894   Downloaded convert_case_extras v0.2.0
+#21 3.894   Downloaded http-body-util v0.1.3
+#21 3.896   Downloaded hyper-timeout v0.5.2
+#21 3.896   Downloaded interpolator v0.5.0
+#21 3.898   Downloaded apalis-codec v0.1.0-rc.9
+#21 3.899   Downloaded atomic-waker v1.1.2
+#21 3.899   Downloaded const_str_slice_concat v0.1.0
+#21 3.899   Downloaded collection_literals v1.0.3
+#21 3.900   Downloaded idna_adapter v1.2.2
+#21 3.900   Downloaded sha1 v0.10.6
+#21 3.901   Downloaded signature v2.2.0
+#21 3.901   Downloaded leptos_dom v0.9.0-beta
+#21 3.902   Downloaded sketches-ddsketch v0.3.1
+#21 3.902   Downloaded async-channel v2.5.0
+#21 3.903   Downloaded cbc v0.1.2
+#21 3.904   Downloaded cipher v0.4.4
+#21 3.904   Downloaded byteorder v1.5.0
+#21 3.905   Downloaded tinyvec_macros v0.1.1
+#21 3.905   Downloaded tower-layer v0.3.3
+#21 3.906   Downloaded manyhow-macros v0.11.4
+#21 3.906   Downloaded tower-service v0.3.3
+#21 3.906   Downloaded untrusted v0.9.0
+#21 3.907   Downloaded wasm-bindgen-futures v0.4.73
+#21 3.907   Downloaded cpufeatures v0.2.17
+#21 3.908   Downloaded bit-vec v0.8.0
+#21 3.909   Downloaded concurrent-queue v2.5.0
+#21 3.910   Downloaded md-5 v0.10.6
+#21 3.910   Downloaded num-iter v0.1.45
+#21 3.911   Downloaded matchers v0.2.0
+#21 3.912   Downloaded crc-catalog v2.5.0
+#21 3.912   Downloaded logos-derive v0.16.1
+#21 3.912   Downloaded new_debug_unreachable v1.0.6
+#21 3.913   Downloaded convert_case v0.6.0
+#21 3.913   Downloaded codee v0.3.5
+#21 3.915   Downloaded compression-codecs v0.4.38
+#21 3.916   Downloaded rustversion v1.0.22
+#21 3.917   Downloaded crc v3.4.0
+#21 3.918   Downloaded smol_str v0.3.6
+#21 3.919   Downloaded cmake v0.1.58
+#21 3.919   Downloaded cmov v0.5.4
+#21 3.920   Downloaded const_format_proc_macros v0.2.34
+#21 3.921   Downloaded critical-section v1.2.0
+#21 3.922   Downloaded jobserver v0.1.35
+#21 3.923   Downloaded lalrpop-util v0.22.2
+#21 3.923   Downloaded webauthn-attestation-ca v0.5.5
+#21 3.923   Downloaded zerofrom-derive v0.1.7
+#21 3.924   Downloaded camino v1.2.5
+#21 3.924   Downloaded base64ct v1.8.3
+#21 3.926   Downloaded thread_local v1.1.9
+#21 3.926   Downloaded chacha20 v0.9.1
+#21 3.927   Downloaded lazy_static v1.5.0
+#21 3.928   Downloaded axum-core v0.5.6
+#21 3.929   Downloaded num-conv v0.2.2
+#21 3.929   Downloaded zerofrom v0.1.8
+#21 3.930   Downloaded zeroize_derive v1.5.0
+#21 3.930   Downloaded stop-token v0.7.0
+#21 3.930   Downloaded strum v0.27.2
+#21 3.931   Downloaded foreign-types v0.3.2
+#21 3.931   Downloaded futures-sink v0.3.34
+#21 3.931   Downloaded web-time v1.1.0
+#21 3.932   Downloaded async-imap v0.11.3
+#21 3.933   Downloaded cedar-policy-formatter v4.12.0
+#21 3.936   Downloaded apalis v1.0.0-rc.9
+#21 3.937   Downloaded crc32fast v1.5.0
+#21 3.938   Downloaded convert_case v0.11.0
+#21 3.939   Downloaded chacha20 v0.10.2
+#21 3.940   Downloaded linked-hash-map v0.5.6
+#21 3.940   Downloaded semver v1.0.28
+#21 3.941   Downloaded spki v0.7.3
+#21 3.942   Downloaded webauthn-rs v0.5.5
+#21 3.942   Downloaded serde_cbor_2 v0.13.0
+#21 3.944   Downloaded serde_with_macros v3.21.0
+#21 3.944   Downloaded throw_error v0.4.0-beta
+#21 3.945   Downloaded infer v0.22.0
+#21 3.946   Downloaded zeroize v1.9.0
+#21 3.946   Downloaded ed25519 v2.2.3
+#21 3.947   Downloaded toml_parser v1.1.3+spec-1.1.0
+#21 3.948   Downloaded httparse v1.10.1
+#21 3.949   Downloaded imap-proto v0.16.7
+#21 3.950   Downloaded futures-executor v0.3.34
+#21 3.950   Downloaded phf_shared v0.13.1
+#21 3.950   Downloaded pico-args v0.5.0
+#21 3.951   Downloaded hybrid-array v0.4.12
+#21 3.952   Downloaded html_parser v0.7.0
+#21 3.954   Downloaded rand_chacha v0.3.1
+#21 3.955   Downloaded ena v0.14.4
+#21 3.956   Downloaded http v1.5.0
+#21 3.957   Downloaded wasm-bindgen-macro v0.2.123
+#21 3.958   Downloaded drain_filter_polyfill v0.1.3
+#21 3.958   Downloaded anyhow v1.0.103
+#21 3.960   Downloaded crossbeam-utils v0.8.21
+#21 3.961   Downloaded bitflags v2.13.0
+#21 3.962   Downloaded bs58 v0.5.1
+#21 3.964   Downloaded config v0.15.25
+#21 3.966   Downloaded equivalent v1.0.2
+#21 3.966   Downloaded linked_hash_set v0.1.6
+#21 3.967   Downloaded const-oid v0.10.2
+#21 3.968   Downloaded const-oid v0.9.6
+#21 3.969   Downloaded crossbeam-epoch v0.9.20
+#21 3.970   Downloaded logos v0.16.1
+#21 3.971   Downloaded serde_core v1.0.229
+#21 3.973   Downloaded chacha20poly1305 v0.10.1
+#21 3.973   Downloaded gloo-net v0.7.0
+#21 3.974   Downloaded tinyvec v1.11.0
+#21 3.976   Downloaded opaque-debug v0.3.1
+#21 3.976   Downloaded hashlink v0.10.0
+#21 3.977   Downloaded leptos_hot_reload v0.9.0-beta
+#21 3.977   Downloaded leptos_config v0.9.0-beta
+#21 3.978   Downloaded multer v3.1.0
+#21 3.979   Downloaded next_tuple v0.1.0
+#21 3.979   Downloaded serde_urlencoded v0.7.1
+#21 3.980   Downloaded subtle v2.6.1
+#21 3.981   Downloaded manyhow v0.11.4
+#21 3.981   Downloaded lock_api v0.4.14
+#21 3.982   Downloaded md-5 v0.11.0
+#21 3.982   Downloaded mime v0.3.17
+#21 3.983   Downloaded opentelemetry-http v0.32.0
+#21 3.984   Downloaded pem v3.0.6
+#21 3.984   Downloaded foldhash v0.2.0
+#21 3.985   Downloaded phf_macros v0.11.3
+#21 3.985   Downloaded primeorder v0.13.6
+#21 3.986   Downloaded quote v1.0.45
+#21 3.988   Downloaded iana-time-zone v0.1.65
+#21 3.989   Downloaded typed-arena v2.0.2
+#21 3.989   Downloaded event-listener v5.4.1
+#21 3.990   Downloaded base64 v0.22.1
+#21 3.992   Downloaded const_format v0.2.36
+#21 3.994   Downloaded apalis-postgres v1.0.0-rc.8
+#21 3.998   Downloaded cfb v0.10.0
+#21 4.000   Downloaded croner v4.0.0
+#21 4.002   Downloaded bytes v1.12.1
+#21 4.004   Downloaded rfc6979 v0.4.0
+#21 4.004   Downloaded nu-ansi-term v0.50.3
+#21 4.005   Downloaded rgb v0.8.53
+#21 4.006   Downloaded resolv-conf v0.7.6
+#21 4.007   Downloaded simd-adler32 v0.3.9
+#21 4.008   Downloaded scopeguard v1.2.0
+#21 4.008   Downloaded doc-comment v0.3.4
+#21 4.009   Downloaded thiserror v2.0.20
+#21 4.011   Downloaded tokio-tungstenite v0.29.0
+#21 4.012   Downloaded tls_codec_derive v0.4.2
+#21 4.013   Downloaded pest_derive v2.8.6
+#21 4.014   Downloaded pest_generator v2.8.6
+#21 4.015   Downloaded unicode-ident v1.0.24
+#21 4.017   Downloaded icu_locale_core v2.2.0
+#21 4.020   Downloaded either v1.16.0
+#21 4.021   Downloaded syn_derive v0.2.0
+#21 4.021   Downloaded sync_wrapper v1.0.2
+#21 4.021   Downloaded flagset v0.4.7
+#21 4.022   Downloaded generic-array v0.14.7
+#21 4.023   Downloaded guardian v1.3.0
+#21 4.024   Downloaded leptos_server v0.9.0-beta2
+#21 4.024   Downloaded matchit v0.8.4
+#21 4.025   Downloaded ulid v1.2.1
+#21 4.026   Downloaded wasm-bindgen v0.2.123
+#21 4.028   Downloaded crossbeam-channel v0.5.15
+#21 4.030   Downloaded fastrand v2.4.1
+#21 4.030   Downloaded crypto-bigint v0.5.5
+#21 4.033   Downloaded cfb v0.14.0
+#21 4.036   Downloaded borsh v1.7.0
+#21 4.039   Downloaded yoke-derive v0.8.2
+#21 4.039   Downloaded sqlx-sqlite v0.8.6
+#21 4.042   Downloaded errno v0.3.14
+#21 4.043   Downloaded fnv v1.0.7
+#21 4.043   Downloaded oco_ref v0.2.1
+#21 4.043   Downloaded proc-macro-error-attr2 v2.0.0
+#21 4.044   Downloaded rustc-literal-escaper v0.0.8
+#21 4.045   Downloaded phf_shared v0.12.1
+#21 4.045   Downloaded quote-use v0.8.4
+#21 4.046   Downloaded ref-cast v1.0.25
+#21 4.048   Downloaded serde_spanned v1.1.1
+#21 4.048   Downloaded litemap v0.8.2
+#21 4.049   Downloaded smallvec v1.15.2
+#21 4.050   Downloaded whoami v1.6.1
+#21 4.051   Downloaded num-integer v0.1.46
+#21 4.053   Downloaded siphasher v1.0.3
+#21 4.054   Downloaded pkcs8 v0.10.2
+#21 4.055   Downloaded pkg-config v0.3.33
+#21 4.056   Downloaded displaydoc v0.2.6
+#21 4.057   Downloaded dotenvy v0.15.7
+#21 4.058   Downloaded proc-macro2-diagnostics v0.10.1
+#21 4.059   Downloaded stable_deref_trait v1.2.1
+#21 4.060   Downloaded url v2.5.8
+#21 4.061   Downloaded indexmap v1.9.3
+#21 4.063   Downloaded tokio-postgres-rustls v0.14.0
+#21 4.064   Downloaded typed-builder v0.23.2
+#21 4.065   Downloaded reactive_stores v0.5.0-beta
+#21 4.066   Downloaded fallible-iterator v0.2.0
+#21 4.067   Downloaded futures-timer v3.0.4
+#21 4.067   Downloaded group v0.13.0
+#21 4.068   Downloaded icu_normalizer v2.2.0
+#21 4.070   Downloaded icu_properties v2.2.0
+#21 4.071   Downloaded base64 v0.21.7
+#21 4.073   Downloaded tracing-attributes v0.1.31
+#21 4.074   Downloaded yoke v0.8.3
+#21 4.075   Downloaded string_cache v0.8.9
+#21 4.075   Downloaded async-compression v0.4.42
+#21 4.079   Downloaded cc v1.2.63
+#21 4.080   Downloaded base64 v0.23.1
+#21 4.082   Downloaded utf8_iter v1.0.4
+#21 4.083   Downloaded logos-codegen v0.16.1
+#21 4.085   Downloaded metrics-exporter-prometheus v0.18.3
+#21 4.087   Downloaded metrics v0.24.6
+#21 4.088   Downloaded miette-derive v7.6.0
+#21 4.089   Downloaded num-traits v0.2.19
+#21 4.090   Downloaded phf v0.12.1
+#21 4.091   Downloaded fast-float2 v0.2.3
+#21 4.092   Downloaded parking_lot_core v0.9.12
+#21 4.093   Downloaded whoami v2.1.2
+#21 4.094   Downloaded want v0.3.1
+#21 4.094   Downloaded wasm-bindgen-shared v0.2.123
+#21 4.095   Downloaded darling_macro v0.23.0
+#21 4.095   Downloaded der_derive v0.7.3
+#21 4.096   Downloaded deranged v0.5.8
+#21 4.097   Downloaded slotmap v1.1.1
+#21 4.098   Downloaded shlex v2.0.1
+#21 4.099   Downloaded ctutils v0.4.2
+#21 4.100   Downloaded psm v0.1.31
+#21 4.101   Downloaded strum_macros v0.27.2
+#21 4.103   Downloaded slab v0.4.12
+#21 4.103   Downloaded dyn-clone v1.0.20
+#21 4.104   Downloaded either_of v0.1.9
+#21 4.105   Downloaded enum-ordinalize v4.4.1
+#21 4.105   Downloaded event-listener-strategy v0.5.4
+#21 4.105   Downloaded futures-core v0.3.34
+#21 4.106   Downloaded gloo-utils v0.3.0
+#21 4.106   Downloaded jsonwebtoken v11.0.0
+#21 4.109   Downloaded left-right v0.11.7
+#21 4.110   Downloaded icu_provider v2.2.0
+#21 4.111   Downloaded metrics-util v0.20.4
+#21 4.112   Downloaded log v0.4.32
+#21 4.113   Downloaded tracing-opentelemetry v0.33.0
+#21 4.115   Downloaded prost v0.14.4
+#21 4.115   Downloaded hex v0.4.3
+#21 4.116   Downloaded pin-utils v0.1.0
+#21 4.116   Downloaded icu_collections v2.2.0
+#21 4.119   Downloaded konst v0.2.20
+#21 4.121   Downloaded reactive_stores_macro v0.5.0-beta
+#21 4.121   Downloaded tracing-core v0.1.36
+#21 4.123   Downloaded zerovec-derive v0.11.3
+#21 4.123   Downloaded rustc-hash v2.1.3
+#21 4.124   Downloaded tokio-rustls v0.26.5
+#21 4.124   Downloaded phf_shared v0.11.3
+#21 4.125   Downloaded powerfmt v0.2.0
+#21 4.125   Downloaded secrecy v0.10.3
+#21 4.126   Downloaded tagptr v0.2.0
+#21 4.126   Downloaded tokio-macros v2.7.0
+#21 4.127   Downloaded poly1305 v0.8.0
+#21 4.128   Downloaded leptos_macro v0.9.0-beta
+#21 4.130   Downloaded server_fn v0.9.0-beta
+#21 4.132   Downloaded thiserror v1.0.69
+#21 4.134   Downloaded fs_extra v1.3.0
+#21 4.135   Downloaded rustls-pki-types v1.14.1
+#21 4.136   Downloaded sqlx-macros v0.8.6
+#21 4.136   Downloaded crypto-common v0.2.2
+#21 4.137   Downloaded event-listener v2.5.3
+#21 4.137   Downloaded futures-macro v0.3.34
+#21 4.138   Downloaded sqlx-mysql v0.9.0
+#21 4.140   Downloaded icu_normalizer_data v2.2.0
+#21 4.141   Downloaded opentelemetry-otlp v0.32.0
+#21 4.142   Downloaded zerocopy-derive v0.8.52
+#21 4.146   Downloaded zerotrie v0.2.4
+#21 4.148   Downloaded tonic v0.14.6
+#21 4.150   Downloaded miniz_oxide v0.8.9
+#21 4.151   Downloaded tls_codec v0.4.2
+#21 4.152   Downloaded toml v1.1.4+spec-1.1.0
+#21 4.154   Downloaded paste v1.0.15
+#21 4.155   Downloaded pastey v0.1.1
+#21 4.156   Downloaded futures-io v0.3.34
+#21 4.156   Downloaded openssl-macros v0.1.1
+#21 4.157   Downloaded quoted_printable v0.5.2
+#21 4.157   Downloaded ucd-trie v0.1.7
+#21 4.158   Downloaded ref-cast-impl v1.0.25
+#21 4.158   Downloaded tokio-stream v0.1.18
+#21 4.160   Downloaded socket2 v0.6.4
+#21 4.161   Downloaded proc-macro-utils v0.10.0
+#21 4.161   Downloaded same-file v1.0.6
+#21 4.162   Downloaded rusticata-macros v4.1.0
+#21 4.163   Downloaded time-core v0.1.9
+#21 4.163   Downloaded uuid v1.26.1
+#21 4.165   Downloaded pin-project v1.1.13
+#21 4.169   Downloaded sha2 v0.10.9
+#21 4.170   Downloaded sqlx-macros-core v0.8.6
+#21 4.172   Downloaded universal-hash v0.5.1
+#21 4.172   Downloaded try-lock v0.2.5
+#21 4.172   Downloaded spin v0.9.9
+#21 4.173   Downloaded strsim v0.11.1
+#21 4.174   Downloaded thousands v0.2.0
+#21 4.174   Downloaded pathdiff v0.2.3
+#21 4.175   Downloaded parking v2.2.1
+#21 4.175   Downloaded minimal-lexical v0.2.1
+#21 4.177   Downloaded tinystr v0.8.3
+#21 4.178   Downloaded walkdir v2.5.0
+#21 4.179   Downloaded webpki-roots v0.26.11
+#21 4.180   Downloaded quanta v0.12.6
+#21 4.181   Downloaded futures v0.3.34
+#21 4.183   Downloaded writeable v0.6.3
+#21 4.184   Downloaded darling_core v0.20.11
+#21 4.186   Downloaded darling_core v0.23.0
+#21 4.189   Downloaded evmap v11.0.0
+#21 4.189   Downloaded oid-registry v0.7.1
+#21 4.190   Downloaded rustc_version v0.4.1
+#21 4.190   Downloaded js-sys v0.3.100
+#21 4.192   Downloaded zmij v1.0.23
+#21 4.192   Downloaded parking_lot v0.12.5
+#21 4.194   Downloaded rstml v0.12.1
+#21 4.194   Downloaded phf v0.11.3
+#21 4.195   Downloaded rand_core v0.6.4
+#21 4.196   Downloaded half v2.7.1
+#21 4.197   Downloaded phf v0.13.1
+#21 4.198   Downloaded proc-macro-error2 v2.0.1
+#21 4.199   Downloaded openssl-sys v0.9.117
+#21 4.202   Downloaded hyper-util v0.1.20
+#21 4.204   Downloaded rand_core v0.9.5
+#21 4.205   Downloaded sec1 v0.7.3
+#21 4.206   Downloaded wasm_split_helpers v0.2.3
+#21 4.206   Downloaded ppv-lite86 v0.2.21
+#21 4.206   Downloaded debug_unsafe v0.1.4
+#21 4.207   Downloaded futures-task v0.3.34
+#21 4.207   Downloaded prettyplease v0.2.37
+#21 4.209   Downloaded xxhash-rust v0.8.18
+#21 4.210   Downloaded digest v0.11.3
+#21 4.211   Downloaded darling_macro v0.20.11
+#21 4.211   Downloaded sqlx-macros v0.9.0
+#21 4.212   Downloaded thiserror-impl v2.0.20
+#21 4.212   Downloaded term v1.2.1
+#21 4.214   Downloaded foldhash v0.1.5
+#21 4.214   Downloaded derive-where v1.6.1
+#21 4.216   Downloaded enum-ordinalize-derive v4.4.1
+#21 4.216   Downloaded time-macros v0.2.32
+#21 4.217   Downloaded erased v0.1.2
+#21 4.218   Downloaded form_urlencoded v1.2.2
+#21 4.218   Downloaded leptos v0.9.0-beta
+#21 4.220   Downloaded find-msvc-tools v0.1.9
+#21 4.221   Downloaded memchr v2.8.2
+#21 4.223   Downloaded miette v7.6.0
+#21 4.225   Downloaded zerovec v0.11.6
+#21 4.227   Downloaded rand v0.10.1
+#21 4.229   Downloaded email_address v0.2.9
+#21 4.230   Downloaded ff v0.13.1
+#21 4.230   Downloaded postgres-protocol v0.6.12
+#21 4.231   Downloaded send_wrapper v0.6.0
+#21 4.232   Downloaded server_fn_macro_default v0.9.0-beta
+#21 4.232   Downloaded futures-channel v0.3.34
+#21 4.233   Downloaded rand_chacha v0.9.0
+#21 4.233   Downloaded server_fn_macro v0.9.0-beta
+#21 4.234   Downloaded tracing-log v0.2.0
+#21 4.234   Downloaded indexmap v2.14.0
+#21 4.236   Downloaded dunce v1.0.5
+#21 4.237   Downloaded thiserror-impl v1.0.69
+#21 4.237   Downloaded reactive_graph v0.3.0-beta2
+#21 4.240   Downloaded wasm-bindgen-macro-support v0.2.123
+#21 4.241   Downloaded schemars v1.2.1
+#21 4.247   Downloaded data-encoding v2.11.0
+#21 4.247   Downloaded sharded-slab v0.1.7
+#21 4.249   Downloaded tonic-prost v0.14.6
+#21 4.249   Downloaded quote-use-macros v0.8.4
+#21 4.249   Downloaded phf_generator v0.11.3
+#21 4.250   Downloaded unicode-properties v0.1.4
+#21 4.251   Downloaded wasm-streams v0.5.0
+#21 4.252   Downloaded or_poisoned v0.1.0
+#21 4.252   Downloaded fixedbitset v0.5.7
+#21 4.253   Downloaded rand_xoshiro v0.7.0
+#21 4.254   Downloaded unicode-security v0.1.2
+#21 4.255   Downloaded unicode-xid v0.2.6
+#21 4.256   Downloaded precomputed-hash v0.1.1
+#21 4.256   Downloaded der-parser v9.0.0
+#21 4.258   Downloaded getrandom v0.2.17
+#21 4.259   Downloaded synstructure v0.13.2
+#21 4.259   Downloaded typed-builder-macro v0.23.2
+#21 4.260   Downloaded pin-project-internal v1.1.13
+#21 4.260   Downloaded hmac v0.12.1
+#21 4.261   Downloaded tower v0.5.3
+#21 4.265   Downloaded fancy-regex v0.14.0
+#21 4.267   Downloaded zopfli v0.8.3
+#21 4.268   Downloaded pest_meta v2.8.6
+#21 4.269   Downloaded serde_path_to_error v0.1.20
+#21 4.270   Downloaded serde v1.0.229
+#21 4.272   Downloaded wasm_split_macros v0.2.2
+#21 4.272   Downloaded potential_utf v0.1.5
+#21 4.272   Downloaded prost-derive v0.14.4
+#21 4.273   Downloaded foreign-types-shared v0.1.1
+#21 4.273   Downloaded version_check v0.9.5
+#21 4.274   Downloaded num-bigint v0.4.8
+#21 4.276   Downloaded hashlink v0.11.1
+#21 4.277   Downloaded pretty v0.12.5
+#21 4.277   Downloaded tracing-serde v0.2.0
+#21 4.278   Downloaded prefix-trie v0.8.4
+#21 4.280   Downloaded sqlx-macros-core v0.9.0
+#21 4.281   Downloaded self_cell v1.2.2
+#21 4.282   Downloaded digest v0.10.7
+#21 4.282   Downloaded nom v7.1.3
+#21 4.285   Downloaded unicode-segmentation v1.13.3
+#21 4.286   Downloaded hashbag v0.1.13
+#21 4.287   Downloaded mio v1.2.1
+#21 4.290   Downloaded percent-encoding v2.3.2
+#21 4.290   Downloaded heck v0.5.0
+#21 4.291   Downloaded simple_asn1 v0.6.4
+#21 4.291   Downloaded flate2 v1.1.9
+#21 4.293   Downloaded email-encoding v0.4.1
+#21 4.294   Downloaded toml_datetime v1.1.1+spec-1.1.0
+#21 4.294   Downloaded derive_builder_macro v0.20.2
+#21 4.295   Downloaded unicode-script v0.5.8
+#21 4.296   Downloaded stringprep v0.1.5
+#21 4.297   Downloaded hickory-net v0.26.3
+#21 4.299   Downloaded signal-hook-registry v1.4.8
+#21 4.300   Downloaded derive_builder v0.20.2
+#21 4.302   Downloaded once_cell v1.21.4
+#21 4.303   Downloaded webauthn-rs-proto v0.5.5
+#21 4.304   Downloaded pem-rfc7468 v0.7.0
+#21 4.304   Downloaded pin-project-lite v0.2.17
+#21 4.306   Downloaded serde_derive v1.0.229
+#21 4.308   Downloaded rand_core v0.10.1
+#21 4.308   Downloaded sha2 v0.11.0
+#21 4.310   Downloaded ecdsa v0.16.9
+#21 4.311   Downloaded rustls-webpki v0.103.15
+#21 4.312   Downloaded proc-macro2 v1.0.106
+#21 4.313   Downloaded sqlx v0.8.6
+#21 4.319   Downloaded stacker v0.1.24
+#21 4.320   Downloaded tonic-types v0.14.6
+#21 4.321   Downloaded x509-parser v0.16.0
+#21 4.323   Downloaded derive_builder_core v0.20.2
+#21 4.324   Downloaded futures-intrusive v0.5.0
+#21 4.326   Downloaded schemars v0.9.0
+#21 4.331   Downloaded hickory-resolver v0.26.3
+#21 4.333   Downloaded opentelemetry v0.32.0
+#21 4.335   Downloaded hashify v0.2.9
+#21 4.336   Downloaded pkcs1 v0.7.5
+#21 4.337   Downloaded tower-http v0.7.1
+#21 4.341   Downloaded h2 v0.4.16
+#21 4.344   Downloaded num-bigint-dig v0.8.6
+#21 4.346   Downloaded p256 v0.13.2
+#21 4.347   Downloaded yansi v1.0.1
+#21 4.348   Downloaded serde_qs v1.1.3
+#21 4.352   Downloaded getrandom v0.3.4
+#21 4.354   Downloaded idna v1.1.0
+#21 4.356   Downloaded itertools v0.14.0
+#21 4.359   Downloaded postgres-types v0.2.14
+#21 4.360   Downloaded nom v8.0.0
+#21 4.362   Downloaded darling v0.20.11
+#21 4.364   Downloaded hyper v1.10.1
+#21 4.367   Downloaded rand v0.9.4
+#21 4.369   Downloaded unicode-bidi v0.3.18
+#21 4.370   Downloaded elliptic-curve v0.13.8
+#21 4.372   Downloaded prost-types v0.14.4
+#21 4.373   Downloaded tungstenite v0.29.0
+#21 4.374   Downloaded rapidhash v4.4.1
+#21 4.375   Downloaded ed25519-dalek v2.2.0
+#21 4.377   Downloaded reqwest v0.13.5
+#21 4.379   Downloaded pest v2.8.6
+#21 4.381   Downloaded typed-path v0.12.3
+#21 4.384   Downloaded hashbrown v0.12.3
+#21 4.386   Downloaded rand v0.8.6
+#21 4.387   Downloaded darling v0.23.0
+#21 4.389   Downloaded getrandom v0.4.2
+#21 4.391   Downloaded tokio-util v0.7.18
+#21 4.394   Downloaded lettre v0.11.23
+#21 4.397   Downloaded flume v0.12.0
+#21 4.399   Downloaded icu_properties_data v2.2.0
+#21 4.404   Downloaded itertools v0.15.0
+#21 4.407   Downloaded x509-cert v0.2.5
+#21 4.409   Downloaded aws-lc-rs v1.18.1
+#21 4.414   Downloaded chrono v0.4.45
+#21 4.417   Downloaded libm v0.2.16
+#21 4.421   Downloaded hashbrown v0.15.5
+#21 4.423   Downloaded educe v0.7.6
+#21 4.426   Downloaded sqlx-mysql v0.8.6
+#21 4.429   Downloaded tokio-postgres v0.7.18
+#21 4.431   Downloaded flume v0.11.1
+#21 4.432   Downloaded der v0.7.10
+#21 4.434   Downloaded tachys v0.3.0-beta2
+#21 4.437   Downloaded rsa v0.9.10
+#21 4.439   Downloaded zip v7.2.0
+#21 4.441   Downloaded cedar-policy v4.12.0
+#21 4.447   Downloaded futures-util v0.3.34
+#21 4.452   Downloaded portable-atomic v1.13.1
+#21 4.455   Downloaded serde_json v1.0.151
+#21 4.458   Downloaded serde_with v3.21.0
+#21 4.463   Downloaded hkdf v0.13.0
+#21 4.465   Downloaded p384 v0.13.1
+#21 4.467   Downloaded sqlx-postgres v0.8.6
+#21 4.470   Downloaded zip v8.6.0
+#21 4.472   Downloaded hashbrown v0.17.1
+#21 4.475   Downloaded hkdf v0.12.4
+#21 4.476   Downloaded sqlx-sqlite v0.9.0
+#21 4.478   Downloaded webpki-roots v1.0.9
+#21 4.479   Downloaded unicode-normalization v0.1.25
+#21 4.481   Downloaded sqlx-core v0.8.6
+#21 4.484   Downloaded tracing-subscriber v0.3.23
+#21 4.487   Downloaded typenum v1.20.1
+#21 4.489   Downloaded webauthn-rs-core v0.5.5
+#21 4.490   Downloaded lalrpop v0.22.2
+#21 4.495   Downloaded zlib-rs v0.6.3
+#21 4.497   Downloaded tower-http v0.6.11
+#21 4.501   Downloaded winnow v1.0.4
+#21 4.505   Downloaded hashbrown v0.16.1
+#21 4.508   Downloaded opentelemetry-proto v0.32.0
+#21 4.511   Downloaded sqlx-core v0.9.0
+#21 4.515   Downloaded hickory-proto v0.26.3
+#21 4.520   Downloaded sqlx-postgres v0.9.0
+#21 4.523   Downloaded regex v1.12.4
+#21 4.526   Downloaded syn v3.0.5
+#21 4.530   Downloaded moka v0.12.15
+#21 4.533   Downloaded sqlx v0.9.0
+#21 4.539   Downloaded time v0.3.55
+#21 4.545   Downloaded syn v2.0.119
+#21 4.549   Downloaded unicode-width v0.1.14
+#21 4.551   Downloaded opentelemetry_sdk v0.32.1
+#21 4.555   Downloaded rustls v0.23.45
+#21 4.560   Downloaded curve25519-dalek v4.1.3
+#21 4.564   Downloaded unicode-width v0.2.2
+#21 4.566   Downloaded vcpkg v0.2.15
+#21 4.584   Downloaded object v0.37.3
+#21 4.589   Downloaded zerocopy v0.8.52
+#21 4.597   Downloaded openssl v0.10.81
+#21 4.601   Downloaded regex-syntax v0.8.11
+#21 4.604   Downloaded tracing v0.1.44
+#21 4.611   Downloaded rustix v1.1.4
+#21 4.621   Downloaded cedar-policy-core v4.12.0
+#21 4.629   Downloaded mail-parser v0.11.9
+#21 4.641   Downloaded web-sys v0.3.100
+#21 4.679   Downloaded chrono-tz v0.10.4
+#21 4.685   Downloaded sha3 v0.10.9
+#21 4.687   Downloaded regex-automata v0.4.18
+#21 4.693   Downloaded jiff v0.2.28
+#21 4.701   Downloaded petgraph v0.7.1
+#21 4.709   Downloaded libc v0.2.186
+#21 4.724   Downloaded tokio v1.53.1
+#21 4.741   Downloaded ring v0.17.14
+#21 4.759   Downloaded encoding_rs v0.8.35
+#21 4.768   Downloaded linux-raw-sys v0.12.1
+#21 4.797   Downloaded libsqlite3-sys v0.30.1
+#21 4.830   Downloaded openssl-src v300.6.1+3.6.3
+#21 4.922   Downloaded aws-lc-sys v0.45.0
+#21 5.162    Compiling proc-macro2 v1.0.106
+#21 5.162    Compiling quote v1.0.45
+#21 5.162    Compiling unicode-ident v1.0.24
+#21 5.163    Compiling libc v0.2.186
+#21 5.189    Compiling serde v1.0.229
+#21 5.270    Compiling cfg-if v1.0.4
+#21 5.277    Compiling serde_core v1.0.229
+#21 5.308    Compiling memchr v2.8.2
+#21 5.620    Compiling syn v2.0.119
+#21 5.662    Compiling syn v3.0.5
+#21 5.690    Compiling thiserror v2.0.20
+#21 5.831    Compiling equivalent v1.0.2
+#21 5.850    Compiling hashbrown v0.17.1
+#21 6.075    Compiling indexmap v2.14.0
+#21 6.322    Compiling itoa v1.0.18
+#21 6.345    Compiling zmij v1.0.23
+#21 6.411    Compiling getrandom v0.4.2
+#21 6.433    Compiling version_check v0.9.5
+#21 6.516    Compiling serde_json v1.0.151
+#21 6.871    Compiling serde_derive v1.0.229
+#21 6.910    Compiling thiserror-impl v2.0.20
+#21 7.459    Compiling rand_core v0.10.1
+#21 7.541    Compiling num-conv v0.2.2
+#21 7.577    Compiling time-core v0.1.9
+#21 7.608    Compiling uuid v1.26.1
+#21 7.622    Compiling time-macros v0.2.32
+#21 7.829    Compiling pin-project-lite v0.2.17
+#21 7.891    Compiling deranged v0.5.8
+#21 8.141    Compiling powerfmt v0.2.0
+#21 8.261    Compiling portable-atomic v1.13.1
+#21 8.272    Compiling critical-section v1.2.0
+#21 8.294    Compiling time v0.3.55
+#21 8.302    Compiling futures-core v0.3.34
+#21 8.305    Compiling zeroize_derive v1.5.0
+#21 8.344    Compiling synstructure v0.13.2
+#21 8.578    Compiling once_cell v1.21.4
+#21 8.580    Compiling zerofrom-derive v0.1.7
+#21 8.613    Compiling zeroize v1.9.0
+#21 8.675    Compiling futures-sink v0.3.34
+#21 8.685    Compiling yoke-derive v0.8.2
+#21 8.713    Compiling slab v0.4.12
+#21 8.793    Compiling typenum v1.20.1
+#21 9.039    Compiling displaydoc v0.2.6
+#21 9.116    Compiling jobserver v0.1.35
+#21 9.187    Compiling console-kernel-core v0.1.0 (/workspace/backend/crates/kernel/core)
+#21 9.242    Compiling shlex v2.0.1
+#21 9.301    Compiling log v0.4.32
+#21 9.368    Compiling find-msvc-tools v0.1.9
+#21 9.416    Compiling futures-channel v0.3.34
+#21 9.448    Compiling cc v1.2.63
+#21 9.535    Compiling zerovec-derive v0.11.3
+#21 9.641    Compiling futures-macro v0.3.34
+#21 10.03    Compiling futures-task v0.3.34
+#21 10.04    Compiling futures-io v0.3.34
+#21 10.05    Compiling bytes v1.12.1
+#21 10.09    Compiling futures-util v0.3.34
+#21 10.11    Compiling tracing-attributes v0.1.31
+#21 10.13    Compiling autocfg v1.5.1
+#21 10.33    Compiling smallvec v1.15.2
+#21 10.44    Compiling generic-array v0.14.7
+#21 10.50    Compiling getrandom v0.2.17
+#21 10.64    Compiling rand_core v0.6.4
+#21 10.76    Compiling pkg-config v0.3.33
+#21 10.90    Compiling icu_properties_data v2.2.0
+#21 10.99    Compiling subtle v2.6.1
+#21 11.00    Compiling icu_normalizer_data v2.2.0
+#21 11.03    Compiling tracing-core v0.1.36
+#21 11.10    Compiling percent-encoding v2.3.2
+#21 11.19    Compiling tracing v0.1.44
+#21 11.20    Compiling crypto-common v0.1.7
+#21 11.26    Compiling errno v0.3.14
+#21 11.29    Compiling libm v0.2.16
+#21 11.32    Compiling signal-hook-registry v1.4.8
+#21 11.36    Compiling num-traits v0.2.19
+#21 11.39    Compiling zerofrom v0.1.8
+#21 11.43    Compiling tokio-macros v2.7.0
+#21 11.44    Compiling socket2 v0.6.4
+#21 11.47    Compiling mio v1.2.1
+#21 11.49    Compiling stable_deref_trait v1.2.1
+#21 11.52    Compiling yoke v0.8.3
+#21 11.73    Compiling tokio v1.53.1
+#21 11.75    Compiling const-oid v0.9.6
+#21 12.36    Compiling base64 v0.22.1
+#21 12.38    Compiling zerovec v0.11.6
+#21 12.40    Compiling cmake v0.1.58
+#21 12.50    Compiling fs_extra v1.3.0
+#21 12.53    Compiling dunce v1.0.5
+#21 12.54    Compiling crossbeam-utils v0.8.21
+#21 12.57    Compiling aws-lc-sys v0.45.0
+#21 12.65    Compiling parking_lot_core v0.9.12
+#21 12.80    Compiling tinystr v0.8.3
+#21 12.88    Compiling litemap v0.8.2
+#21 12.94    Compiling writeable v0.6.3
+#21 12.99    Compiling icu_locale_core v2.2.0
+#21 13.03    Compiling potential_utf v0.1.5
+#21 13.05    Compiling zerotrie v0.2.4
+#21 13.08    Compiling utf8_iter v1.0.4
+#21 13.11    Compiling icu_collections v2.2.0
+#21 13.27    Compiling block-buffer v0.10.4
+#21 13.30    Compiling digest v0.10.7
+#21 13.36    Compiling icu_provider v2.2.0
+#21 13.54    Compiling icu_normalizer v2.2.0
+#21 13.60    Compiling icu_properties v2.2.0
+#21 14.18    Compiling form_urlencoded v1.2.2
+#21 14.22    Compiling idna_adapter v1.2.2
+#21 14.26    Compiling idna v1.1.0
+#21 14.28    Compiling either v1.16.0
+#21 14.40    Compiling url v2.5.8
+#21 15.07    Compiling rustversion v1.0.22
+#21 15.30    Compiling cpufeatures v0.2.17
+#21 15.38    Compiling zerocopy v0.8.52
+#21 15.48    Compiling concurrent-queue v2.5.0
+#21 15.53    Compiling zerocopy-derive v0.8.52
+#21 15.55    Compiling semver v1.0.28
+#21 15.66    Compiling rustc_version v0.4.1
+#21 15.76    Compiling scopeguard v1.2.0
+#21 15.78    Compiling tinyvec_macros v0.1.1
+#21 15.79    Compiling lock_api v0.4.14
+#21 15.80    Compiling tinyvec v1.11.0
+#21 15.97    Compiling parking v2.2.1
+#21 16.03    Compiling event-listener v5.4.1
+#21 16.13    Compiling parking_lot v0.12.5
+#21 16.24    Compiling aws-lc-rs v1.18.1
+#21 17.16    Compiling http v1.5.0
+#21 17.21    Compiling ppv-lite86 v0.2.21
+#21 17.27    Compiling rustls-pki-types v1.14.1
+#21 17.53    Compiling bitflags v2.13.0
+#21 18.04    Compiling sha2 v0.10.9
+#21 18.09    Compiling allocator-api2 v0.2.21
+#21 18.13    Compiling untrusted v0.9.0
+#21 18.15    Compiling rustls v0.23.45
+#21 18.58    Compiling unicode-normalization v0.1.25
+#21 18.79    Compiling hybrid-array v0.4.12
+#21 19.14    Compiling cmov v0.5.4
+#21 19.21    Compiling byteorder v1.5.0
+#21 19.23    Compiling tower-service v0.3.3
+#21 19.44    Compiling ctutils v0.4.2
+#21 20.00    Compiling block-buffer v0.12.1
+#21 20.04    Compiling crypto-common v0.2.2
+#21 20.46    Compiling webpki-roots v1.0.9
+#21 20.51    Compiling tokio-stream v0.1.18
+#21 20.66    Compiling chacha20 v0.10.2
+#21 20.75    Compiling const-oid v0.10.2
+#21 20.83    Compiling crc-catalog v2.5.0
+#21 20.87    Compiling getrandom v0.3.4
+#21 21.00    Compiling crc v3.4.0
+#21 21.12    Compiling digest v0.11.3
+#21 21.47    Compiling rand v0.10.1
+#21 21.72    Compiling crossbeam-queue v0.3.12
+#21 21.75    Compiling futures-intrusive v0.5.0
+#21 21.86    Compiling tokio-util v0.7.18
+#21 22.03    Compiling tower-layer v0.3.3
+#21 22.28    Compiling unicode-properties v0.1.4
+#21 22.32    Compiling unicode-bidi v0.3.18
+#21 22.51    Compiling heck v0.5.0
+#21 22.60    Compiling fnv v1.0.7
+#21 22.62    Compiling base64ct v1.8.3
+#21 22.70    Compiling pem-rfc7468 v0.7.0
+#21 22.78    Compiling stringprep v0.1.5
+#21 23.02    Compiling rand_core v0.9.5
+#21 23.35    Compiling atoi v2.0.0
+#21 23.43    Compiling ipnet v2.12.2
+#21 23.54    Compiling der_derive v0.7.3
+#21 23.89    Compiling httparse v1.10.1
+#21 23.91    Compiling iana-time-zone v0.1.65
+#21 23.97    Compiling hex v0.4.3
+#21 24.03    Compiling dotenvy v0.15.7
+#21 24.05    Compiling flagset v0.4.7
+#21 24.11    Compiling der v0.7.10
+#21 24.13    Compiling chrono v0.4.45
+#21 25.21    Compiling hmac v0.13.0
+#21 25.24    Compiling http-body v1.0.1
+#21 25.28    Compiling itertools v0.14.0
+#21 25.44    Compiling cpufeatures v0.3.0
+#21 25.48    Compiling unicode-xid v0.2.6
+#21 25.55    Compiling sha2 v0.11.0
+#21 25.68    Compiling spki v0.7.3
+#21 25.91    Compiling rand_chacha v0.9.0
+#21 26.24    Compiling hmac v0.12.1
+#21 26.31    Compiling ident_case v1.0.1
+#21 26.34    Compiling strsim v0.11.1
+#21 26.41    Compiling httpdate v1.0.3
+#21 26.42    Compiling foldhash v0.2.0
+#21 26.52    Compiling hashbrown v0.16.1
+#21 26.68    Compiling rand v0.9.4
+#21 26.74    Compiling md-5 v0.11.0
+#21 26.81    Compiling sync_wrapper v1.0.2
+#21 26.88    Compiling spin v0.9.9
+#21 26.97    Compiling hashlink v0.11.1
+#21 27.17    Compiling thiserror v1.0.69
+#21 27.24    Compiling siphasher v1.0.3
+#21 27.27    Compiling atomic-waker v1.1.2
+#21 27.30    Compiling try-lock v0.2.5
+#21 27.61    Compiling want v0.3.1
+#21 27.64    Compiling h2 v0.4.16
+#21 27.66    Compiling phf_shared v0.11.3
+#21 28.07    Compiling hkdf v0.13.0
+#21 28.09    Compiling tower v0.5.3
+#21 28.44    Compiling pkcs8 v0.10.2
+#21 28.72    Compiling aho-corasick v1.1.4
+#21 29.14    Compiling thiserror-impl v1.0.69
+#21 29.53    Compiling whoami v2.1.2
+#21 30.69    Compiling data-encoding v2.11.0
+#21 31.57    Compiling regex-syntax v0.8.11
+#21 32.46    Compiling regex-automata v0.4.18
+#21 34.45    Compiling hyper v1.10.1
+#21 36.57    Compiling hkdf v0.12.4
+#21 36.61    Compiling rand_chacha v0.3.1
+#21 37.11    Compiling num-integer v0.1.46
+#21 37.25    Compiling minimal-lexical v0.2.1
+#21 37.36    Compiling same-file v1.0.6
+#21 37.39    Compiling walkdir v2.5.0
+#21 37.49    Compiling nom v7.1.3
+#21 38.22    Compiling rand v0.8.6
+#21 38.62    Compiling hyper-util v0.1.20
+#21 39.99    Compiling lazy_static v1.5.0
+#21 40.01    Compiling http-body-util v0.1.3
+#21 40.12    Compiling openssl-src v300.6.1+3.6.3
+#21 40.21    Compiling ryu v1.0.23
+#21 40.31    Compiling object v0.37.3
+#21 40.40    Compiling vcpkg v0.2.15
+#21 40.61    Compiling openssl-sys v0.9.117
+#21 41.40    Compiling signature v2.2.0
+#21 41.44    Compiling ff v0.13.1
+#21 41.47    Compiling base16ct v0.2.0
+#21 41.54    Compiling sec1 v0.7.3
+#21 41.88    Compiling group v0.13.0
+#21 41.93    Compiling ar_archive_writer v0.5.2
+#21 42.19    Compiling num-bigint v0.4.8
+#21 43.87    Compiling darling_core v0.23.0
+#21 44.66    Compiling keccak v0.1.6
+#21 44.72    Compiling crypto-bigint v0.5.5
+#21 45.28    Compiling new_debug_unreachable v1.0.6
+#21 45.29    Compiling term v1.2.1
+#21 45.44    Compiling fixedbitset v0.5.7
+#21 45.53    Compiling bit-vec v0.8.0
+#21 45.58    Compiling precomputed-hash v0.1.1
+#21 45.60    Compiling string_cache v0.8.9
+#21 45.64    Compiling bit-set v0.8.0
+#21 45.69    Compiling petgraph v0.7.1
+#21 46.07    Compiling ascii-canvas v4.0.0
+#21 46.12    Compiling elliptic-curve v0.13.8
+#21 46.25    Compiling sha3 v0.10.9
+#21 46.32    Compiling darling_macro v0.23.0
+#21 46.49    Compiling psm v0.1.31
+#21 46.64    Compiling rusticata-macros v4.1.0
+#21 46.70    Compiling lalrpop-util v0.22.2
+#21 46.78    Compiling regex v1.12.4
+#21 46.89    Compiling ena v0.14.4
+#21 46.95    Compiling asn1-rs-derive v0.5.1
+#21 47.18    Compiling asn1-rs-impl v0.2.0
+#21 47.30    Compiling encoding_rs v0.8.35
+#21 49.13    Compiling pico-args v0.5.0
+#21 49.17    Compiling console-platform-db v0.1.0 (/workspace/backend/crates/platform/db)
+#21 49.22    Compiling lalrpop v0.22.2
+#21 51.90    Compiling asn1-rs v0.6.2
+#21 52.94    Compiling darling v0.23.0
+#21 52.95    Compiling serde_urlencoded v0.7.1
+#21 53.02    Compiling rfc6979 v0.4.0
+#21 53.06    Compiling curve25519-dalek v4.1.3
+#21 53.12    Compiling stacker v0.1.24
+#21 53.21    Compiling enum-ordinalize-derive v4.4.1
+#21 53.41    Compiling pastey v0.1.1
+#21 53.54    Compiling openssl v0.10.81
+#21 53.61    Compiling num-bigint-dig v0.8.6
+#21 53.66    Compiling foreign-types-shared v0.1.1
+#21 53.67    Compiling ref-cast v1.0.25
+#21 53.74    Compiling base64 v0.21.7
+#21 53.90    Compiling oid-registry v0.7.1
+#21 53.99    Compiling mime v0.3.17
+#21 54.14    Compiling base64urlsafedata v0.5.5
+#21 54.19    Compiling foreign-types v0.3.2
+#21 54.21    Compiling enum-ordinalize v4.4.1
+#21 54.23    Compiling ecdsa v0.16.9
+#21 54.42    Compiling serde_with_macros v3.21.0
+#21 54.79    Compiling cedar-policy-core v4.12.0
+#21 55.16    Compiling primeorder v0.13.6
+#21 55.24    Compiling num-iter v0.1.45
+#21 55.27    Compiling logos-codegen v0.16.1
+#21 55.70    Compiling linked-hash-map v0.5.6
+#21 55.75    Compiling ref-cast-impl v1.0.25
+#21 55.93    Compiling openssl-macros v0.1.1
+#21 56.08    Compiling miette-derive v7.6.0
+#21 56.46    Compiling webauthn-attestation-ca v0.5.5
+#21 56.50    Compiling unicode-width v0.1.14
+#21 56.58    Compiling unicode-script v0.5.8
+#21 56.75    Compiling rustls-webpki v0.103.15
+#21 56.85    Compiling unicode-security v0.1.2
+#21 57.10    Compiling miette v7.6.0
+#21 57.97    Compiling linked_hash_set v0.1.6
+#21 58.01    Compiling logos-derive v0.16.1
+#21 58.36    Compiling sqlx-core v0.9.0
+#21 59.60    Compiling sqlx-postgres v0.9.0
+#21 61.01    Compiling sqlx-macros-core v0.9.0
+#21 61.82    Compiling sqlx-macros v0.9.0
+#21 62.79    Compiling serde_with v3.21.0
+#21 63.39    Compiling educe v0.7.6
+#21 64.22    Compiling der-parser v9.0.0
+#21 64.23    Compiling ed25519 v2.2.3
+#21 64.81    Compiling pkcs1 v0.7.5
+#21 65.03    Compiling half v2.7.1
+#21 65.14    Compiling itertools v0.15.0
+#21 65.43    Compiling nonempty v0.12.0
+#21 65.48    Compiling smol_str v0.3.6
+#21 65.58    Compiling arrayvec v0.5.2
+#21 65.65    Compiling unicode-width v0.2.2
+#21 65.68    Compiling rustc-literal-escaper v0.0.8
+#21 65.72    Compiling webauthn-rs-core v0.5.5
+#21 65.73    Compiling typed-arena v2.0.2
+#21 65.77    Compiling pretty v0.12.5
+#21 65.89    Compiling serde_cbor_2 v0.13.0
+#21 66.21    Compiling rsa v0.9.10
+#21 67.18    Compiling x509-parser v0.16.0
+#21 70.71    Compiling ed25519-dalek v2.2.0
+#21 70.92    Compiling logos v0.16.1
+#21 70.96    Compiling p256 v0.13.2
+#21 71.31    Compiling p384 v0.13.1
+#21 72.17    Compiling webauthn-rs-proto v0.5.5
+#21 81.02    Compiling sqlx v0.9.0
+#21 88.07    Compiling simple_asn1 v0.6.4
+#21 89.41    Compiling sha1 v0.10.6
+#21 89.52    Compiling pem v3.0.6
+#21 89.98    Compiling multer v3.1.0
+#21 90.04    Compiling cedar-policy v4.12.0
+#21 90.13    Compiling jsonwebtoken v11.0.0
+#21 90.71    Compiling tungstenite v0.29.0
+#21 92.50    Compiling cedar-policy-formatter v4.12.0
+#21 95.14    Compiling console-platform-authz v0.1.0 (/workspace/backend/crates/platform/authz)
+#21 96.42    Compiling tokio-tungstenite v0.29.0
+#21 97.25    Compiling axum-core v0.5.6
+#21 98.25    Compiling serde_path_to_error v0.1.20
+#21 98.40    Compiling matchit v0.8.4
+#21 98.68    Compiling axum v0.8.9
+#21 110.9    Compiling console-platform-group v0.1.0 (/workspace/backend/crates/platform/group)
+#21 114.8    Compiling console-contracts v0.1.0 (/workspace/backend/crates/contracts)
+#21 116.6    Compiling futures-executor v0.3.34
+#21 117.4    Compiling base64 v0.23.1
+#21 117.6    Compiling wasm-bindgen-shared v0.2.123
+#21 117.7    Compiling pin-project-internal v1.1.13
+#21 117.9    Compiling async-trait v0.1.89
+#21 118.1    Compiling pin-project v1.1.13
+#21 118.3    Compiling futures v0.3.34
+#21 118.5    Compiling bumpalo v3.20.3
+#21 118.6    Compiling wasm-bindgen-macro-support v0.2.123
+#21 119.8    Compiling wasm-bindgen v0.2.123
+#21 120.1    Compiling wasm-bindgen-macro v0.2.123
+#21 120.5    Compiling console-workorder-domain v0.1.0 (/workspace/backend/crates/workorder/domain)
+#21 120.9    Compiling anyhow v1.0.103
+#21 121.0    Compiling js-sys v0.3.100
+#21 121.0    Compiling tower-http v0.6.11
+#21 121.4    Compiling proc-macro-error-attr2 v2.0.0
+#21 121.5    Compiling paste v1.0.15
+#21 121.7    Compiling proc-macro-error2 v2.0.1
+#21 121.8    Compiling reqwest v0.13.5
+#21 123.8    Compiling unicode-segmentation v1.13.3
+#21 124.0    Compiling convert_case v0.11.0
+#21 124.4    Compiling event-listener-strategy v0.5.4
+#21 124.5    Compiling block-padding v0.3.3
+#21 124.5    Compiling crc32fast v1.5.0
+#21 124.7    Compiling foldhash v0.1.5
+#21 124.8    Compiling hashbrown v0.15.5
+#21 125.0    Compiling inout v0.1.4
+#21 125.2    Compiling wasm-bindgen-futures v0.4.73
+#21 125.2    Compiling md-5 v0.10.6
+#21 125.3    Compiling proc-macro2-diagnostics v0.10.1
+#21 126.0    Compiling cipher v0.4.4
+#21 126.3    Compiling hashlink v0.10.0
+#21 126.4    Compiling webpki-roots v0.26.11
+#21 126.5    Compiling console-notifications-domain v0.1.0 (/workspace/backend/crates/notifications/domain)
+#21 127.1    Compiling or_poisoned v0.1.0
+#21 127.2    Compiling zlib-rs v0.6.3
+#21 ...
+
+#14 [runtime 1/3] FROM docker.io/library/debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
+#14 extracting sha256:75782e20ea1f4a9d9259bc20a5ecbbea8d5943bf5370bf0f5727900728f1cc9a 0.8s done
+#14 DONE 1.3s
+
+#22 [runtime 2/3] RUN apt-get update     && apt-get install -y --no-install-recommends ca-certificates curl ffmpeg     && rm -rf /var/lib/apt/lists/*     && useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin mnt
+#22 0.134 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#22 0.141 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+#22 0.142 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+#22 0.195 Get:4 http://deb.debian.org/debian bookworm/main arm64 Packages [8689 kB]
+#22 0.343 Get:5 http://deb.debian.org/debian bookworm-updates/main arm64 Packages [6936 B]
+#22 0.346 Get:6 http://deb.debian.org/debian-security bookworm-security/main arm64 Packages [338 kB]
+#22 0.872 Fetched 9276 kB in 1s (12.4 MB/s)
+#22 0.872 Reading package lists...
+#22 1.139 Reading package lists...
+#22 1.401 Building dependency tree...
+#22 1.464 Reading state information...
+#22 1.549 The following additional packages will be installed:
+#22 1.549   fontconfig fontconfig-config fonts-dejavu-core libaom3 libasound2
+#22 1.549   libasound2-data libass9 libasyncns0 libavc1394-0 libavcodec59 libavdevice59
+#22 1.549   libavfilter8 libavformat59 libavutil57 libblas3 libbluray2 libbrotli1
+#22 1.549   libbs2b0 libbsd0 libcaca0 libcairo-gobject2 libcairo2 libcdio-cdda2
+#22 1.550   libcdio-paranoia2 libcdio19 libchromaprint1 libcjson1 libcodec2-1.0 libcurl4
+#22 1.550   libdatrie1 libdav1d6 libdbus-1-3 libdc1394-25 libdecor-0-0 libdeflate0
+#22 1.550   libdrm-amdgpu1 libdrm-common libdrm-nouveau2 libdrm-radeon1 libdrm2 libedit2
+#22 1.550   libelf1 libepoxy0 libexpat1 libflac12 libflite1 libfontconfig1 libfreetype6
+#22 1.550   libfribidi0 libgbm1 libgdk-pixbuf-2.0-0 libgdk-pixbuf2.0-common libgfortran5
+#22 1.550   libgl1 libgl1-mesa-dri libglapi-mesa libglib2.0-0 libglvnd0 libglx-mesa0
+#22 1.550   libglx0 libgme0 libgomp1 libgraphite2-3 libgsm1 libgssapi-krb5-2
+#22 1.550   libharfbuzz0b libhwy1 libicu72 libiec61883-0 libjack-jackd2-0 libjbig0
+#22 1.550   libjpeg62-turbo libjxl0.7 libk5crypto3 libkeyutils1 libkrb5-3
+#22 1.550   libkrb5support0 liblapack3 liblcms2-2 libldap-2.5-0 liblerc4 liblilv-0-0
+#22 1.550   libllvm15 libmbedcrypto7 libmp3lame0 libmpg123-0 libmysofa1 libncursesw6
+#22 1.550   libnghttp2-14 libnorm1 libnuma1 libogg0 libopenal-data libopenal1
+#22 1.550   libopenjp2-7 libopenmpt0 libopus0 libpango-1.0-0 libpangocairo-1.0-0
+#22 1.550   libpangoft2-1.0-0 libpgm-5.3-0 libpixman-1-0 libplacebo208 libpng16-16
+#22 1.550   libpocketsphinx3 libpostproc56 libpsl5 libpulse0 librabbitmq4 librav1e0
+#22 1.550   libraw1394-11 librist4 librsvg2-2 librtmp1 librubberband2 libsamplerate0
+#22 1.550   libsasl2-2 libsasl2-modules-db libsdl2-2.0-0 libsensors-config libsensors5
+#22 1.550   libserd-0-0 libshine3 libslang2 libsnappy1v5 libsndfile1 libsndio7.0
+#22 1.550   libsodium23 libsord-0-0 libsoxr0 libspeex1 libsphinxbase3 libsratom-0-0
+#22 1.550   libsrt1.5-gnutls libssh-gcrypt-4 libssh2-1 libssl3 libsvtav1enc1
+#22 1.550   libswresample4 libswscale6 libthai-data libthai0 libtheora0 libtiff6
+#22 1.550   libtwolame0 libudfread0 libusb-1.0-0 libva-drm2 libva-x11-2 libva2 libvdpau1
+#22 1.550   libvidstab1.1 libvorbis0a libvorbisenc2 libvorbisfile3 libvpx7 libvulkan1
+#22 1.550   libwayland-client0 libwayland-cursor0 libwayland-egl1 libwayland-server0
+#22 1.550   libwebp7 libwebpmux3 libx11-6 libx11-data libx11-xcb1 libx264-164
+#22 1.550   libx265-199 libxau6 libxcb-dri2-0 libxcb-dri3-0 libxcb-glx0 libxcb-present0
+#22 1.550   libxcb-randr0 libxcb-render0 libxcb-shape0 libxcb-shm0 libxcb-sync1
+#22 1.550   libxcb-xfixes0 libxcb1 libxcursor1 libxdmcp6 libxext6 libxfixes3 libxi6
+#22 1.550   libxkbcommon0 libxml2 libxrandr2 libxrender1 libxshmfence1 libxss1 libxv1
+#22 1.550   libxvidcore4 libxxf86vm1 libz3-4 libzimg2 libzmq5 libzvbi-common libzvbi0
+#22 1.550   ocl-icd-libopencl1 openssl shared-mime-info x11-common xkb-data
+#22 1.550 Suggested packages:
+#22 1.550   ffmpeg-doc libasound2-plugins alsa-utils libcuda1 libnvcuvid1
+#22 1.550   libnvidia-encode1 libbluray-bdj low-memory-monitor krb5-doc krb5-user jackd2
+#22 1.550   liblcms2-utils libportaudio2 opus-tools pulseaudio libraw1394-doc
+#22 1.550   librsvg2-bin xdg-utils lm-sensors serdi sndiod sordi speex opencl-icd
+#22 1.550 Recommended packages:
+#22 1.550   alsa-ucm-conf alsa-topology-conf libaacs0 dbus libdecor-0-plugin-1-cairo
+#22 1.550   | libdecor-0-plugin-1 libgdk-pixbuf2.0-bin libglib2.0-data xdg-user-dirs
+#22 1.550   krb5-locales libldap-common libgpm2 pocketsphinx-en-us publicsuffix
+#22 1.550   librsvg2-common libsasl2-modules va-driver-all | va-driver vdpau-driver-all
+#22 1.550   | vdpau-driver mesa-vulkan-drivers | vulkan-icd
+#22 2.181 The following NEW packages will be installed:
+#22 2.181   ca-certificates curl ffmpeg fontconfig fontconfig-config fonts-dejavu-core
+#22 2.181   libaom3 libasound2 libasound2-data libass9 libasyncns0 libavc1394-0
+#22 2.181   libavcodec59 libavdevice59 libavfilter8 libavformat59 libavutil57 libblas3
+#22 2.181   libbluray2 libbrotli1 libbs2b0 libbsd0 libcaca0 libcairo-gobject2 libcairo2
+#22 2.181   libcdio-cdda2 libcdio-paranoia2 libcdio19 libchromaprint1 libcjson1
+#22 2.181   libcodec2-1.0 libcurl4 libdatrie1 libdav1d6 libdbus-1-3 libdc1394-25
+#22 2.181   libdecor-0-0 libdeflate0 libdrm-amdgpu1 libdrm-common libdrm-nouveau2
+#22 2.181   libdrm-radeon1 libdrm2 libedit2 libelf1 libepoxy0 libexpat1 libflac12
+#22 2.181   libflite1 libfontconfig1 libfreetype6 libfribidi0 libgbm1
+#22 2.181   libgdk-pixbuf-2.0-0 libgdk-pixbuf2.0-common libgfortran5 libgl1
+#22 2.181   libgl1-mesa-dri libglapi-mesa libglib2.0-0 libglvnd0 libglx-mesa0 libglx0
+#22 2.181   libgme0 libgomp1 libgraphite2-3 libgsm1 libgssapi-krb5-2 libharfbuzz0b
+#22 2.181   libhwy1 libicu72 libiec61883-0 libjack-jackd2-0 libjbig0 libjpeg62-turbo
+#22 2.181   libjxl0.7 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 liblapack3
+#22 2.181   liblcms2-2 libldap-2.5-0 liblerc4 liblilv-0-0 libllvm15 libmbedcrypto7
+#22 2.181   libmp3lame0 libmpg123-0 libmysofa1 libncursesw6 libnghttp2-14 libnorm1
+#22 2.181   libnuma1 libogg0 libopenal-data libopenal1 libopenjp2-7 libopenmpt0 libopus0
+#22 2.181   libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 libpgm-5.3-0
+#22 2.181   libpixman-1-0 libplacebo208 libpng16-16 libpocketsphinx3 libpostproc56
+#22 2.181   libpsl5 libpulse0 librabbitmq4 librav1e0 libraw1394-11 librist4 librsvg2-2
+#22 2.181   librtmp1 librubberband2 libsamplerate0 libsasl2-2 libsasl2-modules-db
+#22 2.181   libsdl2-2.0-0 libsensors-config libsensors5 libserd-0-0 libshine3 libslang2
+#22 2.181   libsnappy1v5 libsndfile1 libsndio7.0 libsodium23 libsord-0-0 libsoxr0
+#22 2.181   libspeex1 libsphinxbase3 libsratom-0-0 libsrt1.5-gnutls libssh-gcrypt-4
+#22 2.181   libssh2-1 libssl3 libsvtav1enc1 libswresample4 libswscale6 libthai-data
+#22 2.181   libthai0 libtheora0 libtiff6 libtwolame0 libudfread0 libusb-1.0-0 libva-drm2
+#22 2.181   libva-x11-2 libva2 libvdpau1 libvidstab1.1 libvorbis0a libvorbisenc2
+#22 2.181   libvorbisfile3 libvpx7 libvulkan1 libwayland-client0 libwayland-cursor0
+#22 2.181   libwayland-egl1 libwayland-server0 libwebp7 libwebpmux3 libx11-6 libx11-data
+#22 2.181   libx11-xcb1 libx264-164 libx265-199 libxau6 libxcb-dri2-0 libxcb-dri3-0
+#22 2.181   libxcb-glx0 libxcb-present0 libxcb-randr0 libxcb-render0 libxcb-shape0
+#22 2.181   libxcb-shm0 libxcb-sync1 libxcb-xfixes0 libxcb1 libxcursor1 libxdmcp6
+#22 2.181   libxext6 libxfixes3 libxi6 libxkbcommon0 libxml2 libxrandr2 libxrender1
+#22 2.181   libxshmfence1 libxss1 libxv1 libxvidcore4 libxxf86vm1 libz3-4 libzimg2
+#22 2.181   libzmq5 libzvbi-common libzvbi0 ocl-icd-libopencl1 openssl shared-mime-info
+#22 2.181   x11-common xkb-data
+#22 2.203 0 upgraded, 207 newly installed, 0 to remove and 2 not upgraded.
+#22 2.203 Need to get 121 MB of archives.
+#22 2.203 After this operation, 422 MB of additional disk space will be used.
+#22 2.203 Get:1 http://deb.debian.org/debian bookworm/main arm64 libssl3 arm64 3.0.20-1~deb12u2 [1824 kB]
+#22 2.235 Get:2 http://deb.debian.org/debian bookworm/main arm64 openssl arm64 3.0.20-1~deb12u2 [1405 kB]
+#22 2.250 Get:3 http://deb.debian.org/debian-security bookworm-security/main arm64 ca-certificates all 20250419~deb12u1 [162 kB]
+#22 2.251 Get:4 http://deb.debian.org/debian bookworm/main arm64 libbrotli1 arm64 1.0.9-2+b6 [269 kB]
+#22 2.254 Get:5 http://deb.debian.org/debian bookworm/main arm64 libkrb5support0 arm64 1.20.1-2+deb12u5 [32.6 kB]
+#22 2.254 Get:6 http://deb.debian.org/debian bookworm/main arm64 libk5crypto3 arm64 1.20.1-2+deb12u5 [79.9 kB]
+#22 2.255 Get:7 http://deb.debian.org/debian bookworm/main arm64 libkeyutils1 arm64 1.6.3-2 [8844 B]
+#22 2.256 Get:8 http://deb.debian.org/debian bookworm/main arm64 libkrb5-3 arm64 1.20.1-2+deb12u5 [316 kB]
+#22 2.260 Get:9 http://deb.debian.org/debian bookworm/main arm64 libgssapi-krb5-2 arm64 1.20.1-2+deb12u5 [124 kB]
+#22 2.262 Get:10 http://deb.debian.org/debian bookworm/main arm64 libsasl2-modules-db arm64 2.1.28+dfsg-10 [20.8 kB]
+#22 2.262 Get:11 http://deb.debian.org/debian bookworm/main arm64 libsasl2-2 arm64 2.1.28+dfsg-10 [58.0 kB]
+#22 2.264 Get:12 http://deb.debian.org/debian bookworm/main arm64 libldap-2.5-0 arm64 2.5.13+dfsg-5 [171 kB]
+#22 2.265 Get:13 http://deb.debian.org/debian bookworm/main arm64 libnghttp2-14 arm64 1.52.0-1+deb12u3 [69.0 kB]
+#22 2.265 Get:14 http://deb.debian.org/debian bookworm/main arm64 libpsl5 arm64 0.21.2-1 [58.6 kB]
+#22 2.266 Get:15 http://deb.debian.org/debian bookworm/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2+b2 [59.4 kB]
+#22 2.267 Get:16 http://deb.debian.org/debian-security bookworm-security/main arm64 libssh2-1 arm64 1.10.0-3+deb12u1 [169 kB]
+#22 2.271 Get:17 http://deb.debian.org/debian bookworm/main arm64 libcurl4 arm64 7.88.1-10+deb12u15 [367 kB]
+#22 2.281 Get:18 http://deb.debian.org/debian bookworm/main arm64 curl arm64 7.88.1-10+deb12u15 [310 kB]
+#22 2.287 Get:19 http://deb.debian.org/debian-security bookworm-security/main arm64 libaom3 arm64 3.6.0-1+deb12u3 [1374 kB]
+#22 2.303 Get:20 http://deb.debian.org/debian bookworm/main arm64 libdrm-common all 2.4.114-1 [7112 B]
+#22 2.304 Get:21 http://deb.debian.org/debian bookworm/main arm64 libdrm2 arm64 2.4.114-1+b1 [36.7 kB]
+#22 2.304 Get:22 http://deb.debian.org/debian bookworm/main arm64 libva2 arm64 2.17.0-1 [65.2 kB]
+#22 2.306 Get:23 http://deb.debian.org/debian bookworm/main arm64 libva-drm2 arm64 2.17.0-1 [16.3 kB]
+#22 2.306 Get:24 http://deb.debian.org/debian bookworm/main arm64 libxau6 arm64 1:1.0.9-1 [19.7 kB]
+#22 2.307 Get:25 http://deb.debian.org/debian bookworm/main arm64 libbsd0 arm64 0.11.7-2 [115 kB]
+#22 2.307 Get:26 http://deb.debian.org/debian bookworm/main arm64 libxdmcp6 arm64 1:1.1.2-3 [25.4 kB]
+#22 2.308 Get:27 http://deb.debian.org/debian bookworm/main arm64 libxcb1 arm64 1.15-1 [143 kB]
+#22 2.310 Get:28 http://deb.debian.org/debian bookworm/main arm64 libx11-data all 2:1.8.4-2+deb12u2 [292 kB]
+#22 2.315 Get:29 http://deb.debian.org/debian bookworm/main arm64 libx11-6 arm64 2:1.8.4-2+deb12u2 [735 kB]
+#22 2.326 Get:30 http://deb.debian.org/debian bookworm/main arm64 libx11-xcb1 arm64 2:1.8.4-2+deb12u2 [192 kB]
+#22 2.327 Get:31 http://deb.debian.org/debian bookworm/main arm64 libxcb-dri3-0 arm64 1.15-1 [107 kB]
+#22 2.328 Get:32 http://deb.debian.org/debian bookworm/main arm64 libxext6 arm64 2:1.3.4-1+b1 [51.7 kB]
+#22 2.329 Get:33 http://deb.debian.org/debian bookworm/main arm64 libxfixes3 arm64 1:6.0.0-2 [22.9 kB]
+#22 2.329 Get:34 http://deb.debian.org/debian bookworm/main arm64 libva-x11-2 arm64 2.17.0-1 [20.8 kB]
+#22 2.329 Get:35 http://deb.debian.org/debian bookworm/main arm64 libvdpau1 arm64 1.5-2 [23.7 kB]
+#22 2.329 Get:36 http://deb.debian.org/debian bookworm/main arm64 ocl-icd-libopencl1 arm64 2.3.1-1 [42.1 kB]
+#22 2.332 Get:37 http://deb.debian.org/debian bookworm/main arm64 libavutil57 arm64 7:5.1.9-0+deb12u1 [341 kB]
+#22 2.336 Get:38 http://deb.debian.org/debian-security bookworm-security/main arm64 libexpat1 arm64 2.5.0-1+deb12u3 [87.9 kB]
+#22 2.337 Get:39 http://deb.debian.org/debian bookworm/main arm64 libpng16-16 arm64 1.6.39-2+deb12u5 [270 kB]
+#22 2.341 Get:40 http://deb.debian.org/debian bookworm/main arm64 libfreetype6 arm64 2.12.1+dfsg-5+deb12u4 [368 kB]
+#22 2.347 Get:41 http://deb.debian.org/debian bookworm/main arm64 fonts-dejavu-core all 2.37-6 [1068 kB]
+#22 2.359 Get:42 http://deb.debian.org/debian bookworm/main arm64 fontconfig-config arm64 2.14.1-4 [315 kB]
+#22 2.365 Get:43 http://deb.debian.org/debian bookworm/main arm64 libfontconfig1 arm64 2.14.1-4 [381 kB]
+#22 2.370 Get:44 http://deb.debian.org/debian bookworm/main arm64 libpixman-1-0 arm64 0.42.2-1 [470 kB]
+#22 2.376 Get:45 http://deb.debian.org/debian bookworm/main arm64 libxcb-render0 arm64 1.15-1 [115 kB]
+#22 2.377 Get:46 http://deb.debian.org/debian bookworm/main arm64 libxcb-shm0 arm64 1.15-1 [106 kB]
+#22 2.379 Get:47 http://deb.debian.org/debian bookworm/main arm64 libxrender1 arm64 1:0.9.10-1.1 [32.0 kB]
+#22 2.381 Get:48 http://deb.debian.org/debian bookworm/main arm64 libcairo2 arm64 1.16.0-7 [527 kB]
+#22 2.388 Get:49 http://deb.debian.org/debian bookworm/main arm64 libcodec2-1.0 arm64 1.0.5-1 [8163 kB]
+#22 2.467 Get:50 http://deb.debian.org/debian bookworm/main arm64 libdav1d6 arm64 1.0.0-2+deb12u1 [275 kB]
+#22 2.471 Get:51 http://deb.debian.org/debian bookworm/main arm64 libglib2.0-0 arm64 2.74.6-2+deb12u9 [1316 kB]
+#22 2.483 Get:52 http://deb.debian.org/debian bookworm/main arm64 libgsm1 arm64 1.0.22-1 [28.8 kB]
+#22 2.483 Get:53 http://deb.debian.org/debian bookworm/main arm64 libhwy1 arm64 1.0.3-3+deb12u1 [226 kB]
+#22 2.487 Get:54 http://deb.debian.org/debian bookworm/main arm64 liblcms2-2 arm64 2.14-2+deb12u1 [144 kB]
+#22 2.489 Get:55 http://deb.debian.org/debian bookworm/main arm64 libjxl0.7 arm64 0.7.0-10+deb12u1 [644 kB]
+#22 2.498 Get:56 http://deb.debian.org/debian bookworm/main arm64 libmp3lame0 arm64 3.100-6 [357 kB]
+#22 2.503 Get:57 http://deb.debian.org/debian bookworm/main arm64 libopenjp2-7 arm64 2.5.0-2+deb12u3 [176 kB]
+#22 2.506 Get:58 http://deb.debian.org/debian bookworm/main arm64 libopus0 arm64 1.3.1-3 [176 kB]
+#22 2.509 Get:59 http://deb.debian.org/debian bookworm/main arm64 librav1e0 arm64 0.5.1-6 [552 kB]
+#22 2.516 Get:60 http://deb.debian.org/debian bookworm/main arm64 libcairo-gobject2 arm64 1.16.0-7 [112 kB]
+#22 2.520 Get:61 http://deb.debian.org/debian bookworm/main arm64 libgdk-pixbuf2.0-common all 2.42.10+dfsg-1+deb12u4 [307 kB]
+#22 2.522 Get:62 http://deb.debian.org/debian bookworm/main arm64 libicu72 arm64 72.1-3+deb12u1 [9202 kB]
+#22 2.608 Get:63 http://deb.debian.org/debian bookworm/main arm64 libxml2 arm64 2.9.14+dfsg-1.3~deb12u6 [620 kB]
+#22 2.615 Get:64 http://deb.debian.org/debian bookworm/main arm64 shared-mime-info arm64 2.2-1 [727 kB]
+#22 2.624 Get:65 http://deb.debian.org/debian bookworm/main arm64 libjpeg62-turbo arm64 1:2.1.5-2 [171 kB]
+#22 2.626 Get:66 http://deb.debian.org/debian bookworm/main arm64 libdeflate0 arm64 1.14-1 [54.3 kB]
+#22 2.627 Get:67 http://deb.debian.org/debian bookworm/main arm64 libjbig0 arm64 2.1-6.1 [30.0 kB]
+#22 2.629 Get:68 http://deb.debian.org/debian bookworm/main arm64 liblerc4 arm64 4.0.0+ds-2 [138 kB]
+#22 2.632 Get:69 http://deb.debian.org/debian bookworm/main arm64 libwebp7 arm64 1.2.4-0.2+deb12u1 [260 kB]
+#22 2.637 Get:70 http://deb.debian.org/debian bookworm/main arm64 libtiff6 arm64 4.5.0-6+deb12u4 [301 kB]
+#22 2.642 Get:71 http://deb.debian.org/debian bookworm/main arm64 libgdk-pixbuf-2.0-0 arm64 2.42.10+dfsg-1+deb12u4 [130 kB]
+#22 2.645 Get:72 http://deb.debian.org/debian bookworm/main arm64 fontconfig arm64 2.14.1-4 [449 kB]
+#22 2.651 Get:73 http://deb.debian.org/debian bookworm/main arm64 libfribidi0 arm64 1.0.8-2.1 [64.9 kB]
+#22 2.654 Get:74 http://deb.debian.org/debian bookworm/main arm64 libgraphite2-3 arm64 1.3.14-1+deb12u1 [68.7 kB]
+#22 2.655 Get:75 http://deb.debian.org/debian bookworm/main arm64 libharfbuzz0b arm64 6.0.0+dfsg-3 [1914 kB]
+#22 2.676 Get:76 http://deb.debian.org/debian bookworm/main arm64 libthai-data all 0.1.29-1 [176 kB]
+#22 2.677 Get:77 http://deb.debian.org/debian bookworm/main arm64 libdatrie1 arm64 0.2.13-2+b1 [42.6 kB]
+#22 2.678 Get:78 http://deb.debian.org/debian bookworm/main arm64 libthai0 arm64 0.1.29-1 [56.2 kB]
+#22 2.681 Get:79 http://deb.debian.org/debian bookworm/main arm64 libpango-1.0-0 arm64 1.50.12+ds-1 [200 kB]
+#22 2.682 Get:80 http://deb.debian.org/debian bookworm/main arm64 libpangoft2-1.0-0 arm64 1.50.12+ds-1 [44.5 kB]
+#22 2.683 Get:81 http://deb.debian.org/debian bookworm/main arm64 libpangocairo-1.0-0 arm64 1.50.12+ds-1 [32.0 kB]
+#22 2.683 Get:82 http://deb.debian.org/debian bookworm/main arm64 librsvg2-2 arm64 2.54.7+dfsg-1~deb12u1 [2290 kB]
+#22 2.706 Get:83 http://deb.debian.org/debian bookworm/main arm64 libshine3 arm64 3.1.1-2 [23.0 kB]
+#22 2.706 Get:84 http://deb.debian.org/debian bookworm/main arm64 libsnappy1v5 arm64 1.1.9-3 [25.4 kB]
+#22 2.707 Get:85 http://deb.debian.org/debian bookworm/main arm64 libspeex1 arm64 1.2.1-2 [48.3 kB]
+#22 2.709 Get:86 http://deb.debian.org/debian bookworm/main arm64 libsvtav1enc1 arm64 1.4.1+dfsg-1 [1074 kB]
+#22 2.721 Get:87 http://deb.debian.org/debian bookworm/main arm64 libgomp1 arm64 12.2.0-14+deb12u1 [104 kB]
+#22 2.722 Get:88 http://deb.debian.org/debian bookworm/main arm64 libsoxr0 arm64 0.1.3-4 [54.4 kB]
+#22 2.724 Get:89 http://deb.debian.org/debian bookworm/main arm64 libswresample4 arm64 7:5.1.9-0+deb12u1 [98.9 kB]
+#22 2.728 Get:90 http://deb.debian.org/debian bookworm/main arm64 libogg0 arm64 1.3.5-3 [23.0 kB]
+#22 2.729 Get:91 http://deb.debian.org/debian bookworm/main arm64 libtheora0 arm64 1.1.1+dfsg.1-16.1+deb12u1 [144 kB]
+#22 2.731 Get:92 http://deb.debian.org/debian bookworm/main arm64 libtwolame0 arm64 0.4.0-2 [48.5 kB]
+#22 2.733 Get:93 http://deb.debian.org/debian bookworm/main arm64 libvorbis0a arm64 1.3.7-1 [86.2 kB]
+#22 2.733 Get:94 http://deb.debian.org/debian bookworm/main arm64 libvorbisenc2 arm64 1.3.7-1 [80.4 kB]
+#22 2.735 Get:95 http://deb.debian.org/debian bookworm/main arm64 libvpx7 arm64 1.12.0-1+deb12u5 [892 kB]
+#22 2.745 Get:96 http://deb.debian.org/debian bookworm/main arm64 libwebpmux3 arm64 1.2.4-0.2+deb12u1 [109 kB]
+#22 2.749 Get:97 http://deb.debian.org/debian bookworm/main arm64 libx264-164 arm64 2:0.164.3095+gitbaee400-3 [443 kB]
+#22 2.752 Get:98 http://deb.debian.org/debian bookworm/main arm64 libnuma1 arm64 2.0.16-1 [20.3 kB]
+#22 2.753 Get:99 http://deb.debian.org/debian bookworm/main arm64 libx265-199 arm64 3.5-2+b1 [603 kB]
+#22 2.759 Get:100 http://deb.debian.org/debian bookworm/main arm64 libxvidcore4 arm64 2:1.3.7-1 [202 kB]
+#22 2.762 Get:101 http://deb.debian.org/debian bookworm/main arm64 libzvbi-common all 0.2.41-1+deb12u1 [69.9 kB]
+#22 2.763 Get:102 http://deb.debian.org/debian bookworm/main arm64 libzvbi0 arm64 0.2.41-1+deb12u1 [260 kB]
+#22 2.766 Get:103 http://deb.debian.org/debian bookworm/main arm64 libavcodec59 arm64 7:5.1.9-0+deb12u1 [4812 kB]
+#22 2.815 Get:104 http://deb.debian.org/debian bookworm/main arm64 libasound2-data all 1.2.8-1 [20.5 kB]
+#22 2.815 Get:105 http://deb.debian.org/debian bookworm/main arm64 libasound2 arm64 1.2.8-1+b1 [327 kB]
+#22 2.818 Get:106 http://deb.debian.org/debian bookworm/main arm64 libraw1394-11 arm64 2.1.2-2 [40.3 kB]
+#22 2.819 Get:107 http://deb.debian.org/debian bookworm/main arm64 libavc1394-0 arm64 0.5.4-5 [18.4 kB]
+#22 2.819 Get:108 http://deb.debian.org/debian-security bookworm-security/main arm64 libass9 arm64 1:0.17.1-1+deb12u1 [91.2 kB]
+#22 2.820 Get:109 http://deb.debian.org/debian bookworm/main arm64 libudfread0 arm64 1.1.2-1 [15.7 kB]
+#22 2.821 Get:110 http://deb.debian.org/debian bookworm/main arm64 libbluray2 arm64 1:1.3.4-1 [124 kB]
+#22 2.823 Get:111 http://deb.debian.org/debian bookworm/main arm64 libchromaprint1 arm64 1.5.1-2+b1 [37.4 kB]
+#22 2.825 Get:112 http://deb.debian.org/debian bookworm/main arm64 libgme0 arm64 0.6.3-6 [118 kB]
+#22 2.828 Get:113 http://deb.debian.org/debian bookworm/main arm64 libmpg123-0 arm64 1.31.2-1+deb12u1 [141 kB]
+#22 2.832 Get:114 http://deb.debian.org/debian bookworm/main arm64 libvorbisfile3 arm64 1.3.7-1 [25.4 kB]
+#22 2.833 Get:115 http://deb.debian.org/debian bookworm/main arm64 libopenmpt0 arm64 0.6.9-1 [622 kB]
+#22 2.839 Get:116 http://deb.debian.org/debian-security bookworm-security/main arm64 librabbitmq4 arm64 0.11.0-1+deb12u3 [40.3 kB]
+#22 2.840 Get:117 http://deb.debian.org/debian bookworm/main arm64 libcjson1 arm64 1.7.15-1+deb12u4 [22.7 kB]
+#22 2.840 Get:118 http://deb.debian.org/debian bookworm/main arm64 libmbedcrypto7 arm64 2.28.3-1 [263 kB]
+#22 2.843 Get:119 http://deb.debian.org/debian bookworm/main arm64 librist4 arm64 0.2.7+dfsg-1 [69.6 kB]
+#22 2.845 Get:120 http://deb.debian.org/debian bookworm/main arm64 libsrt1.5-gnutls arm64 1.5.1-1+deb12u1 [272 kB]
+#22 2.849 Get:121 http://deb.debian.org/debian bookworm/main arm64 libssh-gcrypt-4 arm64 0.10.6-0+deb12u2 [207 kB]
+#22 2.853 Get:122 http://deb.debian.org/debian bookworm/main arm64 libnorm1 arm64 1.5.9+dfsg-2 [202 kB]
+#22 2.857 Get:123 http://deb.debian.org/debian bookworm/main arm64 libpgm-5.3-0 arm64 5.3.128~dfsg-2 [152 kB]
+#22 2.860 Get:124 http://deb.debian.org/debian bookworm/main arm64 libsodium23 arm64 1.0.18-1+deb12u1 [118 kB]
+#22 2.863 Get:125 http://deb.debian.org/debian bookworm/main arm64 libzmq5 arm64 4.3.4-6 [244 kB]
+#22 2.867 Get:126 http://deb.debian.org/debian bookworm/main arm64 libavformat59 arm64 7:5.1.9-0+deb12u1 [1055 kB]
+#22 2.878 Get:127 http://deb.debian.org/debian bookworm/main arm64 libbs2b0 arm64 3.1.0+dfsg-7 [10.7 kB]
+#22 2.878 Get:128 http://deb.debian.org/debian bookworm/main arm64 libflite1 arm64 2.2-5 [12.8 MB]
+#22 3.006 Get:129 http://deb.debian.org/debian bookworm/main arm64 libserd-0-0 arm64 0.30.16-1 [44.7 kB]
+#22 3.007 Get:130 http://deb.debian.org/debian bookworm/main arm64 libsord-0-0 arm64 0.16.14+git221008-1 [20.0 kB]
+#22 3.007 Get:131 http://deb.debian.org/debian bookworm/main arm64 libsratom-0-0 arm64 0.6.14-1 [15.9 kB]
+#22 3.008 Get:132 http://deb.debian.org/debian bookworm/main arm64 liblilv-0-0 arm64 0.24.14-1 [46.8 kB]
+#22 3.010 Get:133 http://deb.debian.org/debian bookworm/main arm64 libmysofa1 arm64 1.3.1~dfsg0-1 [1156 kB]
+#22 3.018 Get:134 http://deb.debian.org/debian bookworm/main arm64 libepoxy0 arm64 1.5.10-1 [198 kB]
+#22 3.022 Get:135 http://deb.debian.org/debian bookworm/main arm64 libvulkan1 arm64 1.3.239.0-1 [111 kB]
+#22 3.024 Get:136 http://deb.debian.org/debian bookworm/main arm64 libplacebo208 arm64 4.208.0-3 [2004 kB]
+#22 3.045 Get:137 http://deb.debian.org/debian bookworm/main arm64 libblas3 arm64 3.11.0-2 [91.4 kB]
+#22 3.045 Get:138 http://deb.debian.org/debian bookworm/main arm64 libgfortran5 arm64 12.2.0-14+deb12u1 [340 kB]
+#22 3.048 Get:139 http://deb.debian.org/debian bookworm/main arm64 liblapack3 arm64 3.11.0-2 [1664 kB]
+#22 3.064 Get:140 http://deb.debian.org/debian bookworm/main arm64 libasyncns0 arm64 0.8-6+b3 [12.5 kB]
+#22 3.065 Get:141 http://deb.debian.org/debian bookworm/main arm64 libdbus-1-3 arm64 1.14.10-1~deb12u1 [193 kB]
+#22 3.067 Get:142 http://deb.debian.org/debian bookworm/main arm64 libflac12 arm64 1.4.2+ds-2 [161 kB]
+#22 3.071 Get:143 http://deb.debian.org/debian bookworm/main arm64 libsndfile1 arm64 1.2.0-1+deb12u1 [183 kB]
+#22 3.074 Get:144 http://deb.debian.org/debian bookworm/main arm64 libpulse0 arm64 16.1+dfsg1-2+b1 [231 kB]
+#22 3.078 Get:145 http://deb.debian.org/debian bookworm/main arm64 libsphinxbase3 arm64 0.8+5prealpha+1-16 [109 kB]
+#22 3.081 Get:146 http://deb.debian.org/debian bookworm/main arm64 libpocketsphinx3 arm64 0.8+5prealpha+1-15 [114 kB]
+#22 3.082 Get:147 http://deb.debian.org/debian bookworm/main arm64 libpostproc56 arm64 7:5.1.9-0+deb12u1 [82.6 kB]
+#22 3.086 Get:148 http://deb.debian.org/debian bookworm/main arm64 librubberband2 arm64 3.1.2+dfsg0-1 [118 kB]
+#22 3.089 Get:149 http://deb.debian.org/debian bookworm/main arm64 libswscale6 arm64 7:5.1.9-0+deb12u1 [190 kB]
+#22 3.091 Get:150 http://deb.debian.org/debian bookworm/main arm64 libvidstab1.1 arm64 1.1.0-2+b1 [36.4 kB]
+#22 3.093 Get:151 http://deb.debian.org/debian bookworm/main arm64 libzimg2 arm64 3.0.4+ds1-1 [110 kB]
+#22 3.096 Get:152 http://deb.debian.org/debian bookworm/main arm64 libavfilter8 arm64 7:5.1.9-0+deb12u1 [3322 kB]
+#22 3.130 Get:153 http://deb.debian.org/debian bookworm/main arm64 libncursesw6 arm64 6.4-4 [122 kB]
+#22 3.133 Get:154 http://deb.debian.org/debian bookworm/main arm64 libslang2 arm64 2.3.3-3 [502 kB]
+#22 3.140 Get:155 http://deb.debian.org/debian bookworm/main arm64 libcaca0 arm64 0.99.beta20-3+deb12u1 [196 kB]
+#22 3.143 Get:156 http://deb.debian.org/debian bookworm/main arm64 libcdio19 arm64 2.1.0-4 [201 kB]
+#22 3.145 Get:157 http://deb.debian.org/debian bookworm/main arm64 libcdio-cdda2 arm64 10.2+2.0.1-1 [20.1 kB]
+#22 3.145 Get:158 http://deb.debian.org/debian bookworm/main arm64 libcdio-paranoia2 arm64 10.2+2.0.1-1 [19.6 kB]
+#22 3.146 Get:159 http://deb.debian.org/debian bookworm/main arm64 libusb-1.0-0 arm64 2:1.0.26-1 [60.0 kB]
+#22 3.149 Get:160 http://deb.debian.org/debian bookworm/main arm64 libdc1394-25 arm64 2.2.6-4 [105 kB]
+#22 3.150 Get:161 http://deb.debian.org/debian bookworm/main arm64 libglvnd0 arm64 1.6.0-1 [41.4 kB]
+#22 3.151 Get:162 http://deb.debian.org/debian bookworm/main arm64 libglapi-mesa arm64 22.3.6-1+deb12u2 [45.1 kB]
+#22 3.154 Get:163 http://deb.debian.org/debian bookworm/main arm64 libxcb-dri2-0 arm64 1.15-1 [107 kB]
+#22 3.158 Get:164 http://deb.debian.org/debian bookworm/main arm64 libxcb-glx0 arm64 1.15-1 [123 kB]
+#22 3.159 Get:165 http://deb.debian.org/debian bookworm/main arm64 libxcb-present0 arm64 1.15-1 [106 kB]
+#22 3.159 Get:166 http://deb.debian.org/debian bookworm/main arm64 libxcb-randr0 arm64 1.15-1 [117 kB]
+#22 3.160 Get:167 http://deb.debian.org/debian bookworm/main arm64 libxcb-sync1 arm64 1.15-1 [109 kB]
+#22 3.163 Get:168 http://deb.debian.org/debian bookworm/main arm64 libxcb-xfixes0 arm64 1.15-1 [110 kB]
+#22 3.165 Get:169 http://deb.debian.org/debian bookworm/main arm64 libxshmfence1 arm64 1.3-1 [8712 B]
+#22 3.166 Get:170 http://deb.debian.org/debian bookworm/main arm64 libxxf86vm1 arm64 1:1.1.4-1+b2 [20.1 kB]
+#22 3.166 Get:171 http://deb.debian.org/debian bookworm/main arm64 libdrm-amdgpu1 arm64 2.4.114-1+b1 [20.4 kB]
+#22 3.167 Get:172 http://deb.debian.org/debian bookworm/main arm64 libdrm-nouveau2 arm64 2.4.114-1+b1 [18.4 kB]
+#22 3.168 Get:173 http://deb.debian.org/debian bookworm/main arm64 libdrm-radeon1 arm64 2.4.114-1+b1 [20.9 kB]
+#22 3.170 Get:174 http://deb.debian.org/debian bookworm/main arm64 libelf1 arm64 0.188-2.1 [173 kB]
+#22 3.173 Get:175 http://deb.debian.org/debian bookworm/main arm64 libedit2 arm64 3.1-20221030-2 [88.1 kB]
+#22 3.174 Get:176 http://deb.debian.org/debian bookworm/main arm64 libz3-4 arm64 4.8.12-3.1 [6282 kB]
+#22 3.237 Get:177 http://deb.debian.org/debian bookworm/main arm64 libllvm15 arm64 1:15.0.6-4+b1 [20.7 MB]
+#22 3.438 Get:178 http://deb.debian.org/debian bookworm/main arm64 libsensors-config all 1:3.6.0-7.1 [14.3 kB]
+#22 3.438 Get:179 http://deb.debian.org/debian bookworm/main arm64 libsensors5 arm64 1:3.6.0-7.1 [33.3 kB]
+#22 3.438 Get:180 http://deb.debian.org/debian bookworm/main arm64 libgl1-mesa-dri arm64 22.3.6-1+deb12u2 [6281 kB]
+#22 3.493 Get:181 http://deb.debian.org/debian bookworm/main arm64 libglx-mesa0 arm64 22.3.6-1+deb12u2 [146 kB]
+#22 3.495 Get:182 http://deb.debian.org/debian bookworm/main arm64 libglx0 arm64 1.6.0-1 [30.8 kB]
+#22 3.495 Get:183 http://deb.debian.org/debian bookworm/main arm64 libgl1 arm64 1.6.0-1 [90.2 kB]
+#22 3.498 Get:184 http://deb.debian.org/debian bookworm/main arm64 libiec61883-0 arm64 1.2.0-6+b1 [29.0 kB]
+#22 3.498 Get:185 http://deb.debian.org/debian bookworm/main arm64 libsamplerate0 arm64 0.2.2-3 [945 kB]
+#22 3.513 Get:186 http://deb.debian.org/debian bookworm/main arm64 libjack-jackd2-0 arm64 1.9.21~dfsg-3 [261 kB]
+#22 3.518 Get:187 http://deb.debian.org/debian bookworm/main arm64 libopenal-data all 1:1.19.1-2 [170 kB]
+#22 3.519 Get:188 http://deb.debian.org/debian bookworm/main arm64 libsndio7.0 arm64 1.9.0-0.3+b2 [25.7 kB]
+#22 3.521 Get:189 http://deb.debian.org/debian bookworm/main arm64 libopenal1 arm64 1:1.19.1-2 [485 kB]
+#22 3.526 Get:190 http://deb.debian.org/debian bookworm/main arm64 libwayland-client0 arm64 1.21.0-1 [27.6 kB]
+#22 3.527 Get:191 http://deb.debian.org/debian bookworm/main arm64 libdecor-0-0 arm64 0.1.1-2 [14.2 kB]
+#22 3.527 Get:192 http://deb.debian.org/debian bookworm/main arm64 libwayland-server0 arm64 1.21.0-1 [34.9 kB]
+#22 3.528 Get:193 http://deb.debian.org/debian bookworm/main arm64 libgbm1 arm64 22.3.6-1+deb12u2 [37.1 kB]
+#22 3.528 Get:194 http://deb.debian.org/debian bookworm/main arm64 libwayland-cursor0 arm64 1.21.0-1 [14.1 kB]
+#22 3.528 Get:195 http://deb.debian.org/debian bookworm/main arm64 libwayland-egl1 arm64 1.21.0-1 [8696 B]
+#22 3.529 Get:196 http://deb.debian.org/debian bookworm/main arm64 libxcursor1 arm64 1:1.2.1-1 [40.2 kB]
+#22 3.530 Get:197 http://deb.debian.org/debian bookworm/main arm64 libxi6 arm64 2:1.8-1+b1 [82.3 kB]
+#22 3.532 Get:198 http://deb.debian.org/debian bookworm/main arm64 xkb-data all 2.35.1-1 [764 kB]
+#22 3.541 Get:199 http://deb.debian.org/debian bookworm/main arm64 libxkbcommon0 arm64 1.5.0-1 [100 kB]
+#22 3.542 Get:200 http://deb.debian.org/debian bookworm/main arm64 libxrandr2 arm64 2:1.5.2-2+b1 [38.4 kB]
+#22 3.543 Get:201 http://deb.debian.org/debian bookworm/main arm64 x11-common all 1:7.7+23 [252 kB]
+#22 3.545 Get:202 http://deb.debian.org/debian bookworm/main arm64 libxss1 arm64 1:1.2.3-1 [17.8 kB]
+#22 3.546 Get:203 http://deb.debian.org/debian bookworm/main arm64 libsdl2-2.0-0 arm64 2.26.5+dfsg-1 [566 kB]
+#22 3.563 Get:204 http://deb.debian.org/debian bookworm/main arm64 libxcb-shape0 arm64 1.15-1 [106 kB]
+#22 3.567 Get:205 http://deb.debian.org/debian bookworm/main arm64 libxv1 arm64 2:1.0.11-1.1 [24.5 kB]
+#22 3.567 Get:206 http://deb.debian.org/debian bookworm/main arm64 libavdevice59 arm64 7:5.1.9-0+deb12u1 [119 kB]
+#22 3.568 Get:207 http://deb.debian.org/debian bookworm/main arm64 ffmpeg arm64 7:5.1.9-0+deb12u1 [1807 kB]
+#22 3.674 debconf: delaying package configuration, since apt-utils is not installed
+#22 3.690 Fetched 121 MB in 1s (86.4 MB/s)
+#22 3.708 Selecting previously unselected package libssl3:arm64.
+#22 3.708 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6090 files and directories currently installed.)
+#22 3.713 Preparing to unpack .../000-libssl3_3.0.20-1~deb12u2_arm64.deb ...
+#22 3.718 Unpacking libssl3:arm64 (3.0.20-1~deb12u2) ...
+#22 3.888 Selecting previously unselected package openssl.
+#22 3.889 Preparing to unpack .../001-openssl_3.0.20-1~deb12u2_arm64.deb ...
+#22 3.890 Unpacking openssl (3.0.20-1~deb12u2) ...
+#22 3.984 Selecting previously unselected package ca-certificates.
+#22 3.984 Preparing to unpack .../002-ca-certificates_20250419~deb12u1_all.deb ...
+#22 3.988 Unpacking ca-certificates (20250419~deb12u1) ...
+#22 4.023 Selecting previously unselected package libbrotli1:arm64.
+#22 4.023 Preparing to unpack .../003-libbrotli1_1.0.9-2+b6_arm64.deb ...
+#22 4.024 Unpacking libbrotli1:arm64 (1.0.9-2+b6) ...
+#22 4.053 Selecting previously unselected package libkrb5support0:arm64.
+#22 4.054 Preparing to unpack .../004-libkrb5support0_1.20.1-2+deb12u5_arm64.deb ...
+#22 4.055 Unpacking libkrb5support0:arm64 (1.20.1-2+deb12u5) ...
+#22 4.070 Selecting previously unselected package libk5crypto3:arm64.
+#22 4.071 Preparing to unpack .../005-libk5crypto3_1.20.1-2+deb12u5_arm64.deb ...
+#22 4.072 Unpacking libk5crypto3:arm64 (1.20.1-2+deb12u5) ...
+#22 4.090 Selecting previously unselected package libkeyutils1:arm64.
+#22 4.092 Preparing to unpack .../006-libkeyutils1_1.6.3-2_arm64.deb ...
+#22 4.093 Unpacking libkeyutils1:arm64 (1.6.3-2) ...
+#22 4.113 Selecting previously unselected package libkrb5-3:arm64.
+#22 4.113 Preparing to unpack .../007-libkrb5-3_1.20.1-2+deb12u5_arm64.deb ...
+#22 4.114 Unpacking libkrb5-3:arm64 (1.20.1-2+deb12u5) ...
+#22 4.149 Selecting previously unselected package libgssapi-krb5-2:arm64.
+#22 4.149 Preparing to unpack .../008-libgssapi-krb5-2_1.20.1-2+deb12u5_arm64.deb ...
+#22 4.151 Unpacking libgssapi-krb5-2:arm64 (1.20.1-2+deb12u5) ...
+#22 4.174 Selecting previously unselected package libsasl2-modules-db:arm64.
+#22 4.174 Preparing to unpack .../009-libsasl2-modules-db_2.1.28+dfsg-10_arm64.deb ...
+#22 4.176 Unpacking libsasl2-modules-db:arm64 (2.1.28+dfsg-10) ...
+#22 4.195 Selecting previously unselected package libsasl2-2:arm64.
+#22 4.197 Preparing to unpack .../010-libsasl2-2_2.1.28+dfsg-10_arm64.deb ...
+#22 4.198 Unpacking libsasl2-2:arm64 (2.1.28+dfsg-10) ...
+#22 4.214 Selecting previously unselected package libldap-2.5-0:arm64.
+#22 4.215 Preparing to unpack .../011-libldap-2.5-0_2.5.13+dfsg-5_arm64.deb ...
+#22 4.217 Unpacking libldap-2.5-0:arm64 (2.5.13+dfsg-5) ...
+#22 4.242 Selecting previously unselected package libnghttp2-14:arm64.
+#22 4.243 Preparing to unpack .../012-libnghttp2-14_1.52.0-1+deb12u3_arm64.deb ...
+#22 4.246 Unpacking libnghttp2-14:arm64 (1.52.0-1+deb12u3) ...
+#22 4.266 Selecting previously unselected package libpsl5:arm64.
+#22 4.267 Preparing to unpack .../013-libpsl5_0.21.2-1_arm64.deb ...
+#22 4.268 Unpacking libpsl5:arm64 (0.21.2-1) ...
+#22 4.288 Selecting previously unselected package librtmp1:arm64.
+#22 4.290 Preparing to unpack .../014-librtmp1_2.4+20151223.gitfa8646d.1-2+b2_arm64.deb ...
+#22 4.291 Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+#22 4.307 Selecting previously unselected package libssh2-1:arm64.
+#22 4.308 Preparing to unpack .../015-libssh2-1_1.10.0-3+deb12u1_arm64.deb ...
+#22 4.310 Unpacking libssh2-1:arm64 (1.10.0-3+deb12u1) ...
+#22 4.336 Selecting previously unselected package libcurl4:arm64.
+#22 4.336 Preparing to unpack .../016-libcurl4_7.88.1-10+deb12u15_arm64.deb ...
+#22 4.338 Unpacking libcurl4:arm64 (7.88.1-10+deb12u15) ...
+#22 4.377 Selecting previously unselected package curl.
+#22 4.377 Preparing to unpack .../017-curl_7.88.1-10+deb12u15_arm64.deb ...
+#22 4.378 Unpacking curl (7.88.1-10+deb12u15) ...
+#22 4.404 Selecting previously unselected package libaom3:arm64.
+#22 4.405 Preparing to unpack .../018-libaom3_3.6.0-1+deb12u3_arm64.deb ...
+#22 4.407 Unpacking libaom3:arm64 (3.6.0-1+deb12u3) ...
+#22 4.517 Selecting previously unselected package libdrm-common.
+#22 4.519 Preparing to unpack .../019-libdrm-common_2.4.114-1_all.deb ...
+#22 4.523 Unpacking libdrm-common (2.4.114-1) ...
+#22 4.532 Selecting previously unselected package libdrm2:arm64.
+#22 4.534 Preparing to unpack .../020-libdrm2_2.4.114-1+b1_arm64.deb ...
+#22 4.535 Unpacking libdrm2:arm64 (2.4.114-1+b1) ...
+#22 4.551 Selecting previously unselected package libva2:arm64.
+#22 4.552 Preparing to unpack .../021-libva2_2.17.0-1_arm64.deb ...
+#22 4.553 Unpacking libva2:arm64 (2.17.0-1) ...
+#22 4.575 Selecting previously unselected package libva-drm2:arm64.
+#22 4.575 Preparing to unpack .../022-libva-drm2_2.17.0-1_arm64.deb ...
+#22 4.576 Unpacking libva-drm2:arm64 (2.17.0-1) ...
+#22 4.595 Selecting previously unselected package libxau6:arm64.
+#22 4.596 Preparing to unpack .../023-libxau6_1%3a1.0.9-1_arm64.deb ...
+#22 4.598 Unpacking libxau6:arm64 (1:1.0.9-1) ...
+#22 4.617 Selecting previously unselected package libbsd0:arm64.
+#22 4.618 Preparing to unpack .../024-libbsd0_0.11.7-2_arm64.deb ...
+#22 4.620 Unpacking libbsd0:arm64 (0.11.7-2) ...
+#22 4.640 Selecting previously unselected package libxdmcp6:arm64.
+#22 4.641 Preparing to unpack .../025-libxdmcp6_1%3a1.1.2-3_arm64.deb ...
+#22 4.642 Unpacking libxdmcp6:arm64 (1:1.1.2-3) ...
+#22 4.662 Selecting previously unselected package libxcb1:arm64.
+#22 4.662 Preparing to unpack .../026-libxcb1_1.15-1_arm64.deb ...
+#22 4.664 Unpacking libxcb1:arm64 (1.15-1) ...
+#22 4.684 Selecting previously unselected package libx11-data.
+#22 4.684 Preparing to unpack .../027-libx11-data_2%3a1.8.4-2+deb12u2_all.deb ...
+#22 4.685 Unpacking libx11-data (2:1.8.4-2+deb12u2) ...
+#22 4.722 Selecting previously unselected package libx11-6:arm64.
+#22 4.722 Preparing to unpack .../028-libx11-6_2%3a1.8.4-2+deb12u2_arm64.deb ...
+#22 4.723 Unpacking libx11-6:arm64 (2:1.8.4-2+deb12u2) ...
+#22 4.778 Selecting previously unselected package libx11-xcb1:arm64.
+#22 4.778 Preparing to unpack .../029-libx11-xcb1_2%3a1.8.4-2+deb12u2_arm64.deb ...
+#22 4.780 Unpacking libx11-xcb1:arm64 (2:1.8.4-2+deb12u2) ...
+#22 4.808 Selecting previously unselected package libxcb-dri3-0:arm64.
+#22 4.810 Preparing to unpack .../030-libxcb-dri3-0_1.15-1_arm64.deb ...
+#22 4.811 Unpacking libxcb-dri3-0:arm64 (1.15-1) ...
+#22 4.834 Selecting previously unselected package libxext6:arm64.
+#22 4.836 Preparing to unpack .../031-libxext6_2%3a1.3.4-1+b1_arm64.deb ...
+#22 4.837 Unpacking libxext6:arm64 (2:1.3.4-1+b1) ...
+#22 4.865 Selecting previously unselected package libxfixes3:arm64.
+#22 4.866 Preparing to unpack .../032-libxfixes3_1%3a6.0.0-2_arm64.deb ...
+#22 4.867 Unpacking libxfixes3:arm64 (1:6.0.0-2) ...
+#22 4.884 Selecting previously unselected package libva-x11-2:arm64.
+#22 4.884 Preparing to unpack .../033-libva-x11-2_2.17.0-1_arm64.deb ...
+#22 4.885 Unpacking libva-x11-2:arm64 (2.17.0-1) ...
+#22 4.901 Selecting previously unselected package libvdpau1:arm64.
+#22 4.902 Preparing to unpack .../034-libvdpau1_1.5-2_arm64.deb ...
+#22 4.903 Unpacking libvdpau1:arm64 (1.5-2) ...
+#22 4.923 Selecting previously unselected package ocl-icd-libopencl1:arm64.
+#22 4.924 Preparing to unpack .../035-ocl-icd-libopencl1_2.3.1-1_arm64.deb ...
+#22 4.925 Unpacking ocl-icd-libopencl1:arm64 (2.3.1-1) ...
+#22 4.944 Selecting previously unselected package libavutil57:arm64.
+#22 4.945 Preparing to unpack .../036-libavutil57_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 4.952 Unpacking libavutil57:arm64 (7:5.1.9-0+deb12u1) ...
+#22 4.983 Selecting previously unselected package libexpat1:arm64.
+#22 4.983 Preparing to unpack .../037-libexpat1_2.5.0-1+deb12u3_arm64.deb ...
+#22 4.984 Unpacking libexpat1:arm64 (2.5.0-1+deb12u3) ...
+#22 5.022 Selecting previously unselected package libpng16-16:arm64.
+#22 5.023 Preparing to unpack .../038-libpng16-16_1.6.39-2+deb12u5_arm64.deb ...
+#22 5.025 Unpacking libpng16-16:arm64 (1.6.39-2+deb12u5) ...
+#22 5.054 Selecting previously unselected package libfreetype6:arm64.
+#22 5.054 Preparing to unpack .../039-libfreetype6_2.12.1+dfsg-5+deb12u4_arm64.deb ...
+#22 5.055 Unpacking libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+#22 5.106 Selecting previously unselected package fonts-dejavu-core.
+#22 5.107 Preparing to unpack .../040-fonts-dejavu-core_2.37-6_all.deb ...
+#22 5.110 Unpacking fonts-dejavu-core (2.37-6) ...
+#22 5.188 Selecting previously unselected package fontconfig-config.
+#22 5.189 Preparing to unpack .../041-fontconfig-config_2.14.1-4_arm64.deb ...
+#22 5.238 Unpacking fontconfig-config (2.14.1-4) ...
+#22 5.270 Selecting previously unselected package libfontconfig1:arm64.
+#22 5.271 Preparing to unpack .../042-libfontconfig1_2.14.1-4_arm64.deb ...
+#22 5.273 Unpacking libfontconfig1:arm64 (2.14.1-4) ...
+#22 5.294 Selecting previously unselected package libpixman-1-0:arm64.
+#22 5.295 Preparing to unpack .../043-libpixman-1-0_0.42.2-1_arm64.deb ...
+#22 5.297 Unpacking libpixman-1-0:arm64 (0.42.2-1) ...
+#22 5.330 Selecting previously unselected package libxcb-render0:arm64.
+#22 5.330 Preparing to unpack .../044-libxcb-render0_1.15-1_arm64.deb ...
+#22 5.332 Unpacking libxcb-render0:arm64 (1.15-1) ...
+#22 5.360 Selecting previously unselected package libxcb-shm0:arm64.
+#22 5.360 Preparing to unpack .../045-libxcb-shm0_1.15-1_arm64.deb ...
+#22 5.362 Unpacking libxcb-shm0:arm64 (1.15-1) ...
+#22 5.383 Selecting previously unselected package libxrender1:arm64.
+#22 5.383 Preparing to unpack .../046-libxrender1_1%3a0.9.10-1.1_arm64.deb ...
+#22 5.386 Unpacking libxrender1:arm64 (1:0.9.10-1.1) ...
+#22 5.402 Selecting previously unselected package libcairo2:arm64.
+#22 5.403 Preparing to unpack .../047-libcairo2_1.16.0-7_arm64.deb ...
+#22 5.404 Unpacking libcairo2:arm64 (1.16.0-7) ...
+#22 5.459 Selecting previously unselected package libcodec2-1.0:arm64.
+#22 5.461 Preparing to unpack .../048-libcodec2-1.0_1.0.5-1_arm64.deb ...
+#22 5.463 Unpacking libcodec2-1.0:arm64 (1.0.5-1) ...
+#22 5.859 Selecting previously unselected package libdav1d6:arm64.
+#22 5.860 Preparing to unpack .../049-libdav1d6_1.0.0-2+deb12u1_arm64.deb ...
+#22 5.861 Unpacking libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+#22 5.892 Selecting previously unselected package libglib2.0-0:arm64.
+#22 5.894 Preparing to unpack .../050-libglib2.0-0_2.74.6-2+deb12u9_arm64.deb ...
+#22 5.895 Unpacking libglib2.0-0:arm64 (2.74.6-2+deb12u9) ...
+#22 5.990 Selecting previously unselected package libgsm1:arm64.
+#22 5.990 Preparing to unpack .../051-libgsm1_1.0.22-1_arm64.deb ...
+#22 5.991 Unpacking libgsm1:arm64 (1.0.22-1) ...
+#22 6.010 Selecting previously unselected package libhwy1:arm64.
+#22 6.012 Preparing to unpack .../052-libhwy1_1.0.3-3+deb12u1_arm64.deb ...
+#22 6.013 Unpacking libhwy1:arm64 (1.0.3-3+deb12u1) ...
+#22 6.039 Selecting previously unselected package liblcms2-2:arm64.
+#22 6.040 Preparing to unpack .../053-liblcms2-2_2.14-2+deb12u1_arm64.deb ...
+#22 6.041 Unpacking liblcms2-2:arm64 (2.14-2+deb12u1) ...
+#22 6.086 Selecting previously unselected package libjxl0.7:arm64.
+#22 6.086 Preparing to unpack .../054-libjxl0.7_0.7.0-10+deb12u1_arm64.deb ...
+#22 6.087 Unpacking libjxl0.7:arm64 (0.7.0-10+deb12u1) ...
+#22 6.133 Selecting previously unselected package libmp3lame0:arm64.
+#22 6.133 Preparing to unpack .../055-libmp3lame0_3.100-6_arm64.deb ...
+#22 6.133 Unpacking libmp3lame0:arm64 (3.100-6) ...
+#22 6.165 Selecting previously unselected package libopenjp2-7:arm64.
+#22 6.167 Preparing to unpack .../056-libopenjp2-7_2.5.0-2+deb12u3_arm64.deb ...
+#22 6.168 Unpacking libopenjp2-7:arm64 (2.5.0-2+deb12u3) ...
+#22 6.198 Selecting previously unselected package libopus0:arm64.
+#22 6.200 Preparing to unpack .../057-libopus0_1.3.1-3_arm64.deb ...
+#22 6.203 Unpacking libopus0:arm64 (1.3.1-3) ...
+#22 6.229 Selecting previously unselected package librav1e0:arm64.
+#22 6.229 Preparing to unpack .../058-librav1e0_0.5.1-6_arm64.deb ...
+#22 6.230 Unpacking librav1e0:arm64 (0.5.1-6) ...
+#22 6.291 Selecting previously unselected package libcairo-gobject2:arm64.
+#22 6.293 Preparing to unpack .../059-libcairo-gobject2_1.16.0-7_arm64.deb ...
+#22 6.293 Unpacking libcairo-gobject2:arm64 (1.16.0-7) ...
+#22 6.307 Selecting previously unselected package libgdk-pixbuf2.0-common.
+#22 6.309 Preparing to unpack .../060-libgdk-pixbuf2.0-common_2.42.10+dfsg-1+deb12u4_all.deb ...
+#22 6.310 Unpacking libgdk-pixbuf2.0-common (2.42.10+dfsg-1+deb12u4) ...
+#22 6.349 Selecting previously unselected package libicu72:arm64.
+#22 6.349 Preparing to unpack .../061-libicu72_72.1-3+deb12u1_arm64.deb ...
+#22 6.351 Unpacking libicu72:arm64 (72.1-3+deb12u1) ...
+#22 6.769 Selecting previously unselected package libxml2:arm64.
+#22 6.770 Preparing to unpack .../062-libxml2_2.9.14+dfsg-1.3~deb12u6_arm64.deb ...
+#22 6.772 Unpacking libxml2:arm64 (2.9.14+dfsg-1.3~deb12u6) ...
+#22 6.850 Selecting previously unselected package shared-mime-info.
+#22 6.851 Preparing to unpack .../063-shared-mime-info_2.2-1_arm64.deb ...
+#22 6.853 Unpacking shared-mime-info (2.2-1) ...
+#22 6.918 Selecting previously unselected package libjpeg62-turbo:arm64.
+#22 6.919 Preparing to unpack .../064-libjpeg62-turbo_1%3a2.1.5-2_arm64.deb ...
+#22 6.919 Unpacking libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+#22 6.944 Selecting previously unselected package libdeflate0:arm64.
+#22 6.945 Preparing to unpack .../065-libdeflate0_1.14-1_arm64.deb ...
+#22 6.947 Unpacking libdeflate0:arm64 (1.14-1) ...
+#22 6.965 Selecting previously unselected package libjbig0:arm64.
+#22 6.965 Preparing to unpack .../066-libjbig0_2.1-6.1_arm64.deb ...
+#22 6.966 Unpacking libjbig0:arm64 (2.1-6.1) ...
+#22 6.986 Selecting previously unselected package liblerc4:arm64.
+#22 6.987 Preparing to unpack .../067-liblerc4_4.0.0+ds-2_arm64.deb ...
+#22 6.990 Unpacking liblerc4:arm64 (4.0.0+ds-2) ...
+#22 7.006 Selecting previously unselected package libwebp7:arm64.
+#22 7.007 Preparing to unpack .../068-libwebp7_1.2.4-0.2+deb12u1_arm64.deb ...
+#22 7.008 Unpacking libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+#22 7.032 Selecting previously unselected package libtiff6:arm64.
+#22 7.032 Preparing to unpack .../069-libtiff6_4.5.0-6+deb12u4_arm64.deb ...
+#22 7.033 Unpacking libtiff6:arm64 (4.5.0-6+deb12u4) ...
+#22 7.068 Selecting previously unselected package libgdk-pixbuf-2.0-0:arm64.
+#22 7.069 Preparing to unpack .../070-libgdk-pixbuf-2.0-0_2.42.10+dfsg-1+deb12u4_arm64.deb ...
+#22 7.070 Unpacking libgdk-pixbuf-2.0-0:arm64 (2.42.10+dfsg-1+deb12u4) ...
+#22 7.098 Selecting previously unselected package fontconfig.
+#22 7.099 Preparing to unpack .../071-fontconfig_2.14.1-4_arm64.deb ...
+#22 7.100 Unpacking fontconfig (2.14.1-4) ...
+#22 7.126 Selecting previously unselected package libfribidi0:arm64.
+#22 7.129 Preparing to unpack .../072-libfribidi0_1.0.8-2.1_arm64.deb ...
+#22 7.130 Unpacking libfribidi0:arm64 (1.0.8-2.1) ...
+#22 7.147 Selecting previously unselected package libgraphite2-3:arm64.
+#22 7.148 Preparing to unpack .../073-libgraphite2-3_1.3.14-1+deb12u1_arm64.deb ...
+#22 7.148 Unpacking libgraphite2-3:arm64 (1.3.14-1+deb12u1) ...
+#22 7.167 Selecting previously unselected package libharfbuzz0b:arm64.
+#22 7.168 Preparing to unpack .../074-libharfbuzz0b_6.0.0+dfsg-3_arm64.deb ...
+#22 7.169 Unpacking libharfbuzz0b:arm64 (6.0.0+dfsg-3) ...
+#22 7.212 Selecting previously unselected package libthai-data.
+#22 7.212 Preparing to unpack .../075-libthai-data_0.1.29-1_all.deb ...
+#22 7.213 Unpacking libthai-data (0.1.29-1) ...
+#22 7.246 Selecting previously unselected package libdatrie1:arm64.
+#22 7.248 Preparing to unpack .../076-libdatrie1_0.2.13-2+b1_arm64.deb ...
+#22 7.249 Unpacking libdatrie1:arm64 (0.2.13-2+b1) ...
+#22 7.271 Selecting previously unselected package libthai0:arm64.
+#22 7.273 Preparing to unpack .../077-libthai0_0.1.29-1_arm64.deb ...
+#22 7.276 Unpacking libthai0:arm64 (0.1.29-1) ...
+#22 7.296 Selecting previously unselected package libpango-1.0-0:arm64.
+#22 7.297 Preparing to unpack .../078-libpango-1.0-0_1.50.12+ds-1_arm64.deb ...
+#22 7.299 Unpacking libpango-1.0-0:arm64 (1.50.12+ds-1) ...
+#22 7.325 Selecting previously unselected package libpangoft2-1.0-0:arm64.
+#22 7.328 Preparing to unpack .../079-libpangoft2-1.0-0_1.50.12+ds-1_arm64.deb ...
+#22 7.329 Unpacking libpangoft2-1.0-0:arm64 (1.50.12+ds-1) ...
+#22 7.352 Selecting previously unselected package libpangocairo-1.0-0:arm64.
+#22 7.353 Preparing to unpack .../080-libpangocairo-1.0-0_1.50.12+ds-1_arm64.deb ...
+#22 7.354 Unpacking libpangocairo-1.0-0:arm64 (1.50.12+ds-1) ...
+#22 7.373 Selecting previously unselected package librsvg2-2:arm64.
+#22 7.373 Preparing to unpack .../081-librsvg2-2_2.54.7+dfsg-1~deb12u1_arm64.deb ...
+#22 7.374 Unpacking librsvg2-2:arm64 (2.54.7+dfsg-1~deb12u1) ...
+#22 7.497 Selecting previously unselected package libshine3:arm64.
+#22 7.498 Preparing to unpack .../082-libshine3_3.1.1-2_arm64.deb ...
+#22 7.500 Unpacking libshine3:arm64 (3.1.1-2) ...
+#22 7.515 Selecting previously unselected package libsnappy1v5:arm64.
+#22 7.517 Preparing to unpack .../083-libsnappy1v5_1.1.9-3_arm64.deb ...
+#22 7.524 Unpacking libsnappy1v5:arm64 (1.1.9-3) ...
+#22 7.538 Selecting previously unselected package libspeex1:arm64.
+#22 7.540 Preparing to unpack .../084-libspeex1_1.2.1-2_arm64.deb ...
+#22 7.541 Unpacking libspeex1:arm64 (1.2.1-2) ...
+#22 7.562 Selecting previously unselected package libsvtav1enc1:arm64.
+#22 7.563 Preparing to unpack .../085-libsvtav1enc1_1.4.1+dfsg-1_arm64.deb ...
+#22 7.564 Unpacking libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+#22 7.630 Selecting previously unselected package libgomp1:arm64.
+#22 7.631 Preparing to unpack .../086-libgomp1_12.2.0-14+deb12u1_arm64.deb ...
+#22 7.632 Unpacking libgomp1:arm64 (12.2.0-14+deb12u1) ...
+#22 7.653 Selecting previously unselected package libsoxr0:arm64.
+#22 7.655 Preparing to unpack .../087-libsoxr0_0.1.3-4_arm64.deb ...
+#22 7.656 Unpacking libsoxr0:arm64 (0.1.3-4) ...
+#22 7.677 Selecting previously unselected package libswresample4:arm64.
+#22 7.677 Preparing to unpack .../088-libswresample4_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 7.679 Unpacking libswresample4:arm64 (7:5.1.9-0+deb12u1) ...
+#22 7.700 Selecting previously unselected package libogg0:arm64.
+#22 7.701 Preparing to unpack .../089-libogg0_1.3.5-3_arm64.deb ...
+#22 7.702 Unpacking libogg0:arm64 (1.3.5-3) ...
+#22 7.717 Selecting previously unselected package libtheora0:arm64.
+#22 7.718 Preparing to unpack .../090-libtheora0_1.1.1+dfsg.1-16.1+deb12u1_arm64.deb ...
+#22 7.719 Unpacking libtheora0:arm64 (1.1.1+dfsg.1-16.1+deb12u1) ...
+#22 7.751 Selecting previously unselected package libtwolame0:arm64.
+#22 7.752 Preparing to unpack .../091-libtwolame0_0.4.0-2_arm64.deb ...
+#22 7.753 Unpacking libtwolame0:arm64 (0.4.0-2) ...
+#22 7.771 Selecting previously unselected package libvorbis0a:arm64.
+#22 7.772 Preparing to unpack .../092-libvorbis0a_1.3.7-1_arm64.deb ...
+#22 7.776 Unpacking libvorbis0a:arm64 (1.3.7-1) ...
+#22 7.793 Selecting previously unselected package libvorbisenc2:arm64.
+#22 7.794 Preparing to unpack .../093-libvorbisenc2_1.3.7-1_arm64.deb ...
+#22 7.795 Unpacking libvorbisenc2:arm64 (1.3.7-1) ...
+#22 7.831 Selecting previously unselected package libvpx7:arm64.
+#22 7.832 Preparing to unpack .../094-libvpx7_1.12.0-1+deb12u5_arm64.deb ...
+#22 7.833 Unpacking libvpx7:arm64 (1.12.0-1+deb12u5) ...
+#22 7.921 Selecting previously unselected package libwebpmux3:arm64.
+#22 7.922 Preparing to unpack .../095-libwebpmux3_1.2.4-0.2+deb12u1_arm64.deb ...
+#22 7.923 Unpacking libwebpmux3:arm64 (1.2.4-0.2+deb12u1) ...
+#22 7.946 Selecting previously unselected package libx264-164:arm64.
+#22 7.947 Preparing to unpack .../096-libx264-164_2%3a0.164.3095+gitbaee400-3_arm64.deb ...
+#22 7.948 Unpacking libx264-164:arm64 (2:0.164.3095+gitbaee400-3) ...
+#22 7.986 Selecting previously unselected package libnuma1:arm64.
+#22 7.987 Preparing to unpack .../097-libnuma1_2.0.16-1_arm64.deb ...
+#22 7.988 Unpacking libnuma1:arm64 (2.0.16-1) ...
+#22 8.006 Selecting previously unselected package libx265-199:arm64.
+#22 8.007 Preparing to unpack .../098-libx265-199_3.5-2+b1_arm64.deb ...
+#22 8.008 Unpacking libx265-199:arm64 (3.5-2+b1) ...
+#22 8.066 Selecting previously unselected package libxvidcore4:arm64.
+#22 8.066 Preparing to unpack .../099-libxvidcore4_2%3a1.3.7-1_arm64.deb ...
+#22 8.067 Unpacking libxvidcore4:arm64 (2:1.3.7-1) ...
+#22 8.091 Selecting previously unselected package libzvbi-common.
+#22 8.092 Preparing to unpack .../100-libzvbi-common_0.2.41-1+deb12u1_all.deb ...
+#22 8.094 Unpacking libzvbi-common (0.2.41-1+deb12u1) ...
+#22 8.111 Selecting previously unselected package libzvbi0:arm64.
+#22 8.112 Preparing to unpack .../101-libzvbi0_0.2.41-1+deb12u1_arm64.deb ...
+#22 8.113 Unpacking libzvbi0:arm64 (0.2.41-1+deb12u1) ...
+#22 8.146 Selecting previously unselected package libavcodec59:arm64.
+#22 8.147 Preparing to unpack .../102-libavcodec59_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 8.148 Unpacking libavcodec59:arm64 (7:5.1.9-0+deb12u1) ...
+#22 8.401 Selecting previously unselected package libasound2-data.
+#22 8.403 Preparing to unpack .../103-libasound2-data_1.2.8-1_all.deb ...
+#22 8.404 Unpacking libasound2-data (1.2.8-1) ...
+#22 8.431 Selecting previously unselected package libasound2:arm64.
+#22 8.432 Preparing to unpack .../104-libasound2_1.2.8-1+b1_arm64.deb ...
+#22 8.433 Unpacking libasound2:arm64 (1.2.8-1+b1) ...
+#22 8.486 Selecting previously unselected package libraw1394-11:arm64.
+#22 8.486 Preparing to unpack .../105-libraw1394-11_2.1.2-2_arm64.deb ...
+#22 8.487 Unpacking libraw1394-11:arm64 (2.1.2-2) ...
+#22 8.503 Selecting previously unselected package libavc1394-0:arm64.
+#22 8.504 Preparing to unpack .../106-libavc1394-0_0.5.4-5_arm64.deb ...
+#22 8.505 Unpacking libavc1394-0:arm64 (0.5.4-5) ...
+#22 8.522 Selecting previously unselected package libass9:arm64.
+#22 8.522 Preparing to unpack .../107-libass9_1%3a0.17.1-1+deb12u1_arm64.deb ...
+#22 8.523 Unpacking libass9:arm64 (1:0.17.1-1+deb12u1) ...
+#22 8.541 Selecting previously unselected package libudfread0:arm64.
+#22 8.543 Preparing to unpack .../108-libudfread0_1.1.2-1_arm64.deb ...
+#22 8.544 Unpacking libudfread0:arm64 (1.1.2-1) ...
+#22 8.566 Selecting previously unselected package libbluray2:arm64.
+#22 8.566 Preparing to unpack .../109-libbluray2_1%3a1.3.4-1_arm64.deb ...
+#22 8.567 Unpacking libbluray2:arm64 (1:1.3.4-1) ...
+#22 8.589 Selecting previously unselected package libchromaprint1:arm64.
+#22 8.590 Preparing to unpack .../110-libchromaprint1_1.5.1-2+b1_arm64.deb ...
+#22 8.591 Unpacking libchromaprint1:arm64 (1.5.1-2+b1) ...
+#22 8.607 Selecting previously unselected package libgme0:arm64.
+#22 8.608 Preparing to unpack .../111-libgme0_0.6.3-6_arm64.deb ...
+#22 8.609 Unpacking libgme0:arm64 (0.6.3-6) ...
+#22 8.654 Selecting previously unselected package libmpg123-0:arm64.
+#22 8.659 Preparing to unpack .../112-libmpg123-0_1.31.2-1+deb12u1_arm64.deb ...
+#22 8.660 Unpacking libmpg123-0:arm64 (1.31.2-1+deb12u1) ...
+#22 8.681 Selecting previously unselected package libvorbisfile3:arm64.
+#22 8.682 Preparing to unpack .../113-libvorbisfile3_1.3.7-1_arm64.deb ...
+#22 8.683 Unpacking libvorbisfile3:arm64 (1.3.7-1) ...
+#22 8.699 Selecting previously unselected package libopenmpt0:arm64.
+#22 8.700 Preparing to unpack .../114-libopenmpt0_0.6.9-1_arm64.deb ...
+#22 8.700 Unpacking libopenmpt0:arm64 (0.6.9-1) ...
+#22 8.752 Selecting previously unselected package librabbitmq4:arm64.
+#22 8.753 Preparing to unpack .../115-librabbitmq4_0.11.0-1+deb12u3_arm64.deb ...
+#22 8.754 Unpacking librabbitmq4:arm64 (0.11.0-1+deb12u3) ...
+#22 8.773 Selecting previously unselected package libcjson1:arm64.
+#22 8.777 Preparing to unpack .../116-libcjson1_1.7.15-1+deb12u4_arm64.deb ...
+#22 8.778 Unpacking libcjson1:arm64 (1.7.15-1+deb12u4) ...
+#22 8.788 Selecting previously unselected package libmbedcrypto7:arm64.
+#22 8.789 Preparing to unpack .../117-libmbedcrypto7_2.28.3-1_arm64.deb ...
+#22 8.791 Unpacking libmbedcrypto7:arm64 (2.28.3-1) ...
+#22 8.855 Selecting previously unselected package librist4:arm64.
+#22 8.856 Preparing to unpack .../118-librist4_0.2.7+dfsg-1_arm64.deb ...
+#22 8.857 Unpacking librist4:arm64 (0.2.7+dfsg-1) ...
+#22 8.879 Selecting previously unselected package libsrt1.5-gnutls:arm64.
+#22 8.879 Preparing to unpack .../119-libsrt1.5-gnutls_1.5.1-1+deb12u1_arm64.deb ...
+#22 8.881 Unpacking libsrt1.5-gnutls:arm64 (1.5.1-1+deb12u1) ...
+#22 8.915 Selecting previously unselected package libssh-gcrypt-4:arm64.
+#22 8.916 Preparing to unpack .../120-libssh-gcrypt-4_0.10.6-0+deb12u2_arm64.deb ...
+#22 8.918 Unpacking libssh-gcrypt-4:arm64 (0.10.6-0+deb12u2) ...
+#22 8.956 Selecting previously unselected package libnorm1:arm64.
+#22 8.957 Preparing to unpack .../121-libnorm1_1.5.9+dfsg-2_arm64.deb ...
+#22 8.958 Unpacking libnorm1:arm64 (1.5.9+dfsg-2) ...
+#22 8.985 Selecting previously unselected package libpgm-5.3-0:arm64.
+#22 8.985 Preparing to unpack .../122-libpgm-5.3-0_5.3.128~dfsg-2_arm64.deb ...
+#22 8.988 Unpacking libpgm-5.3-0:arm64 (5.3.128~dfsg-2) ...
+#22 9.012 Selecting previously unselected package libsodium23:arm64.
+#22 9.013 Preparing to unpack .../123-libsodium23_1.0.18-1+deb12u1_arm64.deb ...
+#22 9.014 Unpacking libsodium23:arm64 (1.0.18-1+deb12u1) ...
+#22 9.033 Selecting previously unselected package libzmq5:arm64.
+#22 9.034 Preparing to unpack .../124-libzmq5_4.3.4-6_arm64.deb ...
+#22 9.036 Unpacking libzmq5:arm64 (4.3.4-6) ...
+#22 9.087 Selecting previously unselected package libavformat59:arm64.
+#22 9.090 Preparing to unpack .../125-libavformat59_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 9.091 Unpacking libavformat59:arm64 (7:5.1.9-0+deb12u1) ...
+#22 9.165 Selecting previously unselected package libbs2b0:arm64.
+#22 9.166 Preparing to unpack .../126-libbs2b0_3.1.0+dfsg-7_arm64.deb ...
+#22 9.167 Unpacking libbs2b0:arm64 (3.1.0+dfsg-7) ...
+#22 9.194 Selecting previously unselected package libflite1:arm64.
+#22 9.194 Preparing to unpack .../127-libflite1_2.2-5_arm64.deb ...
+#22 9.195 Unpacking libflite1:arm64 (2.2-5) ...
+#22 9.773 Selecting previously unselected package libserd-0-0:arm64.
+#22 9.774 Preparing to unpack .../128-libserd-0-0_0.30.16-1_arm64.deb ...
+#22 9.775 Unpacking libserd-0-0:arm64 (0.30.16-1) ...
+#22 9.788 Selecting previously unselected package libsord-0-0:arm64.
+#22 9.790 Preparing to unpack .../129-libsord-0-0_0.16.14+git221008-1_arm64.deb ...
+#22 9.791 Unpacking libsord-0-0:arm64 (0.16.14+git221008-1) ...
+#22 9.804 Selecting previously unselected package libsratom-0-0:arm64.
+#22 9.804 Preparing to unpack .../130-libsratom-0-0_0.6.14-1_arm64.deb ...
+#22 9.806 Unpacking libsratom-0-0:arm64 (0.6.14-1) ...
+#22 9.819 Selecting previously unselected package liblilv-0-0:arm64.
+#22 9.821 Preparing to unpack .../131-liblilv-0-0_0.24.14-1_arm64.deb ...
+#22 9.822 Unpacking liblilv-0-0:arm64 (0.24.14-1) ...
+#22 9.842 Selecting previously unselected package libmysofa1:arm64.
+#22 9.842 Preparing to unpack .../132-libmysofa1_1.3.1~dfsg0-1_arm64.deb ...
+#22 9.845 Unpacking libmysofa1:arm64 (1.3.1~dfsg0-1) ...
+#22 9.893 Selecting previously unselected package libepoxy0:arm64.
+#22 9.893 Preparing to unpack .../133-libepoxy0_1.5.10-1_arm64.deb ...
+#22 9.895 Unpacking libepoxy0:arm64 (1.5.10-1) ...
+#22 9.927 Selecting previously unselected package libvulkan1:arm64.
+#22 9.928 Preparing to unpack .../134-libvulkan1_1.3.239.0-1_arm64.deb ...
+#22 9.929 Unpacking libvulkan1:arm64 (1.3.239.0-1) ...
+#22 9.956 Selecting previously unselected package libplacebo208:arm64.
+#22 9.957 Preparing to unpack .../135-libplacebo208_4.208.0-3_arm64.deb ...
+#22 9.958 Unpacking libplacebo208:arm64 (4.208.0-3) ...
+#22 10.09 Selecting previously unselected package libblas3:arm64.
+#22 10.09 Preparing to unpack .../136-libblas3_3.11.0-2_arm64.deb ...
+#22 10.09 Unpacking libblas3:arm64 (3.11.0-2) ...
+#22 10.12 Selecting previously unselected package libgfortran5:arm64.
+#22 10.12 Preparing to unpack .../137-libgfortran5_12.2.0-14+deb12u1_arm64.deb ...
+#22 10.12 Unpacking libgfortran5:arm64 (12.2.0-14+deb12u1) ...
+#22 10.16 Selecting previously unselected package liblapack3:arm64.
+#22 10.16 Preparing to unpack .../138-liblapack3_3.11.0-2_arm64.deb ...
+#22 10.16 Unpacking liblapack3:arm64 (3.11.0-2) ...
+#22 10.28 Selecting previously unselected package libasyncns0:arm64.
+#22 10.28 Preparing to unpack .../139-libasyncns0_0.8-6+b3_arm64.deb ...
+#22 10.29 Unpacking libasyncns0:arm64 (0.8-6+b3) ...
+#22 10.30 Selecting previously unselected package libdbus-1-3:arm64.
+#22 10.30 Preparing to unpack .../140-libdbus-1-3_1.14.10-1~deb12u1_arm64.deb ...
+#22 10.31 Unpacking libdbus-1-3:arm64 (1.14.10-1~deb12u1) ...
+#22 10.34 Selecting previously unselected package libflac12:arm64.
+#22 10.34 Preparing to unpack .../141-libflac12_1.4.2+ds-2_arm64.deb ...
+#22 10.34 Unpacking libflac12:arm64 (1.4.2+ds-2) ...
+#22 10.37 Selecting previously unselected package libsndfile1:arm64.
+#22 10.37 Preparing to unpack .../142-libsndfile1_1.2.0-1+deb12u1_arm64.deb ...
+#22 10.37 Unpacking libsndfile1:arm64 (1.2.0-1+deb12u1) ...
+#22 10.40 Selecting previously unselected package libpulse0:arm64.
+#22 10.40 Preparing to unpack .../143-libpulse0_16.1+dfsg1-2+b1_arm64.deb ...
+#22 10.40 Unpacking libpulse0:arm64 (16.1+dfsg1-2+b1) ...
+#22 10.44 Selecting previously unselected package libsphinxbase3:arm64.
+#22 10.44 Preparing to unpack .../144-libsphinxbase3_0.8+5prealpha+1-16_arm64.deb ...
+#22 10.44 Unpacking libsphinxbase3:arm64 (0.8+5prealpha+1-16) ...
+#22 10.46 Selecting previously unselected package libpocketsphinx3:arm64.
+#22 10.46 Preparing to unpack .../145-libpocketsphinx3_0.8+5prealpha+1-15_arm64.deb ...
+#22 10.46 Unpacking libpocketsphinx3:arm64 (0.8+5prealpha+1-15) ...
+#22 10.49 Selecting previously unselected package libpostproc56:arm64.
+#22 10.49 Preparing to unpack .../146-libpostproc56_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 10.49 Unpacking libpostproc56:arm64 (7:5.1.9-0+deb12u1) ...
+#22 10.50 Selecting previously unselected package librubberband2:arm64.
+#22 10.50 Preparing to unpack .../147-librubberband2_3.1.2+dfsg0-1_arm64.deb ...
+#22 10.51 Unpacking librubberband2:arm64 (3.1.2+dfsg0-1) ...
+#22 10.53 Selecting previously unselected package libswscale6:arm64.
+#22 10.53 Preparing to unpack .../148-libswscale6_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 10.53 Unpacking libswscale6:arm64 (7:5.1.9-0+deb12u1) ...
+#22 10.55 Selecting previously unselected package libvidstab1.1:arm64.
+#22 10.56 Preparing to unpack .../149-libvidstab1.1_1.1.0-2+b1_arm64.deb ...
+#22 10.56 Unpacking libvidstab1.1:arm64 (1.1.0-2+b1) ...
+#22 10.58 Selecting previously unselected package libzimg2:arm64.
+#22 10.58 Preparing to unpack .../150-libzimg2_3.0.4+ds1-1_arm64.deb ...
+#22 10.58 Unpacking libzimg2:arm64 (3.0.4+ds1-1) ...
+#22 10.60 Selecting previously unselected package libavfilter8:arm64.
+#22 10.60 Preparing to unpack .../151-libavfilter8_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 10.60 Unpacking libavfilter8:arm64 (7:5.1.9-0+deb12u1) ...
+#22 10.80 Selecting previously unselected package libncursesw6:arm64.
+#22 10.80 Preparing to unpack .../152-libncursesw6_6.4-4_arm64.deb ...
+#22 10.80 Unpacking libncursesw6:arm64 (6.4-4) ...
+#22 10.83 Selecting previously unselected package libslang2:arm64.
+#22 10.83 Preparing to unpack .../153-libslang2_2.3.3-3_arm64.deb ...
+#22 10.83 Unpacking libslang2:arm64 (2.3.3-3) ...
+#22 10.91 Selecting previously unselected package libcaca0:arm64.
+#22 10.91 Preparing to unpack .../154-libcaca0_0.99.beta20-3+deb12u1_arm64.deb ...
+#22 10.91 Unpacking libcaca0:arm64 (0.99.beta20-3+deb12u1) ...
+#22 10.94 Selecting previously unselected package libcdio19:arm64.
+#22 10.94 Preparing to unpack .../155-libcdio19_2.1.0-4_arm64.deb ...
+#22 10.94 Unpacking libcdio19:arm64 (2.1.0-4) ...
+#22 10.97 Selecting previously unselected package libcdio-cdda2:arm64.
+#22 10.97 Preparing to unpack .../156-libcdio-cdda2_10.2+2.0.1-1_arm64.deb ...
+#22 10.97 Unpacking libcdio-cdda2:arm64 (10.2+2.0.1-1) ...
+#22 10.98 Selecting previously unselected package libcdio-paranoia2:arm64.
+#22 10.99 Preparing to unpack .../157-libcdio-paranoia2_10.2+2.0.1-1_arm64.deb ...
+#22 10.99 Unpacking libcdio-paranoia2:arm64 (10.2+2.0.1-1) ...
+#22 11.00 Selecting previously unselected package libusb-1.0-0:arm64.
+#22 11.01 Preparing to unpack .../158-libusb-1.0-0_2%3a1.0.26-1_arm64.deb ...
+#22 11.01 Unpacking libusb-1.0-0:arm64 (2:1.0.26-1) ...
+#22 11.02 Selecting previously unselected package libdc1394-25:arm64.
+#22 11.02 Preparing to unpack .../159-libdc1394-25_2.2.6-4_arm64.deb ...
+#22 11.02 Unpacking libdc1394-25:arm64 (2.2.6-4) ...
+#22 11.04 Selecting previously unselected package libglvnd0:arm64.
+#22 11.04 Preparing to unpack .../160-libglvnd0_1.6.0-1_arm64.deb ...
+#22 11.05 Unpacking libglvnd0:arm64 (1.6.0-1) ...
+#22 11.07 Selecting previously unselected package libglapi-mesa:arm64.
+#22 11.07 Preparing to unpack .../161-libglapi-mesa_22.3.6-1+deb12u2_arm64.deb ...
+#22 11.08 Unpacking libglapi-mesa:arm64 (22.3.6-1+deb12u2) ...
+#22 11.10 Selecting previously unselected package libxcb-dri2-0:arm64.
+#22 11.10 Preparing to unpack .../162-libxcb-dri2-0_1.15-1_arm64.deb ...
+#22 11.11 Unpacking libxcb-dri2-0:arm64 (1.15-1) ...
+#22 11.12 Selecting previously unselected package libxcb-glx0:arm64.
+#22 11.12 Preparing to unpack .../163-libxcb-glx0_1.15-1_arm64.deb ...
+#22 11.13 Unpacking libxcb-glx0:arm64 (1.15-1) ...
+#22 11.14 Selecting previously unselected package libxcb-present0:arm64.
+#22 11.14 Preparing to unpack .../164-libxcb-present0_1.15-1_arm64.deb ...
+#22 11.15 Unpacking libxcb-present0:arm64 (1.15-1) ...
+#22 11.17 Selecting previously unselected package libxcb-randr0:arm64.
+#22 11.17 Preparing to unpack .../165-libxcb-randr0_1.15-1_arm64.deb ...
+#22 11.17 Unpacking libxcb-randr0:arm64 (1.15-1) ...
+#22 11.19 Selecting previously unselected package libxcb-sync1:arm64.
+#22 11.19 Preparing to unpack .../166-libxcb-sync1_1.15-1_arm64.deb ...
+#22 11.19 Unpacking libxcb-sync1:arm64 (1.15-1) ...
+#22 11.22 Selecting previously unselected package libxcb-xfixes0:arm64.
+#22 11.22 Preparing to unpack .../167-libxcb-xfixes0_1.15-1_arm64.deb ...
+#22 11.22 Unpacking libxcb-xfixes0:arm64 (1.15-1) ...
+#22 11.24 Selecting previously unselected package libxshmfence1:arm64.
+#22 11.24 Preparing to unpack .../168-libxshmfence1_1.3-1_arm64.deb ...
+#22 11.24 Unpacking libxshmfence1:arm64 (1.3-1) ...
+#22 11.25 Selecting previously unselected package libxxf86vm1:arm64.
+#22 11.25 Preparing to unpack .../169-libxxf86vm1_1%3a1.1.4-1+b2_arm64.deb ...
+#22 11.25 Unpacking libxxf86vm1:arm64 (1:1.1.4-1+b2) ...
+#22 11.27 Selecting previously unselected package libdrm-amdgpu1:arm64.
+#22 11.27 Preparing to unpack .../170-libdrm-amdgpu1_2.4.114-1+b1_arm64.deb ...
+#22 11.27 Unpacking libdrm-amdgpu1:arm64 (2.4.114-1+b1) ...
+#22 11.29 Selecting previously unselected package libdrm-nouveau2:arm64.
+#22 11.29 Preparing to unpack .../171-libdrm-nouveau2_2.4.114-1+b1_arm64.deb ...
+#22 11.29 Unpacking libdrm-nouveau2:arm64 (2.4.114-1+b1) ...
+#22 11.30 Selecting previously unselected package libdrm-radeon1:arm64.
+#22 11.30 Preparing to unpack .../172-libdrm-radeon1_2.4.114-1+b1_arm64.deb ...
+#22 11.30 Unpacking libdrm-radeon1:arm64 (2.4.114-1+b1) ...
+#22 11.32 Selecting previously unselected package libelf1:arm64.
+#22 11.32 Preparing to unpack .../173-libelf1_0.188-2.1_arm64.deb ...
+#22 11.32 Unpacking libelf1:arm64 (0.188-2.1) ...
+#22 11.35 Selecting previously unselected package libedit2:arm64.
+#22 ...
+
+#21 [builder 13/13] RUN rustc -Vv && cargo build --locked --release -p console-app
+#21 129.0    Compiling simd-adler32 v0.3.9
+#21 129.4    Compiling zopfli v0.8.3
+#21 130.2    Compiling flate2 v1.1.9
+#21 130.9    Compiling console-notifications-application v0.1.0 (/workspace/backend/crates/notifications/application)
+#21 131.0    Compiling sqlx-core v0.8.6
+#21 131.1    Compiling web-sys v0.3.100
+#21 132.6    Compiling const_format_proc_macros v0.2.34
+#21 132.7    Compiling proc-macro-utils v0.10.0
+#21 132.9    Compiling throw_error v0.4.0-beta
+#21 133.0    Compiling slotmap v1.1.1
+#21 133.0    Compiling ucd-trie v0.1.7
+#21 133.1    Compiling camino v1.2.5
+#21 133.1    Compiling typed-path v0.12.3
+#21 133.2    Compiling whoami v1.6.1
+#21 133.4    Compiling konst_macro_rules v0.2.19
+#21 133.4    Compiling futures-timer v3.0.4
+#21 133.7    Compiling home v0.5.12
+#21 133.8    Compiling crossbeam-epoch v0.9.20
+#21 133.9    Compiling sqlx-postgres v0.8.6
+#21 135.2    Compiling apalis-core v1.0.0-rc.9
+#21 137.1    Compiling konst v0.2.20
+#21 137.2    Compiling pest v2.8.6
+#21 137.5    Compiling reactive_graph v0.3.0-beta2
+#21 137.5    Compiling server_fn_macro v0.9.0-beta
+#21 137.6    Compiling console-governance-domain v0.0.0 (/workspace/backend/crates/governance/domain)
+#21 137.8    Compiling send_wrapper v0.6.0
+#21 137.9    Compiling derive-where v1.6.1
+#21 138.0    Compiling web-time v1.1.0
+#21 138.0    Compiling cfb v0.14.0
+#21 138.6    Compiling pest_meta v2.8.6
+#21 ...
+
+#22 [runtime 2/3] RUN apt-get update     && apt-get install -y --no-install-recommends ca-certificates curl ffmpeg     && rm -rf /var/lib/apt/lists/*     && useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin mnt
+#22 11.35 Selecting previously unselected package libedit2:arm64.
+#22 11.35 Preparing to unpack .../174-libedit2_3.1-20221030-2_arm64.deb ...
+#22 11.35 Unpacking libedit2:arm64 (3.1-20221030-2) ...
+#22 11.36 Selecting previously unselected package libz3-4:arm64.
+#22 11.36 Preparing to unpack .../175-libz3-4_4.8.12-3.1_arm64.deb ...
+#22 11.36 Unpacking libz3-4:arm64 (4.8.12-3.1) ...
+#22 11.68 Selecting previously unselected package libllvm15:arm64.
+#22 11.68 Preparing to unpack .../176-libllvm15_1%3a15.0.6-4+b1_arm64.deb ...
+#22 11.68 Unpacking libllvm15:arm64 (1:15.0.6-4+b1) ...
+#22 12.49 Selecting previously unselected package libsensors-config.
+#22 12.49 Preparing to unpack .../177-libsensors-config_1%3a3.6.0-7.1_all.deb ...
+#22 12.49 Unpacking libsensors-config (1:3.6.0-7.1) ...
+#22 12.50 Selecting previously unselected package libsensors5:arm64.
+#22 12.50 Preparing to unpack .../178-libsensors5_1%3a3.6.0-7.1_arm64.deb ...
+#22 12.50 Unpacking libsensors5:arm64 (1:3.6.0-7.1) ...
+#22 12.52 Selecting previously unselected package libgl1-mesa-dri:arm64.
+#22 12.52 Preparing to unpack .../179-libgl1-mesa-dri_22.3.6-1+deb12u2_arm64.deb ...
+#22 12.52 Unpacking libgl1-mesa-dri:arm64 (22.3.6-1+deb12u2) ...
+#22 12.85 Selecting previously unselected package libglx-mesa0:arm64.
+#22 12.85 Preparing to unpack .../180-libglx-mesa0_22.3.6-1+deb12u2_arm64.deb ...
+#22 12.86 Unpacking libglx-mesa0:arm64 (22.3.6-1+deb12u2) ...
+#22 12.89 Selecting previously unselected package libglx0:arm64.
+#22 12.89 Preparing to unpack .../181-libglx0_1.6.0-1_arm64.deb ...
+#22 12.89 Unpacking libglx0:arm64 (1.6.0-1) ...
+#22 12.91 Selecting previously unselected package libgl1:arm64.
+#22 12.91 Preparing to unpack .../182-libgl1_1.6.0-1_arm64.deb ...
+#22 12.91 Unpacking libgl1:arm64 (1.6.0-1) ...
+#22 12.93 Selecting previously unselected package libiec61883-0:arm64.
+#22 12.93 Preparing to unpack .../183-libiec61883-0_1.2.0-6+b1_arm64.deb ...
+#22 12.93 Unpacking libiec61883-0:arm64 (1.2.0-6+b1) ...
+#22 12.96 Selecting previously unselected package libsamplerate0:arm64.
+#22 12.96 Preparing to unpack .../184-libsamplerate0_0.2.2-3_arm64.deb ...
+#22 12.96 Unpacking libsamplerate0:arm64 (0.2.2-3) ...
+#22 13.03 Selecting previously unselected package libjack-jackd2-0:arm64.
+#22 13.03 Preparing to unpack .../185-libjack-jackd2-0_1.9.21~dfsg-3_arm64.deb ...
+#22 13.03 Unpacking libjack-jackd2-0:arm64 (1.9.21~dfsg-3) ...
+#22 13.06 Selecting previously unselected package libopenal-data.
+#22 13.07 Preparing to unpack .../186-libopenal-data_1%3a1.19.1-2_all.deb ...
+#22 13.07 Unpacking libopenal-data (1:1.19.1-2) ...
+#22 13.09 Selecting previously unselected package libsndio7.0:arm64.
+#22 13.09 Preparing to unpack .../187-libsndio7.0_1.9.0-0.3+b2_arm64.deb ...
+#22 13.09 Unpacking libsndio7.0:arm64 (1.9.0-0.3+b2) ...
+#22 13.11 Selecting previously unselected package libopenal1:arm64.
+#22 13.11 Preparing to unpack .../188-libopenal1_1%3a1.19.1-2_arm64.deb ...
+#22 13.11 Unpacking libopenal1:arm64 (1:1.19.1-2) ...
+#22 13.16 Selecting previously unselected package libwayland-client0:arm64.
+#22 13.16 Preparing to unpack .../189-libwayland-client0_1.21.0-1_arm64.deb ...
+#22 13.16 Unpacking libwayland-client0:arm64 (1.21.0-1) ...
+#22 13.18 Selecting previously unselected package libdecor-0-0:arm64.
+#22 13.18 Preparing to unpack .../190-libdecor-0-0_0.1.1-2_arm64.deb ...
+#22 13.18 Unpacking libdecor-0-0:arm64 (0.1.1-2) ...
+#22 13.19 Selecting previously unselected package libwayland-server0:arm64.
+#22 13.19 Preparing to unpack .../191-libwayland-server0_1.21.0-1_arm64.deb ...
+#22 13.19 Unpacking libwayland-server0:arm64 (1.21.0-1) ...
+#22 13.20 Selecting previously unselected package libgbm1:arm64.
+#22 13.20 Preparing to unpack .../192-libgbm1_22.3.6-1+deb12u2_arm64.deb ...
+#22 13.21 Unpacking libgbm1:arm64 (22.3.6-1+deb12u2) ...
+#22 13.23 Selecting previously unselected package libwayland-cursor0:arm64.
+#22 13.23 Preparing to unpack .../193-libwayland-cursor0_1.21.0-1_arm64.deb ...
+#22 13.23 Unpacking libwayland-cursor0:arm64 (1.21.0-1) ...
+#22 13.24 Selecting previously unselected package libwayland-egl1:arm64.
+#22 13.24 Preparing to unpack .../194-libwayland-egl1_1.21.0-1_arm64.deb ...
+#22 13.24 Unpacking libwayland-egl1:arm64 (1.21.0-1) ...
+#22 13.26 Selecting previously unselected package libxcursor1:arm64.
+#22 13.26 Preparing to unpack .../195-libxcursor1_1%3a1.2.1-1_arm64.deb ...
+#22 13.26 Unpacking libxcursor1:arm64 (1:1.2.1-1) ...
+#22 13.28 Selecting previously unselected package libxi6:arm64.
+#22 13.28 Preparing to unpack .../196-libxi6_2%3a1.8-1+b1_arm64.deb ...
+#22 13.28 Unpacking libxi6:arm64 (2:1.8-1+b1) ...
+#22 13.32 Selecting previously unselected package xkb-data.
+#22 13.32 Preparing to unpack .../197-xkb-data_2.35.1-1_all.deb ...
+#22 13.32 Unpacking xkb-data (2.35.1-1) ...
+#22 13.39 Selecting previously unselected package libxkbcommon0:arm64.
+#22 13.39 Preparing to unpack .../198-libxkbcommon0_1.5.0-1_arm64.deb ...
+#22 13.39 Unpacking libxkbcommon0:arm64 (1.5.0-1) ...
+#22 13.42 Selecting previously unselected package libxrandr2:arm64.
+#22 13.42 Preparing to unpack .../199-libxrandr2_2%3a1.5.2-2+b1_arm64.deb ...
+#22 13.42 Unpacking libxrandr2:arm64 (2:1.5.2-2+b1) ...
+#22 13.44 Selecting previously unselected package x11-common.
+#22 13.44 Preparing to unpack .../200-x11-common_1%3a7.7+23_all.deb ...
+#22 13.44 Unpacking x11-common (1:7.7+23) ...
+#22 13.47 Selecting previously unselected package libxss1:arm64.
+#22 13.47 Preparing to unpack .../201-libxss1_1%3a1.2.3-1_arm64.deb ...
+#22 13.47 Unpacking libxss1:arm64 (1:1.2.3-1) ...
+#22 13.48 Selecting previously unselected package libsdl2-2.0-0:arm64.
+#22 13.48 Preparing to unpack .../202-libsdl2-2.0-0_2.26.5+dfsg-1_arm64.deb ...
+#22 13.49 Unpacking libsdl2-2.0-0:arm64 (2.26.5+dfsg-1) ...
+#22 13.54 Selecting previously unselected package libxcb-shape0:arm64.
+#22 13.54 Preparing to unpack .../203-libxcb-shape0_1.15-1_arm64.deb ...
+#22 13.54 Unpacking libxcb-shape0:arm64 (1.15-1) ...
+#22 13.56 Selecting previously unselected package libxv1:arm64.
+#22 13.56 Preparing to unpack .../204-libxv1_2%3a1.0.11-1.1_arm64.deb ...
+#22 13.57 Unpacking libxv1:arm64 (2:1.0.11-1.1) ...
+#22 13.59 Selecting previously unselected package libavdevice59:arm64.
+#22 13.59 Preparing to unpack .../205-libavdevice59_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 13.60 Unpacking libavdevice59:arm64 (7:5.1.9-0+deb12u1) ...
+#22 13.62 Selecting previously unselected package ffmpeg.
+#22 13.62 Preparing to unpack .../206-ffmpeg_7%3a5.1.9-0+deb12u1_arm64.deb ...
+#22 13.62 Unpacking ffmpeg (7:5.1.9-0+deb12u1) ...
+#22 13.72 Setting up libgme0:arm64 (0.6.3-6) ...
+#22 13.72 Setting up libexpat1:arm64 (2.5.0-1+deb12u3) ...
+#22 13.72 Setting up libgraphite2-3:arm64 (1.3.14-1+deb12u1) ...
+#22 13.72 Setting up liblcms2-2:arm64 (2.14-2+deb12u1) ...
+#22 13.72 Setting up libpixman-1-0:arm64 (0.42.2-1) ...
+#22 13.73 Setting up libudfread0:arm64 (1.1.2-1) ...
+#22 13.73 Setting up libwayland-server0:arm64 (1.21.0-1) ...
+#22 13.73 Setting up libaom3:arm64 (3.6.0-1+deb12u3) ...
+#22 13.73 Setting up libxau6:arm64 (1:1.0.9-1) ...
+#22 13.73 Setting up libraw1394-11:arm64 (2.1.2-2) ...
+#22 13.74 Setting up libkeyutils1:arm64 (1.6.3-2) ...
+#22 13.74 Setting up libpsl5:arm64 (0.21.2-1) ...
+#22 13.74 Setting up libcodec2-1.0:arm64 (1.0.5-1) ...
+#22 13.74 Setting up libsodium23:arm64 (1.0.18-1+deb12u1) ...
+#22 13.75 Setting up libicu72:arm64 (72.1-3+deb12u1) ...
+#22 13.75 Setting up libmpg123-0:arm64 (1.31.2-1+deb12u1) ...
+#22 13.75 Setting up libogg0:arm64 (1.3.5-3) ...
+#22 13.76 Setting up liblerc4:arm64 (4.0.0+ds-2) ...
+#22 13.76 Setting up libspeex1:arm64 (1.2.1-2) ...
+#22 13.76 Setting up libshine3:arm64 (3.1.1-2) ...
+#22 13.76 Setting up libx264-164:arm64 (2:0.164.3095+gitbaee400-3) ...
+#22 13.76 Setting up libtwolame0:arm64 (0.4.0-2) ...
+#22 13.76 Setting up libdatrie1:arm64 (0.2.13-2+b1) ...
+#22 13.77 Setting up libgsm1:arm64 (1.0.22-1) ...
+#22 13.77 Setting up libglib2.0-0:arm64 (2.74.6-2+deb12u9) ...
+#22 13.78 No schema files found: doing nothing.
+#22 13.78 Setting up libglvnd0:arm64 (1.6.0-1) ...
+#22 13.78 Setting up libpgm-5.3-0:arm64 (5.3.128~dfsg-2) ...
+#22 13.78 Setting up libbrotli1:arm64 (1.0.9-2+b6) ...
+#22 13.79 Setting up libgdk-pixbuf2.0-common (2.42.10+dfsg-1+deb12u4) ...
+#22 13.79 Setting up libnorm1:arm64 (1.5.9+dfsg-2) ...
+#22 13.79 Setting up libmysofa1:arm64 (1.3.1~dfsg0-1) ...
+#22 13.79 Setting up libssl3:arm64 (3.0.20-1~deb12u2) ...
+#22 13.79 Setting up x11-common (1:7.7+23) ...
+#22 13.84 debconf: unable to initialize frontend: Dialog
+#22 13.84 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#22 13.84 debconf: falling back to frontend: Readline
+#22 13.84 debconf: unable to initialize frontend: Readline
+#22 13.84 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/aarch64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#22 13.84 debconf: falling back to frontend: Teletype
+#22 13.85 invoke-rc.d: could not determine current runlevel
+#22 13.86 invoke-rc.d: policy-rc.d denied execution of restart.
+#22 13.86 Setting up libsensors-config (1:3.6.0-7.1) ...
+#22 13.86 Setting up libnghttp2-14:arm64 (1.52.0-1+deb12u3) ...
+#22 13.87 Setting up libdeflate0:arm64 (1.14-1) ...
+#22 13.87 Setting up xkb-data (2.35.1-1) ...
+#22 13.88 Setting up libhwy1:arm64 (1.0.3-3+deb12u1) ...
+#22 13.88 Setting up libsvtav1enc1:arm64 (1.4.1+dfsg-1) ...
+#22 13.88 Setting up libgomp1:arm64 (12.2.0-14+deb12u1) ...
+#22 13.89 Setting up libcdio19:arm64 (2.1.0-4) ...
+#22 13.89 Setting up libcjson1:arm64 (1.7.15-1+deb12u4) ...
+#22 13.89 Setting up libxvidcore4:arm64 (2:1.3.7-1) ...
+#22 13.89 Setting up libjbig0:arm64 (2.1-6.1) ...
+#22 13.89 Setting up librav1e0:arm64 (0.5.1-6) ...
+#22 13.90 Setting up libsnappy1v5:arm64 (1.1.9-3) ...
+#22 13.90 Setting up libkrb5support0:arm64 (1.20.1-2+deb12u5) ...
+#22 13.90 Setting up libsasl2-modules-db:arm64 (2.1.28+dfsg-10) ...
+#22 13.90 Setting up libasound2-data (1.2.8-1) ...
+#22 13.90 Setting up libz3-4:arm64 (4.8.12-3.1) ...
+#22 13.91 Setting up libblas3:arm64 (3.11.0-2) ...
+#22 13.91 update-alternatives: using /usr/lib/aarch64-linux-gnu/blas/libblas.so.3 to provide /usr/lib/aarch64-linux-gnu/libblas.so.3 (libblas.so.3-aarch64-linux-gnu) in auto mode
+#22 13.91 Setting up libflac12:arm64 (1.4.2+ds-2) ...
+#22 13.91 Setting up libjpeg62-turbo:arm64 (1:2.1.5-2) ...
+#22 13.92 Setting up libslang2:arm64 (2.3.3-3) ...
+#22 13.92 Setting up libva2:arm64 (2.17.0-1) ...
+#22 13.92 Setting up libmbedcrypto7:arm64 (2.28.3-1) ...
+#22 13.92 Setting up libx11-data (2:1.8.4-2+deb12u2) ...
+#22 13.93 Setting up libepoxy0:arm64 (1.5.10-1) ...
+#22 13.93 Setting up librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b2) ...
+#22 13.93 Setting up libdbus-1-3:arm64 (1.14.10-1~deb12u1) ...
+#22 13.93 Setting up libfribidi0:arm64 (1.0.8-2.1) ...
+#22 13.93 Setting up libopus0:arm64 (1.3.1-3) ...
+#22 13.93 Setting up libpng16-16:arm64 (1.6.39-2+deb12u5) ...
+#22 13.94 Setting up libvorbis0a:arm64 (1.3.7-1) ...
+#22 13.94 Setting up fonts-dejavu-core (2.37-6) ...
+#22 13.95 Setting up libsensors5:arm64 (1:3.6.0-7.1) ...
+#22 13.95 Setting up libjxl0.7:arm64 (0.7.0-10+deb12u1) ...
+#22 13.95 Setting up libncursesw6:arm64 (6.4-4) ...
+#22 13.96 Setting up libk5crypto3:arm64 (1.20.1-2+deb12u5) ...
+#22 13.96 Setting up libdav1d6:arm64 (1.0.0-2+deb12u1) ...
+#22 13.96 Setting up libglapi-mesa:arm64 (22.3.6-1+deb12u2) ...
+#22 13.96 Setting up libsasl2-2:arm64 (2.1.28+dfsg-10) ...
+#22 13.96 Setting up libgfortran5:arm64 (12.2.0-14+deb12u1) ...
+#22 13.97 Setting up libvulkan1:arm64 (1.3.239.0-1) ...
+#22 13.97 Setting up libwebp7:arm64 (1.2.4-0.2+deb12u1) ...
+#22 13.98 Setting up librubberband2:arm64 (3.1.2+dfsg0-1) ...
+#22 13.98 Setting up libnuma1:arm64 (2.0.16-1) ...
+#22 13.98 Setting up libvidstab1.1:arm64 (1.1.0-2+b1) ...
+#22 13.98 Setting up libsrt1.5-gnutls:arm64 (1.5.1-1+deb12u1) ...
+#22 13.98 Setting up ocl-icd-libopencl1:arm64 (2.3.1-1) ...
+#22 13.99 Setting up libasyncns0:arm64 (0.8-6+b3) ...
+#22 13.99 Setting up libxshmfence1:arm64 (1.3-1) ...
+#22 13.99 Setting up libtiff6:arm64 (4.5.0-6+deb12u4) ...
+#22 13.99 Setting up libbs2b0:arm64 (3.1.0+dfsg-7) ...
+#22 13.99 Setting up libasound2:arm64 (1.2.8-1+b1) ...
+#22 13.99 Setting up libzimg2:arm64 (3.0.4+ds1-1) ...
+#22 14.00 Setting up libopenjp2-7:arm64 (2.5.0-2+deb12u3) ...
+#22 14.00 Setting up libopenal-data (1:1.19.1-2) ...
+#22 14.00 Setting up libthai-data (0.1.29-1) ...
+#22 14.00 Setting up libssh2-1:arm64 (1.10.0-3+deb12u1) ...
+#22 14.00 Setting up libvpx7:arm64 (1.12.0-1+deb12u5) ...
+#22 14.01 Setting up libkrb5-3:arm64 (1.20.1-2+deb12u5) ...
+#22 14.01 Setting up libwayland-egl1:arm64 (1.21.0-1) ...
+#22 14.01 Setting up libusb-1.0-0:arm64 (2:1.0.26-1) ...
+#22 14.01 Setting up libsamplerate0:arm64 (0.2.2-3) ...
+#22 14.02 Setting up openssl (3.0.20-1~deb12u2) ...
+#22 14.03 Setting up libwebpmux3:arm64 (1.2.4-0.2+deb12u1) ...
+#22 14.03 Setting up libbsd0:arm64 (0.11.7-2) ...
+#22 14.03 Setting up libdrm-common (2.4.114-1) ...
+#22 14.04 Setting up libelf1:arm64 (0.188-2.1) ...
+#22 14.04 Setting up libxml2:arm64 (2.9.14+dfsg-1.3~deb12u6) ...
+#22 14.04 Setting up libzvbi-common (0.2.41-1+deb12u1) ...
+#22 14.04 Setting up libmp3lame0:arm64 (3.100-6) ...
+#22 14.04 Setting up libvorbisenc2:arm64 (1.3.7-1) ...
+#22 14.05 Setting up libiec61883-0:arm64 (1.2.0-6+b1) ...
+#22 14.05 Setting up libserd-0-0:arm64 (0.30.16-1) ...
+#22 14.05 Setting up libxkbcommon0:arm64 (1.5.0-1) ...
+#22 14.05 Setting up libwayland-client0:arm64 (1.21.0-1) ...
+#22 14.06 Setting up libavc1394-0:arm64 (0.5.4-5) ...
+#22 14.06 Setting up libzvbi0:arm64 (0.2.41-1+deb12u1) ...
+#22 14.06 Setting up librabbitmq4:arm64 (0.11.0-1+deb12u3) ...
+#22 14.07 Setting up libxdmcp6:arm64 (1:1.1.2-3) ...
+#22 14.07 Setting up liblapack3:arm64 (3.11.0-2) ...
+#22 14.07 update-alternatives: using /usr/lib/aarch64-linux-gnu/lapack/liblapack.so.3 to provide /usr/lib/aarch64-linux-gnu/liblapack.so.3 (liblapack.so.3-aarch64-linux-gnu) in auto mode
+#22 14.08 Setting up libxcb1:arm64 (1.15-1) ...
+#22 14.08 Setting up libxcb-xfixes0:arm64 (1.15-1) ...
+#22 14.08 Setting up libplacebo208:arm64 (4.208.0-3) ...
+#22 14.08 Setting up libcaca0:arm64 (0.99.beta20-3+deb12u1) ...
+#22 14.08 Setting up libxcb-render0:arm64 (1.15-1) ...
+#22 14.09 Setting up libsoxr0:arm64 (0.1.3-4) ...
+#22 14.09 Setting up libcdio-cdda2:arm64 (10.2+2.0.1-1) ...
+#22 14.09 Setting up fontconfig-config (2.14.1-4) ...
+#22 14.13 debconf: unable to initialize frontend: Dialog
+#22 14.13 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#22 14.13 debconf: falling back to frontend: Readline
+#22 14.13 debconf: unable to initialize frontend: Readline
+#22 14.13 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/aarch64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#22 14.13 debconf: falling back to frontend: Teletype
+#22 14.21 Setting up libcdio-paranoia2:arm64 (10.2+2.0.1-1) ...
+#22 14.22 Setting up libxcb-glx0:arm64 (1.15-1) ...
+#22 14.22 Setting up libedit2:arm64 (3.1-20221030-2) ...
+#22 14.22 Setting up libxcb-shape0:arm64 (1.15-1) ...
+#22 14.22 Setting up libxcb-shm0:arm64 (1.15-1) ...
+#22 14.23 Setting up libldap-2.5-0:arm64 (2.5.13+dfsg-5) ...
+#22 14.23 Setting up librist4:arm64 (0.2.7+dfsg-1) ...
+#22 14.23 Setting up libxcb-present0:arm64 (1.15-1) ...
+#22 14.23 Setting up libthai0:arm64 (0.1.29-1) ...
+#22 14.23 Setting up ca-certificates (20250419~deb12u1) ...
+#22 14.27 debconf: unable to initialize frontend: Dialog
+#22 14.27 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#22 14.27 debconf: falling back to frontend: Readline
+#22 14.27 debconf: unable to initialize frontend: Readline
+#22 14.27 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/aarch64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#22 14.27 debconf: falling back to frontend: Teletype
+#22 14.58 Updating certificates in /etc/ssl/certs...
+#22 14.93 150 added, 0 removed; done.
+#22 14.95 Setting up libvorbisfile3:arm64 (1.3.7-1) ...
+#22 14.95 Setting up libfreetype6:arm64 (2.12.1+dfsg-5+deb12u4) ...
+#22 14.95 Setting up libxcb-sync1:arm64 (1.15-1) ...
+#22 14.95 Setting up shared-mime-info (2.2-1) ...
+#22 15.34 Setting up libdc1394-25:arm64 (2.2.6-4) ...
+#22 15.34 Setting up libgssapi-krb5-2:arm64 (1.20.1-2+deb12u5) ...
+#22 15.34 Setting up libx265-199:arm64 (3.5-2+b1) ...
+#22 15.35 Setting up libsndio7.0:arm64 (1.9.0-0.3+b2) ...
+#22 15.35 Setting up libxcb-dri2-0:arm64 (1.15-1) ...
+#22 15.35 Setting up libjack-jackd2-0:arm64 (1.9.21~dfsg-3) ...
+#22 15.35 Setting up libdrm2:arm64 (2.4.114-1+b1) ...
+#22 15.35 Setting up libflite1:arm64 (2.2-5) ...
+#22 15.35 Setting up libva-drm2:arm64 (2.17.0-1) ...
+#22 15.36 Setting up libsord-0-0:arm64 (0.16.14+git221008-1) ...
+#22 15.36 Setting up libwayland-cursor0:arm64 (1.21.0-1) ...
+#22 15.36 Setting up libxcb-randr0:arm64 (1.15-1) ...
+#22 15.36 Setting up libsratom-0-0:arm64 (0.6.14-1) ...
+#22 15.36 Setting up libllvm15:arm64 (1:15.0.6-4+b1) ...
+#22 15.36 Setting up libdecor-0-0:arm64 (0.1.1-2) ...
+#22 15.37 Setting up libcurl4:arm64 (7.88.1-10+deb12u15) ...
+#22 15.37 Setting up libx11-6:arm64 (2:1.8.4-2+deb12u2) ...
+#22 15.37 Setting up libharfbuzz0b:arm64 (6.0.0+dfsg-3) ...
+#22 15.37 Setting up libgdk-pixbuf-2.0-0:arm64 (2.42.10+dfsg-1+deb12u4) ...
+#22 15.38 Setting up curl (7.88.1-10+deb12u15) ...
+#22 15.39 Setting up libfontconfig1:arm64 (2.14.1-4) ...
+#22 15.39 Setting up libsndfile1:arm64 (1.2.0-1+deb12u1) ...
+#22 15.39 Setting up libbluray2:arm64 (1:1.3.4-1) ...
+#22 15.39 Setting up liblilv-0-0:arm64 (0.24.14-1) ...
+#22 15.40 Setting up libopenmpt0:arm64 (0.6.9-1) ...
+#22 15.40 Setting up libdrm-amdgpu1:arm64 (2.4.114-1+b1) ...
+#22 15.40 Setting up libssh-gcrypt-4:arm64 (0.10.6-0+deb12u2) ...
+#22 15.40 Setting up libxcb-dri3-0:arm64 (1.15-1) ...
+#22 15.40 Setting up libx11-xcb1:arm64 (2:1.8.4-2+deb12u2) ...
+#22 15.41 Setting up fontconfig (2.14.1-4) ...
+#22 15.41 Regenerating fonts cache... done.
+#22 17.46 Setting up libdrm-nouveau2:arm64 (2.4.114-1+b1) ...
+#22 17.46 Setting up libzmq5:arm64 (4.3.4-6) ...
+#22 17.46 Setting up libxrender1:arm64 (1:0.9.10-1.1) ...
+#22 17.47 Setting up libgbm1:arm64 (22.3.6-1+deb12u2) ...
+#22 17.47 Setting up libpulse0:arm64 (16.1+dfsg1-2+b1) ...
+#22 17.48 Setting up libdrm-radeon1:arm64 (2.4.114-1+b1) ...
+#22 17.48 Setting up libpango-1.0-0:arm64 (1.50.12+ds-1) ...
+#22 17.48 Setting up libgl1-mesa-dri:arm64 (22.3.6-1+deb12u2) ...
+#22 17.49 Setting up libxext6:arm64 (2:1.3.4-1+b1) ...
+#22 17.49 Setting up libopenal1:arm64 (1:1.19.1-2) ...
+#22 17.49 Setting up libcairo2:arm64 (1.16.0-7) ...
+#22 17.49 Setting up libxxf86vm1:arm64 (1:1.1.4-1+b2) ...
+#22 17.50 Setting up libass9:arm64 (1:0.17.1-1+deb12u1) ...
+#22 17.50 Setting up libxfixes3:arm64 (1:6.0.0-2) ...
+#22 17.50 Setting up libxv1:arm64 (2:1.0.11-1.1) ...
+#22 17.51 Setting up libxrandr2:arm64 (2:1.5.2-2+b1) ...
+#22 17.51 Setting up libvdpau1:arm64 (1.5-2) ...
+#22 17.51 Setting up libtheora0:arm64 (1.1.1+dfsg.1-16.1+deb12u1) ...
+#22 17.51 Setting up libcairo-gobject2:arm64 (1.16.0-7) ...
+#22 17.51 Setting up libxss1:arm64 (1:1.2.3-1) ...
+#22 17.52 Setting up libpangoft2-1.0-0:arm64 (1.50.12+ds-1) ...
+#22 17.52 Setting up libva-x11-2:arm64 (2.17.0-1) ...
+#22 17.52 Setting up libpangocairo-1.0-0:arm64 (1.50.12+ds-1) ...
+#22 17.52 Setting up libglx-mesa0:arm64 (22.3.6-1+deb12u2) ...
+#22 17.52 Setting up libxi6:arm64 (2:1.8-1+b1) ...
+#22 17.53 Setting up libglx0:arm64 (1.6.0-1) ...
+#22 17.53 Setting up libsphinxbase3:arm64 (0.8+5prealpha+1-16) ...
+#22 17.53 Setting up libxcursor1:arm64 (1:1.2.1-1) ...
+#22 17.53 Setting up librsvg2-2:arm64 (2.54.7+dfsg-1~deb12u1) ...
+#22 17.54 Setting up libpocketsphinx3:arm64 (0.8+5prealpha+1-15) ...
+#22 17.54 Setting up libavutil57:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.54 Setting up libgl1:arm64 (1.6.0-1) ...
+#22 17.54 Setting up libswresample4:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.55 Setting up libpostproc56:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.55 Setting up libavcodec59:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.55 Setting up libsdl2-2.0-0:arm64 (2.26.5+dfsg-1) ...
+#22 17.56 Setting up libswscale6:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.56 Setting up libchromaprint1:arm64 (1.5.1-2+b1) ...
+#22 17.56 Setting up libavformat59:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.56 Setting up libavfilter8:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.57 Setting up libavdevice59:arm64 (7:5.1.9-0+deb12u1) ...
+#22 17.57 Setting up ffmpeg (7:5.1.9-0+deb12u1) ...
+#22 17.57 Processing triggers for libc-bin (2.36-9+deb12u14) ...
+#22 17.58 Processing triggers for ca-certificates (20250419~deb12u1) ...
+#22 17.59 Updating certificates in /etc/ssl/certs...
+#22 17.83 0 added, 0 removed; done.
+#22 17.83 Running hooks in /etc/ca-certificates/update.d...
+#22 17.83 done.
+#22 17.87 useradd warning: mnt's uid 10001 is greater than SYS_UID_MAX 999
+#22 DONE 18.0s
+
+#21 [builder 13/13] RUN rustc -Vv && cargo build --locked --release -p console-app
+#21 140.2    Compiling const_format v0.2.36
+#21 140.4    Compiling sqlx-macros-core v0.8.6
+#21 140.8    Compiling hydration_context v0.4.0-beta
+#21 141.2    Compiling any_spawner v0.3.0
+#21 141.3    Compiling async-lock v3.4.2
+#21 141.7    Compiling syn_derive v0.2.0
+#21 141.8    Compiling console-workorder-application v0.1.0 (/workspace/backend/crates/workorder/application)
+#21 142.4    Compiling tokio-rustls v0.26.5
+#21 142.6    Compiling quick-xml v0.41.0 (/workspace/third-party/rust/vendor/quick-xml-0.41.0-compat)
+#21 143.0    Compiling console-comms-domain v0.1.0 (/workspace/backend/crates/comms/domain)
+#21 143.2    Compiling webauthn-rs v0.5.5
+#21 143.7    Compiling console-platform-auth v0.1.0 (/workspace/backend/crates/platform/auth)
+#21 143.9    Compiling secrecy v0.10.3
+#21 144.0    Compiling doc-comment v0.3.4
+#21 144.1    Compiling rustc-hash v2.1.3
+#21 144.1    Compiling guardian v1.3.0
+#21 144.5    Compiling console-platform-request-context v0.1.0 (/workspace/backend/crates/platform/request-context)
+#21 144.5    Compiling xxhash-rust v0.8.18
+#21 149.5    Compiling console-comms-application v0.1.0 (/workspace/backend/crates/comms/application)
+#21 149.6    Compiling sqlx-macros v0.8.6
+#21 150.2    Compiling pest_generator v2.8.6
+#21 150.5    Compiling infer v0.22.0
+#21 150.6    Compiling quote-use-macros v0.8.4
+#21 150.8    Compiling manyhow-macros v0.11.4
+#21 150.9    Compiling prost-derive v0.14.4
+#21 151.0    Compiling reactive_stores_macro v0.5.0-beta
+#21 151.3    Compiling phf_generator v0.11.3
+#21 151.4    Compiling darling_core v0.20.11
+#21 151.4    Compiling prefix-trie v0.8.4
+#21 151.5    Compiling tachys v0.3.0-beta2
+#21 151.6    Compiling rapidhash v4.4.1
+#21 151.8    Compiling console-ontology-canonical-domain v0.1.0 (/workspace/backend/crates/ontology/canonical-domain)
+#21 151.9    Compiling console-inbox-domain v0.1.0 (/workspace/backend/crates/inbox/domain)
+#21 152.1    Compiling typed-builder-macro v0.23.2
+#21 152.3    Compiling prettyplease v0.2.37
+#21 152.4    Compiling yansi v1.0.1
+#21 152.5    Compiling apalis-postgres v1.0.0-rc.8
+#21 152.5    Compiling winnow v1.0.4
+#21 152.8    Compiling typed-builder v0.23.2
+#21 153.0    Compiling darling_macro v0.20.11
+#21 153.2    Compiling toml_parser v1.1.3+spec-1.1.0
+#21 153.3    Compiling reactive_stores v0.5.0-beta
+#21 153.6    Compiling console-inbox-application v0.1.0 (/workspace/backend/crates/inbox/application)
+#21 153.8    Compiling metrics v0.24.6
+#21 153.9    Compiling hickory-proto v0.26.3
+#21 153.9    Compiling prost v0.14.4
+#21 154.1    Compiling phf_macros v0.11.3
+#21 154.5    Compiling manyhow v0.11.4
+#21 154.6    Compiling quote-use v0.8.4
+#21 154.6    Compiling console-platform-storage v0.1.0 (/workspace/backend/crates/platform/storage)
+#21 154.6    Compiling sqlx v0.8.6
+#21 154.7    Compiling pest_derive v2.8.6
+#21 157.1    Compiling gloo-utils v0.3.0
+#21 157.1    Compiling apalis-sql v1.0.0-rc.9
+#21 157.3    Compiling apalis-codec v0.1.0-rc.9
+#21 157.4    Compiling either_of v0.1.9
+#21 158.2    Compiling hyper-timeout v0.5.2
+#21 158.3    Compiling ulid v1.2.1
+#21 158.4    Compiling server_fn v0.9.0-beta
+#21 158.5    Compiling crossbeam-channel v0.5.15
+#21 158.6    Compiling email-encoding v0.4.1
+#21 158.8    Compiling opentelemetry v0.32.0
+#21 158.8    Compiling console-workflow-domain v0.1.0 (/workspace/backend/crates/workflow/domain)
+#21 159.0    Compiling oco_ref v0.2.1
+#21 159.1    Compiling serde_spanned v1.1.1
+#21 159.1    Compiling toml_datetime v1.1.1+spec-1.1.0
+#21 159.3    Compiling nom v8.0.0
+#21 159.6    Compiling email_address v0.2.9
+#21 159.9    Compiling bytemuck v1.25.0
+#21 159.9    Compiling html-escape v0.2.15
+#21 160.1    Compiling const_str_slice_concat v0.1.0
+#21 160.2    Compiling quoted_printable v0.5.2
+#21 160.3    Compiling erased v0.1.2
+#21 160.3    Compiling event-listener v2.5.3
+#21 160.3    Compiling tagptr v0.2.0
+#21 160.4    Compiling next_tuple v0.1.0
+#21 160.5    Compiling collection_literals v1.0.3
+#21 160.6    Compiling fastrand v2.4.1
+#21 160.7    Compiling drain_filter_polyfill v0.1.3
+#21 160.7    Compiling interpolator v0.5.0
+#21 160.7    Compiling lettre v0.11.23
+#21 160.8    Compiling attribute-derive-macro v0.10.5
+#21 161.4    Compiling convert_case v0.6.0
+#21 162.6    Compiling async-channel v1.9.0
+#21 162.7    Compiling moka v0.12.15
+#21 163.4    Compiling rgb v0.8.53
+#21 163.5    Compiling toml v1.1.4+spec-1.1.0
+#21 165.3    Compiling tonic v0.14.6
+#21 167.1    Compiling phf v0.11.3
+#21 167.3    Compiling gloo-net v0.7.0
+#21 167.6    Compiling html_parser v0.7.0
+#21 168.2    Compiling hickory-net v0.26.3
+#21 169.5    Compiling darling v0.20.11
+#21 169.5    Compiling rstml v0.12.1
+#21 170.0    Compiling fancy-regex v0.14.0
+#21 170.0    Compiling server_fn_macro_default v0.9.0-beta
+#21 170.2    Compiling wasm-streams v0.5.0
+#21 170.3    Compiling console-governance-application v0.0.0 (/workspace/backend/crates/governance/application)
+#21 170.5    Compiling apalis v1.0.0-rc.9
+#21 170.7    Compiling zip v8.6.0
+#21 170.8    Compiling aes v0.8.4
+#21 171.1    Compiling cbc v0.1.2
+#21 171.2    Compiling serde_qs v1.1.3
+#21 171.4    Compiling cfb v0.10.0
+#21 171.6    Compiling leptos_macro v0.9.0-beta
+#21 171.7    Compiling universal-hash v0.5.1
+#21 171.7    Compiling console-dispatch-domain v0.1.0 (/workspace/backend/crates/dispatch/domain)
+#21 171.7    Compiling console-messenger-domain v0.1.0 (/workspace/backend/crates/messenger/domain)
+#21 171.7    Compiling thousands v0.2.0
+#21 171.8    Compiling pathdiff v0.2.3
+#21 171.9    Compiling fallible-iterator v0.2.0
+#21 171.9    Compiling base16 v0.2.1
+#21 171.9    Compiling jiff v0.2.28
+#21 172.0    Compiling resolv-conf v0.7.6
+#21 172.0    Compiling const-str v1.1.0
+#21 172.2    Compiling console-platform-provisioning v0.1.0 (/workspace/backend/crates/platform/provisioning)
+#21 172.3    Compiling debug_unsafe v0.1.4
+#21 172.3    Compiling inventory v0.3.24
+#21 172.3    Compiling imagesize v0.14.0
+#21 172.3    Compiling opaque-debug v0.3.1
+#21 172.3    Compiling poly1305 v0.8.0
+#21 172.6    Compiling atoi_simd v0.17.0
+#21 172.7    Compiling hickory-resolver v0.26.3
+#21 172.8    Compiling postgres-protocol v0.6.12
+#21 173.0    Compiling wasm_split_macros v0.2.2
+#21 173.2    Compiling umya-spreadsheet v3.0.0 (/workspace/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)
+#21 173.5    Compiling config v0.15.25
+#21 175.8    Compiling leptos_hot_reload v0.9.0-beta
+#21 176.1    Compiling console-dispatch-application v0.1.0 (/workspace/backend/crates/dispatch/application)
+#21 176.2    Compiling console-messenger-application v0.1.0 (/workspace/backend/crates/messenger/application)
+#21 176.9    Compiling console-platform-jobs v0.1.0 (/workspace/backend/crates/platform/jobs)
+#21 177.0    Compiling console-governance-adapter-postgres v0.0.0 (/workspace/backend/crates/governance/adapter-postgres)
+#21 177.5    Compiling derive_builder_core v0.20.2
+#21 177.9    Compiling stop-token v0.7.0
+#21 178.5    Compiling attribute-derive v0.10.5
+#21 179.0    Compiling zip v7.2.0
+#21 180.2    Compiling chacha20 v0.9.1
+#21 180.2    Compiling async-channel v2.5.0
+#21 180.3    Compiling convert_case_extras v0.2.0
+#21 180.4    Compiling phf_shared v0.13.1
+#21 180.5    Compiling console-platform-push v0.1.0 (/workspace/backend/crates/platform/push)
+#21 182.4    Compiling codepage v0.1.2
+#21 182.5    Compiling imap-proto v0.16.7
+#21 182.7    Compiling leptos v0.9.0-beta
+#21 182.8    Compiling hashify v0.2.9
+#21 183.4    Compiling aead v0.5.2
+#21 183.4    Compiling console-ontology-domain v0.0.0 (/workspace/backend/crates/ontology/domain)
+#21 183.6    Compiling console-sales-domain v0.1.0 (/workspace/backend/crates/sales/domain)
+#21 183.8    Compiling console-evaluation-domain v0.1.0 (/workspace/backend/crates/evaluation/domain)
+#21 183.9    Compiling console-inspection-domain v0.0.0 (/workspace/backend/crates/inspection/domain)
+#21 184.1    Compiling console-reporting-domain v0.1.0 (/workspace/backend/crates/reporting/domain)
+#21 185.2    Compiling console-compliance-domain v0.1.0 (/workspace/backend/crates/compliance/domain)
+#21 185.9    Compiling console-docs-domain v0.1.0 (/workspace/backend/crates/docs/domain)
+#21 186.3    Compiling console-financial-domain v0.0.0 (/workspace/backend/crates/financial/domain)
+#21 186.3    Compiling console-todos-domain v0.1.0 (/workspace/backend/crates/todos/domain)
+#21 186.3    Compiling console-benefit-domain v0.1.0 (/workspace/backend/crates/benefit/domain)
+#21 186.5    Compiling console-recruiting-domain v0.1.0 (/workspace/backend/crates/recruiting/domain)
+#21 186.5    Compiling console-inventory-domain v0.1.0 (/workspace/backend/crates/inventory/domain)
+#21 186.6    Compiling console-registry-domain v0.1.0 (/workspace/backend/crates/registry/domain)
+#21 186.7    Compiling console-notices-domain v0.1.0 (/workspace/backend/crates/notices/domain)
+#21 186.9    Compiling console-finance-gl-domain v0.0.0 (/workspace/backend/crates/finance-gl/domain)
+#21 186.9    Compiling console-support-domain v0.1.0 (/workspace/backend/crates/support/domain)
+#21 187.0    Compiling console-leave-domain v0.1.0 (/workspace/backend/crates/leave/domain)
+#21 187.2    Compiling console-identity-domain v0.1.0 (/workspace/backend/crates/identity/domain)
+#21 187.3    Compiling console-attendance-domain v0.1.0 (/workspace/backend/crates/attendance/domain)
+#21 187.4    Compiling codee v0.3.5
+#21 187.6    Compiling async-once-cell v0.5.4
+#21 187.7    Compiling console-platform-authz-rest v0.0.0 (/workspace/backend/crates/platform/authz-rest)
+#21 187.8    Compiling pin-utils v0.1.0
+#21 187.9    Compiling fast-float2 v0.2.3
+#21 188.0    Compiling self_cell v1.2.2
+#21 188.0    Compiling async-imap v0.11.3
+#21 189.2    Compiling calamine v0.35.0 (/workspace/third-party/rust/vendor/calamine-0.35.0-quickxml41)
+#21 189.6    Compiling wasm_split_helpers v0.2.3
+#21 189.7    Compiling leptos_server v0.9.0-beta2
+#21 190.0    Compiling console-attendance-application v0.1.0 (/workspace/backend/crates/attendance/application)
+#21 190.4    Compiling console-identity-application v0.1.0 (/workspace/backend/crates/identity/application)
+#21 191.1    Compiling console-leave-application v0.1.0 (/workspace/backend/crates/leave/application)
+#21 191.4    Compiling console-support-application v0.1.0 (/workspace/backend/crates/support/application)
+#21 191.7    Compiling console-finance-gl-application v0.0.0 (/workspace/backend/crates/finance-gl/application)
+#21 192.0    Compiling console-notices-application v0.1.0 (/workspace/backend/crates/notices/application)
+#21 192.0    Compiling console-registry-application v0.1.0 (/workspace/backend/crates/registry/application)
+#21 192.1    Compiling console-inventory-application v0.1.0 (/workspace/backend/crates/inventory/application)
+#21 192.4    Compiling console-recruiting-application v0.1.0 (/workspace/backend/crates/recruiting/application)
+#21 192.7    Compiling console-benefit-application v0.1.0 (/workspace/backend/crates/benefit/application)
+#21 192.7    Compiling console-financial-application v0.0.0 (/workspace/backend/crates/financial/application)
+#21 192.9    Compiling console-todos-application v0.1.0 (/workspace/backend/crates/todos/application)
+#21 193.0    Compiling console-docs-application v0.1.0 (/workspace/backend/crates/docs/application)
+#21 193.1    Compiling console-compliance-application v0.1.0 (/workspace/backend/crates/compliance/application)
+#21 193.2    Compiling console-reporting-application v0.1.0 (/workspace/backend/crates/reporting/application)
+#21 193.2    Compiling console-inspection-application v0.0.0 (/workspace/backend/crates/inspection/application)
+#21 193.3    Compiling console-evaluation-application v0.1.0 (/workspace/backend/crates/evaluation/application)
+#21 193.4    Compiling console-sales-application v0.1.0 (/workspace/backend/crates/sales/application)
+#21 193.6    Compiling chacha20poly1305 v0.10.1
+#21 193.6    Compiling mail-parser v0.11.9
+#21 193.6    Compiling phf v0.13.1
+#21 193.7    Compiling derive_builder_macro v0.20.2
+#21 193.7    Compiling console-dispatch-adapter-postgres v0.1.0 (/workspace/backend/crates/dispatch/adapter-postgres)
+#21 193.9    Compiling console-platform-excel v0.1.0 (/workspace/backend/crates/platform/excel)
+#21 196.4    Compiling leptos_config v0.9.0-beta
+#21 196.9    Compiling postgres-types v0.2.14
+#21 197.3    Compiling tonic-prost v0.14.6
+#21 197.4    Compiling leptos_dom v0.9.0-beta
+#21 197.4    Compiling opentelemetry_sdk v0.32.1
+#21 197.5    Compiling prost-types v0.14.4
+#21 198.4    Compiling console-inbox-adapter-postgres v0.1.0 (/workspace/backend/crates/inbox/adapter-postgres)
+#21 198.7    Compiling phf_shared v0.12.1
+#21 198.8    Compiling sharded-slab v0.1.7
+#21 199.2    Compiling matchers v0.2.0
+#21 199.2    Compiling rand_xoshiro v0.7.0
+#21 199.5    Compiling strum_macros v0.27.2
+#21 200.3    Compiling quanta v0.12.6
+#21 200.6    Compiling left-right v0.11.7
+#21 200.6    Compiling tracing-serde v0.2.0
+#21 200.7    Compiling tracing-log v0.2.0
+#21 200.8    Compiling console-logistics-domain v0.1.0 (/workspace/backend/crates/logistics/domain)
+#21 200.9    Compiling console-equipment-domain v0.1.0 (/workspace/backend/crates/equipment/domain)
+#21 200.9    Compiling console-equipment-application v0.1.0 (/workspace/backend/crates/equipment/application)
+#21 200.9    Compiling console-payroll-domain v0.1.0 (/workspace/backend/crates/payroll/domain)
+#21 201.0    Compiling console-orgchange-domain v0.1.0 (/workspace/backend/crates/orgchange/domain)
+#21 201.3    Compiling thread_local v1.1.9
+#21 201.3    Compiling console-platform-realtime v0.1.0 (/workspace/backend/crates/platform/realtime)
+#21 201.4    Compiling metrics-exporter-prometheus v0.18.3
+#21 201.4    Compiling nu-ansi-term v0.50.3
+#21 201.5    Compiling console-platform-auth-rest v0.1.0 (/workspace/backend/crates/platform/auth-rest)
+#21 201.6    Compiling hashbag v0.1.13
+#21 201.6    Compiling sketches-ddsketch v0.3.1
+#21 201.7    Compiling rustix v1.1.4
+#21 201.8    Compiling console-platform-audit-chain v0.1.0 (/workspace/backend/crates/platform/audit-chain)
+#21 201.8    Compiling chrono-tz v0.10.4
+#21 201.8    Compiling console-comms-rest v0.1.0 (/workspace/backend/crates/comms/rest)
+#21 201.9    Compiling console-support-rest v0.1.0 (/workspace/backend/crates/support/rest)
+#21 201.9    Compiling console-docs-rest v0.0.0 (/workspace/backend/crates/docs/rest)
+#21 202.0    Compiling metrics-util v0.20.4
+#21 202.0    Compiling evmap v11.0.0
+#21 202.1    Compiling tracing-subscriber v0.3.23
+#21 202.6    Compiling console-orgchange-adapter-postgres v0.1.0 (/workspace/backend/crates/orgchange/adapter-postgres)
+#21 205.4    Compiling console-payroll-adapter-postgres v0.1.0 (/workspace/backend/crates/payroll/adapter-postgres)
+#21 205.5    Compiling console-equipment-adapter-postgres v0.1.0 (/workspace/backend/crates/equipment/adapter-postgres)
+#21 206.2    Compiling console-logistics-adapter-postgres v0.1.0 (/workspace/backend/crates/logistics/adapter-postgres)
+#21 206.3    Compiling strum v0.27.2
+#21 206.4    Compiling phf v0.12.1
+#21 206.4    Compiling opentelemetry-proto v0.32.0
+#21 206.5    Compiling tonic-types v0.14.6
+#21 207.8    Compiling tokio-postgres v0.7.18
+#21 208.4    Compiling console-reporting-adapter-postgres v0.1.0 (/workspace/backend/crates/reporting/adapter-postgres)
+#21 208.5    Compiling console-comms-adapter-imap v0.1.0 (/workspace/backend/crates/comms/adapter-imap)
+#21 212.0    Compiling derive_builder v0.20.2
+#21 212.1    Compiling console-evaluation-adapter-postgres v0.1.0 (/workspace/backend/crates/evaluation/adapter-postgres)
+#21 212.7    Compiling console-comms-credential-cipher v0.1.0 (/workspace/backend/crates/comms/credential-cipher)
+#21 213.1    Compiling console-docs-adapter-postgres v0.1.0 (/workspace/backend/crates/docs/adapter-postgres)
+#21 214.5    Compiling console-sales-adapter-postgres v0.1.0 (/workspace/backend/crates/sales/adapter-postgres)
+#21 214.7    Compiling console-compliance-adapter-postgres v0.1.0 (/workspace/backend/crates/compliance/adapter-postgres)
+#21 215.4    Compiling console-inspection-adapter-postgres v0.0.0 (/workspace/backend/crates/inspection/adapter-postgres)
+#21 215.7    Compiling console-financial-adapter-postgres v0.0.0 (/workspace/backend/crates/financial/adapter-postgres)
+#21 215.8    Compiling console-todos-adapter-postgres v0.1.0 (/workspace/backend/crates/todos/adapter-postgres)
+#21 215.9    Compiling console-benefit-adapter-postgres v0.1.0 (/workspace/backend/crates/benefit/adapter-postgres)
+#21 216.3    Compiling console-registry-adapter-postgres v0.1.0 (/workspace/backend/crates/registry/adapter-postgres)
+#21 216.6    Compiling console-inventory-adapter-postgres v0.1.0 (/workspace/backend/crates/inventory/adapter-postgres)
+#21 216.8    Compiling console-recruiting-adapter-postgres v0.1.0 (/workspace/backend/crates/recruiting/adapter-postgres)
+#21 217.5    Compiling console-notices-adapter-postgres v0.1.0 (/workspace/backend/crates/notices/adapter-postgres)
+#21 217.8    Compiling console-support-adapter-postgres v0.1.0 (/workspace/backend/crates/support/adapter-postgres)
+#21 218.1    Compiling console-finance-gl-adapter-postgres v0.0.0 (/workspace/backend/crates/finance-gl/adapter-postgres)
+#21 218.5    Compiling console-leave-adapter-postgres v0.1.0 (/workspace/backend/crates/leave/adapter-postgres)
+#21 218.7    Compiling console-identity-adapter-postgres v0.1.0 (/workspace/backend/crates/identity/adapter-postgres)
+#21 219.2    Compiling console-attendance-adapter-postgres v0.1.0 (/workspace/backend/crates/attendance/adapter-postgres)
+#21 220.4    Compiling console-ontology-application v0.0.0 (/workspace/backend/crates/ontology/application)
+#21 220.9    Compiling console-ontology-adapter-postgres v0.0.0 (/workspace/backend/crates/ontology/adapter-postgres)
+#21 221.4    Compiling console-messenger-adapter-postgres v0.1.0 (/workspace/backend/crates/messenger/adapter-postgres)
+#21 223.4    Compiling console-comms-adapter-smtp v0.1.0 (/workspace/backend/crates/comms/adapter-smtp)
+#21 227.3    Compiling console-platform-email v0.1.0 (/workspace/backend/crates/platform/email)
+#21 227.7    Compiling opentelemetry-http v0.32.0
+#21 228.6    Compiling console-workflow-runtime v0.1.0 (/workspace/backend/crates/workflow/runtime)
+#21 229.0    Compiling console-workflow-runtime-adapter-postgres v0.1.0 (/workspace/backend/crates/workflow/adapter-postgres)
+#21 229.7    Compiling console-comms-adapter-postgres v0.1.0 (/workspace/backend/crates/comms/adapter-postgres)
+#21 231.3    Compiling console-comms-adapter-mox v0.1.0 (/workspace/backend/crates/comms/adapter-mox)
+#21 232.4    Compiling console-workorder-adapter-postgres v0.1.0 (/workspace/backend/crates/workorder/adapter-postgres)
+#21 236.6    Compiling console-notifications-adapter-postgres v0.1.0 (/workspace/backend/crates/notifications/adapter-postgres)
+#21 239.0    Compiling x509-cert v0.2.5
+#21 240.1    Compiling console-analytics-quant-service v0.1.0 (/workspace/backend/crates/analytics-quant/service)
+#21 240.1    Compiling console-payroll-application v0.1.0 (/workspace/backend/crates/payroll/application)
+#21 240.1    Compiling linux-raw-sys v0.12.1
+#21 240.4    Compiling console-analytics-quant-rest v0.1.0 (/workspace/backend/crates/analytics-quant/rest)
+#21 241.1    Compiling console-payroll-rest v0.1.0 (/workspace/backend/crates/payroll/rest)
+#21 242.0    Compiling tokio-postgres-rustls v0.14.0
+#21 242.2    Compiling console-notifications-rest v0.1.0 (/workspace/backend/crates/notifications/rest)
+#21 245.5    Compiling console-workorder-rest v0.1.0 (/workspace/backend/crates/workorder/rest)
+#21 257.4    Compiling opentelemetry-otlp v0.32.0
+#21 261.9    Compiling console-messenger-rest v0.1.0 (/workspace/backend/crates/messenger/rest)
+#21 266.3    Compiling console-ontology-rest v0.0.0 (/workspace/backend/crates/ontology/rest)
+#21 272.3    Compiling console-attendance-rest v0.1.0 (/workspace/backend/crates/attendance/rest)
+#21 279.0    Compiling console-identity-rest v0.1.0 (/workspace/backend/crates/identity/rest)
+#21 287.4    Compiling console-leave-rest v0.1.0 (/workspace/backend/crates/leave/rest)
+#21 290.2    Compiling console-finance-gl-rest v0.0.0 (/workspace/backend/crates/finance-gl/rest)
+#21 304.3    Compiling console-notices-rest v0.1.0 (/workspace/backend/crates/notices/rest)
+#21 304.8    Compiling console-recruiting-rest v0.1.0 (/workspace/backend/crates/recruiting/rest)
+#21 306.8    Compiling console-inventory-rest v0.1.0 (/workspace/backend/crates/inventory/rest)
+#21 310.1    Compiling console-registry-rest v0.1.0 (/workspace/backend/crates/registry/rest)
+#21 319.8    Compiling console-benefit-rest v0.1.0 (/workspace/backend/crates/benefit/rest)
+#21 321.1    Compiling console-financial-rest v0.0.0 (/workspace/backend/crates/financial/rest)
+#21 326.2    Compiling console-todos-rest v0.1.0 (/workspace/backend/crates/todos/rest)
+#21 335.3    Compiling console-inspection-rest v0.0.0 (/workspace/backend/crates/inspection/rest)
+#21 336.1    Compiling console-compliance-rest v0.1.0 (/workspace/backend/crates/compliance/rest)
+#21 339.6    Compiling console-sales-rest v0.1.0 (/workspace/backend/crates/sales/rest)
+#21 350.7    Compiling console-evaluation-rest v0.1.0 (/workspace/backend/crates/evaluation/rest)
+#21 355.5    Compiling croner v4.0.0
+#21 356.9    Compiling console-reporting-rest v0.1.0 (/workspace/backend/crates/reporting/rest)
+#21 357.4    Compiling console-payroll-ui v0.1.0 (/workspace/backend/crates/payroll/ui)
+#21 358.8    Compiling console-logistics-rest v0.1.0 (/workspace/backend/crates/logistics/rest)
+#21 370.3    Compiling console-equipment-rest v0.1.0 (/workspace/backend/crates/equipment/rest)
+#21 370.8    Compiling console-orgchange-rest v0.1.0 (/workspace/backend/crates/orgchange/rest)
+#21 373.6    Compiling tracing-opentelemetry v0.33.0
+#21 390.0    Compiling console-inbox-rest v0.1.0 (/workspace/backend/crates/inbox/rest)
+#21 390.2    Compiling console-platform-rest v0.1.0 (/workspace/backend/crates/platform/platform-rest)
+#21 391.9    Compiling console-dispatch-rest v0.1.0 (/workspace/backend/crates/dispatch/rest)
+#21 393.8    Compiling console-dispatch-worker v0.1.0 (/workspace/backend/crates/dispatch/worker)
+#21 403.4    Compiling console-governance-rest v0.0.0 (/workspace/backend/crates/governance/rest)
+#21 404.8    Compiling console-ontology-canonical-adapter-postgres v0.1.0 (/workspace/backend/crates/ontology/canonical-adapter-postgres)
+#21 405.4    Compiling console-consulting-rest v0.1.0 (/workspace/backend/crates/consulting/rest)
+#21 408.6    Compiling console-integrity v0.1.0 (/workspace/backend/crates/compliance/integrity)
+#21 416.3    Compiling console-facilities-rest v0.1.0 (/workspace/backend/crates/facilities/rest)
+#21 418.3    Compiling console-production-rest v0.0.0 (/workspace/backend/crates/production/rest)
+#21 420.6    Compiling tower-http v0.7.1
+#21 421.2    Compiling console-action-inbox-application v0.1.0 (/workspace/backend/crates/action-inbox/application)
+#21 421.7    Compiling console-erp-domain v0.1.0 (/workspace/backend/crates/erp/domain)
+#21 421.9    Compiling console-app v0.1.0 (/workspace/backend/app)
+#21 474.0     Finished `release` profile [optimized] target(s) in 7m 52s
+#21 474.0 warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+#21 474.0 note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+#21 DONE 474.2s
+
+#23 [builder  4/13] COPY backend/Cargo.toml backend/Cargo.lock ./
+#23 CACHED
+
+#24 [builder  6/13] COPY backend/app ./app
+#24 CACHED
+
+#25 [builder 10/13] COPY third-party/rust/vendor /workspace/third-party/rust/vendor
+#25 CACHED
+
+#26 [builder  7/13] COPY backend/ci ./ci
+#26 CACHED
+
+#27 [builder  9/13] COPY backend/openapi ./openapi
+#27 CACHED
+
+#28 [builder  5/13] COPY backend/.sqlx ./.sqlx
+#28 CACHED
+
+#29 [builder  8/13] COPY backend/crates ./crates
+#29 CACHED
+
+#30 [builder 11/13] COPY docs/reference /workspace/docs/reference
+#30 CACHED
+
+#31 [builder 12/13] COPY docs/specs /workspace/docs/specs
+#31 CACHED
+
+#32 [builder 13/13] RUN rustc -Vv && cargo build --locked --release -p console-app
+#32 CACHED
+
+#33 [builder  3/13] COPY rust-toolchain.toml /workspace/rust-toolchain.toml
+#33 CACHED
+
+#34 [runtime 3/3] COPY --from=builder /workspace/backend/target/release/console-app /usr/local/bin/console-app
+#34 DONE 0.2s
+
+#35 exporting to image
+#35 exporting layers
+#35 exporting layers 6.5s done
+#35 exporting manifest sha256:5dc2c4e1836907e21a56af6e78ada48a460d061ca30caf44f3355c7852d4ab8b done
+#35 exporting config sha256:9c1467f4c5ea0aca0038a606e800b2d0fd66c4973ff596947a7e891cee578e25 done
+#35 exporting attestation manifest sha256:e773b89a38b2eeaa686c8f8200c990fad77c9ed51e260fd1aafa9192d42ba4e3 done
+#35 exporting manifest list sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7 done
+#35 naming to docker.io/library/console-client-release:8efec5b0 done
+#35 unpacking to docker.io/library/console-client-release:8efec5b0
+#35 unpacking to docker.io/library/console-client-release:8efec5b0 2.3s done
+#35 DONE 8.9s

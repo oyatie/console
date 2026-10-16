@@ -1,0 +1,37 @@
+{
+  "reviewer": "/root/integration_tests",
+  "author": "/root/reference_inventory",
+  "decision": "APPROVED_EXACT_EXECUTABLE_TEST_SOURCE_FIXTURE_ORACLES_AND_RESOURCE_WIRING",
+  "packet": "/private/tmp/console-native-company-parser-sqlx-tests-20260920-round1",
+  "manifest_sha256": "4bfd3dd57dca0ad8ab7cbadacfe24ae7aa055173f2cf3f42a9a8e32f9712c381",
+  "packet_rust_sha256": "492552cd86725cd32d7789ed571e5cc41341457d92daa673505c0b2c2873abce",
+  "integrated_formatting_successor_sha256": "c43e4281585e49c6c3a8891b45e001f62e7b995b2bdb16a906ec887290a498fc",
+  "findings": [],
+  "checks": [
+    "All14packetmembers matchmanifestSHA+bytes. Current3SQLfixtures matchpacketexactly. SQLadaptation from previously approvedschema/parserround4 removes only clientmeta directives and adds exact552goldenrejectedcount; allvectors/looporacles unchanged.",
+    "One SQLxleaf in actual account_browser::deployment_operator_designation::company_setup::input_parser namespace; current include nesting correct. Existing designated(pool) uses genuine fixture/finalizer, Account enrollment and restricted startupdesignation; all_rows dynamicpublictablecensus includesrequiredidentity/business/historytables and has retained positive omission/corruption controls.",
+    "Rootandcredential actualclassifiers positivelyrequire native_finalized before install, helperabsence checked, sameclassifiers negativelyrequire profile_mismatch after private install and afterparsercalls. No classifierfingerprintrewrite/deletion/reseal permitted. Incompleteprofile remains confined todisposableSQLxDB.",
+    "Adminidentity bound to console_buck_admin current/sessionuser and explicit testbootstrapGUC+superuser. NULL or mismatch is rejected by typeddecode/assertion.",
+    "Helpermetadata count1 excludesabsent/overloads; input/outputOIDtypes,modes,names,security,nullhandling,volatility,parallel,owner,language,exactsearchpath,exactownerEXECUTEACL pinned. With1row, NULLmetadata predicate cannot falselypass: SQLbool_andNULL yieldsNULL and fetch_one<bool> decodefails. Missingrows count0 yieldsfalse; overloadcount>1false.",
+    "ExactSQL oracles awaited on same acquiredadmin connection; BEGINREADONLY+timeouts+ROLLBACK preserved. Expected557+24+129=710parsercalls guardedby5valid552reject/24reject/29valid100reject assertions. SQLxraw_sql awaitederror propagation substitutes psqlON_ERROR_STOP. Printedcounts only follow successfulDOcompletion, not independent runtime evidence.",
+    "Five TestDatabaseLogin variants exist and login_test_pool uses actual configuredpasswordLOGIN for isolatedDB; checks session/currentuser and nonsuperuser/nonbypass. Sixthstartup is actual designatedfixturepool. Eachdenial requires42501 rather than missingfunction/invalidinput. Metadata exactACL complements actualLOGINnegative.",
+    "Before/after completepublictable snapshots compare independent storedrows, neverresponseecho. Helpermetadata intentionally differs. NoCompanysuccessfixtureorreceipt schema required.",
+    "Existing6generatedoutputSHA exactlymatchcurrentdisk. Generator test allows exactly1newUNINSTALLEDhelperoutput, verifiesfulloldbytes+diskbytes and absencehelperinstallationinoldoutputs. It is not a semanticproof of parserbody; implementation/source review remains required.",
+    "Nativeauth_rest BUCKmappedsource block contains newRustinclude,3SQLfixtures and authoritative //ops helperexport/externalpath. Existing generator mechanism carries includedRusthelpers; sourceconfig adds3fixturepaths+1externalentry only. New resourceassertion and generatorcustodytest are additive.",
+    "IntegratedRust c43e4281diff manuallyreviewed and literal-preserving tokencomparison confirms whitespace/trailingcommas only versus packet492552cd. No oraclechange."
+  ],
+  "scope_limits": [
+    "Approval is exacttestsource/fixture/resourcewiring, not parserimplementation, observednativecompile/run, installedmigration, custodyupgrade, completeCompanyeffectprofile or journey.",
+    "Rootowns actualnativeartifact/discovery/execution counts and retainedfailedrun; securityowns finalsource/runtime verdict. I neitherreadclaimedruntime into approvalnor executedSQL/native/build/browser.",
+    "Actualexecution must discover/run1leaf, complete710parsercalls+6LOGINdenials and satisfy allrow/profilechecks. Current implementationoffsetfix is outside thisreview.",
+    "Pureparser remainsprivateUNINSTALLED resource; no servingprofileactivation orhistoricalcommand/fingerprintmutation approved."
+  ],
+  "execution": {
+    "repository_edits": 0,
+    "sql": 0,
+    "native_tests": 0,
+    "builds": 0,
+    "browser": 0,
+    "python_structural_hash_ast_literal_comparisons": true
+  }
+}

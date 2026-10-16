@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-exact-additive-test-source-only",
+  "manifest_sha256": "7278b03eed0a145bf9088e2183d7ace7633a938a39166578ced70c19eee06e9c",
+  "candidate_sha256": "b1195b7fea5b8738cfc8159f6c4c1e77d8b74da6d36f448c489e676514b06d8d",
+  "supersedes_receipt_sha256": "8f7f34e743603857a1f351bb9167d1761e483a472ec5d974388a2b6a194eac15",
+  "findings": [],
+  "correction": "Root identified value-bearing assert_eq diagnostics on full credential-containing rows. Prior reviewer missed diagnostic-output risk. Exactly two assertions now use boolean equality; exact oracle semantics retained and failure no longer prints rows/catalog. No runtime occurred on predecessor.",
+  "checks": [
+    "Successor diff limited to two assert_eq to assert!(equality) conversions, unchanged messages.",
+    "All round1 source/fixture/oracle/ACL/mounted503 conclusions retained within original scope."
+  ],
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Actual1leaf six mounted faults and3recoveries; final suite and committed candidate binding."
+  ]
+}

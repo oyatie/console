@@ -6,6 +6,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 use std::collections::BTreeSet;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -19,10 +20,13 @@ use console_kernel_core::{
     UserId,
 };
 use console_platform_auth::{
-    AccessClaims, AccessTokenInput, AuthError, JwtIssuer, JwtSettings, JwtVerifier,
-    MobilePasskeyStepUpBinding, PasskeyAuthenticationCredential, PasskeyRegistrationCredential,
-    PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, RefreshTokenUseError,
-    WebauthnSettings,
+    AccessClaims, AccessTokenInput, AuthError, DeviceLoginHandoffError, DeviceLoginPoll, JwtIssuer,
+    JwtSettings, JwtVerifier, MobilePasskeyStepUpBinding, PasskeyAuthenticationCredential,
+    PasskeyRegistrationCredential, PasskeyRegistrationStart, PasskeyService, RefreshTokenStore,
+    RefreshTokenUseError, SessionVerification, WebauthnSettings, append_legacy_auth_audit_in_tx,
+    approve_device_login_with_passkey_in_tx, approve_targeted_device_login_session_in_tx,
+    create_device_login_handoff_in_tx, create_self_enroll_device_handoff_in_tx,
+    guard_legacy_subject_in_tx, poll_and_consume_device_login_in_tx,
 };
 use console_platform_authz::{
     Action, Feature, Principal, Role, authorize, resolve_branch_scope_in_org,
@@ -36,11 +40,17 @@ use console_platform_group::GroupMemberOrg;
 use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
 use console_platform_request_context::TrustedClientIp;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
 use url::Url;
 use uuid::Uuid;
+
+mod account_browser;
+pub use account_browser::{
+    NativeAccountContext, NativeAccountEntry, NativeCompanySetupEligibility, NativeEntryError,
+    native_account_credentials_present, native_account_entry, native_company_setup_entry,
+};
+mod terms;
 
 const DEFAULT_ACCESS_TOKEN_TTL: Duration = Duration::minutes(15);
 const GROUP_ADMIN_TENANT_CONTEXT_TTL: Duration = Duration::minutes(15);
@@ -60,6 +70,18 @@ const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// the refresh/logout endpoints that need it.
 const REFRESH_COOKIE_PATH: &str = "/api/v1/auth";
 
+pub const ACCOUNT_REGISTRATION_START_PATH: &str = "/api/v2/auth/registration/start";
+pub const ACCOUNT_REGISTRATION_FINISH_PATH: &str = "/api/v2/auth/registration/finish";
+pub const ACCOUNT_LOGIN_START_PATH: &str = "/api/v2/auth/passkey/login/start";
+pub const ACCOUNT_LOGIN_FINISH_PATH: &str = "/api/v2/auth/passkey/login/finish";
+pub const ACCOUNT_ME_PATH: &str = "/api/v2/accounts/me";
+pub const ACCOUNT_CONTEXTS_PATH: &str = "/api/v2/accounts/me/contexts";
+pub const ACCOUNT_CSRF_PATH: &str = "/api/v2/auth/csrf";
+pub const ACCOUNT_LOGOUT_PATH: &str = "/api/v2/auth/logout";
+pub const ACCOUNT_REFRESH_PATH: &str = "/api/v2/auth/token/refresh";
+pub const TERMS_CURRENT_PATH: &str = "/api/v2/auth/terms";
+pub const TERMS_MANIFEST_PATH: &str = "/api/v2/auth/terms/manifests/{sha256}";
+pub const TERMS_CONTENT_PATH: &str = "/api/v2/auth/terms/content/{sha256}";
 pub const SIGNUP_PATH: &str = "/api/v1/auth/signup";
 pub const PASSKEY_REGISTER_START_PATH: &str = "/api/v1/auth/passkey/register/start";
 pub const PASSKEY_REGISTER_FINISH_PATH: &str = "/api/v1/auth/passkey/register/finish";
@@ -88,6 +110,18 @@ pub const GROUP_ADMIN_TENANT_CONTEXT_EXIT_PATH: &str = "/api/v1/group-admin/tena
 #[cfg(feature = "dev-auth")]
 pub const DEV_AUTH_SESSION_PATH: &str = "/api/v1/dev-auth/session";
 pub const AUTH_ROUTE_PATHS: &[&str] = &[
+    ACCOUNT_REGISTRATION_START_PATH,
+    ACCOUNT_REGISTRATION_FINISH_PATH,
+    ACCOUNT_LOGIN_START_PATH,
+    ACCOUNT_LOGIN_FINISH_PATH,
+    ACCOUNT_ME_PATH,
+    ACCOUNT_CONTEXTS_PATH,
+    ACCOUNT_CSRF_PATH,
+    ACCOUNT_LOGOUT_PATH,
+    ACCOUNT_REFRESH_PATH,
+    TERMS_CURRENT_PATH,
+    TERMS_MANIFEST_PATH,
+    TERMS_CONTENT_PATH,
     SIGNUP_PATH,
     PASSKEY_REGISTER_START_PATH,
     PASSKEY_REGISTER_FINISH_PATH,
@@ -180,6 +214,11 @@ pub struct AuthRestConfig {
 #[derive(Clone)]
 pub struct AuthRestState {
     pool: PgPool,
+    auth_database: Option<PgPool>,
+    /// A one-way requirement bound only by trusted serving composition, never
+    /// a cached Company/source verdict or a request-controlled configuration.
+    current_company_provenance_required: bool,
+    terms_artifacts: Option<Arc<terms::TermsArtifacts>>,
     services: Option<AuthServices>,
 }
 
@@ -218,6 +257,9 @@ impl AuthRestState {
     pub fn disabled(pool: PgPool) -> Self {
         Self {
             pool,
+            auth_database: None,
+            current_company_provenance_required: false,
+            terms_artifacts: None,
             services: None,
         }
     }
@@ -249,6 +291,9 @@ impl AuthRestState {
 
         Ok(Self {
             pool,
+            auth_database: None,
+            current_company_provenance_required: false,
+            terms_artifacts: None,
             services: Some(AuthServices {
                 passkeys,
                 jwt_issuer,
@@ -264,6 +309,44 @@ impl AuthRestState {
                 email_sender: Arc::new(DisabledEmailSender),
             }),
         })
+    }
+
+    /// Retain the restricted authentication transport admitted by the
+    /// composition root, separately from the legacy Company business pool.
+    #[must_use]
+    pub fn with_auth_database(mut self, pool: PgPool) -> Self {
+        self.auth_database = Some(pool);
+        self
+    }
+
+    /// Retain the exact verified bridge's requirement for every verifier this
+    /// state constructs, including direct Group-admin endpoints.
+    #[must_use]
+    pub fn require_current_company_provenance(mut self) -> Self {
+        self.current_company_provenance_required = true;
+        self
+    }
+
+    /// The retained transport used by application readiness. Constructors that
+    /// only compose injected dependencies do not perform transport admission.
+    #[must_use]
+    pub fn auth_database(&self) -> Option<&PgPool> {
+        self.auth_database.as_ref()
+    }
+
+    fn require_auth_database(&self) -> Result<&PgPool, RestError> {
+        self.auth_database
+            .as_ref()
+            .ok_or_else(|| RestError::unavailable("authentication storage unavailable"))
+    }
+
+    /// Bind trusted public release metadata independently of signing/WebAuthn
+    /// services. Invalid metadata leaves terms unavailable without aborting App
+    /// construction; registered file bytes are checked again on every request.
+    #[must_use]
+    pub fn with_account_terms_artifact_root(mut self, root: PathBuf) -> Self {
+        self.terms_artifacts = terms::TermsArtifacts::load(root).ok().map(Arc::new);
+        self
     }
 
     /// Install the outbound OTP email sender used by the open-signup endpoint.
@@ -289,6 +372,27 @@ pub enum AuthRestConfigError {
 
 pub fn router(state: AuthRestState) -> Router {
     let router = Router::new()
+        .route(
+            ACCOUNT_REGISTRATION_START_PATH,
+            post(account_browser::registration_start),
+        )
+        .route(
+            ACCOUNT_REGISTRATION_FINISH_PATH,
+            post(account_browser::registration_finish),
+        )
+        .route(ACCOUNT_LOGIN_START_PATH, post(account_browser::login_start))
+        .route(
+            ACCOUNT_LOGIN_FINISH_PATH,
+            post(account_browser::login_finish),
+        )
+        .route(ACCOUNT_ME_PATH, get(account_browser::me))
+        .route(ACCOUNT_CONTEXTS_PATH, get(account_browser::contexts))
+        .route(ACCOUNT_CSRF_PATH, get(account_browser::csrf))
+        .route(ACCOUNT_LOGOUT_PATH, post(account_browser::logout))
+        .route(ACCOUNT_REFRESH_PATH, post(account_browser::refresh))
+        .route(TERMS_CURRENT_PATH, get(terms::current))
+        .route(TERMS_MANIFEST_PATH, get(terms::manifest))
+        .route(TERMS_CONTENT_PATH, get(terms::content))
         .route(SIGNUP_PATH, post(signup))
         .route(PASSKEY_REGISTER_START_PATH, post(start_registration))
         .route(PASSKEY_REGISTER_FINISH_PATH, post(finish_registration))
@@ -777,6 +881,17 @@ impl RestError {
 
     fn from_provisioning(error: ProvisioningError) -> Self {
         match error {
+            ProvisioningError::PlatformListUnauthorized
+            | ProvisioningError::PlatformListForbidden
+            | ProvisioningError::PlatformListUnavailable
+            | ProvisioningError::PlatformHealthUnauthorized
+            | ProvisioningError::PlatformHealthForbidden
+            | ProvisioningError::PlatformHealthUnavailable
+            | ProvisioningError::PlatformGroupListUnauthorized
+            | ProvisioningError::PlatformGroupListForbidden
+            | ProvisioningError::PlatformGroupListUnavailable => {
+                Self::unavailable("platform listing unavailable on the legacy transport")
+            }
             // Generic, non-revealing message for any OTP-redeem rejection so the
             // client cannot distinguish unknown vs expired vs already-used.
             ProvisioningError::InvalidBootstrapCredential => {
@@ -788,10 +903,13 @@ impl RestError {
             }
             ProvisioningError::NotFound(_) => Self::not_found(error.to_string()),
             ProvisioningError::Conflict(_) => Self::conflict(error.to_string()),
-            ProvisioningError::Sqlx(_)
-            | ProvisioningError::Db(_)
-            | ProvisioningError::Json(_)
-            | ProvisioningError::Auth(_)
+            ProvisioningError::Account(_) | ProvisioningError::AccountTermsAcknowledgments => {
+                Self::unavailable("Account operation unavailable on the legacy transport")
+            }
+            ProvisioningError::Sqlx(_) | ProvisioningError::Db(_) | ProvisioningError::Auth(_) => {
+                Self::internal("authentication storage unavailable")
+            }
+            ProvisioningError::Json(_)
             | ProvisioningError::Kernel(_)
             | ProvisioningError::InvalidRoster(_)
             | ProvisioningError::UnknownBranch { .. } => Self::internal(error.to_string()),
@@ -839,17 +957,11 @@ async fn start_registration(
     Json(body): Json<RegisterStartRequest>,
 ) -> Result<Json<RegisterStartResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     let user = load_user_auth_context_in_org(&state.pool, org_id, user_id).await?;
 
-    // Step-up gate: an already-enrolled user MUST assert an existing passkey (UV)
-    // before a new credential challenge is issued. A user with zero passkeys is
-    // doing initial enrollment and is exempt.
-    let existing_passkeys = services
-        .passkeys
-        .count_user_passkeys(&state.pool, org_id, user_id)
-        .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+    let mut tx = begin_legacy_auth_tx(&state, org_id, user_id).await?;
+    let existing_passkeys = count_passkeys_in_tx(&mut tx, org_id, user_id).await?;
     if existing_passkeys == 0 {
         ensure_required_privacy_consent(&state.pool, org_id, user_id).await?;
     } else {
@@ -860,20 +972,20 @@ async fn start_registration(
         })?;
         services
             .passkeys
-            .verify_step_up_for_user(
-                &state.pool,
+            .verify_step_up_for_user_in_tx(
+                &mut tx,
                 step_up.ceremony_id,
                 step_up.credential,
                 user_id,
             )
             .await
-            .map_err(|err| RestError::unauthorized(err.to_string()))?;
+            .map_err(auth_operation_error)?;
     }
 
     let ceremony = services
         .passkeys
-        .start_registration(
-            &state.pool,
+        .start_registration_in_tx(
+            &mut tx,
             org_id,
             PasskeyRegistrationStart {
                 user_id,
@@ -882,8 +994,11 @@ async fn start_registration(
             },
         )
         .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+        .map_err(auth_operation_error)?;
 
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     Ok(Json(RegisterStartResponse {
         ceremony_id: ceremony.ceremony_id,
         challenge: serde_json::to_value(ceremony.challenge)
@@ -899,13 +1014,10 @@ async fn finish_registration(
     Json(body): Json<RegisterFinishRequest>,
 ) -> Result<(StatusCode, Json<RegisterFinishResponse>), RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
-    ensure_registration_ceremony_owner(&state.pool, body.ceremony_id, user_id).await?;
-    let existing_passkeys = services
-        .passkeys
-        .count_user_passkeys(&state.pool, org_id, user_id)
-        .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
+    let mut tx = begin_legacy_auth_tx(&state, org_id, user_id).await?;
+    ensure_registration_ceremony_owner(&mut tx, body.ceremony_id, user_id).await?;
+    let existing_passkeys = count_passkeys_in_tx(&mut tx, org_id, user_id).await?;
     if existing_passkeys == 0 {
         ensure_required_privacy_consent(&state.pool, org_id, user_id).await?;
     }
@@ -915,27 +1027,24 @@ async fn finish_registration(
     // so a successful enrollment — and only that — burns the code atomically. A redeem
     // never consumes the code, so a failed/cancelled enrollment leaves it usable; the
     // user can retry until a passkey actually sticks.
-    let mut tx = state
-        .pool
-        .begin()
-        .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
     let passkey = services
         .passkeys
         .finish_registration_in_tx(&mut tx, org_id, body.ceremony_id, body.credential, now)
         .await
-        .map_err(|err| match err {
-            AuthError::Kernel(kernel) => RestError::from_kernel(kernel),
-            other => RestError::internal(other.to_string()),
-        })?;
+        .map_err(auth_operation_error)?;
+    if passkey.user_id != user_id {
+        return Err(RestError::unauthorized(
+            "registration ceremony owner mismatch",
+        ));
+    }
     services
         .bootstrap_credentials
         .consume_open_credentials_tx(&mut tx, org_id, user_id, now)
         .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     tx.commit()
         .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
 
     Ok((
         StatusCode::CREATED,
@@ -966,9 +1075,9 @@ async fn start_login(
     // credential. No user_id is taken from the client.
     let ceremony = services
         .passkeys
-        .start_authentication(&state.pool)
+        .start_authentication(state.require_auth_database()?)
         .await
-        .map_err(|err| RestError::unauthorized(err.to_string()))?;
+        .map_err(auth_operation_error)?;
 
     Ok(Json(LoginStartResponse {
         ceremony_id: ceremony.ceremony_id,
@@ -990,15 +1099,20 @@ async fn start_mobile_step_up(
     Json(body): Json<MobilePasskeyStepUpStartRequest>,
 ) -> Result<Json<MobilePasskeyStepUpStartResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, _org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     body.binding
         .validate()
         .map_err(|err| RestError::validation(err.to_string()))?;
     let ceremony = services
         .passkeys
-        .start_mobile_step_up(&state.pool, user_id, body.binding.clone())
+        .start_mobile_step_up(
+            state.require_auth_database()?,
+            org_id,
+            user_id,
+            body.binding.clone(),
+        )
         .await
-        .map_err(|err| RestError::unauthorized(err.to_string()))?;
+        .map_err(auth_operation_error)?;
 
     Ok(Json(MobilePasskeyStepUpStartResponse {
         ceremony_id: ceremony.ceremony_id,
@@ -1015,18 +1129,25 @@ async fn finish_login(
     Json(body): Json<LoginFinishRequest>,
 ) -> Result<Response, RestError> {
     let services = state.services()?;
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     let outcome = services
         .passkeys
-        .finish_authentication(&state.pool, body.ceremony_id, body.credential)
+        .finish_authentication_in_tx(&mut tx, body.ceremony_id, body.credential)
         .await
-        .map_err(|err| RestError::unauthorized(err.to_string()))?;
+        .map_err(auth_operation_error)?;
     // Passkey login is a pre-auth route (no tenant middleware): arm the GUC with
     // the org resolved from the asserted credential so the `users` read + session
     // mint run under the credential's tenant.
-    let user = load_user_auth_context_in_org(&state.pool, outcome.org_id, outcome.user_id).await?;
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
-    record_auth_audit(
-        &state.pool,
+    let user =
+        load_auth_session_context_in_tx(&mut tx, &state.pool, outcome.org_id, outcome.user_id)
+            .await?;
+    let tokens = issue_token_pair_in_tx(&mut tx, services, &user).await?;
+    record_auth_audit_in_tx(
+        &mut tx,
         outcome.org_id,
         outcome.user_id,
         "auth.login",
@@ -1036,6 +1157,9 @@ async fn finish_login(
         }),
     )
     .await?;
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     Ok(token_pair_response(
         tokens,
         &headers,
@@ -1146,16 +1270,24 @@ async fn redeem_otp(
     )
     .await?;
 
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
+        .await
+        .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
     let redemption = match services
         .bootstrap_credentials
-        .redeem_otp(&state.pool, body.otp.trim(), now)
+        .redeem_otp_in_tx(&mut tx, body.otp.trim(), now)
         .await
     {
         Ok(redemption) => redemption,
         Err(err) => {
+            tx.rollback()
+                .await
+                .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
             // Audit the failed attempt WITHOUT the OTP value or any PII.
             record_anonymous_auth_audit(
-                &state.pool,
+                state.require_auth_database()?,
                 "auth.otp.redeem_failed",
                 serde_json::json!({ "outcome": "rejected" }),
             )
@@ -1168,11 +1300,16 @@ async fn redeem_otp(
     // OTP redeem is a pre-auth route (no tenant middleware): arm the GUC with the
     // org resolved from the redeemed credential so the `users` read + session mint
     // run under the credential's tenant.
-    let user =
-        load_user_auth_context_in_org(&state.pool, redemption.org_id, redemption.user_id).await?;
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
-    record_auth_audit(
+    let user = load_auth_session_context_in_tx(
+        &mut tx,
         &state.pool,
+        redemption.org_id,
+        redemption.user_id,
+    )
+    .await?;
+    let tokens = issue_token_pair_in_tx(&mut tx, services, &user).await?;
+    record_auth_audit_in_tx(
+        &mut tx,
         redemption.org_id,
         redemption.user_id,
         "auth.otp.signin",
@@ -1182,6 +1319,10 @@ async fn redeem_otp(
         }),
     )
     .await?;
+
+    tx.commit()
+        .await
+        .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
 
     // Dual transport: web (cookie) gets an HttpOnly Set-Cookie and a null body
     // refresh token; mobile (body) gets the refresh token in the JSON body. The
@@ -1263,7 +1404,7 @@ async fn issue_admin_otp(
     Json(body): Json<AdminIssueOtpRequest>,
 ) -> Result<Json<AdminIssueOtpResponse>, RestError> {
     let services = state.services()?;
-    let principal = principal_from_headers(&state.pool, services, &headers).await?;
+    let principal = principal_from_headers(&state, services, &headers).await?;
 
     // Resolve the TARGET's real roles. A missing or inactive target is a 403 here
     // (the caller is authenticated; it is the requested target that is invalid),
@@ -1358,7 +1499,7 @@ async fn admin_credential_reset(
     Json(body): Json<AdminCredentialResetRequest>,
 ) -> Result<Json<AdminCredentialResetResponse>, RestError> {
     let services = state.services()?;
-    let principal = principal_from_headers(&state.pool, services, &headers).await?;
+    let principal = principal_from_headers(&state, services, &headers).await?;
 
     // Resolve the TARGET's real roles inside the CALLER's tenant (IDOR / cross-org
     // guard): a user in another org is not visible under the caller's org GUC and
@@ -1425,43 +1566,53 @@ async fn admin_credential_reset(
 /// namespace. Unlike `/api/v1/passkeys`, this route is not behind the tenant
 /// middleware, so it also works for PLATFORM accounts whose token is deliberately
 /// rejected from tenant APIs.
-async fn list_self_passkeys(
-    State(state): State<AuthRestState>,
-    headers: HeaderMap,
-) -> Result<Json<Vec<PasskeySummary>>, RestError> {
-    let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
-
-    let summaries =
-        with_org_conn::<_, Vec<PasskeySummary>, RestError>(&state.pool, org_id, move |tx| {
-            Box::pin(async move {
-                let rows = sqlx::query(
-                    r#"
-                    SELECT id, created_at, last_used_at
-                    FROM auth_webauthn_credentials
-                    WHERE user_id = $1
-                    ORDER BY created_at
-                    "#,
-                )
-                .bind(user_id)
-                .fetch_all(tx.as_mut())
-                .await
-                .map_err(DbError::Sqlx)?;
-
-                rows.into_iter()
-                    .map(|row| {
-                        Ok(PasskeySummary {
-                            id: row.try_get("id").map_err(DbError::Sqlx)?,
-                            created_at: row.try_get("created_at").map_err(DbError::Sqlx)?,
-                            last_used_at: row.try_get("last_used_at").map_err(DbError::Sqlx)?,
-                        })
-                    })
-                    .collect::<Result<Vec<_>, RestError>>()
-            })
-        })
-        .await?;
-
-    Ok(Json(summaries))
+async fn list_self_passkeys(State(state): State<AuthRestState>, headers: HeaderMap) -> Response {
+    let result: Result<Json<Vec<PasskeySummary>>, RestError> = async {
+        let services = state.services()?;
+        let token = bearer_token(&headers)?;
+        let Some(auth_pool) = state.auth_database.as_ref() else {
+            // Even without a transport, an available verifier can refuse an
+            // invalid credential. Current identity and family checks stay in Auth.
+            services
+                .jwt_verifier
+                .verify_access_token(token)
+                .map_err(|_| RestError::unauthorized("invalid bearer token"))?;
+            return Err(RestError::unavailable("session verification unavailable"));
+        };
+        let summaries = console_platform_auth::read_legacy_self_passkeys(
+            &services.jwt_verifier,
+            token,
+            services.refresh_family_absolute_ttl,
+            auth_pool,
+        )
+        .await
+        .map_err(|error| match error {
+            console_platform_auth::LegacySelfPasskeyReadError::Unauthorized => {
+                RestError::unauthorized("invalid bearer token")
+            }
+            console_platform_auth::LegacySelfPasskeyReadError::Unavailable => {
+                RestError::unavailable("session verification unavailable")
+            }
+        })?;
+        Ok(Json(
+            summaries
+                .into_iter()
+                .map(|summary| PasskeySummary {
+                    id: summary.id,
+                    created_at: summary.created_at,
+                    last_used_at: summary.last_used_at,
+                })
+                .collect(),
+        ))
+    }
+    .await;
+    let mut response = result.into_response();
+    account_browser::private_response(&mut response);
+    response.headers_mut().insert(
+        header::VARY,
+        HeaderValue::from_static("Authorization, Cookie, Origin"),
+    );
+    response
 }
 
 /// Revoke ONE of the authenticated user's OWN passkey credentials through the
@@ -1473,49 +1624,21 @@ async fn delete_self_passkey(
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     let actor = UserId::from_uuid(user_id);
     let now = OffsetDateTime::now_utc();
 
     with_audits::<_, (), RestError>(&state.pool, org_id, move |tx| {
         Box::pin(async move {
-            let total: i64 = sqlx::query_scalar(
-                "SELECT count(*) FROM auth_webauthn_credentials WHERE user_id = $1",
-            )
-            .bind(user_id)
-            .fetch_one(tx.as_mut())
-            .await
-            .map_err(DbError::Sqlx)?;
-
-            let credential_id: Option<String> = sqlx::query_scalar(
-                r#"
-                SELECT credential_id
-                FROM auth_webauthn_credentials
-                WHERE id = $1 AND user_id = $2
-                "#,
-            )
-            .bind(id)
-            .bind(user_id)
-            .fetch_optional(tx.as_mut())
-            .await
-            .map_err(DbError::Sqlx)?;
-
-            let Some(credential_id) = credential_id else {
-                return Err(RestError::not_found("passkey not found"));
+            let row = sqlx::query("SELECT outcome, credential_id FROM public.auth_legacy_self_passkey_delete_v1($1,$2,$3)")
+                .bind(*org_id.as_uuid()).bind(user_id).bind(id).fetch_one(tx.as_mut()).await.map_err(DbError::Sqlx)?;
+            let outcome: String = row.try_get("outcome").map_err(DbError::Sqlx)?;
+            let credential_id: String = match outcome.as_str() {
+                "deleted" => row.try_get("credential_id").map_err(DbError::Sqlx)?,
+                "not_found" => return Err(RestError::not_found("passkey not found")),
+                "last_key" => return Err(RestError::conflict("cannot delete your last passkey; register another first")),
+                _ => return Err(RestError::internal("invalid credential operation outcome")),
             };
-
-            if total <= 1 {
-                return Err(RestError::conflict(
-                    "cannot delete your last passkey; register another first",
-                ));
-            }
-
-            sqlx::query("DELETE FROM auth_webauthn_credentials WHERE id = $1 AND user_id = $2")
-                .bind(id)
-                .bind(user_id)
-                .execute(tx.as_mut())
-                .await
-                .map_err(DbError::Sqlx)?;
 
             let event = AuditEvent::new(
                 Some(actor),
@@ -1572,16 +1695,10 @@ async fn enroll_handoff(
 ) -> Result<Json<EnrollHandoffResponse>, RestError> {
     let services = state.services()?;
     // SELF-ONLY: user + org are taken from the verified token, never the body.
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
 
-    // Step-up gate: an already-enrolled user MUST assert an existing passkey (UV)
-    // before a fresh enrollment handoff is minted; a user with zero passkeys is
-    // mid-onboarding and exempt — identical to `start_registration`.
-    let existing_passkeys = services
-        .passkeys
-        .count_user_passkeys(&state.pool, org_id, user_id)
-        .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
+    let mut tx = begin_legacy_auth_tx(&state, org_id, user_id).await?;
+    let existing_passkeys = count_passkeys_in_tx(&mut tx, org_id, user_id).await?;
     if existing_passkeys == 0 {
         ensure_required_privacy_consent(&state.pool, org_id, user_id).await?;
     } else {
@@ -1592,50 +1709,39 @@ async fn enroll_handoff(
         })?;
         services
             .passkeys
-            .verify_step_up_for_user(
-                &state.pool,
+            .verify_step_up_for_user_in_tx(
+                &mut tx,
                 step_up.ceremony_id,
                 step_up.credential,
                 user_id,
             )
             .await
-            .map_err(|err| RestError::unauthorized(err.to_string()))?;
+            .map_err(auth_operation_error)?;
     }
 
     let now = OffsetDateTime::now_utc();
     let issue = services
         .bootstrap_credentials
-        .issue_self_enroll_handoff(&state.pool, user_id, org_id, now, ENROLL_HANDOFF_TTL)
+        .issue_self_enroll_handoff_in_tx(&mut tx, user_id, org_id, now, ENROLL_HANDOFF_TTL)
         .await
         .map_err(RestError::from_provisioning)?;
-    let handoff_id = Uuid::new_v4();
     let poll_token = generate_device_login_token("console_dlp_");
     let approve_token = generate_device_login_token("console_dla_");
 
-    sqlx::query(
-        r#"
-        INSERT INTO auth_device_login_handoffs (
-            id,
-            poll_token_hash,
-            approve_token_hash,
-            issued_at,
-            expires_at,
-            target_user_id,
-            target_org_id
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-        "#,
+    create_self_enroll_device_handoff_in_tx(
+        &mut tx,
+        org_id,
+        user_id,
+        &poll_token,
+        &approve_token,
+        now,
+        issue.expires_at.min(now + DEVICE_LOGIN_HANDOFF_TTL),
     )
-    .bind(handoff_id)
-    .bind(hash_device_login_token(&poll_token))
-    .bind(hash_device_login_token(&approve_token))
-    .bind(now)
-    .bind(issue.expires_at.min(now + DEVICE_LOGIN_HANDOFF_TTL))
-    .bind(user_id)
-    .bind(*org_id.as_uuid())
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .execute(&state.pool)
     .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
+    .map_err(handoff_error)?;
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
 
     Ok(Json(EnrollHandoffResponse {
         enroll_url: build_enroll_url(
@@ -1672,30 +1778,22 @@ async fn start_device_login(
     )
     .await?;
 
-    let handoff_id = Uuid::new_v4();
     let poll_token = generate_device_login_token("console_dlp_");
     let approve_token = generate_device_login_token("console_dla_");
     let expires_at = now + DEVICE_LOGIN_HANDOFF_TTL;
 
-    sqlx::query(
-        r#"
-        INSERT INTO auth_device_login_handoffs (
-            id, poll_token_hash, approve_token_hash, issued_at, expires_at
-        ) VALUES ($1, $2, $3, $4, $5)
-        "#,
-    )
-    .bind(handoff_id)
-    .bind(hash_device_login_token(&poll_token))
-    .bind(hash_device_login_token(&approve_token))
-    .bind(now)
-    .bind(expires_at)
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .execute(&state.pool)
-    .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
+    let handoff_id =
+        create_device_login_handoff_in_tx(&mut tx, &poll_token, &approve_token, now, expires_at)
+            .await
+            .map_err(handoff_error)?;
 
-    record_anonymous_auth_audit(
-        &state.pool,
+    record_anonymous_auth_audit_in_tx(
+        &mut tx,
         "auth.device_login.start",
         serde_json::json!({
             "handoff_id": handoff_id,
@@ -1704,6 +1802,9 @@ async fn start_device_login(
     )
     .await?;
 
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     Ok(Json(DeviceLoginStartResponse {
         poll_token,
         approve_url: build_device_login_approve_url(&services.rp_origin, &approve_token),
@@ -1728,80 +1829,27 @@ async fn poll_device_login(
     )
     .await?;
 
-    let poll_token = normalize_device_login_token(&body.poll_token, "console_dlp_")?;
-    let poll_hash = hash_device_login_token(&poll_token);
-
-    let status = sqlx::query(
-        r#"
-        SELECT id, expires_at, approved_at, consumed_at
-        FROM auth_device_login_handoffs
-        WHERE poll_token_hash = $1
-        "#,
-    )
-    .bind(&poll_hash)
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
-
-    let Some(status) = status else {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
+    let approved = match poll_and_consume_device_login_in_tx(&mut tx, &body.poll_token, now)
+        .await
+        .map_err(handoff_error)?
+    {
+        DeviceLoginPoll::Pending => return Ok(Json(device_login_status("pending")).into_response()),
+        DeviceLoginPoll::Expired => return Ok(Json(device_login_status("expired")).into_response()),
+        DeviceLoginPoll::Consumed(approved) => approved,
     };
-    let expires_at: OffsetDateTime = status.try_get("expires_at").map_err(DbError::Sqlx)?;
-    let approved_at: Option<OffsetDateTime> =
-        status.try_get("approved_at").map_err(DbError::Sqlx)?;
-    let consumed_at: Option<OffsetDateTime> =
-        status.try_get("consumed_at").map_err(DbError::Sqlx)?;
-
-    if consumed_at.is_some() {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
-    }
-    if expires_at <= now {
-        return Ok(Json(device_login_status("expired")).into_response());
-    }
-    if approved_at.is_none() {
-        return Ok(Json(device_login_status("pending")).into_response());
-    }
-
-    let approved = sqlx::query(
-        r#"
-        UPDATE auth_device_login_handoffs
-        SET consumed_at = $2
-        WHERE poll_token_hash = $1
-          AND consumed_at IS NULL
-          AND approved_at IS NOT NULL
-          AND expires_at > $2
-        RETURNING id, approved_user_id, approved_org_id, approved_passkey_id
-        "#,
-    )
-    .bind(&poll_hash)
-    .bind(now)
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
-
-    let Some(approved) = approved else {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
-    };
-    let handoff_id: Uuid = approved.try_get("id").map_err(DbError::Sqlx)?;
-    let user_id: Uuid = approved
-        .try_get::<Option<Uuid>, _>("approved_user_id")
-        .map_err(DbError::Sqlx)?
-        .ok_or_else(|| RestError::internal("approved login handoff missing user"))?;
-    let org_uuid: Uuid = approved
-        .try_get::<Option<Uuid>, _>("approved_org_id")
-        .map_err(DbError::Sqlx)?
-        .ok_or_else(|| RestError::internal("approved login handoff missing org"))?;
-    let passkey_id: Option<Uuid> = approved
-        .try_get("approved_passkey_id")
-        .map_err(DbError::Sqlx)?;
-
-    let org_id = OrgId::from_uuid(org_uuid);
-    let user = load_user_auth_context_in_org(&state.pool, org_id, user_id).await?;
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
-    record_auth_audit(
-        &state.pool,
+    let handoff_id = approved.handoff_id;
+    let user_id = approved.user_id;
+    let org_id = approved.org_id;
+    let passkey_id = approved.passkey_id;
+    let user = load_auth_session_context_in_tx(&mut tx, &state.pool, org_id, user_id).await?;
+    let tokens = issue_token_pair_in_tx(&mut tx, services, &user).await?;
+    record_auth_audit_in_tx(
+        &mut tx,
         org_id,
         user_id,
         "auth.device_login.consume",
@@ -1813,6 +1861,9 @@ async fn poll_device_login(
     )
     .await?;
 
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     Ok(device_login_token_response(
         tokens,
         &headers,
@@ -1837,77 +1888,36 @@ async fn approve_device_login(
     )
     .await?;
 
-    let approve_token = normalize_device_login_token(&body.approve_token, "console_dla_")?;
-    let approve_hash = hash_device_login_token(&approve_token);
-
-    let pending_id: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        SELECT id
-        FROM auth_device_login_handoffs
-        WHERE approve_token_hash = $1
-          AND approved_at IS NULL
-          AND consumed_at IS NULL
-          AND expires_at > $2
-        "#,
-    )
-    .bind(&approve_hash)
-    .bind(now)
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .fetch_optional(&state.pool)
-    .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
-    let Some(handoff_id) = pending_id else {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
-    };
-
-    let outcome = services
-        .passkeys
-        .finish_authentication(&state.pool, body.ceremony_id, body.credential)
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
         .await
-        .map_err(|err| RestError::unauthorized(err.to_string()))?;
-
-    let updated = sqlx::query(
-        r#"
-        UPDATE auth_device_login_handoffs
-        SET approved_at = $2,
-            approved_user_id = $3,
-            approved_org_id = $4,
-            approved_passkey_id = $5
-        WHERE approve_token_hash = $1
-          AND approved_at IS NULL
-          AND consumed_at IS NULL
-          AND expires_at > $2
-          AND (target_user_id IS NULL OR target_user_id = $3)
-          AND (target_org_id IS NULL OR target_org_id = $4)
-        RETURNING id
-        "#,
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
+    let approved = approve_device_login_with_passkey_in_tx(
+        &mut tx,
+        &services.passkeys,
+        &body.approve_token,
+        body.ceremony_id,
+        body.credential,
+        now,
     )
-    .bind(&approve_hash)
-    .bind(now)
-    .bind(outcome.user_id)
-    .bind(*outcome.org_id.as_uuid())
-    .bind(outcome.passkey_id)
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .fetch_optional(&state.pool)
     .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
-
-    if updated.is_none() {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
-    }
-
-    record_auth_audit(
-        &state.pool,
-        outcome.org_id,
-        outcome.user_id,
+    .map_err(handoff_error)?;
+    record_auth_audit_in_tx(
+        &mut tx,
+        approved.org_id,
+        approved.user_id,
         "auth.device_login.approve",
         serde_json::json!({
-            "handoff_id": handoff_id,
-            "passkey_id": outcome.passkey_id,
+            "handoff_id": approved.handoff_id,
+            "passkey_id": approved.passkey_id,
         }),
     )
     .await?;
 
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -1927,68 +1937,33 @@ async fn approve_device_login_session(
         now,
     )
     .await?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
 
-    let approve_token = normalize_device_login_token(&body.approve_token, "console_dla_")?;
-    let approve_hash = hash_device_login_token(&approve_token);
-    let existing_passkeys = services
-        .passkeys
-        .count_user_passkeys(&state.pool, org_id, user_id)
-        .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
-    if existing_passkeys == 0 {
-        return Err(RestError::forbidden(
-            "desktop login approval requires an enrolled passkey",
-        ));
-    }
-    let latest_passkey_id = latest_user_passkey_id(&state.pool, org_id, user_id).await?;
-
-    let approved = sqlx::query(
-        r#"
-        UPDATE auth_device_login_handoffs
-        SET approved_at = $2,
-            approved_user_id = $3,
-            approved_org_id = $4,
-            approved_passkey_id = $5
-        WHERE approve_token_hash = $1
-          AND approved_at IS NULL
-          AND consumed_at IS NULL
-          AND expires_at > $2
-          AND target_user_id = $3
-          AND target_org_id = $4
-        RETURNING id, approved_passkey_id
-        "#,
+    let mut tx = begin_legacy_auth_tx(&state, org_id, user_id).await?;
+    let approved = approve_targeted_device_login_session_in_tx(
+        &mut tx,
+        org_id,
+        user_id,
+        &body.approve_token,
+        now,
     )
-    .bind(&approve_hash)
-    .bind(now)
-    .bind(user_id)
-    .bind(*org_id.as_uuid())
-    .bind(latest_passkey_id)
-    // rls-arming: ok auth_device_login_handoffs is a global pre-auth table.
-    .fetch_optional(&state.pool)
     .await
-    .map_err(|err| RestError::internal(err.to_string()))?;
-
-    let Some(approved) = approved else {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
-    };
-    let handoff_id: Uuid = approved.try_get("id").map_err(DbError::Sqlx)?;
-    let passkey_id: Option<Uuid> = approved
-        .try_get("approved_passkey_id")
-        .map_err(DbError::Sqlx)?;
-
-    record_auth_audit(
-        &state.pool,
+    .map_err(handoff_error)?;
+    record_auth_audit_in_tx(
+        &mut tx,
         org_id,
         user_id,
         "auth.device_login.approve_session",
         serde_json::json!({
-            "handoff_id": handoff_id,
-            "passkey_id": passkey_id,
+            "handoff_id": approved.handoff_id,
+            "passkey_id": approved.passkey_id,
         }),
     )
     .await?;
 
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -2001,7 +1976,7 @@ async fn privacy_consent_status(
     headers: HeaderMap,
 ) -> Result<Json<PrivacyConsentStatusResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     let accepted_at = required_privacy_consent_accepted_at(&state.pool, org_id, user_id).await?;
     Ok(Json(PrivacyConsentStatusResponse {
         policy_version: REQUIRED_PRIVACY_TERMS_VERSION,
@@ -2019,7 +1994,7 @@ async fn accept_privacy_consent(
     Json(body): Json<PrivacyConsentAcceptRequest>,
 ) -> Result<Json<PrivacyConsentStatusResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     if body.policy_version != REQUIRED_PRIVACY_TERMS_VERSION {
         return Err(RestError::bad_request(
             "unsupported privacy consent version",
@@ -2140,26 +2115,39 @@ async fn refresh_token(
     let refresh = refresh_cookie_value(&headers)
         .or(body.refresh_token)
         .ok_or_else(|| RestError::unauthorized("missing refresh token"))?;
-    let issue = services
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
+        .await
+        .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
+    let outcome = services
         .refresh_tokens
-        .rotate(
-            &state.pool,
+        .rotate_in_tx(
+            &mut tx,
             &refresh,
             now,
             services.refresh_token_ttl,
             services.refresh_family_absolute_ttl,
         )
         .await
-        .map_err(RestError::from_refresh)?;
-    // Refresh is a pre-auth route (no tenant middleware): arm the GUC with the org
-    // the rotated token belongs to so the `users` read runs under that tenant.
-    let user = load_user_auth_context_in_org(&state.pool, issue.org_id, issue.user_id).await?;
-    let has_no_passkeys = services
-        .passkeys
-        .count_user_passkeys(&state.pool, issue.org_id, issue.user_id)
-        .await
-        .map_err(|err| RestError::internal(err.to_string()))?
-        == 0;
+        .map_err(|error| {
+            RestError::from_refresh(match error {
+                AuthError::Refresh(refusal) => refusal,
+                _ => RefreshTokenUseError::Storage,
+            })
+        })?;
+    let issue = match outcome {
+        Ok(issue) => issue,
+        Err(refusal) => {
+            tx.commit()
+                .await
+                .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
+            return Err(RestError::from_refresh(refusal));
+        }
+    };
+    let user =
+        load_auth_session_context_in_tx(&mut tx, &state.pool, issue.org_id, issue.user_id).await?;
+    let has_no_passkeys = count_passkeys_in_tx(&mut tx, issue.org_id, issue.user_id).await? == 0;
     // A synthetic role-switch persona is a local development instrument, not a
     // real employee awaiting first-login enrollment. Preserve the production
     // zero-passkey rule for every ordinary user, including ordinary users in a
@@ -2169,7 +2157,10 @@ async fn refresh_token(
     let requires_passkey_setup = has_no_passkeys && !is_synthetic_dev_auth_persona(&user);
     #[cfg(not(feature = "dev-auth"))]
     let requires_passkey_setup = has_no_passkeys;
-    let access_token = issue_access_token(services, &user)?;
+    let access_token = issue_access_token(services, &user, &issue)?;
+    tx.commit()
+        .await
+        .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
     if cookie_mode {
         let max_age = (issue.expires_at - now).whole_seconds();
         let cookie = refresh_set_cookie(issue.token.as_str(), max_age, services.cookie_secure);
@@ -2224,7 +2215,11 @@ async fn logout(
     if let Some(refresh) = refresh.as_deref() {
         services
             .refresh_tokens
-            .revoke_family_for_logout(&state.pool, refresh, OffsetDateTime::now_utc())
+            .revoke_family_for_logout(
+                state.require_auth_database()?,
+                refresh,
+                OffsetDateTime::now_utc(),
+            )
             .await
             .map_err(RestError::from_refresh)?;
     }
@@ -2250,7 +2245,7 @@ async fn list_group_admin_groups(
     headers: HeaderMap,
 ) -> Result<Json<GroupAdminGroupsResponse>, RestError> {
     let services = state.services()?;
-    let actor = authenticated_group_actor(services, &headers)?;
+    let actor = authenticated_group_actor(&state, services, &headers).await?;
     let groups = load_group_admin_groups(&state.pool, actor.id).await?;
     Ok(Json(GroupAdminGroupsResponse { groups }))
 }
@@ -2266,7 +2261,7 @@ async fn start_group_admin_tenant_context(
     Json(body): Json<GroupAdminTenantContextStartRequest>,
 ) -> Result<Json<GroupAdminTenantContextStartResponse>, RestError> {
     let services = state.services()?;
-    let actor = authenticated_group_actor(services, &headers)?;
+    let actor = authenticated_group_actor(&state, services, &headers).await?;
     let (group_id, target) =
         resolve_group_admin_target_org(&state.pool, actor.id, OrgId::from_uuid(body.org_id))
             .await?;
@@ -2343,7 +2338,7 @@ async fn exit_group_admin_tenant_context(
     Json(body): Json<GroupAdminTenantContextExitRequest>,
 ) -> Result<Json<GroupAdminTenantContextExitResponse>, RestError> {
     let services = state.services()?;
-    let actor = authenticated_group_actor(services, &headers)?;
+    let actor = authenticated_group_actor(&state, services, &headers).await?;
     let (group_id, target) =
         resolve_group_admin_target_org(&state.pool, actor.id, OrgId::from_uuid(body.org_id))
             .await?;
@@ -2518,7 +2513,7 @@ async fn dev_auth_session(
         authz_policy_version: 0,
         session_generation: 0,
     };
-    let tokens = issue_token_pair(&state.pool, services, &user).await?;
+    let tokens = issue_token_pair(&state, services, &user).await?;
 
     // Loud by design: a dev-auth mint is a security-relevant event even in a
     // local/dev-only build, so it must never be silent.
@@ -2548,6 +2543,38 @@ async fn dev_auth_session(
 }
 
 impl AuthRestState {
+    fn session_verification(
+        &self,
+        services: &AuthServices,
+    ) -> Result<SessionVerification, RestError> {
+        let auth = self
+            .auth_database
+            .as_ref()
+            .ok_or_else(|| RestError::unavailable("session verification unavailable"))?;
+        let verification = SessionVerification::new(services.jwt_verifier.clone(), auth.clone());
+        Ok(if self.current_company_provenance_required {
+            verification.require_current_company_provenance()
+        } else {
+            verification
+        })
+    }
+
+    async fn ensure_session_subject(
+        &self,
+        services: &AuthServices,
+        subject: Uuid,
+    ) -> Result<(), RestError> {
+        match self
+            .session_verification(services)?
+            .legacy_subject_is_fenced(subject)
+            .await
+        {
+            Ok(false) => Ok(()),
+            Ok(true) => Err(RestError::unauthorized("invalid bearer token")),
+            Err(_) => Err(RestError::unavailable("session verification unavailable")),
+        }
+    }
+
     fn services(&self) -> Result<&AuthServices, RestError> {
         self.services.as_ref().ok_or_else(|| {
             RestError::unavailable("auth REST is mounted but auth services are not configured")
@@ -2602,52 +2629,89 @@ impl IssuedTokenPair {
     }
 }
 
+async fn count_passkeys_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    org: OrgId,
+    user: Uuid,
+) -> Result<i64, RestError> {
+    sqlx::query_scalar("SELECT public.auth_legacy_self_passkey_count_v1($1,$2)")
+        .bind(*org.as_uuid())
+        .bind(user)
+        .fetch_one(tx.as_mut())
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))
+}
+
+async fn begin_legacy_auth_tx(
+    state: &AuthRestState,
+    org: OrgId,
+    user: Uuid,
+) -> Result<sqlx::Transaction<'static, sqlx::Postgres>, RestError> {
+    let mut tx = state
+        .require_auth_database()?
+        .begin()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
+    guard_legacy_subject_in_tx(&mut tx, org, user)
+        .await
+        .map_err(auth_operation_error)?;
+    Ok(tx)
+}
+
+fn handoff_error(error: DeviceLoginHandoffError) -> RestError {
+    match error {
+        DeviceLoginHandoffError::Invalid => {
+            RestError::unauthorized("invalid or expired login handoff")
+        }
+        DeviceLoginHandoffError::PasskeyRequired => {
+            RestError::forbidden("desktop login approval requires an enrolled passkey")
+        }
+        DeviceLoginHandoffError::Auth(error) => auth_operation_error(error),
+    }
+}
+
+fn auth_operation_error(error: AuthError) -> RestError {
+    match error {
+        AuthError::Kernel(error) => RestError::from_kernel(error),
+        AuthError::Refresh(error) => RestError::from_refresh(error),
+        AuthError::Sqlx(_) | AuthError::Db(_) => {
+            RestError::internal("authentication storage unavailable")
+        }
+        _ => RestError::unauthorized("authentication could not be verified"),
+    }
+}
+
+#[cfg(feature = "dev-auth")]
 async fn issue_token_pair(
-    pool: &PgPool,
+    state: &AuthRestState,
     services: &AuthServices,
     user: &UserAuthContext,
 ) -> Result<IssuedTokenPair, RestError> {
-    let now = OffsetDateTime::now_utc();
-    let access_input = AccessTokenInput {
-        subject: user.user_id,
-        org_id: user.org_id,
-        roles: user.roles.clone(),
-        branches: user.branches.clone(),
-        platform: user.org_id == OrgId::platform(),
-        // A normal login/refresh token is never an impersonation token.
-        view_as: false,
-        read_only: false,
-        // DISPLAY-ONLY identity for the topbar; never used for authz.
-        display_name: Some(user.display_name.clone()),
-        feature_grants: user.feature_grants.clone(),
-        // Subject authorization freshness snapshot (Cedar/PBAC, ADR-0021),
-        // resolved from the DB when the context was loaded. SLICE-2: sourced onto
-        // the token, not yet consulted by any decision.
-        authz_subject_version: user.authz_subject_version,
-        authz_policy_version: user.authz_policy_version,
-        session_generation: user.session_generation,
-        issued_at: now,
-    };
-    let access_token = if user.group_roles.is_empty() {
-        services.jwt_issuer.issue_access_token(access_input)
-    } else {
-        services
-            .jwt_issuer
-            .issue_access_token_with_group_roles(access_input, user.group_roles.clone())
-    }
-    .map_err(|err| RestError::internal(err.to_string()))?;
+    let mut tx = begin_legacy_auth_tx(state, user.org_id, *user.user_id.as_uuid()).await?;
+    let tokens = issue_token_pair_in_tx(&mut tx, services, user).await?;
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
+    Ok(tokens)
+}
+
+async fn issue_token_pair_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    services: &AuthServices,
+    user: &UserAuthContext,
+) -> Result<IssuedTokenPair, RestError> {
     let refresh = services
         .refresh_tokens
-        .issue_family(
-            pool,
+        .issue_family_in_tx(
+            tx,
             *user.user_id.as_uuid(),
             user.org_id,
-            now,
+            OffsetDateTime::now_utc(),
             services.refresh_token_ttl,
         )
         .await
-        .map_err(|err| RestError::internal(err.to_string()))?;
-
+        .map_err(auth_operation_error)?;
+    let access_token = issue_access_token(services, user, &refresh)?;
     Ok(IssuedTokenPair {
         access_token,
         refresh_token: refresh.token.as_str().to_owned(),
@@ -2661,6 +2725,7 @@ async fn issue_token_pair(
 fn issue_access_token(
     services: &AuthServices,
     user: &UserAuthContext,
+    family: &console_platform_auth::RefreshTokenIssue,
 ) -> Result<String, RestError> {
     let input = AccessTokenInput {
         subject: user.user_id,
@@ -2686,7 +2751,13 @@ fn issue_access_token(
         session_generation: user.session_generation,
         issued_at: OffsetDateTime::now_utc(),
     };
-    if user.group_roles.is_empty() {
+    if user.org_id == OrgId::platform() {
+        services.jwt_issuer.issue_platform_access_token_for_family(
+            input,
+            user.group_roles.clone(),
+            family,
+        )
+    } else if user.group_roles.is_empty() {
         services.jwt_issuer.issue_access_token(input)
     } else {
         services
@@ -2694,6 +2765,42 @@ fn issue_access_token(
             .issue_access_token_with_group_roles(input, user.group_roles.clone())
     }
     .map_err(|err| RestError::internal(err.to_string()))
+}
+
+async fn load_auth_session_context_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    business_pool: &PgPool,
+    org: OrgId,
+    user_id: Uuid,
+) -> Result<UserAuthContext, RestError> {
+    let current = console_platform_auth::legacy_session_context_in_tx(tx, org, user_id)
+        .await
+        .map_err(|error| match error {
+            console_platform_auth::LegacySessionContextError::NotFound
+            | console_platform_auth::LegacySessionContextError::Inactive => {
+                RestError::unauthorized("user is unavailable for authentication")
+            }
+            _ => RestError::internal("authentication storage unavailable"),
+        })?;
+    let mut context = UserAuthContext {
+        user_id: UserId::from_uuid(user_id),
+        org_id: org,
+        display_name: current.display_name,
+        username: current.username,
+        roles: current.roles,
+        branches: current
+            .branches
+            .into_iter()
+            .map(BranchId::from_uuid)
+            .collect(),
+        group_roles: current.group_roles,
+        feature_grants: Vec::new(),
+        authz_subject_version: current.authz_subject_version,
+        authz_policy_version: current.authz_policy_version,
+        session_generation: current.session_generation,
+    };
+    context.feature_grants = resolve_feature_grant_keys_for_user(business_pool, &context).await?;
+    Ok(context)
 }
 
 /// Load a user's auth context when the caller already holds the request's tenant
@@ -2897,7 +3004,7 @@ async fn load_user_auth_context_tx(
 }
 
 async fn ensure_registration_ceremony_owner(
-    pool: &PgPool,
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     ceremony_id: Uuid,
     user_id: Uuid,
 ) -> Result<(), RestError> {
@@ -2912,10 +3019,10 @@ async fn ensure_registration_ceremony_owner(
         "#,
     )
     .bind(ceremony_id)
-    // rls-arming: ok auth_webauthn_ceremonies is a global pre-auth table (no org_id, no RLS)
-    .fetch_optional(pool)
+    // rls-arming: ok borrowed Auth transaction; owner correlation is checked below.
+    .fetch_optional(tx.as_mut())
     .await
-    .map_err(|err| RestError::internal(err.to_string()))?
+    .map_err(|_| RestError::internal("authentication storage unavailable"))?
     .flatten();
 
     match owner {
@@ -2937,7 +3044,8 @@ async fn ensure_registration_ceremony_owner(
 /// the verified token carries the tenant. Using the JWT's org — never a `users`
 /// read under RLS — breaks the chicken-and-egg and stamps every passkey write
 /// with the correct tenant.
-fn authenticated_user_context(
+async fn authenticated_user_context(
+    state: &AuthRestState,
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<(Uuid, OrgId), RestError> {
@@ -2949,6 +3057,7 @@ fn authenticated_user_context(
     let org_id = OrgId::from_str(&claims.org)
         .map_err(|_| RestError::unauthorized("token org claim is not a valid uuid"))?;
     let user_id = user_id_from_claims(claims)?;
+    state.ensure_session_subject(services, user_id).await?;
     Ok((user_id, org_id))
 }
 
@@ -2999,31 +3108,6 @@ async fn required_privacy_consent_accepted_at(
     .await
 }
 
-async fn latest_user_passkey_id(
-    pool: &PgPool,
-    org_id: OrgId,
-    user_id: Uuid,
-) -> Result<Option<Uuid>, RestError> {
-    with_org_conn(pool, org_id, move |tx| {
-        Box::pin(async move {
-            sqlx::query_scalar::<_, Uuid>(
-                r#"
-                SELECT id
-                FROM auth_webauthn_credentials
-                WHERE user_id = $1
-                ORDER BY created_at DESC
-                LIMIT 1
-                "#,
-            )
-            .bind(user_id)
-            .fetch_optional(tx.as_mut())
-            .await
-            .map_err(|err| RestError::internal(err.to_string()))
-        })
-    })
-    .await
-}
-
 fn bearer_token(headers: &HeaderMap) -> Result<&str, RestError> {
     let header_value = headers
         .get(header::AUTHORIZATION)
@@ -3036,6 +3120,7 @@ fn bearer_token(headers: &HeaderMap) -> Result<&str, RestError> {
         .ok_or_else(|| RestError::unauthorized("authorization header must use Bearer scheme"))
 }
 
+#[cfg(feature = "dev-auth")]
 async fn record_auth_audit(
     pool: &PgPool,
     org_id: OrgId,
@@ -3059,8 +3144,48 @@ async fn record_auth_audit(
 
 /// Audit a failed unauthenticated attempt with no actor and no PII (no OTP value,
 /// no client IP) so the `pii-no-logs` gate and audit policy both hold.
+async fn record_auth_audit_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+    org_id: OrgId,
+    user_id: Uuid,
+    action: &str,
+    after: serde_json::Value,
+) -> Result<(), RestError> {
+    let event = AuditEvent::new(
+        Some(UserId::from_uuid(user_id)),
+        AuditAction::new(action).map_err(|err| RestError::internal(err.to_string()))?,
+        "users",
+        user_id.to_string(),
+        TraceContext::generate(),
+        OffsetDateTime::now_utc(),
+    )
+    .with_org(org_id)
+    .with_snapshots(None, Some(after));
+
+    append_legacy_auth_audit_in_tx(tx, &event)
+        .await
+        .map_err(auth_operation_error)
+}
+
+/// Audit a failed unauthenticated attempt with no actor and no PII (no OTP value,
+/// no client IP) so the `pii-no-logs` gate and audit policy both hold.
 async fn record_anonymous_auth_audit(
     pool: &PgPool,
+    action: &str,
+    after: serde_json::Value,
+) -> Result<(), RestError> {
+    let mut tx = pool
+        .begin()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))?;
+    record_anonymous_auth_audit_in_tx(&mut tx, action, after).await?;
+    tx.commit()
+        .await
+        .map_err(|_| RestError::internal("authentication storage unavailable"))
+}
+
+async fn record_anonymous_auth_audit_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     action: &str,
     after: serde_json::Value,
 ) -> Result<(), RestError> {
@@ -3074,7 +3199,9 @@ async fn record_anonymous_auth_audit(
     )
     .with_snapshots(None, Some(after));
 
-    with_audit::<_, (), RestError>(pool, event, |_tx| Box::pin(async move { Ok(()) })).await
+    append_legacy_auth_audit_in_tx(tx, &event)
+        .await
+        .map_err(auth_operation_error)
 }
 
 /// Resolve the admin-supplied OTP TTL, defaulting to 24h and rejecting
@@ -3100,11 +3227,12 @@ fn resolve_otp_ttl(ttl_seconds: Option<i64>) -> Result<Duration, RestError> {
 // ---------------------------------------------------------------------------
 
 async fn principal_from_headers(
-    pool: &PgPool,
+    state: &AuthRestState,
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    console_platform_request_context::resolve_principal(&services.jwt_verifier, pool, headers)
+    let verification = state.session_verification(services)?;
+    console_platform_request_context::resolve_principal(&verification, &state.pool, headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -3113,6 +3241,17 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable => {
+            let (status, code, message) = error.http_error_parts();
+            RestError {
+                status,
+                code,
+                ..RestError::unavailable(message)
+            }
+        }
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for auth API")
         }
@@ -3136,7 +3275,8 @@ fn rest_error_from_request_context(
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        console_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken
+        | console_platform_request_context::RequestContextError::LegacySessionRejected => {
             RestError::unauthorized("invalid bearer token")
         }
         console_platform_request_context::RequestContextError::InvalidClaim(message) => {
@@ -3154,7 +3294,8 @@ struct AuthenticatedGroupAdminActor {
     home_org: OrgId,
 }
 
-fn authenticated_group_actor(
+async fn authenticated_group_actor(
+    state: &AuthRestState,
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<AuthenticatedGroupAdminActor, RestError> {
@@ -3184,8 +3325,14 @@ fn authenticated_group_actor(
     let home_org = Uuid::parse_str(&claims.org)
         .map(OrgId::from_uuid)
         .map_err(|_| RestError::unauthorized("invalid bearer token"))?;
+    let subject = user_id_from_claims(claims)?;
+    state.ensure_session_subject(services, subject).await?;
+    let verification = state.session_verification(services)?;
+    console_platform_request_context::ensure_legacy_company_provenance(&verification, &state.pool)
+        .await
+        .map_err(rest_error_from_request_context)?;
     Ok(AuthenticatedGroupAdminActor {
-        id: UserId::from_uuid(user_id_from_claims(claims)?),
+        id: UserId::from_uuid(subject),
         home_org,
     })
 }
@@ -3357,6 +3504,13 @@ impl From<GroupMemberOrg> for GroupAdminMemberOrgResponse {
 
 #[derive(Debug, Clone, Copy)]
 enum RateLimitEndpoint {
+    AccountRegistrationStart,
+    AccountRegistrationFinish,
+    AccountLoginStart,
+    AccountLoginFinish,
+    AccountCsrf,
+    AccountLogout,
+    AccountRefresh,
     Signup,
     OtpRedeem,
     LoginStart,
@@ -3369,6 +3523,13 @@ enum RateLimitEndpoint {
 impl RateLimitEndpoint {
     const fn as_str(self) -> &'static str {
         match self {
+            Self::AccountRegistrationStart => "account_registration_start",
+            Self::AccountRegistrationFinish => "account_registration_finish",
+            Self::AccountLoginStart => "account_login_start",
+            Self::AccountLoginFinish => "account_login_finish",
+            Self::AccountCsrf => "account_csrf",
+            Self::AccountLogout => "account_logout",
+            Self::AccountRefresh => "account_refresh",
             Self::Signup => "signup",
             Self::OtpRedeem => "otp_redeem",
             Self::LoginStart => "login_start",
@@ -3388,7 +3549,9 @@ impl RateLimitEndpoint {
             // browser hard navigations/reloads can perform many boot refreshes in
             // one minute because the access token is memory-only. Keep refresh
             // bounded, but do not reuse the much tighter credential-submission cap.
-            Self::Refresh => (60, 60, 1_000),
+            Self::Refresh | Self::AccountCsrf | Self::AccountLogout | Self::AccountRefresh => {
+                (60, 60, 1_000)
+            }
             _ => (RATE_LIMIT_PER_IP, RATE_LIMIT_PER_DEVICE, RATE_LIMIT_GLOBAL),
         }
     }
@@ -3617,26 +3780,11 @@ fn device_login_token_response(
     }
 }
 
-fn normalize_device_login_token(raw: &str, prefix: &str) -> Result<String, RestError> {
-    let token = raw.trim();
-    let suffix = token
-        .strip_prefix(prefix)
-        .ok_or_else(|| RestError::unauthorized("invalid or expired login handoff"))?;
-    if suffix.len() != 64 || !suffix.chars().all(|char| char.is_ascii_hexdigit()) {
-        return Err(RestError::unauthorized("invalid or expired login handoff"));
-    }
-    Ok(token.to_owned())
-}
-
 fn generate_device_login_token(prefix: &str) -> String {
     let mut bytes = [0u8; 32];
     bytes[..16].copy_from_slice(Uuid::new_v4().as_bytes());
     bytes[16..].copy_from_slice(Uuid::new_v4().as_bytes());
     format!("{prefix}{}", hex_encode(&bytes))
-}
-
-fn hash_device_login_token(token: &str) -> Vec<u8> {
-    Sha256::digest(token.as_bytes()).to_vec()
 }
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -3777,6 +3925,49 @@ mod tests {
         )
         .await
         .expect("a new window must reset the per-IP bucket");
+    }
+
+    #[sqlx::test(migrations = "../db/migrations")]
+    async fn account_csrf_limiter_uses_trusted_ip_and_fixed_cap_then_resets(pool: PgPool) {
+        let mut headers = HeaderMap::new();
+        headers.insert("x-forwarded-for", "198.51.100.99".parse().unwrap());
+        headers.insert("x-real-ip", "198.51.100.99".parse().unwrap());
+        let client = Some(TrustedClientIp::new("203.0.113.50".parse().unwrap()));
+        let at = OffsetDateTime::from_unix_timestamp(1_700_000_000).unwrap();
+        assert_eq!(RateLimitEndpoint::AccountCsrf.limits(), (60, 60, 1000));
+        for _ in 0..60 {
+            rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at)
+                .await
+                .unwrap();
+        }
+        let denied = rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at)
+            .await
+            .unwrap_err();
+        assert_eq!(denied.status, StatusCode::TOO_MANY_REQUESTS);
+        let rows: Vec<(String, i32)> = sqlx::query_as(
+            "SELECT client_key,attempts FROM auth_rate_limit WHERE endpoint='account_csrf' ORDER BY client_key")
+            .fetch_all(&pool).await.unwrap();
+        // IP increments first; refusal does not charge the unvisited global bucket.
+        assert_eq!(
+            rows,
+            vec![("global".into(), 60), ("ip:203.0.113.50".into(), 61)]
+        );
+        rate_limit(
+            &pool,
+            &headers,
+            client,
+            RateLimitEndpoint::AccountCsrf,
+            at + RATE_LIMIT_WINDOW,
+        )
+        .await
+        .unwrap();
+        let rows: Vec<(String, i32)> = sqlx::query_as(
+            "SELECT client_key,attempts FROM auth_rate_limit WHERE endpoint='account_csrf' AND window_start=$1 ORDER BY client_key")
+            .bind(super::floor_to_window(at + RATE_LIMIT_WINDOW)).fetch_all(&pool).await.unwrap();
+        assert_eq!(
+            rows,
+            vec![("global".into(), 1), ("ip:203.0.113.50".into(), 1)]
+        );
     }
 
     const ORG_A: Uuid = Uuid::from_u128(0xA013_A013_A013_A013_A013_A013_A013_A013);

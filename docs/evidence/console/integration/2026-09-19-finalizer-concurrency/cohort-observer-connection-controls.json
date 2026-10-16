@@ -1,0 +1,20 @@
+{
+  "kind": "observer-connection-correction-controls",
+  "script_sha256": "bdada8322774ea12b7887006b935a4d03d21f502e1550235ce1dbc7560767be7",
+  "passed": 9,
+  "failed": 0,
+  "checks": [
+    "decoded-fields-no-argv-secrets-ignore-inherited-pg",
+    "wrong-marker",
+    "wrong-host",
+    "wrong-user",
+    "missing-password",
+    "extra-option",
+    "fragment",
+    "fixed-category-no-secret-diagnostic",
+    "actual-postgresql18-read-only-observation"
+  ],
+  "actual_server_version": "180006",
+  "actual_application_tests_executed": 0,
+  "scratch": "/private/tmp/observer-pg-rwcj0g9y"
+}

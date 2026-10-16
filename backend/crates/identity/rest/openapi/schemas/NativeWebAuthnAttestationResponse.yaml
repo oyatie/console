@@ -1,0 +1,18 @@
+type: object
+required:
+- attestationObject
+- clientDataJSON
+properties:
+  attestationObject:
+    $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+  clientDataJSON:
+    $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+  transports:
+    type:
+    - array
+    - 'null'
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnInputTransport'
+description: Canonical object representation. Decoder also inherits serde positional-struct acceptance;
+  not an object-only parser guarantee. Attestation is CBOR bytes, clientDataJSON is original JSON
+  bytes; do not inline or reserialize those signed payloads.

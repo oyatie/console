@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE source candidate; full runtime/planner acceptance remains pending",
+  "base": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "candidate_files": {
+    "docs/program/console-capability-registry.json": "f9a2dbd5bdeab6176c3da34a7b06134ce8d1461fe5d5e5a5e89f6c8a59deaebd",
+    "scripts/console/validate-console-truth-ledger.mjs": "7b2738f8b1883c0d6f689c8d9f53a86d247bc521567866ac3482836606ac3643",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf"
+  },
+  "evidence": {
+    "registry": "Removing exact two design rows reproduces entire parsed base registry;89 to91 runtimes; no leaf/state changes",
+    "catalogues": "39 and21 ordered rows exactly equal four-round reviewed design; both distinct labels sharing scatter regression path retained",
+    "digests": [
+      "fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945",
+      "3b34ea79d416110e8ddb259566a80cf53073747d4a3325a4ee938df1a714bc5a"
+    ],
+    "validator": "Only exact additive Quiver block and defaulted shared key-helper rename; all Fusion keys/diagnostics/logic preserved",
+    "keys": "Actual enumerable-own membership and counts at runtime, semantics, card, source binding before digest; unknown semantic values must remain null",
+    "bindings": "Each exact source/leaf remains required with source validation and exact current shared-binding digest membership",
+    "tests": "Unchanged reviewed test candidate382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf",
+    "owner_probe": "Read actual same named RED1fail238.597ms and GREEN1pass1448.791ms; admission names pinned7976d26 base"
+  },
+  "limits": [
+    "Reference catalogue custody only; no analytical execution or lifecycle-successor equivalence established",
+    "Full owner169 and planner29 runtime plus immutable final audit still required",
+    "PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT remains unresolved"
+  ]
+}

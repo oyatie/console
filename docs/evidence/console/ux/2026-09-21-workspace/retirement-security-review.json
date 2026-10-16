@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_security",
+  "reviewed_utc": "2026-09-21T17:50:15.987466+00:00",
+  "verdict": "APPROVE_BOUNDED_REMOVAL_OF_USER_REJECTED_PREVIEW; FINAL_REMOVAL_READBACK_PENDING",
+  "authority": "Explicit user rejection of seeded/demo-only/stub deliverable as conveyed by root; previous preview approvals do not override user direction.",
+  "archive_manifest_sha256": "a59566b2310c99242318290d0fe54fe2691458ba1626cd41069b94718b7d94a1",
+  "archive_verification": "All17manifest files exist under private archive and match recorded SHA256, including preview code/tests, browser script and prior evidence.",
+  "approved_removal": [
+    "New backend/crates/platform/ui preview crate including its3preview-only tests",
+    "New tools/browser/workspace-preview.cjs",
+    "Only console-platform-ui package block from Cargo.lock, its two layer-boundary BUCK mappings, its generator CSS/test-resource entries"
+  ],
+  "approved_restore": "Exact85fe5377e721ba38e35098a27191069bac07b355 bytes for backend/Cargo.lock,backend/ci/gates/layer-boundary/BUCK,tools/buck/gen_first_party.py; personally inspected diff contains only this rejected preview package additions.",
+  "preservation": [
+    "All original85feproduct tests remain untouched. Removing3rejected-preview tests retires their removed surface; it does not weaken a retained implementation test.",
+    "Historical design/test/RED receipts retained with appended rejection disposition; no claim prior receipts accepted real product workflows.",
+    "Dirty original checkout untouched; existing earlier Account/payroll security work retained."
+  ],
+  "source_readback": "At review time checkout still contained preview. This is prospective exact-removal approval, not claim deletion or server shutdown has been independently observed.",
+  "tests_executed": 0,
+  "product_edits": false,
+  "required_final_readback": [
+    "No platform/ui preview crate or standalone browser script remains",
+    "Three shared files exactly match85fe",
+    "Diff outside retained rejection evidence is limited to retirement of preview-added files; original product tests unchanged"
+  ]
+}

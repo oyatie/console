@@ -27,6 +27,8 @@ Test targets:
     hand-maintained exception table.
 """
 import argparse
+import ast
+import json
 import os
 import re
 import sys
@@ -102,20 +104,64 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 # `cargo clippy --all-targets` and the whole backend job. Re-register the
 # equivalent mapping here when a Leptos-era client face exists.
 
+# Explicit resource producers consumed by the native OpenAPI generator.
+OPENAPI_GENERATOR_PACKAGES = (
+    ('console-analytics-quant-rest', 'backend/crates/analytics-quant/rest'),
+    ('console-attendance-rest', 'backend/crates/attendance/rest'),
+    ('console-benefit-rest', 'backend/crates/benefit/rest'),
+    ('console-comms-rest', 'backend/crates/comms/rest'),
+    ('console-compliance-rest', 'backend/crates/compliance/rest'),
+    ('console-consulting-rest', 'backend/crates/consulting/rest'),
+    ('console-dispatch-rest', 'backend/crates/dispatch/rest'),
+    ('console-docs-rest', 'backend/crates/docs/rest'),
+    ('console-equipment-rest', 'backend/crates/equipment/rest'),
+    ('console-evaluation-rest', 'backend/crates/evaluation/rest'),
+    ('console-facilities-rest', 'backend/crates/facilities/rest'),
+    ('console-finance-gl-rest', 'backend/crates/finance-gl/rest'),
+    ('console-financial-rest', 'backend/crates/financial/rest'),
+    ('console-governance-rest', 'backend/crates/governance/rest'),
+    ('console-identity-rest', 'backend/crates/identity/rest'),
+    ('console-inbox-rest', 'backend/crates/inbox/rest'),
+    ('console-inspection-rest', 'backend/crates/inspection/rest'),
+    ('console-inventory-rest', 'backend/crates/inventory/rest'),
+    ('console-leave-rest', 'backend/crates/leave/rest'),
+    ('console-logistics-rest', 'backend/crates/logistics/rest'),
+    ('console-messenger-rest', 'backend/crates/messenger/rest'),
+    ('console-notices-rest', 'backend/crates/notices/rest'),
+    ('console-notifications-rest', 'backend/crates/notifications/rest'),
+    ('console-ontology-rest', 'backend/crates/ontology/rest'),
+    ('console-orgchange-rest', 'backend/crates/orgchange/rest'),
+    ('console-payroll-rest', 'backend/crates/payroll/rest'),
+    ('console-production-rest', 'backend/crates/production/rest'),
+    ('console-recruiting-rest', 'backend/crates/recruiting/rest'),
+    ('console-registry-rest', 'backend/crates/registry/rest'),
+    ('console-reporting-rest', 'backend/crates/reporting/rest'),
+    ('console-sales-rest', 'backend/crates/sales/rest'),
+    ('console-support-rest', 'backend/crates/support/rest'),
+    ('console-todos-rest', 'backend/crates/todos/rest'),
+    ('console-workorder-rest', 'backend/crates/workorder/rest'),
+)
+
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
+    "console-comms-adapter-postgres": {
+        "itests": {
+            "tests/mail_account_rls_surfaces_as_runtime_role.rs": {
+                "srcs": ["tests/mail_account_rls_surfaces_as_runtime_role/fixtures/credential-legacy-v1.json"],
+            },
+        },
+    },
     "console-payroll-ui": {
-        # The crate compiles three non-Rust files in. `island_script.js` is
-        # `include_str!` from src/, and the committed bindgen pair under pkg/ is
-        # `include_bytes!` so the SSR server can serve /pkg out of the binary.
-        # All three live inside this Buck package, so a glob reaches them; a
-        # `src/**/*.rs` glob alone leaves rustc unable to read any of them.
-        "srcs": ["src/**/*.js", "pkg/*.js", "pkg/*.wasm"],
+        # SSR may consume the committed pair only after the integrity action.
+        "srcs": ["src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css", "src/native_payroll.css", "src/native_people.css", "src/native_group_process.css"],
         # The unit tests `include_str!` two schema files from outside this
         # package: the payroll REST fragment they check contract keys against,
         # and the composed document.
         "external": {
+            ":console-payroll-ui-validated-bundle": "backend/crates/payroll/ui/pkg",
+            "//clients/desktop-web:people-validated-bundle": "backend/crates/payroll/ui/react",
+            "//clients/desktop-web:account-validated-bundle": "backend/crates/payroll/ui/react-account",
             "//backend/crates/payroll/rest:crate-openapi-tree":
                 "backend/crates/payroll/rest/openapi",
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
@@ -142,6 +188,11 @@ RESOURCE_CONFIG = {
     },
     "console-contracts": {
         "srcs": ["src/**/*.json"],
+        "external": {
+            "//backend/openapi:shared-tree": "backend/openapi/shared",
+            **{"//" + package + ":crate-openapi-tree": package + "/openapi"
+               for _, package in OPENAPI_GENERATOR_PACKAGES},
+        },
         "itests": {
             "tests/compose.rs": {
                 "srcs": ["src/semantic_manifest.json"],
@@ -149,14 +200,28 @@ RESOURCE_CONFIG = {
         },
     },
     "console-app": {
+        "srcs": ['src/account_custody_session.sql', 'src/account_custody_state.sql', 'src/account_credential_custody_state.sql', 'src/company_enrollment_custody_state.sql', 'src/native_company_policy_custody_state.sql', 'src/native_company_policy_v2_custody_state.sql', 'src/native_people_directory_custody_state.sql', 'src/native_people_directory_row_lock_custody_state.sql', 'src/company_provenance_v1_custody_state.sql', 'src/native_org_unit_closed_perimeter_v1_custody_state.sql', 'src/native_org_unit_closed_perimeter_v1_bounded_custody_state.sql', 'src/native_group_process_v1_custody_state.sql', 'src/native_group_process_navigation_v1_custody_state.sql', 'src/native_group_process_navigation_serving_v1_custody_state.sql', 'src/company_information_manager_current_policy_v1_custody_state.sql'],
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
             **MIGRATION_TREE,
+            '//ops:postgres-finalize-company-enrollment.sql': 'ops/postgres-finalize-company-enrollment.sql',
+            '//ops:postgres-finalize-native-company-policy.sql': 'ops/postgres-finalize-native-company-policy.sql',
+            '//ops:postgres-finalize-company-information-manager-current-policy-v1.sql': 'ops/postgres-finalize-company-information-manager-current-policy-v1.sql',
+            '//ops:account-custody-migrations.sha384': 'ops/account-custody-migrations.sha384',
         },
         "itests": {
+            "tests/auth_rest.rs": {"srcs": ['tests/auth_rest/company_setup/native-company-catalog-v1.json', 'tests/auth_rest/company_setup/preextension/account_credential_custody_state.sql', 'tests/auth_rest/company_setup/preextension/account_custody_state.sql', 'tests/auth_rest/company_setup/preextension/historical228-roster.json', 'tests/auth_rest/company_setup/preextension/postgres-company-enrollment-guards.sql', 'tests/auth_rest/company_setup/preextension/postgres-company-enrollment-input.sql', 'tests/auth_rest/company_setup/preextension/postgres-company-enrollment-intake.sql', 'tests/auth_rest/company_setup/preextension/postgres-company-enrollment-schema.sql', 'tests/auth_rest/company_setup/preextension/postgres-finalize-account-credentials.sql', 'tests/auth_rest/company_setup/preextension/postgres-finalize-account-custody.sql', 'tests/auth_rest/company_setup/preextension/postgres-verify-account-native.sql', 'tests/auth_rest/fixtures/native-directory-row-lock-shared-capture-v1.sql', 'tests/auth_rest/fixtures/company-enrollment-schema-acl.sql', 'tests/auth_rest/fixtures/company-enrollment-schema-references.sql', 'tests/auth_rest/fixtures/company-enrollment-input-golden.sql', 'tests/auth_rest/fixtures/company-enrollment-input-malformed.sql', 'tests/auth_rest/fixtures/company-enrollment-input-boundary.sql', 'src/account_custody_session.sql', 'src/account_custody_state.sql', 'src/account_credential_custody_state.sql', 'src/account_legacy_removal_v1_custody_state.sql', 'src/company_enrollment_custody_state.sql', 'src/native_company_policy_custody_state.sql', 'src/native_company_policy_v2_custody_state.sql', 'src/native_people_directory_custody_state.sql', 'src/native_people_directory_row_lock_custody_state.sql', 'src/company_provenance_v1_custody_state.sql', 'src/native_org_unit_closed_perimeter_v1_custody_state.sql', 'src/native_org_unit_closed_perimeter_v1_bounded_custody_state.sql', 'src/native_group_process_v1_custody_state.sql', 'src/native_group_process_navigation_v1_custody_state.sql', 'src/native_group_process_navigation_serving_v1_custody_state.sql', 'tests/auth_rest/actor-migration.csv', 'tests/auth_rest/fixtures/account-audit228-credential-state-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-credentials-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-root-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-root-state-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-verify-20aafabb.sql', 'tests/auth_rest/fixtures/account-business-session-c613626e-credential-state.sql', 'tests/auth_rest/fixtures/account-business-session-c613626e-credentials.sql', 'tests/auth_rest/fixtures/account-business-session-c613626e-root-state.sql', 'tests/auth_rest/fixtures/account-business-session-c613626e-root.sql', 'tests/auth_rest/fixtures/account-business-session-c613626e-verify.sql', 'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql', 'tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql', 'tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql', 'tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql', 'tests/auth_rest/fixtures/account-native-deployment228-credentials-6c884418.sql', 'tests/auth_rest/fixtures/account-native-deployment228-observer-6c884418.sql', 'tests/auth_rest/fixtures/account-native-deployment228-root-6c884418.sql', 'tests/auth_rest/fixtures/account-native-deployment228-verify-6c884418.sql', 'tests/auth_rest/fixtures/account-native-extended227-credentials-17fba595.sql', 'tests/auth_rest/fixtures/account-native-extended227-root-17fba595.sql', 'tests/auth_rest/fixtures/account-native-extended227-verify-17fba595.sql', 'tests/auth_rest/fixtures/account-native-extension-metadata.sql', 'tests/auth_rest/fixtures/account-native-final9-credentials-9de5c767.sql', 'tests/auth_rest/fixtures/account-native-final9-root-9de5c767.sql', 'tests/auth_rest/fixtures/account_credential_custody_state-deployment228-6c884418.sql', 'tests/auth_rest/fixtures/account_custody_state-deployment228-6c884418.sql', 'tests/auth_rest/fixtures/historical-migrations227-9de5c767.json', 'tests/auth_rest/fixtures/account-company-eligibility-26d78648-credential-state.sql', 'tests/auth_rest/fixtures/account-company-eligibility-26d78648-credentials.sql', 'tests/auth_rest/fixtures/account-company-eligibility-26d78648-root-state.sql', 'tests/auth_rest/fixtures/account-company-eligibility-26d78648-root.sql', 'tests/auth_rest/fixtures/account-company-eligibility-26d78648-verify.sql', 'tests/auth_rest/fixtures/platform-source-checked.sql', 'tests/auth_rest/fixtures/platform-source-historical.sql', 'tests/auth_rest/fixtures/platform-source-install.sql', 'tests/auth_rest/fixtures/platform-source-metadata.sql', 'tests/auth_rest/fixtures/platform-source-prospective.sql', 'tests/auth_rest/fixtures/native-group-full83-diagnostic-oracle-v1.json', 'src/company_information_manager_current_policy_v1_custody_state.sql'], "external": {'//ops:postgres-finalize-account-custody.sql': 'ops/postgres-finalize-account-custody.sql', '//ops:postgres-finalize-account-credentials.sql': 'ops/postgres-finalize-account-credentials.sql', '//ops:postgres-finalize-account-legacy-removal-v1.sql': 'ops/postgres-finalize-account-legacy-removal-v1.sql', '//ops:postgres-capture-account-legacy-removal-v1-custody.sql': 'ops/postgres-capture-account-legacy-removal-v1-custody.sql', '//ops:postgres-verify-account-native.sql': 'ops/postgres-verify-account-native.sql', '//ops:postgres-install-durability-observer.sql': 'ops/postgres-install-durability-observer.sql', '//ops:postgres-company-enrollment-input.sql': 'ops/postgres-company-enrollment-input.sql', '//ops:postgres-company-enrollment-schema.sql': 'ops/postgres-company-enrollment-schema.sql', '//ops:postgres-company-enrollment-intake.sql': 'ops/postgres-company-enrollment-intake.sql', '//ops:postgres-company-enrollment-guards.sql': 'ops/postgres-company-enrollment-guards.sql', '//ops:postgres-finalize-company-enrollment.sql': 'ops/postgres-finalize-company-enrollment.sql', '//ops:postgres-finalize-native-company-policy.sql': 'ops/postgres-finalize-native-company-policy.sql', '//ops:postgres-native-company-policy-custody-state.sql': 'ops/postgres-native-company-policy-custody-state.sql', '//ops:postgres-capture-native-company-policy-custody.sql': 'ops/postgres-capture-native-company-policy-custody.sql', '//ops:postgres-native-company-policy-v2-owner.sql': 'ops/postgres-native-company-policy-v2-owner.sql', '//ops:postgres-company-information-manager-current-v1-owner.sql': 'ops/postgres-company-information-manager-current-v1-owner.sql', '//ops:postgres-capture-company-information-manager-current-v1-custody.sql': 'ops/postgres-capture-company-information-manager-current-v1-custody.sql', '//ops:postgres-native-people-directory-owner.sql': 'ops/postgres-native-people-directory-owner.sql', '//ops:postgres-finalize-native-people-directory.sql': 'ops/postgres-finalize-native-people-directory.sql', '//ops:postgres-finalize-native-people-directory-row-lock.sql': 'ops/postgres-finalize-native-people-directory-row-lock.sql', '//ops:postgres-native-people-directory-row-lock-custody-state.sql': 'ops/postgres-native-people-directory-row-lock-custody-state.sql', '//ops:native-people-directory/input-row-lock-v1.sql': 'ops/native-people-directory/input-row-lock-v1.sql', '//ops:postgres-native-people-directory-custody-state.sql': 'ops/postgres-native-people-directory-custody-state.sql', '//ops:postgres-capture-native-people-directory-custody.sql': 'ops/postgres-capture-native-people-directory-custody.sql', '//ops:postgres-capture-native-people-directory-staged-custody.sql': 'ops/postgres-capture-native-people-directory-staged-custody.sql', '//ops:account-custody-migrations.sha384': 'ops/account-custody-migrations.sha384', '//ops:postgres-capture-native-company-policy-v2-custody.sql': 'ops/postgres-capture-native-company-policy-v2-custody.sql', '//ops:postgres-finalize-native-company-policy-v2.sql': 'ops/postgres-finalize-native-company-policy-v2.sql', '//ops:postgres-native-company-policy-v2-custody-state.sql': 'ops/postgres-native-company-policy-v2-custody-state.sql', '//ops:postgres-company-provenance-v1-owner.sql': 'ops/postgres-company-provenance-v1-owner.sql', '//ops:postgres-capture-company-provenance-v1-custody.sql': 'ops/postgres-capture-company-provenance-v1-custody.sql', '//ops:postgres-native-org-unit-closed-perimeter-v1-owner.sql': 'ops/postgres-native-org-unit-closed-perimeter-v1-owner.sql', '//ops:postgres-native-org-unit-account-actor-expansion-v1-owner.sql': 'ops/postgres-native-org-unit-account-actor-expansion-v1-owner.sql', '//ops:postgres-native-org-unit-account-actor-validation-v1-owner.sql': 'ops/postgres-native-org-unit-account-actor-validation-v1-owner.sql', '//ops:postgres-capture-native-org-unit-account-actor-closed76-v1-custody.sql': 'ops/postgres-capture-native-org-unit-account-actor-closed76-v1-custody.sql', '//ops:postgres-capture-native-org-unit-account-actor-group83-v1-custody.sql': 'ops/postgres-capture-native-org-unit-account-actor-group83-v1-custody.sql', '//ops:native-org-unit/account-actor-custody-capture-v1.sql': 'ops/native-org-unit/account-actor-custody-capture-v1.sql', '//ops:native-org-unit/account-actor-custody-capture-v2.sql': 'ops/native-org-unit/account-actor-custody-capture-v2.sql', '//ops:postgres-capture-native-org-unit-account-actor-v2-custody.sql': 'ops/postgres-capture-native-org-unit-account-actor-v2-custody.sql', '//ops:fixtures/native-org-unit-account-actor-capture-export-contract-v2.json': 'ops/fixtures/native-org-unit-account-actor-capture-export-contract-v2.json', '//ops:postgres-capture-native-org-unit-account-actor-v1-custody.sql': 'ops/postgres-capture-native-org-unit-account-actor-v1-custody.sql', '//ops:postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql': 'ops/postgres-capture-native-org-unit-closed-perimeter-v1-custody.sql', '//ops:postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql': 'ops/postgres-capture-native-org-unit-closed-perimeter-v1-bounded-custody.sql', '//ops:postgres-finalize-native-org-unit-closed-perimeter-v1.sql': 'ops/postgres-finalize-native-org-unit-closed-perimeter-v1.sql', '//ops:postgres-finalize-native-group-process-v1.sql': 'ops/postgres-finalize-native-group-process-v1.sql', '//ops:postgres-finalize-native-group-process-navigation-v1.sql': 'ops/postgres-finalize-native-group-process-navigation-v1.sql', '//ops:postgres-native-org-unit-closed-perimeter-v1-custody-state.sql': 'ops/postgres-native-org-unit-closed-perimeter-v1-custody-state.sql', '//ops:postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql': 'ops/postgres-native-org-unit-closed-perimeter-v1-bounded-custody-state.sql', '//ops:postgres-native-group-process-v1-custody-state.sql': 'ops/postgres-native-group-process-v1-custody-state.sql', '//ops:postgres-native-group-process-v1-owner.sql': 'ops/postgres-native-group-process-v1-owner.sql', '//ops:postgres-capture-native-group-process-v1-custody.sql': 'ops/postgres-capture-native-group-process-v1-custody.sql', '//ops:native-group-process/codec-contract-v1.json': 'ops/native-group-process/codec-contract-v1.json', '//backend/crates/platform/authz:crate-source-tree': 'backend/crates/platform/authz/src', '//ops:native-group-process/schema-v1.sql': 'ops/native-group-process/schema-v1.sql', '//ops:native-group-process/codec-v1.sql': 'ops/native-group-process/codec-v1.sql', '//ops:native-group-process/result-codec-v2.sql': 'ops/native-group-process/result-codec-v2.sql', '//ops:native-group-process/source-v1.sql': 'ops/native-group-process/source-v1.sql', '//ops:native-group-process/locks-v1.sql': 'ops/native-group-process/locks-v1.sql', '//ops:native-group-process/closure-v1.sql': 'ops/native-group-process/closure-v1.sql', '//ops:native-group-process/context-v1.sql': 'ops/native-group-process/context-v1.sql', '//ops:native-group-process/material-v1.sql': 'ops/native-group-process/material-v1.sql', '//ops:native-group-process/transition-v1.sql': 'ops/native-group-process/transition-v1.sql', '//ops:native-group-process/guards-v1.sql': 'ops/native-group-process/guards-v1.sql', '//ops:native-group-process/commands-v1.sql': 'ops/native-group-process/commands-v1.sql', '//ops:native-group-process/audit-v1.sql': 'ops/native-group-process/audit-v1.sql', '//ops:native-group-process/discovery-v1.sql': 'ops/native-group-process/discovery-v1.sql', '//ops:native-group-process/acl-v1.sql': 'ops/native-group-process/acl-v1.sql', '//ops:postgres-finalize-company-information-manager-current-policy-v1.sql': 'ops/postgres-finalize-company-information-manager-current-policy-v1.sql', '//ops:postgres-company-information-manager-current-policy-v1-custody-state.sql': 'ops/postgres-company-information-manager-current-policy-v1-custody-state.sql', '//ops:native-company-information/group-lock-v1.sql': 'ops/native-company-information/group-lock-v1.sql', '//ops:native-company-information/selected-lock-v1.sql': 'ops/native-company-information/selected-lock-v1.sql', '//ops:native-company-information/root-material-v1.sql': 'ops/native-company-information/root-material-v1.sql', '//ops:native-company-information/manager-current-v1.sql': 'ops/native-company-information/manager-current-v1.sql', '//ops:native-company-information/acl-v1.sql': 'ops/native-company-information/acl-v1.sql'}},
+            "tests/account_migration.rs": {"srcs": ["tests/fixtures/account-legacy225-owner-output-v1.json"]},
             "tests/openapi_drift.rs": {
                 "srcs": ["src/**/*.rs", "Cargo.toml"],
                 "external": OPENAPI_DRIFT_EXTERNAL,
+            },
+            "tests/health_readiness.rs": {
+                "srcs": ["src/lib.rs"],
+                "external": {
+                    "//backend/crates/platform/auth-rest:crate-source-tree": "backend/crates/platform/auth-rest/src",
+                    "//backend/crates/platform/request-context:crate-source-tree": "backend/crates/platform/request-context/src",
+                },
             },
             "tests/workbench_api.rs": {
                 "srcs": ["src/workbench.rs"],
@@ -178,10 +243,15 @@ RESOURCE_CONFIG = {
         # consumer are one reviewed pair.
         "exports_openapi_tree": True,
     },
+    "console-payroll-application": {
+        "srcs": ["Cargo.toml"],
+    },
     "console-intelligence-application": {
         "srcs": ["Cargo.toml"],
     },
+    "console-platform-test-support": {"external": {'//ops:postgres-finalize-account-custody.sql': 'ops/postgres-finalize-account-custody.sql', '//ops:postgres-finalize-account-credentials.sql': 'ops/postgres-finalize-account-credentials.sql'}},
     "console-platform-authz": {
+        "srcs": ["src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedar", "src/company_policy/*.cedarschema", "src/group_process/*.cedar", "src/group_process/*.cedarschema", "src/platform_policy/truth-table.json"],
         "external": {
             "//docs/specs:cedar-pbac-map":
                 "docs/specs/cedar-pbac-coexistence-map.json",
@@ -253,15 +323,18 @@ RESOURCE_CONFIG = {
     },
 }
 
+# Pair each explicitly consumed tree with its producer export.
+for producer, _ in OPENAPI_GENERATOR_PACKAGES:
+    RESOURCE_CONFIG.setdefault(producer, {})["exports_openapi_tree"] = True
+
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")
 TEST_MARKERS = ("#[test]", "#[tokio::test", "#[sqlx::test", "#[rstest")
 
 # Manifest keys this generator does NOT read, recorded so the next reader does
 # not assume they are honoured:
-#   * `[lib] crate-type` -- every library is emitted as a plain `rust_library`.
-#     console-payroll-ui declares `["rlib", "cdylib"]`; the cdylib half is the
-#     wasm32 artifact, built by tools/ui/build-payroll-wasm.sh and not by Buck,
-#     so ignoring it is correct TODAY and wrong the day Buck builds the wasm.
+#   * `[lib] crate-type` -- ordinary libraries are emitted as `rust_library`.
+#     Console UI hydration has an explicit variant whose cdylib subtarget is
+#     compiled for wasm32 and published by tools/ui/build-payroll-wasm.sh.
 #   * dependency `optional = true` -- `map_deps` links an optional dependency
 #     unconditionally, so a Buck target can see a crate Cargo would have gated
 #     behind an off feature. Pre-existing; it makes the graph wider, not wrong.
@@ -279,10 +352,14 @@ TEST_RESOURCE_REQUIREMENTS = {
         # which is the point: the rendered keys are checked against the real
         # contract, not against a copy.
         'unit': 'none',
+        'integration': {
+            'tests/react_people.rs': 'none',
+        },
     },
     'console-app': {
         'unit': 'none',
         'integration': {
+            'tests/account_migration.rs': 'postgres',
             'tests/action_inbox_api.rs': 'postgres',
             'tests/attendance_persona_api.rs': 'postgres',
             'tests/audit_api.rs': 'postgres',
@@ -630,6 +707,9 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-identity-application': {
         'unit': 'none',
+        'integration': {
+            'tests/native_hr_policy_parser_contract.rs': 'none',
+        },
     },
     'console-identity-domain': {
         'unit': 'none',
@@ -851,12 +931,14 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-audit-chain': {
         'unit': 'none',
         'integration': {
+            'tests/ed25519_compatibility.rs': 'none',
             'tests/audit_chain_rls.rs': 'postgres',
         },
     },
     'console-platform-auth': {
         'unit': 'none',
         'integration': {
+            'tests/auth7_legacy_projection.rs': 'postgres',
             'tests/jwt_es256.rs': 'none',
             'tests/jwt_verifier.rs': 'none',
             'tests/refresh_tokens.rs': 'postgres',
@@ -877,9 +959,11 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-authz': {
         'unit': 'none',
         'integration': {
+            'tests/cedar_diagnostic_fail_closed.rs': 'none',
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
             'tests/cedar_pbac_readiness_cases.rs': 'none',
             'tests/cedar_sdk_identity.rs': 'none',
+            'tests/native_hr_bootstrap_cedar_contract.rs': 'none',
             'tests/policy.rs': 'postgres',
         },
     },
@@ -943,7 +1027,9 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-platform-provisioning': {
+        'unit': 'none',
         'integration': {
+            'tests/account_historical_consent.rs': 'none',
             'tests/bootstrap_passkey.rs': 'postgres',
             'tests/bootstrap_passkey_replay.rs': 'postgres',
             'tests/dev_principal_upsert_race.rs': 'postgres',
@@ -966,6 +1052,9 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-platform-request-context': {
         'unit': 'none',
+        'integration': {
+            'tests/native_error_envelope.rs': 'none',
+        },
     },
     'console-platform-storage': {
         'unit': 'postgres',
@@ -1257,20 +1346,70 @@ def requires_postgres(package_name, test_type, test_file=None):
     return resource_requirement(package_name, test_type, test_file) == "postgres"
 
 
+def integration_test_sources(d):
+    """Use Cargo automatic crate roots; nested modules stay source inputs.
+
+    A module can contain test attributes without being a standalone test crate.
+    Explicit declarations may annotate these same roots with required features;
+    unsupported target shapes remain a refusal rather than guessed coverage.
+    """
+    manifest = {}
+    manifest_path = os.path.join(d, "Cargo.toml")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path, "rb") as manifest_file:
+            manifest = tomllib.load(manifest_file)
+        if "autotests" in manifest.get("package", {}):
+            raise ValueError("custom Cargo test discovery needs reviewed support: " + d)
+    testsdir = os.path.join(d, "tests")
+    all_rs = []
+    roots = []
+    if os.path.isdir(testsdir):
+        for dp, _, files in os.walk(testsdir):
+            for filename in files:
+                if not filename.endswith(".rs"):
+                    continue
+                source = os.path.relpath(os.path.join(dp, filename), d)
+                all_rs.append(source)
+                relative = os.path.relpath(os.path.join(dp, filename), testsdir).split(os.sep)
+                if len(relative) == 1 or (len(relative) == 2 and filename == "main.rs"):
+                    roots.append(source)
+    names = [integration_test_name(root) for root in roots]
+    if len(names) != len(set(names)):
+        raise ValueError("colliding Cargo integration test names: " + d)
+    declared_names = set()
+    for target in manifest.get("test", []):
+        name, path = target.get("name"), target.get("path")
+        if (set(target) - {"name", "path", "required-features"}
+                or not isinstance(name, str) or not isinstance(path, str)
+                or path not in roots or name != integration_test_name(path)):
+            raise ValueError("custom Cargo test discovery needs reviewed support: " + d)
+        if name in declared_names:
+            raise ValueError("duplicate explicit Cargo test identity: " + name)
+        declared_names.add(name)
+        required = target.get("required-features", [])
+        if (not isinstance(required, list)
+                or not all(isinstance(feature, str) and feature in manifest.get("features", {})
+                           for feature in required)
+                or len(required) != len(set(required))):
+            raise ValueError("invalid required features for Cargo test: " + name)
+    return sorted(roots), sorted(set(all_rs) - set(roots))
+
+
+def integration_test_name(source):
+    basename = os.path.basename(source)
+    stem = os.path.basename(os.path.dirname(source)) if basename == "main.rs" and os.path.dirname(source) != "tests" else os.path.splitext(basename)[0]
+    return crate_ident(stem)
+
+
 def discovered_test_resource_keys(d, package_name):
     """Return resource keys for targets this generator will emit."""
     keys = set()
     src = os.path.join(d, "src")
     if tree_has(src, "#[cfg(test)]"):
         keys.add((package_name, "test.unit", None))
-    testsdir = os.path.join(d, "tests")
-    if os.path.isdir(testsdir):
-        for dp, _, files in os.walk(testsdir):
-            for filename in files:
-                if filename.endswith(".rs"):
-                    test_file = os.path.relpath(os.path.join(dp, filename), d)
-                    if file_has(os.path.join(d, test_file), *TEST_MARKERS):
-                        keys.add((package_name, "test.integration", test_file))
+    roots, _ = integration_test_sources(d)
+    for test_file in roots:
+        keys.add((package_name, "test.integration", test_file))
     return keys
 
 
@@ -1458,11 +1597,8 @@ def openapi_dotfile_srcs(package_dir):
 def map_deps(dep_table, first_party):
     """Map a [dependencies]/[dev-dependencies] table to (deps_list, named_dict).
 
-    Every workspace member is first-party, so a member dependency always maps
-    to its `//backend/...` target. The `skipped` branch this used to carry --
-    omit a `-ui` member rather than rewrite it as `//third-party/rust:<name>` --
-    was removed with `skip_workspace_member` once #1079 vendored Leptos and
-    nothing was excluded any more.
+    Local paths must resolve to actual first-party members. Package naming
+    never authorizes an omitted dependency or a third-party substitute.
     """
     deps, named = [], {}
     for key, spec in (dep_table or {}).items():
@@ -1470,6 +1606,8 @@ def map_deps(dep_table, first_party):
         version = spec.get("version", "") if isinstance(spec, dict) else spec
         if pkg in first_party:
             target = first_party[pkg]
+        elif isinstance(spec, dict) and "path" in spec:
+            raise ValueError("local path dependency has no first-party target: " + pkg)
         elif pkg == "sqlx" and str(version).lstrip("=").startswith("0.8"):
             target = "//third-party/rust:sqlx-0_8"  # buckify.sh renames the 0.8 alias
         else:
@@ -1626,6 +1764,22 @@ def integration_resource_config(name, test_file):
 
 def integration_external_resources(name, test_file, contents):
     external = dict(integration_resource_config(name, test_file)["external"])
+    if (name, test_file) in (
+        ("console-gate-layer-boundary", "tests/gate_detects_violation.rs"),
+        ("console-gate-writer-ownership", "tests/gate_detects_violation.rs"),
+    ):
+        # This ratchet reads the real workspace through cargo metadata --no-deps.
+        # Buck's CARGO_MANIFEST_DIR is inside mapped_srcs, not the checkout.
+        # Reuse the discovered members and source exports so workspace globs
+        # cannot silently shrink when a new member is added. The gate reads
+        # manifests/dependencies, not Cargo's test/example target inventory.
+        external["//backend:Cargo.toml"] = "backend/Cargo.toml"
+        for directory in find_members():
+            package = os.path.relpath(directory, REPO).replace(os.sep, "/")
+            external["//{}:Cargo.toml".format(package)] = package + "/Cargo.toml"
+            external[source_tree_label(package)] = package + "/src"
+        if name == "console-gate-writer-ownership":
+            external["//ops:postgres-reconcile-topology.sh"] = "ops/postgres-reconcile-topology.sh"
     if "#[sqlx::test" in contents:
         external.update(MIGRATION_TREE)
     return external
@@ -1731,7 +1885,43 @@ def main():
     print("generated {} first-party BUCK files".format(generated))
 
 
+def explicit_binary_targets(d, package_name, manifest):
+    """Validate declared extra binaries; do not infer feature activation."""
+    targets = []
+    seen = set()
+    source_root = os.path.realpath(os.path.join(d, "src"))
+    for target in manifest.get("bin", []):
+        binary = target.get("name")
+        path = target.get("path")
+        if not isinstance(binary, str) or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_-]*", binary):
+            raise ValueError("{}: declared binary requires a valid name".format(package_name))
+        if binary in seen:
+            raise ValueError("{}: duplicate declared binary {}".format(package_name, binary))
+        seen.add(binary)
+        if target.get("required-features"):
+            raise ValueError(
+                "{}: binary {} requires explicit Buck feature-gate modeling: {}".format(
+                    package_name, binary, target["required-features"]
+                )
+            )
+        if not isinstance(path, str) or not path or os.path.isabs(path):
+            raise ValueError("{}: binary {} requires an explicit relative path".format(package_name, binary))
+        normalized = os.path.normpath(path)
+        resolved = os.path.realpath(os.path.join(d, normalized))
+        if not normalized.startswith("src/") or os.path.commonpath([source_root, resolved]) != source_root:
+            raise ValueError("{}: binary {} requires an explicit source mapping outside src/".format(package_name, binary))
+        if not os.path.isfile(resolved):
+            raise ValueError("{}: binary {} entrypoint is missing: {}".format(package_name, binary, path))
+        if binary == package_name and normalized == "src/main.rs":
+            continue
+        targets.append((binary, normalized))
+    return targets
+
+
+
 def emit(d, name, deps, named, dev_deps, dev_named, version=None):
+    manifest = load(d) if os.path.isfile(os.path.join(d, "Cargo.toml")) else {}
+    declared_binaries = explicit_binary_targets(d, name, manifest)
     header = "# @generated by tools/buck/gen_first_party.py from Cargo.toml — do not edit by hand."
     ident = crate_ident(name)
     has_main = os.path.isfile(os.path.join(d, "src", "main.rs"))
@@ -1812,6 +2002,11 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
         'load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")',
         "",
         "export_file(",
+        '    name = "Cargo.toml",',
+        '    visibility = ["PUBLIC"],',
+        ")",
+        "",
+        "export_file(",
         '    name = "crate-source-tree",',
         '    src = "src",',
         '    mode = "reference",',
@@ -1819,10 +2014,74 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
         ")",
         "",
     ]
+    if name == "console-payroll-ui":
+        out += [
+            "export_file(",
+            '    name = "react-build-recipe",',
+            '    src = "BUCK",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "export_file(",
+            '    name = "react-assets",',
+            '    src = "react",',
+            '    mode = "reference",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "export_file(",
+            '    name = "react-account-assets",',
+            '    src = "react-account",',
+            '    mode = "reference",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "export_file(",
+            '    name = "react-account-controller",',
+            '    src = "src/native_account.js",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+        ]
+        out.insert(2, 'load("//tools/ui:hydration.bzl", "hydration_snapshot", "hydration_bundle", "hydration_validate", "hydration_inputs")')
+        with open(os.path.join(REPO, "third-party/rust/hydrate/root-dependencies.json")) as root_file:
+            hydrate_deps = json.load(root_file)
+        out += [
+            "hydration_snapshot(",
+            '    name = "console-payroll-ui-source-snapshot",',
+            '    inputs = hydration_inputs("backend/crates/payroll/ui", glob(["src/**"])),',
+            ")", "",
+            "configured_alias(",
+            '    name = "console-payroll-ui-wasm-snapshot",',
+            '    actual = ":console-payroll-ui-source-snapshot",',
+            '    platform = "toolchains//:wasm32-platform",',
+            ")", "",
+        ]
+        hydrate = _block("rust_library", name + "-hydrate", "[]", ident,
+                         hydrate_deps, {}, env, package=package,
+                         crate_root=package + "/src/lib.rs", features=["hydrate", "islands"])
+        hydrate[2] = '    srcs_filegroup = ":console-payroll-ui-source-snapshot",'
+        out += hydrate + ["",
+            "configured_alias(",
+            '    name = "console-payroll-ui-wasm",',
+            '    actual = ":console-payroll-ui-hydrate[cdylib]",',
+            '    platform = "toolchains//:wasm32-platform",',
+            ")", "",
+            "hydration_bundle(",
+            '    name = "console-payroll-ui-wasm-bundle",',
+            '    snapshot = ":console-payroll-ui-wasm-snapshot",',
+            '    wasm = ":console-payroll-ui-wasm",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "hydration_validate(",
+            '    name = "console-payroll-ui-validated-bundle",',
+            '    inputs = hydration_inputs("backend/crates/payroll/ui", glob(["src/**"])),',
+            '    manifest = "bundle.lock.json",',
+            '    js = "pkg/console_payroll_ui.js",',
+            '    wasm = "pkg/console_payroll_ui_bg.wasm",',
+            '    native_candidate = ":console-payroll-ui-wasm-bundle",',
+            ")", "",
+        ]
     # Crates that carry OpenAPI fragments can export them so another package
     # can `include_str!` one. Emitted on OPT-IN, not on the existence of an
-    # `openapi/` directory: 34 crates have one and exactly one is consumed, so
-    # keying on the directory published 33 PUBLIC targets nothing referenced.
+    # `openapi/` directory. Only explicitly declared consumers justify exports;
+    # the native OpenAPI generator consumes its complete named face inventory.
     # An export is a promise to other packages; it is declared, not inferred.
     # This stays in the crate's OWN package on purpose: a BUCK file inside
     # `openapi/` would make it a separate package and the crate's own
@@ -1888,6 +2147,16 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
                           external=lib_external, features=with_default_features([feature], lib_features))
         lib_target, unit_root, unit_excl = ":" + name, "src/lib.rs", None
 
+    for binary_name, binary_path in declared_binaries:
+        out.append("")
+        binary_deps = sorted(set(deps + ([lib_target] if has_lib else [])))
+        out += _block(
+            "rust_binary", binary_name, _lib_srcs(), crate_ident(binary_name),
+            binary_deps, named, env, package=package,
+            crate_root=package + "/" + binary_path, external=lib_external,
+            features=lib_features,
+        )
+
     test_deps = sorted(set(deps + dev_deps))
     test_named = {**named, **dev_named}
 
@@ -1932,22 +2201,20 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
     # `mod` declarations resolve (unreferenced ones are ignored by rustc).
     testsdir = os.path.join(d, "tests")
     if os.path.isdir(testsdir):
-        all_rs = []
-        for dp, _, files in os.walk(testsdir):
-            for f in files:
-                if f.endswith(".rs"):
-                    all_rs.append(os.path.relpath(os.path.join(dp, f), d))
-        test_files = sorted(p for p in all_rs if file_has(os.path.join(d, p), *TEST_MARKERS))
-        helpers = sorted(p for p in all_rs if p not in test_files)
+        test_files, helpers = integration_test_sources(d)
         for tf in test_files:
             test_path = os.path.join(d, tf)
             contents = file_text(test_path)
-            stem = crate_ident(os.path.splitext(os.path.basename(tf))[0])
+            stem = integration_test_name(tf)
             labels = test_labels(
                 package,
                 "test.integration",
                 requires_postgres(name, "test.integration", tf),
             )
+            if name == "console-app" and tf == "tests/auth_rest.rs":
+                # The pinned prelude copies this generated source layout instead
+                # of symlinking it: custody tests require regular declared SQL inputs.
+                labels.append("generated")
             config = integration_resource_config(name, tf)
             srcs_expr = listsrcs(sorted(set([tf] + helpers)))
             if config["srcs"]:
@@ -1983,9 +2250,31 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
                           sorted(set(featured_test_deps + [test_lib_target])), test_named, itest_env,
                           package=package, crate_root=package + "/" + tf,
                           external=external, labels=labels, features=features)
+            if name == "console-app" and stem in ("auth_rest", "health_readiness"):
+                if manifest.get("features", {}).get("test-browser") != []:
+                    raise ValueError("console-app requires an explicit inert test-browser feature")
+                # Browser tests use the ordinary application library and resources.
+                # Only their test crate enables the browser driver protocol.
+                out.append("")
+                out += _block("rust_test", "{}-itest-{}-browser".format(name, stem),
+                              srcs_expr, stem,
+                              sorted(set(featured_test_deps + [test_lib_target])), test_named, itest_env,
+                              package=package, crate_root=package + "/" + tf,
+                              external=external, labels=labels, features=["test-browser"])
 
+    rendered = "\n".join(out) + "\n"
+    target_names = set()
+    for statement in ast.parse(rendered).body:
+        if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+            continue
+        for field in statement.value.keywords:
+            if field.arg == "name":
+                target_name = ast.literal_eval(field.value)
+                if target_name in target_names:
+                    raise ValueError("{}: duplicate generated target {}".format(name, target_name))
+                target_names.add(target_name)
     with open(os.path.join(d, "BUCK"), "w") as f:
-        f.write("\n".join(out) + "\n")
+        f.write(rendered)
 
 
 if __name__ == "__main__":

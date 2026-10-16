@@ -1,0 +1,8 @@
+{
+  "sqlx_leaves": 3,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "existing_parent_bytes_preserved": true,
+  "existing_shared_helpers_unchanged": true,
+  "pinned_rustfmt": "1.98.1 newsource passed"
+}

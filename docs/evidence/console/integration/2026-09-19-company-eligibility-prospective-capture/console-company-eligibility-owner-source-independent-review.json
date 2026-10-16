@@ -1,0 +1,35 @@
+{
+  "kind": "independent-company-eligibility-owner-install-and-prospective-serializer-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:32:38.068446+00:00",
+  "decision": "APPROVE_EXACT_SOURCE_FOR_DISPOSABLE_DUAL_VARIANT_CAPTURE_ONLY",
+  "manifest_sha256": "7f4fe97763152023f893162c1e95ab084a47bf1bf8e94fd6f1edf31226234292",
+  "install_sha256": "4209d4ed37cd725eddcce9fc8a26b582e030081205718020fa534345a60f9d87",
+  "snapshot_function_sha256": "83dbb32f5f56aad9924de0521d811bc9f8cfec27ff59fab4eab2c5f9f81f6349",
+  "capture_sql_sha256": "30926503535a2ca60199c14548d1d78faaaa0967b45ca96a2ea9ee1b003c687c",
+  "canonical_generator_sha256": "66d0a814b0b736d18be1f16c4172fb8eb456c64760af7c296b7577952f3af1e8",
+  "checks": [
+    "All5packet hashes and canonical generator binding verified.",
+    "Reused historical Business-session serializer digest verified5cb53...; new serializer digest74c8... reproduced from exact3cardinality-checked substitutions; emitted captureSQL exactly new query strip+semicolon/newline.",
+    "All4historical Business-session fingerprint tuple values unchanged; no prospective hash constants invented.",
+    "SQL checks READCOMMITTED,nonnilAccount,existingAccountSHARE,ACTIVEandpositivegeneration/revision/context; unknownAccount/nonActive is authentication_invalid; malformedauthority unavailable.",
+    "Matching sameAccounthead SHARE held through transaction; absentheadfalse; pointedimmutable receipt read in separate statement after possiblewait.",
+    "Exactreceipt/head/revision/account/actualcluster/dbname/OID comparison; validgenesisDESIGNATEtrue and exactREVOKEfalse; no current-vs-admission-generation equality.",
+    "One PLpgSQL VOLATILE nonSTRICT SD PARALLELUNSAFE bool; Accountowner/Auth EXECUTE only proposed, fixedsearchpath/row_securityon; no table/builtin/role grants or businessmutation.",
+    "Serializer name-based capture includes foreignowner/extraoverload variants; mandatoryidentity and roster59\u219260 exact, priorrepresentation retained."
+  ],
+  "trusted_existing_boundaries": [
+    "Historical Accountlockhelper and exact custody tableconstraints: receipt/head NOTNULL and immutable identity/FK checks.",
+    "Accountowner existing builtinpg_control_system capability; no new builtin grant.",
+    "Runtime application wrapper must still derive Account from verifiedsession and apply final DB-clock freshness; SQLboolean alone is not session authentication or creationauthority."
+  ],
+  "approved_next_action": "Root may capture exact real plain/observer Business-session predecessor and exact reviewed installation in disposable guarded transactions; bind exactSQL/source SHA and complete before/after catalog/business preservation. Review four new prospective hashes against declared source before any generator constant or production finalizer integration.",
+  "remaining_holds": [
+    "New state/finalizer layer unreviewed and unauthored; current/historical reader compatibility and atomic transition tests not yet executed.",
+    "No approved new fingerprints or startup classifier activation.",
+    "Nineowner and5transitionSQLx plus2HTTP projection acceptance remain required; wrapper/UI is next dependency.",
+    "No Company/fullrelease/production acceptance."
+  ],
+  "database_executions_by_reviewer": 0,
+  "repository_edits_by_reviewer": 0
+}

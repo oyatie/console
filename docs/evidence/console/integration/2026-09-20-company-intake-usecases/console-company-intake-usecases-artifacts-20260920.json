@@ -1,0 +1,18 @@
+[
+  {
+    "target": "identity-application",
+    "artifact": "buck-out/v2/art/root/39893c7e49283da4/backend/crates/identity/application/__console-identity-application-unit__/console_identity_application",
+    "sha256": "92cbe5209c404888467ca1e236b53771fb5838ae2e0e505b46180571f1ef7be6",
+    "discovered": 12,
+    "listing": "/private/tmp/console-company-intake-usecases-identity-application-discovery-20260920.log",
+    "listing_sha256": "85c05d438808d44bc29c23c776b1668f39397c4b5fd8c8f463bb8a1f69fd3d97"
+  },
+  {
+    "target": "app-auth-rest",
+    "artifact": "buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+    "sha256": "b3191b89b3740fb2cc36e3775481dba97a995029507c5b6c0250dc704940ea6f",
+    "discovered": 517,
+    "listing": "/private/tmp/console-company-intake-usecases-app-auth-rest-discovery-20260920.log",
+    "listing_sha256": "2ab6f4b087a4e528546c27607c66e31a053de15cb558c4f8aa7b6eebef6a54a6"
+  }
+]

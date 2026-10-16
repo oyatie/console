@@ -1,0 +1,7 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_ONE_LINE_FIXTURE_CORRECTION",
+  "manifest_sha256": "1ac83b0eebb38e2826362c0d49be84b8129fae1aae254cf21a2d4d04027f56aa",
+  "basis": "Verified existing validator requires ADMIN, actual Group input inherited MECHANIC; exact new source equals old plus one role assignment. No retained assertion or verifier/owner change. Independent approval obtained before integration.",
+  "additional_change": "Append separately approved histories module only."
+}

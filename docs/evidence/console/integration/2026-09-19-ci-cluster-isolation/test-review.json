@@ -1,0 +1,11 @@
+{
+  "kind": "ci-cluster-isolation-test-review",
+  "design_sha": "b5482cbd2a1513b762f6f5e5faece04cec4bdd04",
+  "test_sha256": "b48d1ca5086c433b39234499ebf522fbf0ae0e9d1dc5aca529c70274b5266592",
+  "reviewer": "integration_security",
+  "verdict": "approved exact bytes",
+  "author": "integration_tests; root corrected custom fixture workflow eligibility after independent finding",
+  "scope": "Actual harness orchestration with mocked Docker/Cargo boundaries, not real database isolation",
+  "existing_tests": "Preserved exact prefix",
+  "remaining": "Clean test commit and named actual-boundary RED required for implementation admission."
+}

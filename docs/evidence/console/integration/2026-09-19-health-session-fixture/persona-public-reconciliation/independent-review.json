@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE explicit semantic scope reconciliation for fifth retained Public-root fixture",
+  "manifest_sha256": "050a4a6fc36d646eda3dc376c83f47cf8334785868dc2a670230c0b20d3a253c",
+  "candidate_sha256": "f989347c2afce618d56023115f18f696cde9a0839100ae7cb65f9de467e5ee9b",
+  "patch_sha256": "a08982ac51ebca0e4e7ba76dd5ddeca8f210687f4f274669645218f982a49c3b",
+  "preimage_sha256": "7170f51c3cd134cfee878af17b76fa5efcab9f432bed267e4e40e75407a8705b",
+  "findings": [],
+  "evidence": [
+    "Prior approved inventory identified four changed root fixtures but omitted this fifth, previously masked by missing session prerequisites. This receipt explicitly expands fixture reconciliation inventory rather than silently changing expected behavior.",
+    "Exact inverse proves only anonymousroot expected full existing Public document replaces old empty shell; every other protectedpath still exactshell. All other persona invariants, roles, tokens, salary/Company/run disclosures and ignore annotations remain byte-identical.",
+    "Added no-run and no-/pkg assertions strengthen anonymous nondisclosure. Status200 and assert_ui_invariants retained.",
+    "Matches approved Public-root design and actual source-owner behavior; does not create a new product contract."
+  ],
+  "limits": [
+    "13passed1failed1existingignored prior runtime remains preserved. Rerun same15leaves after amendment; no success assumed.",
+    "No authorization relaxation or release acceptance."
+  ]
+}

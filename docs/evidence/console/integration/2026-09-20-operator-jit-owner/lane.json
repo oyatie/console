@@ -1,0 +1,30 @@
+[
+  {
+    "lane": "operator-scoped-jit-off",
+    "owner": "/root",
+    "base_sha": "755271767e3553b12fe822dac740fac0e376ae76",
+    "immutable_target": "Disable JIT only in finalizer process and matching transaction helper without changing execution budgets or custody",
+    "allowed_paths": [
+      "ops/postgres-finalize-account-custody.sh",
+      "backend/app/tests/auth_rest/audit_account_transition.rs"
+    ],
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-operator-jit-owner-map-20260920.json --only operator-jit-owner --runner cargo",
+    "mechanical_guide": "Append fixed -c jit=off to scrubbed wrapperPGOPTIONS and SET LOCAL jit=off to operatorhelper. Existing60s/5s,search_path,TLS,identity,SQLbytes unchanged. Independentdesign /private/tmp/console-operator-jit-design-20260920.md; testsround2+TLSround3 reviewedroot. Require actualwrapper two-profileRED separately before applying.",
+    "reviewer": "/root/integration_security",
+    "pre_mortem": "Global setting leaks into business traffic, increasedtimeouts conceal defect, test-onlyfix hides production mismatch",
+    "blast_radius": "One-shot operatorchild settings and testtransactiononly; historicalSQL untouched",
+    "detection": "ActualSQLxLOCALscope proof; realTLSpsqlchild default+observeroptions; retained4+6transitions",
+    "rollback": "Revert2settingsonly; no data or history rewrites",
+    "stop_conditions": [
+      "MissingTLSoractualowner",
+      "WrongfailureusedasRED",
+      "HistoricalSQLchange",
+      "Timeoutchanges",
+      "Unreviewedtestchanges"
+    ],
+    "remaining_holds": [
+      "Fullwrapper suite/18.6compatibility",
+      "Assembledrelease"
+    ]
+  }
+]

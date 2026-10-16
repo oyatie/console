@@ -203,6 +203,15 @@ const PLAN = new Map([
   // openapi.yaml, so a local miss here is a client-contract miss.
   ["Buck2 console-app OpenAPI drift suite", { tier: "fast" }],
   ["Buck2 console-app inline PostgreSQL suites", { tier: "db" }],
+  ["Install pinned native browser prerequisites", {
+    tier: "ci-only",
+    why: "Linux x86_64 Actions bootstrap writes GITHUB_ENV; local db verification requires prepared pinned browser drivers, hashes and output directories",
+  }],
+  ["Native Account browser", { tier: "db" }],
+  ["Native Company creation browser", { tier: "db" }],
+  ["Native Company preview browser", { tier: "db" }],
+  ["Native payroll hydration browser", { tier: "db" }],
+  ["Native inherited browser histories", { tier: "db" }],
 
   // ---- repo-gates --------------------------------------------------------
   // Pure `npm run` gate binaries: no Docker, no Rust toolchain, no network.
@@ -349,8 +358,8 @@ export function stepMirrorDisposition(name) {
   return PLAN.get(name) ?? null;
 }
 
-function run(command, env, cwd = ".") {
-  const result = spawnSync("bash", ["-o", "pipefail", "-c", command], {
+export function run(command, env, cwd = ".") {
+  const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", command], {
     stdio: "inherit",
     env,
     cwd,

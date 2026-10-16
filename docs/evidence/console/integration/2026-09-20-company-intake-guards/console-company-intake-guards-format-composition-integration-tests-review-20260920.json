@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_PRIVATE_FORMAT_AND_INTENDED_TEST_COMPOSITION_RUNTIME_PENDING",
+  "head": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+  "formatted_source": "/private/tmp/console-company-intake-guards-formatted-20260920.rs",
+  "formatted_sha256": "d088e3e201249a686476383b5bdaed9b66a603b9715014e15ebd1ea15f6a85db",
+  "owner_preimage_sha256": "85f3027ed4af8e9c55513b4259233aa6c5f4dc6654a42c1a90ddcfb6c70f540c",
+  "approved_source_manifest": "/private/tmp/console-company-intake-guards-20260920-round2/MANIFEST.json",
+  "generator_patch_manifest": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1/MANIFEST.json",
+  "evidence": [
+    "Token/literal comparison against approved guard round2: only51 trailing commas and2 equivalent closure-expression block wrappers; no SQL/string/assertion/identifier/branch changes.",
+    "Six SQLx test leaves retained. New include at existing intake_owner scope makes approved parent helpers available; exact new file relative ops resource matches sibling layout.",
+    "Intended composition adds exactly one guard include beside the unique existing signed include; all16 existing leaves remain, total22=20SQLx+2pure.",
+    "Exact approved generator round1 patches preserve9predecessors and67old Buck methods; added68th mapping/source existence method."
+  ],
+  "conditions": [
+    "Root integrates only stated formatted source, one include and exact approved patches, then binds implementation to resulting reviewed test commit.",
+    "Resource absence/compile failure before guard implementation is prerequisite failure, not executed guard semantics."
+  ],
+  "reviewer_runtime_executions": 0,
+  "repository_writes": 0
+}

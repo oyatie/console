@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-ops-commit-loss-acceptance-source-only",
+  "manifest_sha256": "f9fdd692d4b6caecfda79e1bbb5992417718b2a6d2af5ed5346d0fe906e38b0f",
+  "candidate_sha256": "ef8de9dffa9815b15783538bf17b060acb5a4b4dba2ace9b4b5d17afdf0c0a49",
+  "checks": [
+    "All twelve packet hashes,C3preimages and exact currentrelaypreimage verified; removing scoped visibility tokens reconstructs entire original relay/evidence/control bytes.",
+    "Reuses real localPostgreSQL relay and strict proven_ack_loss witness; authenticated console_rt/noSUPERUSER/noBYPASSRLS positive establishes normal exacthealthprojection and oneaudit/normalCOMMIT.",
+    "Armed actual owner receives unavailable after consumed exact backendCOMMIT+idle frames; no collected rows, one independently observed durablehealthaudit and no other effects.",
+    "Transcript exact connection/commit/ack counts and original faultcontrols distinguish real acknowledgement loss from precommit failure or hiddenretry; original normal Business recovery adds separate audit without changing transcript.",
+    "Loopback-only fixture TLSdisable isolated from production settings; cleanup signals listener,poolclose,boundedtaskjoin before propagating captured panic."
+  ],
+  "findings": [],
+  "source_declared_sqlx_leaves": 1,
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Actual realwire runtime and inheritedrelaycontrols/listregression required; source approval not proof of actual acknowledgedcommit loss.",
+    "Root exactcomposition and final artifact review remain required.",
+    "No wholeops/release/productionqualification."
+  ]
+}

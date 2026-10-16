@@ -1,0 +1,33 @@
+{
+  "kind": "ci-cluster-isolation-design-review",
+  "design_sha": "b5482cbd2a1513b762f6f5e5faece04cec4bdd04",
+  "design_sha256": "ba90465377ebd7a1f2337e03ef5ee1746930c24b7c8d42740a4a2da300b2661c",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "integration_security",
+      "verdict": "approve",
+      "focus": "Canonical groups, serial nextest, recursion termination, protected selection and no-fail-fast."
+    },
+    {
+      "round": 2,
+      "reviewer": "integration_tests",
+      "verdict": "approve",
+      "focus": "Canonical identity from selected argv, alias semantics, recursive flag propagation and ordinary concurrency."
+    },
+    {
+      "round": 3,
+      "reviewer": "integration_security",
+      "verdict": "approve",
+      "focus": "Exact selection preservation, failure aggregation and parent/child cleanup."
+    },
+    {
+      "round": 4,
+      "reviewer": "integration_tests",
+      "verdict": "approve",
+      "focus": "Final committed design recheck, explicit flags, all failure phases and no test omission."
+    }
+  ],
+  "independence": "Two read-only reviewers independently reviewed root-authored design in four rounds; reviewer identities repeat transparently.",
+  "status": "Design approved; exact test approval and actual boundary RED still required."
+}

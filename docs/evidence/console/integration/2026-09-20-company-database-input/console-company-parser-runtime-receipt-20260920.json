@@ -1,0 +1,32 @@
+{
+  "base_test_commit": "2f11f2f4fc7b29a0495bb9499ab8618a5b21ddc0",
+  "sources": {
+    "ops/generate-account-custody.py": "9cb4056a18e94a3821fbcb1237d7553d519f2be3db24b5b8d52dd0d466e8263b",
+    "ops/postgres-company-enrollment-input.sql": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290",
+    "backend/app/BUCK": "142e6b5937c00a6bb3ce870499391fa28f38d53c62e9e9a97db2d1330fb34541",
+    "backend/app/tests/auth_rest/native_company_input_parser.rs": "c43e4281585e49c6c3a8891b45e001f62e7b995b2bdb16a906ec887290a498fc",
+    "ops/test_company_enrollment_input_generator.py": "8d506011077396a050c6a6405b12143d6e04b00bc5a15a8a8d2aea11fbe08988"
+  },
+  "native_invocation": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::input_parser::company_input_parser_executes_710_cases_only_in_private_mismatched_profile bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg",
+  "counts": {
+    "executed_leaves": 1,
+    "passed_leaves": 1,
+    "filtered_leaves": 476,
+    "parser_calls": 710,
+    "valid": 34,
+    "invalid": 676,
+    "actual_login_denials": 6,
+    "generator_tests": 61,
+    "preservation_tests": 1
+  },
+  "limits": [
+    "Pure helper uninstalled in serving",
+    "Company enrollment still RED",
+    "Functional database has durability disabled, not recovery proof",
+    "Not five-area MVP acceptance"
+  ],
+  "native_artifact": {
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+    "sha256": "1d36668870531433fa1cad31f83958dd3fd0b43d4c0709cd18c4d6428b0f07e6"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE",
+  "manifest_sha256": "828cac45a2291e4348e7c7c97bb7a0e51f1da052fe1351004c901a7c9ed626f2",
+  "source_sha256": "5d13ee4a190161380c7af8b4f17af68db2c4f6dc835f30e1c5224fc82da86a85",
+  "basis": [
+    "Read all8deterministic cases against previously approved owner semantics.",
+    "Exact protocol/native-field isolation does not manufacture database authority; signed claims are private helper fixtures only.",
+    "Strict deadline equality, floor-second precision and invalid server TTL classification consistent.",
+    "SQLSTATE/message/source matching preserves unknown failure503; actual HTTP admission separately proven."
+  ],
+  "executed": 0
+}

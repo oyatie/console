@@ -1,0 +1,60 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_NATIVE_UNAVAILABLE_RETRY_RECOVERY",
+  "head": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "custody": {
+    "head": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+    "binary_sha256": "2931718983a68b4cdc34f9f51883cc09d69f68dce7a200b1dcbe1709bfba756c",
+    "sources": {
+      "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+      "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+      "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+      "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+      "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91"
+    }
+  },
+  "browser_report_sha256": "0223d6a05d3218a0e16d2bc6963972780205c9a926c85fb2f9f339abb73d0554",
+  "owner_log_sha256": "f072d90fc578cfd14250d9a30143cbf66fe18f463b352d83ff0fcb9d476685e0",
+  "browser": {
+    "checks": 193,
+    "passed": 193,
+    "failed": 0,
+    "actual_retry_histories": 13,
+    "requests": 75,
+    "responses": 75,
+    "version": {
+      "version": "153.0.8010.12",
+      "playwright": "1.63.0",
+      "executable": "/private/tmp/console-preparation-browsers/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+      "sha256": "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+    },
+    "same_route_query_fresh_get": true,
+    "private_envelope_checked": true,
+    "owned_server_stopped": true
+  },
+  "owner_tests": {
+    "executed": 2,
+    "passed": 2,
+    "failed": 0,
+    "names": [
+      "native_document_auth_transport_outage_is_unavailable_not_anonymous",
+      "native_document_current_terms_unavailable_cannot_create_pending_identity_or_consent"
+    ],
+    "auth_repair_seconds": 9.68,
+    "terms_repair_seconds": 13.06,
+    "full_native_and_legacy_row_snapshots": true,
+    "publication_history_preserved": true
+  },
+  "review_findings": [
+    "One-line empty-relative Retry destination retains route/query and triggers actual freshGET; fragments disappear according to native anchor resolution.",
+    "HTTP fixture checks actual restricted Auth transport loss/replacement and terms-head unavailability/append-only recovery, preserving durable rows and current authenticated identity where proved.",
+    "No-DB browser root cookie selects unavailable routing only; it is not authority or an authenticated browser acceptance.",
+    "Previous189passed2failed browser run and first map0executed prerequisite rejection remain historical, not relabeled."
+  ],
+  "limits": [
+    "This closes the bounded retry defect only, not Account/Company milestone or release.",
+    "Current browser is loopback HTTP with synthetic routing cookie; real authenticated browser repair not covered.",
+    "Focused Enter and independently viewed visible focus screenshot are bounded interaction evidence, not full keyboard-discovery, IME, zoom, screen-reader or user-study qualification.",
+    "HTML413 envelope defect remains a separate open middleware-owner dependency."
+  ]
+}

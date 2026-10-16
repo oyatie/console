@@ -1,0 +1,51 @@
+{
+  "status": "APPROVE exact round2 source/oracle successor for application and real browser testing; not browser or workflow acceptance",
+  "reviewer": "integration_security",
+  "source_files": {
+    "/private/tmp/console-company-browser-result-oracle-20260921/manifest.json": "ff1009052d525be7df03848fe5c7d4d24f000ffe54ab0ea6f90f1726d058edf4",
+    "/private/tmp/console-company-browser-result-oracle-20260921/company.cjs": "2e25c84f590585a0953d44f4bb87cac362e04e2ea2a17c22a91651e3f4b18e4c",
+    "/private/tmp/console-company-browser-result-oracle-round2-20260921/manifest.json": "6f6f22a1b516782d3280d6b7b236e5fe92d739c9c730db258a14804d91a925f0",
+    "/private/tmp/console-company-browser-result-oracle-round2-20260921/company.cjs": "9edab0630df042767ccd4da092b79d6b6f34b566f1bc1c2d9dd5df493187f7cd",
+    "/private/tmp/console-company-browser-result-oracle-round2-20260921/source.patch": "21d4b0aff2a982491d30837261bd78d6f01333d3bece9a6304d65187b62b74ea",
+    "/private/tmp/console-company-browser-result-security-controls-round2-20260921.cjs": "5592bfe2dcb89451d214c4bdb93e4f60d81f9983775c20ce79b52ce8a6430fd1",
+    "/private/tmp/console-company-browser-result-security-controls-round2-20260921.log": "b8e0d1cc0fb0cd2661caf7b1d025daed0cc52380ad763d3ebbfc3cfb7eab6edf",
+    "/private/tmp/console-company-transport-review-round4-20260921/backend/crates/payroll/ui/src/native_account.rs": "bbf1fecd31f494d849640ad72ee1e550f3a41e25fd3c1f1e4f8db88968f9d6fa"
+  },
+  "source_checks": [
+    "Canonical baseline hash matches round1 manifest; frozen UI hash matches; exact canonical-to-round1 and round1-to-round2 patches independently reproduced",
+    "Frozen UI CompanyCreated section has committed marker, h1 \uc0dd\uc131 \uc644\ub8cc, h2 escaped Company name and actual \uc5c5\ubb34 \uacf5\uac04 \uc5f4\uae30 anchor to /companies/{id}",
+    "Initial result, reload and fresh document read share exact one-panel/heading/link cardinality and href checks; both headings and CTA require Playwright isVisible",
+    "Original literal Company name fixture including < and & is preserved",
+    "Mutation/document histories, wire response fields, three database checkpoints, current identity, secret checks, runtime pins, cleanup and completion predicates unchanged",
+    "No remaining reliance on nonexistent Company-name link; original policy label remains pending separately reviewed UI successor"
+  ],
+  "executed": [
+    {
+      "command": "node --check /private/tmp/console-company-browser-result-oracle-round2-20260921/company.cjs",
+      "exit_code": 0,
+      "tests_executed": 0
+    },
+    {
+      "command": "node /private/tmp/console-company-browser-result-security-controls-round2-20260921.cjs",
+      "exit_code": 0,
+      "controls_discovered": 25,
+      "controls_executed": 25,
+      "controls_passed": 25,
+      "scope": "Pure extracted predicate and unchanged-source controls; no DOM/browser/database execution"
+    }
+  ],
+  "controls": [
+    "positive exact result",
+    "missing and duplicate committed panel, h1, h2, CTA",
+    "null/empty/changed/noncanonical destination href",
+    "each heading or CTA isVisible false",
+    "unchanged document/mutation/completion/status/checkpoint predicates",
+    "all three result read sites retain helper"
+  ],
+  "limits": [
+    "isVisible is Playwright bounding-box/computed-visibility semantics; no opacity, contrast, screen-reader or human usability claim",
+    "Pure locator-value controls test predicate logic, not browser accessibility implementation",
+    "Native Company graph/custody integration, real HTTP/current-policy/owning database effects and browser acceptance remain required",
+    "No product edits, generator execution, build or PostgreSQL use by reviewer"
+  ]
+}

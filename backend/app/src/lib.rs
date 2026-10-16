@@ -5,10 +5,16 @@
 //! shutdown. Domain behavior lands in narrower crates and is composed here.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod native_group_process;
+mod native_payroll;
+mod native_people;
+mod native_policy;
+
 use std::collections::{BTreeSet, HashMap};
 use std::env;
 use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -21,7 +27,7 @@ use axum::http::{HeaderMap, Request, Response, StatusCode, header};
 use axum::middleware::Next;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use base64::Engine as _;
 use console_analytics_quant_rest::AnalyticsQuantState;
 use console_attendance_adapter_postgres::PgAttendanceStore;
@@ -93,13 +99,13 @@ use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_payroll_rest::PayrollRestState;
 use console_platform_audit_chain::{ChainReport, SealConfig, SealSigner, verify_org_chain};
 use console_platform_auth::{
-    AccessClaims, AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings,
-    JwtVerifier, PasskeyService, WELL_KNOWN_AASA_PATH, WELL_KNOWN_ASSETLINKS_PATH,
+    AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings, JwtVerifier,
+    PasskeyService, SessionVerification, WELL_KNOWN_AASA_PATH, WELL_KNOWN_ASSETLINKS_PATH,
     WebauthnSettings, android_assetlinks_json, apple_app_site_association_json,
 };
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
 use console_platform_authz::{
-    Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
+    Action, Feature, Principal, authorize_capability, authorize_org_wide,
 };
 use console_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
 use console_platform_db::{DbError, with_audit};
@@ -161,11 +167,13 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
+mod account_custody;
 pub mod action_inbox;
 mod audit_chain_signer;
 pub mod cedar_parity;
 mod collaboration;
 mod console_telemetry;
+pub mod deployment_operator;
 mod facilities_schedule;
 mod hr;
 pub mod lifecycle;
@@ -184,10 +192,10 @@ const DEFAULT_HTTP_ADDR: &str = "0.0.0.0:8080";
 const INTELLIGENCE_BIND_PATH: &str = "/internal/intelligence/bind";
 const DEFAULT_SERVICE_NAME: &str = "console-app";
 const DEFAULT_SHUTDOWN_TIMEOUT_SECS: u64 = 10;
-// Blue/green may temporarily run four API pods and the worker rolling update
-// two workers. Six runtime connections per process, plus the API's two
-// 2-connection command pools, caps that surge at 52 and reserves eight of
-// PostgreSQL's configured 60 for migration/topology/operator work.
+// Four API pods and two workers can use 68 connections: six runtime connections
+// per process plus three 2-connection command pools and one auth pool per API.
+// Deployment sizing must also reserve migration/topology/operator capacity;
+// these pool limits do not certify that a 60-connection database supports surge.
 const RUNTIME_DATABASE_POOL_MAX_CONNECTIONS: u32 = 6;
 // These role-backed defaults are an operational correctness backstop for every
 // serving pool. They limit accidental/buggy work; they are not a security
@@ -485,12 +493,20 @@ impl std::str::FromStr for AppRole {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AppConfig {
     pub role: AppRole,
     pub service_name: String,
     pub http_addr: SocketAddr,
     pub database_url: Option<String>,
+    /// Explicit completion policy for database-backed serving. Absence never
+    /// selects local durability; migration-only configuration may omit it.
+    pub database_durability: Option<console_platform_db::durability::DurabilityPolicy>,
+    /// Dedicated Account custody transport, required for configured API auth.
+    /// Configuration only: opening its restricted pool belongs to auth wiring.
+    pub auth_database_url: Option<String>,
+    /// Trusted public terms release directory, independent of signing keys.
+    pub account_terms_artifact_root: Option<PathBuf>,
     /// Dedicated least-privilege connection used only for leave commands
     /// (`LEAVE_COMMAND_DATABASE_URL`). The API requires this whenever its
     /// general runtime `DATABASE_URL` is configured so command execution can
@@ -605,6 +621,32 @@ pub struct AppConfig {
     pub production_service_principal_hmac_key: Option<[u8; 32]>,
 }
 
+// Configuration owns credentials and signing keys. Debug exposes only typed
+// operational metadata and presence flags, never raw transport/provider values.
+impl std::fmt::Debug for AppConfig {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("AppConfig")
+            .field("role", &self.role)
+            .field("http_addr", &self.http_addr)
+            .field("database_configured", &self.database_url.is_some())
+            .field(
+                "database_durability_configured",
+                &self.database_durability.is_some(),
+            )
+            .field(
+                "auth_database_configured",
+                &self.auth_database_url.is_some(),
+            )
+            .field("auth_enabled", &self.auth_rest.is_some())
+            .field(
+                "account_terms_configured",
+                &self.account_terms_artifact_root.is_some(),
+            )
+            .finish_non_exhaustive()
+    }
+}
+
 /// Native app-link association config for the `/.well-known/*` endpoints.
 ///
 /// All fields are optional and default to empty: a deployment that has not yet
@@ -678,6 +720,16 @@ fn policy_step_up_from_auth_config(config: &AuthRestConfig) -> Result<PasskeySer
 }
 
 impl AppConfig {
+    fn require_database_durability(
+        &self,
+    ) -> Result<&console_platform_db::durability::DurabilityPolicy, AppError> {
+        self.database_durability.as_ref().ok_or_else(|| {
+            AppError::Config(
+                "CONSOLE_DATABASE_DURABILITY is required for database-backed serving".to_owned(),
+            )
+        })
+    }
+
     pub fn from_env() -> Result<Self, AppError> {
         Self::from_pairs(env::vars())
     }
@@ -859,6 +911,59 @@ impl AppConfig {
             public_key_pem,
         });
         let auth_rest = auth_rest_config_from_vars(&vars, jwt.as_ref())?;
+        let account_terms_artifact_root =
+            non_empty(vars.get("CONSOLE_ACCOUNT_TERMS_ARTIFACT_ROOT")).map(PathBuf::from);
+        let auth_database_url = non_empty(vars.get("AUTH_DATABASE_URL"));
+        if role == AppRole::Api
+            && database_url.is_some()
+            && (jwt.is_some() || account_terms_artifact_root.is_some())
+            && auth_database_url.is_none()
+        {
+            return Err(AppError::Config(
+                "AUTH_DATABASE_URL is required for api authentication when DATABASE_URL is configured"
+                    .to_owned(),
+            ));
+        }
+        if let Some(auth_url) = auth_database_url.as_deref() {
+            let auth_password =
+                validate_database_url_identity("AUTH_DATABASE_URL", auth_url, "console_auth_rt")?;
+            // Reuse exactly the serving URL parser, including percent-decoding
+            // and effective query passwords; spelling differences are not isolation.
+            for (name, url, expected_role) in [
+                (
+                    "DATABASE_URL",
+                    database_url.as_deref(),
+                    if role == AppRole::Migrate {
+                        "console_app"
+                    } else {
+                        "console_rt"
+                    },
+                ),
+                (
+                    "LEAVE_COMMAND_DATABASE_URL",
+                    leave_command_database_url.as_deref(),
+                    "console_leave_cmd",
+                ),
+                (
+                    "ONTOLOGY_COMMAND_DATABASE_URL",
+                    ontology_command_database_url.as_deref(),
+                    "console_ontology_cmd",
+                ),
+                (
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                    platform_force_command_database_url.as_deref(),
+                    "console_platform_force_cmd",
+                ),
+            ] {
+                if let Some(url) = url {
+                    let password = validate_database_url_identity(name, url, expected_role)?;
+                    ensure_distinct_database_credentials([
+                        ("AUTH_DATABASE_URL", Some(auth_password.as_str())),
+                        (name, Some(password.as_str())),
+                    ])?;
+                }
+            }
+        }
         let storage = storage_config_from_vars(&vars)?;
         let dispatch_timers = dispatch_timer_config_from_vars(&vars)?;
         let dispatch_jobs_enabled = match vars.get("CONSOLE_DISPATCH_JOBS_ENABLED") {
@@ -961,11 +1066,25 @@ impl AppConfig {
                 })
                 .transpose()?;
 
+        let database_durability = vars
+            .get("CONSOLE_DATABASE_DURABILITY")
+            .map(|value| console_platform_db::durability::DurabilityPolicy::from_json(value))
+            .transpose()
+            .map_err(|error| AppError::Config(error.to_string()))?;
+        if role != AppRole::Migrate && database_url.is_some() && database_durability.is_none() {
+            return Err(AppError::Config(
+                "CONSOLE_DATABASE_DURABILITY is required for database-backed serving".to_owned(),
+            ));
+        }
+
         Ok(Self {
             role,
             service_name,
             http_addr,
             database_url,
+            database_durability,
+            auth_database_url,
+            account_terms_artifact_root,
             leave_command_database_url,
             ontology_command_database_url,
             platform_force_command_database_url,
@@ -1397,6 +1516,7 @@ pub enum DatabaseDependency {
 
 #[derive(Clone)]
 pub struct AppState {
+    platform_policy: Arc<console_platform_authz::platform_policy::PlatformPolicy>,
     config: AppConfig,
     database: DatabaseDependency,
     /// Narrow command pool for leave mutations. It is intentionally separate
@@ -1421,6 +1541,10 @@ pub struct AppState {
     /// publish/rollback requests.
     policy_step_up: Option<PasskeyService>,
     auth_rest: Option<AuthRestState>,
+    company_rest: Option<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    group_rest: Option<console_identity_rest::group_process::GroupRestState<PgOrgStore>>,
+    serving_custody_profile: Option<account_custody::VerifiedCustodyProfile>,
+    native_policy_issuer: Option<JwtIssuer>,
     evidence_storage: Option<EvidenceService<SeaweedS3Storage>>,
     /// Object store + bucket backing the public storefront media-serve route.
     sales_media_storage: Option<(SeaweedS3Storage, String)>,
@@ -1458,6 +1582,13 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(config: AppConfig, database: DatabaseDependency) -> Result<Self, AppError> {
+        let platform_policy = Arc::new(
+            console_platform_authz::platform_policy::PlatformPolicy::compile_current()
+                .map_err(|_| AppError::Config("platform policy compilation failed".to_owned()))?,
+        );
+        if matches!(&database, DatabaseDependency::Postgres(_)) {
+            config.require_database_durability()?;
+        }
         let jwt_verifier = config
             .jwt
             .as_ref()
@@ -1500,11 +1631,20 @@ impl AppState {
             },
             DatabaseDependency::NotConfigured => None,
         };
+        let auth_rest = auth_rest.map(|state| match config.account_terms_artifact_root.clone() {
+            Some(root) => state.with_account_terms_artifact_root(root),
+            None => state,
+        });
         let audit_attestation_signer =
             audit_chain_signer::build_attestation_signer(config.audit_chain_external.as_ref())?;
         let realtime_hub = realtime_hub_from_database(&database);
 
         Ok(Self {
+            platform_policy,
+            company_rest: None,
+            group_rest: None,
+            serving_custody_profile: None,
+            native_policy_issuer: None,
             config,
             database,
             leave_command_database: DatabaseDependency::NotConfigured,
@@ -1538,6 +1678,35 @@ impl AppState {
         self
     }
 
+    /// Bind an explicitly supplied Auth transport to the existing PostgreSQL
+    /// composition. This performs no connection or admission; serving startup
+    /// validates the transport in `from_config`.
+    #[must_use]
+    pub fn with_auth_database(mut self, pool: PgPool) -> Self {
+        self.auth_rest = self.auth_rest.map(|state| state.with_auth_database(pool));
+        self.group_rest = match (self.group_rest, self.auth_rest.as_ref()) {
+            (Some(group), Some(auth)) => Some(group.with_auth(auth.clone())),
+            _ => None,
+        };
+        self
+    }
+
+    fn session_verification(&self) -> Option<SessionVerification> {
+        let verification = SessionVerification::new(
+            self.jwt_verifier.clone()?,
+            self.auth_rest.as_ref()?.auth_database()?.clone(),
+        );
+        Some(
+            if self.serving_custody_profile.is_some_and(
+                account_custody::VerifiedCustodyProfile::requires_current_company_provenance,
+            ) {
+                verification.require_current_company_provenance()
+            } else {
+                verification
+            },
+        )
+    }
+
     #[must_use]
     pub fn with_platform_force_command_database(mut self, pool: PgPool) -> Self {
         self.platform_force_command_database = DatabaseDependency::Postgres(pool);
@@ -1545,7 +1714,12 @@ impl AppState {
     }
 
     pub async fn from_config(config: AppConfig) -> Result<Self, AppError> {
-        let database = match config.database_url.as_deref() {
+        // AppConfig is public and can be changed after parsing. Refuse missing
+        // policy before any transport is opened, including injected role tags.
+        if config.database_url.is_some() {
+            config.require_database_durability()?;
+        }
+        let (database, serving_custody_profile) = match config.database_url.as_deref() {
             Some(url) => {
                 let after_connect_role = "console_rt".to_owned();
                 let pool = PgPoolOptions::new()
@@ -1582,9 +1756,15 @@ impl AppState {
                     .await
                     .map_err(AppError::Database)?;
                 validate_database_pool_identity(&pool, "DATABASE_URL", "console_rt").await?;
-                DatabaseDependency::Postgres(pool)
+                let profile = account_custody::verify(&pool).await?;
+                config
+                    .require_database_durability()?
+                    .validate(&pool)
+                    .await
+                    .map_err(|error| AppError::Config(error.to_string()))?;
+                (DatabaseDependency::Postgres(pool), Some(profile))
             }
-            None => DatabaseDependency::NotConfigured,
+            None => (DatabaseDependency::NotConfigured, None),
         };
 
         let leave_command_database = match (
@@ -1625,10 +1805,79 @@ impl AppState {
             _ => DatabaseDependency::NotConfigured,
         };
 
+        let auth_database = match (
+            config.role,
+            &database,
+            config.jwt.is_some() || config.account_terms_artifact_root.is_some(),
+        ) {
+            (AppRole::Api, DatabaseDependency::Postgres(business), true) => {
+                let url = config.auth_database_url.as_deref().ok_or_else(|| {
+                    AppError::Config("AUTH_DATABASE_URL is required for API authentication".into())
+                })?;
+                let auth = connect_command_pool(url, "console_auth_rt", "AUTH_DATABASE_URL")
+                    .await
+                    .map_err(|_| {
+                        AppError::Config(
+                            "AUTH_DATABASE_URL authentication or serving-role validation failed"
+                                .into(),
+                        )
+                    })?;
+                let business_target = observed_database_target(business).await;
+                let auth_target = observed_database_target(&auth).await;
+                match (business_target, auth_target) {
+                    (Ok(business), Ok(auth)) if business == auth => {}
+                    _ => {
+                        return Err(AppError::Config(
+                            "AUTH_DATABASE_URL must reach the same observed database target as DATABASE_URL"
+                                .into(),
+                        ));
+                    }
+                }
+                Some(auth)
+            }
+            _ => None,
+        };
+
         let mut state = Self::new(config.clone(), database)?;
+        state.serving_custody_profile = serving_custody_profile;
+        if serving_custody_profile.is_some_and(
+            account_custody::VerifiedCustodyProfile::requires_current_company_provenance,
+        ) {
+            state.auth_rest = state
+                .auth_rest
+                .map(AuthRestState::require_current_company_provenance);
+        }
+        if serving_custody_profile
+            .is_some_and(account_custody::VerifiedCustodyProfile::supports_policy)
+        {
+            state.native_policy_issuer = config
+                .auth_rest
+                .as_ref()
+                .map(|auth| {
+                    JwtIssuer::from_es256_pem(
+                        JwtSettings {
+                            issuer: auth.jwt_issuer.clone(),
+                            audience: auth.jwt_audience.clone(),
+                            access_token_ttl: time::Duration::minutes(15),
+                        },
+                        auth.jwt_private_key_pem.as_bytes(),
+                        auth.jwt_public_key_pem.as_bytes(),
+                    )
+                    .map_err(|_| AppError::Config("invalid native policy issuer".into()))
+                })
+                .transpose()?;
+        }
         state.leave_command_database = leave_command_database;
         state.ontology_command_database = ontology_command_database;
         state.platform_force_command_database = platform_force_command_database;
+        if let Some(pool) = auth_database {
+            let auth_rest = state.auth_rest.take().ok_or_else(|| {
+                AppError::Config(
+                    "AUTH_DATABASE_URL requires configured authentication services".into(),
+                )
+            })?;
+            state.auth_rest = Some(auth_rest.with_auth_database(pool));
+        }
         if let (DatabaseDependency::Postgres(pool), Some(storage_config)) =
             (&state.database, config.storage.as_ref())
         {
@@ -1694,6 +1943,49 @@ impl AppState {
         // `config.email` is resolved above.
         if let Some(auth_rest) = state.auth_rest.take() {
             state.auth_rest = Some(auth_rest.with_email_sender(state.email_sender.clone()));
+        }
+        if matches!(state.config.role, AppRole::Api)
+            && state
+                .serving_custody_profile
+                .is_some_and(account_custody::VerifiedCustodyProfile::supports_native_group_process)
+        {
+            let (
+                DatabaseDependency::Postgres(pool),
+                Some(auth),
+                Some(verifier),
+                Some(issuer),
+                Some(auth_config),
+            ) = (
+                &state.database,
+                &state.auth_rest,
+                &state.jwt_verifier,
+                &state.native_policy_issuer,
+                &state.config.auth_rest,
+            )
+            else {
+                return Err(AppError::Config(
+                    "native Group composition requires current Auth and policy services".into(),
+                ));
+            };
+            if auth.auth_database().is_none()
+                || auth_config.refresh_family_absolute_ttl <= time::Duration::ZERO
+            {
+                return Err(AppError::Config(
+                    "native Group composition requires admitted Auth transport and positive TTL"
+                        .into(),
+                ));
+            }
+            let store = PgOrgStore::new(pool.clone()).with_native_account_policy(
+                verifier.clone(),
+                issuer.clone(),
+                auth_config.refresh_family_absolute_ttl,
+            );
+            state.group_rest = Some(
+                console_identity_rest::group_process::GroupRestState::new(store, auth.clone())
+                    .map_err(|_| {
+                        AppError::Config("native Group policy composition failed".into())
+                    })?,
+            );
         }
         // Webmail master key (envelope AEAD KEK) — GRACEFULLY OPTIONAL. When
         // `CONSOLE_MAIL_MASTER_KEY` is present + valid it arms the webmail credential
@@ -1809,6 +2101,24 @@ async fn connect_command_pool(
         .map_err(AppError::Database)?;
     validate_database_pool_identity(&pool, env_name, expected_role).await?;
     Ok(pool)
+}
+
+/// Compare the server/database actually observed at startup, allowing URL
+/// spelling aliases that reach the same endpoint. Non-null TCP address/port
+/// decoding deliberately refuses Unix sockets and incomplete readbacks.
+/// This is not physical cluster identity or a guarantee about later reconnects,
+/// primary/replica freshness, proxy routing, restore generations or HA.
+async fn observed_database_target(
+    pool: &PgPool,
+) -> Result<(String, i64, String, i32), sqlx::Error> {
+    sqlx::query_as(
+        "SELECT pg_catalog.current_database()::text, d.oid::bigint, \
+         pg_catalog.inet_server_addr()::text, pg_catalog.inet_server_port() \
+         FROM pg_catalog.pg_database d WHERE d.datname=pg_catalog.current_database()",
+    )
+    // rls-arming: ok serving target admission reads only global PostgreSQL metadata
+    .fetch_one(pool)
+    .await
 }
 
 async fn reset_database_connection_state(conn: &mut PgConnection) -> Result<(), sqlx::Error> {
@@ -2371,11 +2681,38 @@ fn validate_database_url_identity(
     raw_url: &str,
     expected_role: &str,
 ) -> Result<String, AppError> {
+    // SQLx reads PGOPTIONS even when every URL component is explicit. Reject
+    // ambient startup settings before they can alter a serving connection.
+    if env::var_os("PGOPTIONS").is_some_and(|options| !options.is_empty()) {
+        return Err(AppError::Config(format!(
+            "{env_name} must not inherit PostgreSQL startup options"
+        )));
+    }
     let parsed = Url::parse(raw_url)
         .map_err(|_| AppError::Config(format!("{env_name} must be a valid PostgreSQL URL")))?;
     if !matches!(parsed.scheme(), "postgres" | "postgresql") {
         return Err(AppError::Config(format!(
             "{env_name} must use the postgres or postgresql URL scheme"
+        )));
+    }
+    let host =
+        decode_database_url_component(env_name, "host", parsed.host_str().unwrap_or_default())?;
+    let database = decode_database_url_component(
+        env_name,
+        "database",
+        parsed.path().strip_prefix('/').unwrap_or_default(),
+    )?;
+    if host.is_empty()
+        || host.contains('/')
+        || host.chars().any(char::is_control)
+        || database.is_empty()
+        || database.contains('/')
+        || database.chars().any(char::is_control)
+        || parsed.fragment().is_some()
+        || raw_url.chars().any(char::is_control)
+    {
+        return Err(AppError::Config(format!(
+            "{env_name} must name an explicit TCP host and database without a fragment"
         )));
     }
 
@@ -2385,14 +2722,21 @@ fn validate_database_url_identity(
         .map(|value| decode_database_url_component(env_name, "password", value))
         .transpose()?;
 
-    for (key, value) in parsed.query_pairs() {
-        if key == "user" {
-            return Err(AppError::Config(format!(
-                "{env_name} must not set PostgreSQL role through DSN options; name the login in the URL authority"
-            )));
-        } else if key == "password" {
-            password = Some(value.into_owned());
-        } else if (key == "options" && postgres_options_set_role(&value))
+    // Validate raw query encoding before form decoding: Url::query_pairs uses
+    // replacement characters for invalid UTF-8. Never give unrecognized keys
+    // to SQLx, whose parser logs their raw key/value when ignoring them.
+    let mut seen = BTreeSet::new();
+    for parameter in parsed
+        .query()
+        .into_iter()
+        .flat_map(|query| query.split('&'))
+    {
+        let (key, value) = parameter.split_once('=').unwrap_or((parameter, ""));
+        let key = decode_database_url_component(env_name, "query key", &key.replace('+', " "))?;
+        let value =
+            decode_database_url_component(env_name, "query value", &value.replace('+', " "))?;
+        if key == "user"
+            || (key == "options" && postgres_options_set_role(&value))
             || key
                 .strip_prefix("options[")
                 .and_then(|key| key.strip_suffix(']'))
@@ -2402,6 +2746,37 @@ fn validate_database_url_identity(
                 "{env_name} must not set PostgreSQL role through DSN options"
             )));
         }
+        if !matches!(
+            key.as_str(),
+            "password" | "sslmode" | "sslrootcert" | "application_name"
+        ) {
+            return Err(AppError::Config(format!(
+                "{env_name} contains an unsupported PostgreSQL parameter"
+            )));
+        }
+        if !seen.insert(key.clone()) {
+            return Err(AppError::Config(format!(
+                "{env_name} contains a repeated PostgreSQL parameter"
+            )));
+        }
+        if value.chars().any(char::is_control)
+            || match key.as_str() {
+                "sslmode" => !matches!(
+                    value.to_ascii_lowercase().as_str(),
+                    "disable" | "allow" | "prefer" | "require" | "verify-ca" | "verify-full"
+                ),
+                "sslrootcert" => value.is_empty(),
+                "application_name" => value.is_empty() || value.len() > 63,
+                _ => false,
+            }
+        {
+            return Err(AppError::Config(format!(
+                "{env_name} contains an invalid PostgreSQL parameter value"
+            )));
+        }
+        if key == "password" {
+            password = Some(value);
+        }
     }
 
     if username != expected_role {
@@ -2410,7 +2785,7 @@ fn validate_database_url_identity(
         )));
     }
     password
-        .filter(|password| !password.is_empty())
+        .filter(|password| !password.is_empty() && !password.contains('\0'))
         .ok_or_else(|| {
             AppError::Config(format!(
                 "{env_name} must contain a nonempty password credential"
@@ -3034,7 +3409,37 @@ fn tenant_config_seeder(store: PgOntologyStore) -> console_platform_rest::Tenant
     })
 }
 
-pub fn build_router(state: AppState) -> Router {
+pub fn build_router(mut state: AppState) -> Router {
+    state.company_rest = match (
+        &state.database,
+        &state.auth_rest,
+        &state.jwt_verifier,
+        &state.config.auth_rest,
+    ) {
+        (DatabaseDependency::Postgres(pool), Some(auth), Some(verifier), Some(config)) => {
+            let store = PgOrgStore::new(pool.clone());
+            let store = match state.serving_custody_profile {
+                Some(profile) if profile.supports_policy() => {
+                    state.native_policy_issuer.as_ref().map(|issuer| {
+                        store.with_native_account_policy(
+                            verifier.clone(),
+                            issuer.clone(),
+                            config.refresh_family_absolute_ttl,
+                        )
+                    })
+                }
+                _ => Some(store.with_native_account_auth(
+                    verifier.clone(),
+                    config.refresh_family_absolute_ttl,
+                )),
+            };
+            store.map(|store| {
+                console_identity_rest::company::CompanyRestState::new(store, auth.clone())
+            })
+        }
+        _ => None,
+    };
+    let session_verification = state.session_verification();
     // The base router carries NO cross-cutting layers here. Per axum's `merge`
     // semantics, any layer applied to a router *before* it is merged with the
     // domain routers wraps only the base routes, not the merged-in ones â which
@@ -3132,52 +3537,52 @@ pub fn build_router(state: AppState) -> Router {
                     .route(AUDIT_ROUTE_PATH, get(audit_log))
                     .route("/api/v1/audit/attestation", get(audit_attestation))
                     .with_state(state.clone()),
-                state.jwt_verifier.clone(),
+                session_verification.clone(),
                 pool.clone(),
             );
             let domain_router = audit_router
                 .merge(console_telemetry::router(
                     console_telemetry::ConsoleTelemetryState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(console_dispatch_rest::router(DispatchRestState::new(
                     dispatch_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                     state.config.dispatch_timers,
                     state.dispatch_job_queue.clone(),
                     state.push_notifier.clone(),
                 )))
                 .merge(console_logistics_rest::router(LogisticsRestState::new(
                     logistics_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_attendance_rest::router(AttendanceRestState::new(
                     PgAttendanceStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_inventory_rest::router(InventoryRestState::new(
                     PgInventoryStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_equipment_rest::router(EquipmentRestState::new(
                     PgEquipment3rStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_financial_rest::router(
-                    FinancialRestState::new(financial_store, state.jwt_verifier.clone())
+                    FinancialRestState::new(financial_store, session_verification.clone())
                         .with_passkey_step_up(state.policy_step_up.clone())
                         .with_purchase_attachment_storage(state.sales_media_storage.clone()),
                 ))
                 .merge(console_inspection_rest::router(InspectionRestState::new(
                     inspection_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_support_rest::router({
                     let mut support_state = SupportRestState::new(
                         support_store,
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                         state.push_notifier.clone(),
                     );
                     if let Some(storefront_org) = state.config.storefront_org {
@@ -3186,79 +3591,79 @@ pub fn build_router(state: AppState) -> Router {
                     support_state
                 }))
                 .merge(console_identity_rest::router(
-                    IdentityRestState::new(org_store, state.jwt_verifier.clone())
+                    IdentityRestState::new(org_store, session_verification.clone())
                         .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(console_compliance_rest::router(ComplianceRestState::new(
                     compliance_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_integrity::router(IntegrityRestState::new(
                     integrity_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_registry_rest::router(
-                    RegistryRestState::new(registry_store, state.jwt_verifier.clone())
+                    RegistryRestState::new(registry_store, session_verification.clone())
                         .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(hr::router({
-                    let hr_state = hr::HrState::new(pool.clone(), state.jwt_verifier.clone());
+                    let hr_state = hr::HrState::new(pool.clone(), session_verification.clone());
                     hr_state.with_leave_command_store(leave_store.clone())
                 }))
                 .merge(console_recruiting_rest::router(RecruitingRestState::new(
                     PgRecruitingStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_evaluation_rest::router(EvaluationRestState::new(
                     evaluation_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // The hire handshake stays app-level: it shares one transaction
                 // with the HR-owned employee-creation core (see recruiting_hire).
                 .merge(recruiting_hire::router(
                     recruiting_hire::RecruitingHireState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
-                        hr::HrState::new(pool.clone(), state.jwt_verifier.clone())
+                        session_verification.clone(),
+                        hr::HrState::new(pool.clone(), session_verification.clone())
                             .with_leave_command_store(leave_store.clone()),
                     ),
                 ))
                 .merge(workflow_studio::router(
                     workflow_studio::WorkflowStudioState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(workflow_object_context::router(
                     workflow_object_context::WorkflowObjectContextState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(collaboration::router(
                     collaboration::CollaborationState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
                 .merge(action_inbox::router(action_inbox::ActionInboxState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(workbench::router(workbench::WorkbenchState::new(
                     Arc::new(workbench_native::NativeWorkbenchReaders::new(pool.clone())),
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(objects::router(objects::ObjectState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(lifecycle::router(lifecycle::LifecycleState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(office::router({
                     // Reuse the already-configured SeaweedFS handle (evidence /
@@ -3272,14 +3677,14 @@ pub fn build_router(state: AppState) -> Router {
                     };
                     office::OfficeState::new(
                         pool.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                         state.config.office.clone(),
                         office_blobs,
                     )
                 }))
                 .merge(console_sales_rest::router({
                     let mut sales_state =
-                        SalesRestState::new(sales_store, state.jwt_verifier.clone());
+                        SalesRestState::new(sales_store, session_verification.clone());
                     if let Some(storefront_org) = state.config.storefront_org {
                         sales_state = sales_state.with_storefront_org(storefront_org);
                     }
@@ -3290,10 +3695,10 @@ pub fn build_router(state: AppState) -> Router {
                 }))
                 .merge(console_reporting_rest::router(KpiRestState::new(
                     kpi_repository,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_workorder_rest::router(
-                    WorkOrderRestState::new(work_order_store.clone(), state.jwt_verifier.clone())
+                    WorkOrderRestState::new(work_order_store.clone(), session_verification.clone())
                         .with_workflow_runtime(Some(
                             console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore::new(
                                 pool.clone(),
@@ -3304,7 +3709,7 @@ pub fn build_router(state: AppState) -> Router {
                     MobileRestState::new(
                         pool.clone(),
                         work_order_store,
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                         state.evidence_storage.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone())
@@ -3317,17 +3722,17 @@ pub fn build_router(state: AppState) -> Router {
                 ))
                 .merge(console_facilities_rest::router(FacilitiesRestState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_production_rest::router(
-                    ProductionRestState::new(pool.clone(), state.jwt_verifier.clone())
+                    ProductionRestState::new(pool.clone(), session_verification.clone())
                         .with_service_principal_hmac_key(
                             state.config.production_service_principal_hmac_key,
                         ),
                 ))
                 .merge(console_messenger_rest::router(MessengerRestState::new(
                     messenger_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Evidence-objects console surface (custody / fixity-verify /
                 // legal-hold). The fixity check HEADs the WORM (replica) bucket;
@@ -3345,18 +3750,18 @@ pub fn build_router(state: AppState) -> Router {
                         .as_ref()
                         .map(|(_, bucket)| bucket.clone())
                         .unwrap_or_default(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_notifications_rest::router(
                     NotificationRestState::new(
                         notification_store.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(console_inbox_rest::router(
                     InboxRestState::new(
                         PgInboxStore::new(pool.clone()),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_passkey_step_up(state.policy_step_up.clone()),
                 ))
@@ -3366,20 +3771,20 @@ pub fn build_router(state: AppState) -> Router {
                 .merge(console_leave_rest::router(
                     console_leave_rest::LeaveRestState::new(
                         leave_store,
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     ),
                 ))
                 .merge(console_benefit_rest::router(BenefitRestState::new(
                     benefit_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_consulting_rest::router(ConsultingRestState::new(
                     pool.clone(),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_todos_rest::router(TodoRestState::new(
                     todo_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Webmail (`/api/v1/mail/*`). The router ALWAYS mounts so the
                 // OpenAPI paths exist and the app boots without the master key;
@@ -3396,7 +3801,7 @@ pub fn build_router(state: AppState) -> Router {
                     CommsRestState::new(
                         PgMailStore::new(pool.clone()),
                         state.mail_cipher.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_attachments(mail_attachment_store(&state))
                     .with_mox_transport(state.config.mail_mox_base_url.clone())
@@ -3410,23 +3815,23 @@ pub fn build_router(state: AppState) -> Router {
                         ontology_registry_store.clone(),
                         ontology_instance_store,
                         governance_store.clone(),
-                        state.jwt_verifier.clone(),
+                        session_verification.clone(),
                     )
                     .with_projected_dispatch(projected_dispatch_registry(pool.clone())),
                 ))
                 .merge(console_governance_rest::router(GovernanceRestState::new(
                     governance_store,
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Org-change lifecycle engine (조직 개편 결재): draft → preflight
                 // → ordered SoD approval → effective-dated apply (§15/§16).
                 .merge(console_orgchange_rest::router(OrgChangeRestState::new(
                     PgOrgChangeStore::new(pool.clone())
                         .with_employment_transfer(std::sync::Arc::new(PgEmploymentTransferPort)),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 .merge(console_platform_authz_rest::router(
-                    CedarPolicyRestState::new(cedar_policy_store, state.jwt_verifier.clone()),
+                    CedarPolicyRestState::new(cedar_policy_store, session_verification.clone()),
                 ))
                 // Notice board (사내 게시판): publish snapshots recipients into
                 // `notice_receipts` and fans out one notification per recipient
@@ -3435,21 +3840,22 @@ pub fn build_router(state: AppState) -> Router {
                 .merge(console_notices_rest::router(NoticeRestState::new(
                     PgNoticeStore::new(pool.clone())
                         .with_notification_sink(Arc::new(notification_store.clone())),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Accounting GL vouchers (전표): create/submit/approve/post/reverse.
                 .merge(console_finance_gl_rest::router(FinanceGlRestState::new(
                     PgVoucherStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
                 )))
                 // Payroll draft-run visibility (admin org-wide + self payslips).
                 .merge(console_payroll_rest::router(PayrollRestState::new(
                     PgPayrollStore::new(pool.clone()),
-                    state.jwt_verifier.clone(),
+                    session_verification.clone(),
+                    payroll_runs_reader(pool),
                 )))
                 // Deterministic statistical projection (read-only, stateless).
                 .merge(console_analytics_quant_rest::router(
-                    AnalyticsQuantState::new(pool.clone(), state.jwt_verifier.clone()),
+                    AnalyticsQuantState::new(pool.clone(), session_verification.clone()),
                 ));
             // READ-ONLY WALL for PLATFORM "view as": wrap the WHOLE tenant
             // domain router so any request carrying a `view_as` token may use
@@ -3478,25 +3884,86 @@ pub fn build_router(state: AppState) -> Router {
             // ingress `/api`→backend rule route it while the SPA keeps the bare
             // browser routes `/platform/*`. This is the only path that creates org
             // rows.
-            let platform_router = console_platform_rest::router(
-                PlatformRestState::new(
-                    pool.clone(),
-                    state.jwt_verifier.clone(),
-                    PlatformProvisioner::new(state.config.coldstart_otp_ttl),
-                )
-                .with_view_as_issuer(state.view_as_issuer.clone())
-                .with_force_remove_command_pool(match &state.platform_force_command_database {
-                    DatabaseDependency::Postgres(pool) => Some(pool.clone()),
-                    DatabaseDependency::NotConfigured => None,
-                })
-                .with_tenant_config_seeder(platform_tenant_config_seeder),
-            );
+            let platform_state = PlatformRestState::new(
+                pool.clone(),
+                session_verification.clone(),
+                PlatformProvisioner::new(state.config.coldstart_otp_ttl),
+            )
+            .with_view_as_issuer(state.view_as_issuer.clone())
+            .with_force_remove_command_pool(match &state.platform_force_command_database {
+                DatabaseDependency::Postgres(pool) => Some(pool.clone()),
+                DatabaseDependency::NotConfigured => None,
+            })
+            .with_tenant_config_seeder(platform_tenant_config_seeder);
+            let platform_state = match state.config.auth_rest.as_ref() {
+                Some(config) => platform_state.with_platform_list_authority(
+                    config.refresh_family_absolute_ttl,
+                    state.platform_policy.clone(),
+                ),
+                None => platform_state,
+            };
+            let platform_router = console_platform_rest::router(platform_state);
+            let native_payroll_state = native_payroll::state(&state, pool);
+            let native_people_state =
+                native_people::state(&state, pool, native_payroll_state.clone());
+            let company_router = match state.company_rest.clone() {
+                Some(company) => console_identity_rest::company::router(company.clone()).merge(
+                    Router::new()
+                        .route(
+                            "/account/companies/requests/{command_id}",
+                            get(native_company_result_document),
+                        )
+                        .route("/companies/{org_id}", get(native_company_document))
+                        .route(
+                            "/companies/{org_id}/policy",
+                            get(native_company_policy_document),
+                        )
+                        .merge(native_policy::router(
+                            state.serving_custody_profile.is_some_and(
+                                account_custody::VerifiedCustodyProfile::supports_people,
+                            ),
+                        ))
+                        .with_state(company)
+                        .layer(axum::Extension(native_people_state.clone()))
+                        .layer(axum::Extension(native_payroll::Navigation(
+                            state
+                                .serving_custody_profile
+                                .is_some_and(
+                                    account_custody::VerifiedCustodyProfile::supports_policy,
+                                )
+                                .then(|| native_payroll_state.clone()),
+                        )))
+                        .layer(axum::Extension(NativeCompanyPolicyNavigation(
+                            state.serving_custody_profile.is_some_and(
+                                account_custody::VerifiedCustodyProfile::supports_policy,
+                            ),
+                            state.serving_custody_profile.is_some_and(
+                                account_custody::VerifiedCustodyProfile::supports_people,
+                            ),
+                        ))),
+                ),
+                _ => Router::new(),
+            };
+            let native_payroll = native_payroll::router(native_payroll_state)
+                .layer(axum::Extension(native_people_state.clone()));
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
             // routes, the tenant domain routers, the platform tier, and the
             // pre-auth login/refresh endpoints. These are all short-lived
             // request/response cycles, so they carry the 30s request timeout.
             let timed = {
-                let timed = router.merge(domain_router).merge(platform_router);
+                let timed = router
+                    .merge(domain_router)
+                    .merge(platform_router)
+                    .merge(company_router)
+                    .merge(
+                        state
+                            .group_rest
+                            .clone()
+                            .map(|owner| native_group_process::router(owner, state.clone()))
+                            .unwrap_or_default(),
+                    )
+                    .merge(native_payroll)
+                    .merge(native_people::router(native_people_state));
                 let timed = match state.auth_rest.clone() {
                     Some(auth_rest) => {
                         // The auth-rest router carries authenticated tenant
@@ -3530,7 +3997,7 @@ pub fn build_router(state: AppState) -> Router {
             // lifetime (a task-local would not survive the upgrade anyway).
             timed.merge(console_platform_realtime::router(RealtimeRestState::new(
                 realtime_hub,
-                state.jwt_verifier.clone(),
+                session_verification.clone(),
             )))
         }
         DatabaseDependency::NotConfigured => router,
@@ -3542,9 +4009,17 @@ pub fn build_router(state: AppState) -> Router {
     // `/hr`, `/payroll`, or `/pkg`.
     let router = router.merge(
         Router::new()
-            .route("/", get(ui_shell))
+            .route("/", get(ui_root))
+            .route("/work", get(ui_shell))
+            .route("/account", get(native_account_document))
+            .route(
+                "/account/register",
+                get(native_account_registration_document),
+            )
+            .route("/account/companies/new", get(native_company_setup_document))
             .route("/organization", get(ui_organization))
             .route("/hr", get(ui_hr))
+            .route("/people", get(ui_hr))
             .route("/payroll", get(ui_payroll))
             .merge(console_payroll_ui::pkg_router())
             .with_state(state.clone()),
@@ -3574,7 +4049,424 @@ pub fn build_router(state: AppState) -> Router {
     // Retry-After. Applied after those layers so the rewrite sees the status.
     // Auth 401/403 mapping is unchanged (fail-closed).
     let router = console_platform_request_context::with_http_error_envelope(router);
+    let router = console_platform_rest::with_platform_list_transport(router);
+    let router = native_payroll::with_transport(router);
+    let router = native_people::with_transport(router);
+    let router = native_group_process::with_transport(router);
     with_metrics(router, &state)
+}
+
+async fn native_account_document(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    native_account_page(&state, &headers, method, NativeAccountPage::Account).await
+}
+
+async fn native_company_result_document(
+    State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::extract::Path(command): axum::extract::Path<String>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_identity_application::company_enrollment::CompanyEnrollmentStatus;
+    use console_payroll_ui::native_account::{Page, document};
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    match state.enrollment_document(&headers, &command).await {
+        Ok(result) => {
+            let page = match result.status {
+                CompanyEnrollmentStatus::Committed {
+                    receipt_id,
+                    administrative_account_id,
+                    ..
+                } => Page::CompanyCreated {
+                    command_id: result.command.to_string(),
+                    receipt_id: receipt_id.to_string(),
+                    administrative_account_id: administrative_account_id.to_string(),
+                    company: result.company.map(|c| (c.org_id.to_string(), c.name)),
+                },
+                CompanyEnrollmentStatus::Pending(input) => Page::CompanyPending {
+                    command_id: result.command.to_string(),
+                    name: input.name().to_owned(),
+                    slug: input.slug().to_owned(),
+                    account_id: input.administrative_account_id().to_string(),
+                    group_id: input.group_id().map(|id| id.to_string()),
+                },
+                CompanyEnrollmentStatus::Cancelled => Page::CompanyTerminal {
+                    command_id: result.command.to_string(),
+                    expired: false,
+                },
+                CompanyEnrollmentStatus::Expired => Page::CompanyTerminal {
+                    command_id: result.command.to_string(),
+                    expired: true,
+                },
+                CompanyEnrollmentStatus::Missing => {
+                    return document(
+                        match result.reentry_account {
+                            Some(account) => Page::CompanySetup {
+                                account_id: account.to_string(),
+                                command_id: Some(result.command.to_string()),
+                            },
+                            None => Page::Refused,
+                        },
+                        StatusCode::NOT_FOUND,
+                    );
+                }
+            };
+            document(page, StatusCode::OK)
+        }
+        Err(StatusCode::CONFLICT) => document(Page::CompanyUncertain, StatusCode::CONFLICT),
+        Err(status) => native_company_document_error(status),
+    }
+}
+
+// Composition selects only the verified native policy runtime. This flag is
+// capability availability, never Account authorization.
+#[derive(Clone, Copy)]
+struct NativeCompanyPolicyNavigation(bool, bool);
+
+async fn native_company_document(
+    State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::Extension(native_policy): axum::Extension<NativeCompanyPolicyNavigation>,
+    axum::Extension(people): axum::Extension<native_people::PeopleState>,
+    axum::Extension(payroll): axum::Extension<native_payroll::Navigation>,
+    axum::extract::Path(company): axum::extract::Path<String>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    let show_payroll_navigation = match payroll.visible(&headers, &company).await {
+        Ok(visible) => visible,
+        Err(status) => return native_company_document_error(status),
+    };
+    let (show_people_navigation, show_people_create_navigation) =
+        match native_people::navigation(&people, &headers, &company).await {
+            Ok(visible) => visible,
+            Err(status) => return native_company_document_error(status),
+        };
+    let show_payroll_policy_navigation = if native_policy.0 {
+        match state
+            .policy_current_document(&headers, &company, "install")
+            .await
+        {
+            Ok(_) => true,
+            Err(StatusCode::NOT_FOUND) => false,
+            Err(status) => return native_company_document_error(status),
+        }
+    } else {
+        false
+    };
+    let people_policy = if native_policy.1 {
+        match native_policy::people_actions(&state, &headers, &company).await {
+            Ok(actions) => actions,
+            Err(status) => return native_company_document_error(status),
+        }
+    } else {
+        None
+    };
+    // Read the displayed Company projection last; do not retain its name/slug
+    // across the additional authorization wait. The linked route rechecks.
+    match state.company_document(&headers, &company).await {
+        Ok(company) => document(
+            Page::Company {
+                org_id: company.org_id.to_string(),
+                name: company.name,
+                slug: company.slug,
+                show_policy_navigation: company.show_policy_navigation,
+                show_payroll_policy_navigation,
+                show_payroll_navigation,
+                show_people_navigation,
+                show_people_create_navigation,
+                people_policy,
+            },
+            StatusCode::OK,
+        ),
+        Err(status) => native_company_document_error(status),
+    }
+}
+
+fn native_company_document_error(status: StatusCode) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    let response = document(
+        if status == StatusCode::SERVICE_UNAVAILABLE {
+            Page::Unavailable
+        } else {
+            Page::Refused
+        },
+        status,
+    );
+    if status == StatusCode::PAYLOAD_TOO_LARGE {
+        console_platform_request_context::preserve_native_html_error(response)
+    } else {
+        response
+    }
+}
+
+async fn native_company_policy_document(
+    State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::Extension(people): axum::Extension<native_people::PeopleState>,
+    axum::Extension(payroll): axum::Extension<native_payroll::Navigation>,
+    axum::extract::Path(company): axum::extract::Path<String>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{
+        CompanyPolicyNavigation, Page, document, document_with_policy_navigation,
+    };
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    // Each optional destination uses its current owner projection. Policy read
+    // alone does not confer identity, People, or Payroll access.
+    let (show_people_navigation, show_people_create_navigation) =
+        match native_people::navigation(&people, &headers, &company).await {
+            Ok(visible) => visible,
+            Err(status) => return native_company_document_error(status),
+        };
+    let show_payroll_navigation = match payroll.visible(&headers, &company).await {
+        Ok(visible) => visible,
+        Err(status) => return native_company_document_error(status),
+    };
+    // Read identity after the other optional checks so its name is not retained
+    // across their authorization waits. Identity denial leaves Policy usable.
+    let company_name = match state.company_document(&headers, &company).await {
+        Ok(identity) => Some(identity.name),
+        Err(StatusCode::NOT_FOUND | StatusCode::FORBIDDEN) => None,
+        Err(status) => return native_company_document_error(status),
+    };
+    // Fetch the protected clauses last; unavailable/denied checks above must
+    // not retain policy content across their authorization waits.
+    match state.policy_document(&headers, &company).await {
+        Ok(view) => document_with_policy_navigation(
+            Page::CompanyPolicy {
+                org_id: view.initial_ceiling.org_id.to_string(),
+                action_keys: view.initial_ceiling.action_keys,
+                delegable_action_keys: view.initial_ceiling.delegable_action_keys,
+            },
+            StatusCode::OK,
+            CompanyPolicyNavigation {
+                company_name,
+                show_people_navigation,
+                show_people_create_navigation,
+                show_payroll_navigation,
+            },
+        ),
+        Err(status) => native_company_document_error(status),
+    }
+}
+
+async fn native_account_registration_document(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    native_account_page(&state, &headers, method, NativeAccountPage::Registration).await
+}
+
+async fn native_company_setup_document(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    native_account_page(&state, &headers, method, NativeAccountPage::CompanySetup).await
+}
+
+enum NativeAccountPage {
+    PublicRoot,
+    Account,
+    Registration,
+    CompanySetup,
+}
+
+async fn native_account_page(
+    state: &AppState,
+    headers: &HeaderMap,
+    method: axum::http::Method,
+    page: NativeAccountPage,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{
+        CompanySetupEligibility, ContextState, Page, TermsItem, document,
+    };
+    use console_platform_auth_rest::{
+        NativeAccountContext, NativeAccountEntry, NativeCompanySetupEligibility, NativeEntryError,
+    };
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    let Some(auth) = &state.auth_rest else {
+        return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE);
+    };
+    let entry = if matches!(page, NativeAccountPage::CompanySetup) {
+        console_platform_auth_rest::native_company_setup_entry(auth, headers).await
+    } else {
+        console_platform_auth_rest::native_account_entry(
+            auth,
+            headers,
+            matches!(page, NativeAccountPage::Registration),
+        )
+        .await
+    };
+    match entry {
+        Ok(NativeAccountEntry::SignIn) => document(
+            if matches!(page, NativeAccountPage::PublicRoot) {
+                Page::Public
+            } else {
+                Page::SignIn
+            },
+            StatusCode::OK,
+        ),
+        Ok(NativeAccountEntry::Registration(terms)) => document(
+            Page::Register {
+                version: terms.version,
+                items: terms
+                    .items
+                    .into_iter()
+                    .map(|item| TermsItem {
+                        kind: item.kind,
+                        title: item.title,
+                        content_url: item.content_url,
+                        content: item.content,
+                    })
+                    .collect(),
+            },
+            StatusCode::OK,
+        ),
+        Ok(NativeAccountEntry::CompanySetup {
+            eligibility,
+            account_id,
+        }) => match eligibility {
+            NativeCompanySetupEligibility::Eligible => document(
+                Page::CompanySetup {
+                    account_id: account_id.to_string(),
+                    command_id: None,
+                },
+                StatusCode::OK,
+            ),
+            NativeCompanySetupEligibility::Ineligible => {
+                document(Page::Refused, StatusCode::NOT_FOUND)
+            }
+            NativeCompanySetupEligibility::Unavailable => {
+                document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE)
+            }
+        },
+        Ok(NativeAccountEntry::Active {
+            account_id,
+            context,
+            can_logout,
+            company_setup,
+        }) => {
+            if state.group_rest.is_some()
+                && native_group_process::current_custody(state).await.is_err()
+            {
+                return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE);
+            }
+            let (mut context, mut status) = match context {
+                NativeAccountContext::Empty => (ContextState::Empty, StatusCode::OK),
+                NativeAccountContext::Unavailable => {
+                    (ContextState::Unavailable, StatusCode::SERVICE_UNAVAILABLE)
+                }
+            };
+            // Reuse the Auth owner's confirmed empty projection. Its legacy
+            // empty-only reader cannot resolve populated candidates; only that
+            // unresolved branch needs the current Company discovery owner.
+            if matches!(context, ContextState::Unavailable)
+                && let Some(company) = &state.company_rest
+            {
+                match company.context_documents(headers).await {
+                    Ok(views) => {
+                        context = if views.is_empty() {
+                            ContextState::Empty
+                        } else {
+                            ContextState::Companies(
+                                views
+                                    .into_iter()
+                                    .map(|view| (view.org_id.to_string(), view.name))
+                                    .collect(),
+                            )
+                        };
+                        status = StatusCode::OK;
+                    }
+                    Err(StatusCode::UNAUTHORIZED) => {
+                        return document(Page::Refused, StatusCode::UNAUTHORIZED);
+                    }
+                    Err(_) => {
+                        context = ContextState::Unavailable;
+                        status = StatusCode::SERVICE_UNAVAILABLE;
+                    }
+                }
+            }
+            let company_setup = match company_setup {
+                NativeCompanySetupEligibility::Eligible => CompanySetupEligibility::Eligible,
+                NativeCompanySetupEligibility::Ineligible => CompanySetupEligibility::Ineligible,
+                NativeCompanySetupEligibility::Unavailable => {
+                    status = StatusCode::SERVICE_UNAVAILABLE;
+                    CompanySetupEligibility::Unavailable
+                }
+            };
+            let groups = match &state.group_rest {
+                Some(group) => match group.navigation_document(headers).await {
+                    Ok(views) => views.into_iter().map(|view| console_payroll_ui::native_account::GroupNavigation {
+                        group: view.group.as_uuid().to_string(), label: view.label,
+                    }).collect(),
+                    Err(console_identity_application::group_process::GroupProcessError::AuthenticationInvalid) => {
+                        return document(Page::Refused, StatusCode::UNAUTHORIZED);
+                    }
+                    Err(_) => return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE),
+                },
+                None => Vec::new(),
+            };
+            console_payroll_ui::native_account::document_with_group_navigation(
+                Page::Account {
+                    account_id: account_id.to_string(),
+                    context,
+                    can_logout,
+                    company_setup,
+                },
+                status,
+                groups,
+            )
+        }
+        Err(error) => {
+            let response = document(
+                if matches!(error, NativeEntryError::Unavailable) {
+                    Page::Unavailable
+                } else {
+                    Page::Refused
+                },
+                error.status(),
+            );
+            if matches!(error, NativeEntryError::TooLarge) {
+                console_platform_request_context::preserve_native_html_error(response)
+            } else {
+                response
+            }
+        }
+    }
+}
+
+async fn ui_root(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    match console_platform_auth_rest::native_account_credentials_present(&headers) {
+        Ok(false) if headers.contains_key(axum::http::header::AUTHORIZATION) => {
+            ui_shell(State(state), headers).await.into_response()
+        }
+        Ok(false) => document(Page::Public, StatusCode::OK),
+        // Delegate errors with original headers to preserve the owner's method,
+        // configuration, document metadata and credential rejection precedence.
+        Ok(true) | Err(_) => {
+            native_account_page(&state, &headers, method, NativeAccountPage::PublicRoot).await
+        }
+    }
 }
 
 async fn ui_shell(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
@@ -3597,18 +4489,24 @@ async fn ui_screens(
     state: AppState,
     headers: HeaderMap,
     focus: console_payroll_ui::UiScreen,
-) -> impl IntoResponse {
-    console_payroll_ui::html_shell_with_screens(&compose_ui_screens(&state, &headers).await, focus)
+) -> axum::response::Response {
+    match compose_ui_screens(&state, &headers).await {
+        Ok(screens) => console_payroll_ui::html_shell_with_screens(&screens, focus).into_response(),
+        Err(error) => error.into_response(),
+    }
 }
 
 async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
-) -> console_payroll_ui::ShippingScreens {
-    let (companies, org_units, people, employments, runs, floors) =
-        match (&state.database, &state.jwt_verifier) {
+) -> Result<
+    console_payroll_ui::ShippingScreens,
+    console_platform_request_context::RequestContextError,
+> {
+    let (companies, org_units, people, employments, runs) =
+        match (&state.database, &state.session_verification()) {
             (DatabaseDependency::Postgres(pool), Some(verifier)) => {
-                let floors = ui_listing_floors(verifier, pool, headers).await;
+                let floors = ui_listing_floors(verifier, pool, headers).await?;
                 let heads = match (floors.heads, floors.org_id) {
                     (true, Some(org)) => {
                         let handle = tokio::runtime::Handle::current();
@@ -3651,35 +4549,53 @@ async fn compose_ui_screens(
                 let runs = PayrollRestState::new(
                     PgPayrollStore::new(pool.clone()),
                     Some(verifier.clone()),
+                    payroll_runs_reader(pool),
                 )
                 .visible_run_summaries(headers)
                 .await;
-                (heads.0, heads.1, heads.2, heads.3, runs, floors)
+                (heads.0, heads.1, heads.2, heads.3, runs)
             }
             _ => (
                 console_payroll_ui::ScreenSection::Omitted,
                 console_payroll_ui::ScreenSection::Omitted,
                 console_payroll_ui::ScreenSection::Omitted,
                 console_payroll_ui::ScreenSection::Omitted,
-                Vec::new(),
-                UiListingFloors::denied(),
+                console_payroll_rest::VisiblePayrollRuns::Omitted,
             ),
         };
-    console_payroll_ui::ShippingScreens {
+    Ok(console_payroll_ui::ShippingScreens {
         companies,
         org_units,
         people,
         employments,
-        runs: console_payroll_ui::ScreenSection::from_authorized_listing(
-            runs.iter().map(ui_run_summary).collect(),
-            floors.payroll,
-        ),
-    }
+        runs: match runs {
+            console_payroll_rest::VisiblePayrollRuns::Omitted => {
+                console_payroll_ui::ScreenSection::Omitted
+            }
+            console_payroll_rest::VisiblePayrollRuns::Failed => {
+                console_payroll_ui::ScreenSection::Failure
+            }
+            console_payroll_rest::VisiblePayrollRuns::Loaded(page) => {
+                console_payroll_ui::ScreenSection::from_authorized_listing(
+                    page.items.iter().map(ui_run_summary).collect(),
+                    true,
+                )
+            }
+        },
+    })
+}
+
+fn payroll_runs_reader(pool: &PgPool) -> console_payroll_rest::PayrollRunsReaderFactory {
+    let pool = pool.clone();
+    std::sync::Arc::new(move |principal| {
+        Box::new(
+            console_payroll_adapter_postgres::PgPayrollRunsReadPort::new(pool.clone(), principal),
+        )
+    })
 }
 
 struct UiListingFloors {
     heads: bool,
-    payroll: bool,
     org_id: Option<OrgId>,
 }
 
@@ -3687,7 +4603,6 @@ impl UiListingFloors {
     const fn denied() -> Self {
         Self {
             heads: false,
-            payroll: false,
             org_id: None,
         }
     }
@@ -3695,23 +4610,26 @@ impl UiListingFloors {
 
 /// Same listing floors as the published Head GETs those screens already use.
 /// Company / OrgUnit / Person / Employment collection GETs are
-/// `EmployeeDirectoryRead` org-wide. `visible_run_summaries` still collapses
-/// errors to `[]`; payroll empty vs omit stays that helper's floor.
+/// `EmployeeDirectoryRead` org-wide. Payroll returns its own authorized outcome.
 async fn ui_listing_floors(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     pool: &PgPool,
     headers: &HeaderMap,
-) -> UiListingFloors {
+) -> Result<UiListingFloors, console_platform_request_context::RequestContextError> {
     let principal =
         match console_platform_request_context::resolve_principal(verifier, pool, headers).await {
             Ok(principal) => principal,
-            Err(_) => return UiListingFloors::denied(),
+            Err(
+                error @ console_platform_request_context::RequestContextError::LegacyProvenanceUnavailable,
+            ) => {
+                return Err(error);
+            }
+            Err(_) => return Ok(UiListingFloors::denied()),
         };
-    UiListingFloors {
+    Ok(UiListingFloors {
         heads: authorize_org_wide(&principal, Action::new(Feature::EmployeeDirectoryRead)).is_ok(),
-        payroll: authorize_org_wide(&principal, Action::new(Feature::PayrollRunRead)).is_ok(),
         org_id: Some(principal.org_id),
-    }
+    })
 }
 
 fn ui_head_section<T, V, E>(
@@ -3821,6 +4739,23 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     let database = readiness_dependency_status(&state.database, "runtime").await;
     let command_databases_required = state.config.role == AppRole::Api
         && matches!(state.database, DatabaseDependency::Postgres(_));
+    let auth_ready = if command_databases_required
+        && (state.config.jwt.is_some() || state.config.account_terms_artifact_root.is_some())
+    {
+        let dependency = state
+            .auth_rest
+            .as_ref()
+            .and_then(AuthRestState::auth_database)
+            .cloned()
+            .map_or(
+                DatabaseDependency::NotConfigured,
+                DatabaseDependency::Postgres,
+            );
+        let status = readiness_dependency_status(&dependency, "auth").await;
+        status.configured && status.ready
+    } else {
+        true
+    };
     let leave_command_database =
         readiness_dependency_status(&state.leave_command_database, "leave_command").await;
     let ontology_command_database =
@@ -3831,7 +4766,19 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     )
     .await;
 
+    let custody_ready = match &state.database {
+        DatabaseDependency::Postgres(pool) => match account_custody::verify(pool).await {
+            Ok(current) => match state.serving_custody_profile {
+                Some(startup) => current == startup,
+                None => !current.supports_policy(),
+            },
+            Err(_) => false,
+        },
+        DatabaseDependency::NotConfigured => true,
+    };
     let ready = database.healthy()
+        && auth_ready
+        && custody_ready
         && (!command_databases_required
             || (leave_command_database.configured
                 && leave_command_database.ready
@@ -3962,7 +4909,7 @@ fn well_known_json_response(
 
 async fn audit_log(
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Extension(principal): Extension<Principal>,
     Query(query): Query<AuditQuery>,
 ) -> Result<Json<AuditPage>, ApiError> {
     let pool = match &state.database {
@@ -3973,14 +4920,6 @@ async fn audit_log(
             ));
         }
     };
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
-        ApiError::service_unavailable("JWT verification is not configured for audit access")
-    })?;
-    let token = bearer_token(&headers)?;
-    let claims = verifier
-        .verify_access_token(token)
-        .map_err(|_| ApiError::unauthorized("invalid bearer token"))?;
-    let principal = principal_from_claims(claims)?;
     authorize_audit_read(&principal)?;
     let query = normalize_audit_query(query)?;
     let audit_event = audit_read_event(&principal)?;
@@ -4010,21 +4949,20 @@ async fn audit_log(
 /// charter §5.3) and returns the verdict — never mutates. Unlike `/api/audit`,
 /// which can safely branch-filter rows for a branch-scoped ADMIN, this endpoint
 /// verifies the whole tenant chain. Require org-wide `AuditLogRead` so the
-/// attestation surface cannot widen branch-scoped audit visibility. For
-/// `AuditLogRead` today, built-in org-wide authority is SUPER_ADMIN; a
-/// branch-scoped or branch-omitted ADMIN token must not pass this gate.
+/// attestation surface cannot widen branch-scoped audit visibility. Current
+/// built-in SUPER_ADMIN authority or an effective org-wide grant can authorize
+/// the request; branch-scoped authority cannot.
 ///
 /// Cost note: `verify_org_chain` re-derives every seal's batch from its full
 /// `audit_events` range — a FULL-CHAIN re-verify, not an incremental one, so
-/// wall time scales with the org's total sealed audit history. Bounded today
-/// by (a) org-wide built-in callers (SUPER_ADMIN for `AuditLogRead`), so
-/// callers are trusted and infrequent, (b) the app-wide request timeout, and
-/// (c) console_rt's 30s `statement_timeout` (migration 0112) capping any single DB
-/// pass. A head-N-seals or cached-verdict endpoint variant for orgs with a long
+/// wall time scales with the org's total sealed audit history. Access requires
+/// org-wide authority. The app-wide request timeout and console_rt's 30s
+/// `statement_timeout` (migration 0112) bound execution for built-in and granted
+/// callers alike. A head-N-seals or cached-verdict endpoint variant for orgs with a long
 /// history is a PR-3 item (charter F1 anchor), not built here.
 async fn audit_attestation(
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Extension(principal): Extension<Principal>,
 ) -> Result<Json<ChainReport>, ApiError> {
     let pool = match &state.database {
         DatabaseDependency::Postgres(pool) => pool,
@@ -4034,14 +4972,6 @@ async fn audit_attestation(
             ));
         }
     };
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
-        ApiError::service_unavailable("JWT verification is not configured for audit access")
-    })?;
-    let token = bearer_token(&headers)?;
-    let claims = verifier
-        .verify_access_token(token)
-        .map_err(|_| ApiError::unauthorized("invalid bearer token"))?;
-    let principal = principal_from_claims(claims)?;
     authorize_audit_attestation(&principal)?;
 
     // Shared throwaway signer is correct here: `verify` reconstructs the
@@ -4067,55 +4997,6 @@ async fn audit_attestation(
     Ok(Json(report))
 }
 
-fn bearer_token(headers: &HeaderMap) -> Result<&str, ApiError> {
-    let header_value = headers
-        .get(header::AUTHORIZATION)
-        .ok_or_else(|| ApiError::unauthorized("missing bearer token"))?
-        .to_str()
-        .map_err(|_| ApiError::unauthorized("invalid authorization header"))?;
-    header_value
-        .strip_prefix("Bearer ")
-        .filter(|token| !token.trim().is_empty())
-        .ok_or_else(|| ApiError::unauthorized("authorization header must use Bearer scheme"))
-}
-
-fn principal_from_claims(claims: AccessClaims) -> Result<Principal, ApiError> {
-    let user_id = UserId::from_str(&claims.sub)
-        .map_err(|_| ApiError::unauthorized("token subject is not a valid user id"))?;
-    let roles_vec: Vec<Role> = claims
-        .roles
-        .iter()
-        .map(|role| {
-            Role::from_str(role)
-                .map_err(|_| ApiError::unauthorized("token contains an unknown role"))
-        })
-        .collect::<Result<_, _>>()?;
-    let roles = roles_vec.iter().copied().collect::<BTreeSet<_>>();
-    let branch_scope = if roles_vec
-        .iter()
-        .any(|role| matches!(role, Role::SuperAdmin | Role::Executive))
-    {
-        BranchScope::All
-    } else {
-        let branches = claims
-            .branches
-            .iter()
-            .map(|branch| {
-                BranchId::from_str(branch)
-                    .map_err(|_| ApiError::unauthorized("token contains an invalid branch id"))
-            })
-            .collect::<Result<BTreeSet<_>, _>>()?;
-        BranchScope::Branches(branches)
-    };
-
-    let org_id = OrgId::from_str(&claims.org)
-        .map_err(|_| ApiError::unauthorized("token contains an invalid org id"))?;
-    let access_scope = claims
-        .access_scope()
-        .map_err(|_| ApiError::unauthorized("token contains an invalid access scope"))?;
-    Ok(Principal::new(user_id, org_id, roles, branch_scope).with_access_scope(access_scope))
-}
-
 /// `GET /api/audit` is a QUERY over the caller's whole branch scope, not a read of
 /// one branch's row — `fetch_audit_records` is already handed `branch_scope` and
 /// confines the rows. There is no single resource branch to authorize against, so
@@ -4130,10 +5011,8 @@ fn authorize_audit_attestation(principal: &Principal) -> Result<(), ApiError> {
     // Whole-tenant attestation is intentionally stricter than branch-filtered
     // `/api/audit`: built-in ADMIN is operational/branch authority, not an
     // org-wide evidentiary attestation authority. `authorize_org_wide` first
-    // requires all-branch scope, then applies the feature matrix; for
-    // `AuditLogRead` that means built-in SUPER_ADMIN today, while still
-    // preserving the custom-grant path for future policy-managed org-wide
-    // AuditLogRead.
+    // requires all-branch scope, then checks built-in authority or an effective
+    // custom grant covering that whole scope.
     authorize_org_wide(principal, Action::new(Feature::AuditLogRead)).map_err(ApiError::from_kernel)
 }
 
@@ -4316,10 +5195,6 @@ impl ApiError {
             code,
             message: message.into(),
         }
-    }
-
-    fn unauthorized(message: impl Into<String>) -> Self {
-        Self::new(StatusCode::UNAUTHORIZED, "unauthorized", message)
     }
 
     fn forbidden(message: impl Into<String>) -> Self {
@@ -5106,34 +5981,53 @@ mod readiness_tests {
     use axum::response::IntoResponse;
     use http::StatusCode;
     use sqlx::PgPool;
-    use sqlx::postgres::PgPoolOptions;
 
-    use super::{AppConfig, AppRole, AppState, DatabaseDependency, readyz};
+    use super::{AppConfig, AppRole, AppState, DatabaseDependency, account_custody, readyz};
 
     fn api_config() -> AppConfig {
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ])
         .expect("valid api test config")
     }
 
-    async fn separate_pool(pool: &PgPool) -> PgPool {
-        PgPoolOptions::new()
-            .max_connections(1)
-            .connect_with(pool.connect_options().as_ref().clone())
-            .await
-            .expect("separate readiness pool connects")
-    }
-
     #[cfg(feature = "test-postgres")]
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn api_readiness_fails_closed_when_either_command_pool_degrades(pool: PgPool) {
-        let leave = separate_pool(&pool).await;
-        let ontology = separate_pool(&pool).await;
-        let platform_force = separate_pool(&pool).await;
-        let mut state =
-            AppState::new(api_config(), DatabaseDependency::Postgres(pool)).expect("state builds");
+        console_platform_test_support::prepare_account_test_database(&pool).await;
+        let runtime = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::Business,
+        )
+        .await;
+        assert_eq!(
+            account_custody::verify(&runtime)
+                .await
+                .expect("actual finalized Account custody prerequisite"),
+            account_custody::VerifiedCustodyProfile::NativeAccount
+        );
+        let leave = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::LeaveCommand,
+        )
+        .await;
+        let ontology = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::OntologyCommand,
+        )
+        .await;
+        let platform_force = console_platform_test_support::login_test_pool(
+            &pool,
+            console_platform_test_support::TestDatabaseLogin::PlatformForceCommand,
+        )
+        .await;
+        let mut state = AppState::new(api_config(), DatabaseDependency::Postgres(runtime))
+            .expect("state builds");
         state.leave_command_database = DatabaseDependency::Postgres(leave.clone());
         state.ontology_command_database = DatabaseDependency::Postgres(ontology);
         state.platform_force_command_database = DatabaseDependency::Postgres(platform_force);
@@ -5893,6 +6787,10 @@ mod command_database_config_tests {
     #[test]
     fn api_accepts_distinct_leave_command_database_url() {
         let config = AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#,
+            ),
             ("CONSOLE_APP_ROLE", "api"),
             ("DATABASE_URL", RUNTIME_URL),
             ("LEAVE_COMMAND_DATABASE_URL", LEAVE_COMMAND_URL),
@@ -6536,9 +7434,14 @@ mod command_database_config_tests {
                 "postgresql://console_app:migration-secret@db/console",
             ),
         ] {
-            let config =
-                AppConfig::from_pairs([("CONSOLE_APP_ROLE", role), ("DATABASE_URL", database_url)])
-                    .unwrap();
+            let mut pairs = vec![("CONSOLE_APP_ROLE", role), ("DATABASE_URL", database_url)];
+            if role == "worker" {
+                pairs.push((
+                    "CONSOLE_DATABASE_DURABILITY",
+                    r#"{"mode":"local_development"}"#,
+                ));
+            }
+            let config = AppConfig::from_pairs(pairs).unwrap();
 
             assert!(config.leave_command_database_url.is_none());
             assert!(config.ontology_command_database_url.is_none());

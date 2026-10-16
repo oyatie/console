@@ -63,3 +63,41 @@ test("residual above ceiling fails", () => {
   const { failures } = residualFailures(wf, map, { maxResidual: 1 });
   assert.ok(failures.some((f) => f.includes("exceeds ceiling")));
 });
+
+const nativeBrowserRows = [
+  { wrapper: "app-auth-rest-browser-pg", loc: "//backend/app:console-app-itest-auth_rest-browser", reason: "Required native browser producer" },
+  { wrapper: "app-health-readiness-browser-pg", loc: "//backend/app:console-app-itest-health_readiness-browser", reason: "Required native browser producer" },
+];
+const nativeWorkflow = nativeBrowserRows.map((row) => `//tools/buck:${row.wrapper}`).join("\n");
+
+test("approved native browsers are classified separately from the legacy ceiling", () => {
+  const map = { entries: [{ name: "legacy" }], unmapped: [], native: structuredClone(nativeBrowserRows) };
+  const classified = classifyResidual(["legacy", ...nativeBrowserRows.map((row) => row.wrapper)], map);
+  assert.deepEqual(classified.native, nativeBrowserRows.map((row) => row.wrapper));
+  assert.deepEqual(classified.unknown, []);
+  const result = residualFailures(`//tools/buck:legacy\n${nativeWorkflow}`, map, { maxResidual: 1 });
+  assert.deepEqual(result.failures, []);
+  assert.deepEqual(result.residual, ["legacy"]);
+  assert.equal(MAX_PRODUCT_BUCK_RESIDUAL, 7);
+});
+
+test("native registration cannot hide unknown targets or bypass the legacy ceiling", () => {
+  const base = { entries: [{ name: "legacy" }], unmapped: [], native: structuredClone(nativeBrowserRows) };
+  const wf = `//tools/buck:legacy\n${nativeWorkflow}`;
+  const faults = [
+    ["unknown native", (map) => map.native.push({ wrapper: "ghost", loc: "//backend/app:ghost", reason: "claimed native" }), `${wf}\n//tools/buck:ghost`],
+    ["wrong native target", (map) => { map.native[0].loc = "//backend/app:console-app-itest-auth_rest"; }, wf],
+    ["empty reason", (map) => { map.native[0].reason = ""; }, wf],
+    ["duplicate native", (map) => map.native.push({ ...map.native[0] }), wf],
+    ["overlap mapped", (map) => map.entries.push({ name: map.native[0].wrapper }), wf],
+    ["overlap unmapped", (map) => map.unmapped.push({ wrapper: map.native[0].wrapper, reason: "legacy" }), wf],
+    ["missing native registration", (map) => map.native.pop(), wf],
+    ["native absent from CI", () => {}, "//tools/buck:legacy"],
+  ];
+  for (const [name, mutate, workflow] of faults) {
+    const map = structuredClone(base);
+    mutate(map);
+    assert.notDeepEqual(residualFailures(workflow, map).failures, [], name);
+  }
+  assert.notDeepEqual(residualFailures(wf, base, { maxResidual: 0 }).failures, []);
+});

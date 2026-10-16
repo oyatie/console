@@ -14,11 +14,11 @@
 
 import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import process from "node:process";
 
-import { executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
+import { directExecutable, reachableWorkflowCommands, reachableShellCommands } from "./lib/ci-workflow-executables.mjs";
 import { sweepReachableText } from "../tools/ci/gate-sweep.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -38,55 +38,116 @@ function loadJson(rel) {
   return JSON.parse(readFileSync(join(root, rel), "utf8"));
 }
 
-function expandInvokedNpmScripts(runText, scripts) {
-  const invoked = new Set();
-  for (const name of Object.keys(scripts)) {
-    const re = new RegExp(
-      `npm\\s+(?:run\\s+)?${name.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}(?![\\w:-])`,
-    );
-    if (re.test(runText)) invoked.add(name);
+function nodeFiles(tokens) {
+  let testMode = false;
+  const valueOptions = new Set(["--test-name-pattern", "--test-skip-pattern", "--test-reporter",
+    "--test-reporter-destination", "--test-concurrency", "--test-timeout", "--test-shard",
+    "--require", "-r", "--import", "--loader", "--experimental-loader", "--title", "--conditions", "-C"]);
+  for (let index = 1; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (/^-[epc]/.test(token) || ["-h", "-v"].includes(token)
+        || /^--(?:eval|print|check|help|version|v8-options)(?:=|$)/.test(token)) return [];
+    if (token === "--test") testMode = true;
+    else if (valueOptions.has(token)) index += 1;
+    else if (token === "--") return testMode ? tokens.slice(index + 1) : tokens.slice(index + 1, index + 2);
+    else if (!token.startsWith("-")) return testMode ? tokens.slice(index) : [token];
+    else if (token.includes("=")) {
+      if (!valueOptions.has(token.slice(0, token.indexOf("=")))) return [];
+    } else if (!["--test-only", "--test-force-exit", "--experimental-test-coverage", "--enable-source-maps"].includes(token)) return [];
   }
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const name of [...invoked]) {
-      const body = scripts[name] ?? "";
-      for (const other of Object.keys(scripts)) {
-        if (invoked.has(other)) continue;
-        const re = new RegExp(
-          `npm\\s+(?:run\\s+)?${other.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}(?![\\w:-])`,
-        );
-        if (re.test(body)) {
-          invoked.add(other);
-          changed = true;
-        }
-      }
-    }
-  }
-  return invoked;
+  return [];
 }
 
-function resolveNpmInvocations(runText, scripts) {
+function nativeHrChild(repoRoot, files) {
+  const launcher = "scripts/run-native-hr-policy-parser-contract.sh";
+  const supervisor = "scripts/check-native-hr-policy-parser-contract.mjs";
+  const suite = "scripts/check-native-hr-policy-parser-contract.test.mjs";
+  if (![launcher, supervisor, suite].every(file => files.has(file))) return [];
+  const launches = reachableShellCommands(readFileSync(join(repoRoot, launcher), "utf8")).some(entry => {
+    const { tokens } = directExecutable(entry.tokens);
+    return tokens[0] === "$CONSOLE_HR_POLICY_NODE" && tokens[1] === "$SCRIPT_DIR/check-native-hr-policy-parser-contract.mjs";
+  });
+  if (!launches) return [];
+
+  const source = readFileSync(join(repoRoot, supervisor), "utf8");
+  // Mask comments and quoted data positionally: neither can supply executable calls.
+  const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g,
+    text => text.replace(/[^\n]/g, " "));
+  const depthAt = index => {
+    let depth = 0;
+    for (const character of code.slice(0, index)) {
+      if (character === "{") depth += 1;
+      else if (character === "}") depth -= 1;
+    }
+    return depth;
+  };
+  const imported = [...code.matchAll(/^\s*import\s*\{\s*spawn\s*\}\s*from\s+;/gm)]
+    .some(match => /from\s*(['"])node:child_process\1/.test(source.slice(match.index, match.index + match[0].length)));
+  if (!imported) return [];
+  for (const match of code.matchAll(/^\s*const\s+child\s*=\s*spawn\(\s*binding\.node\.path\s*,\s*\[\s*,\s*\]\s*,\s*\{/gm)) {
+    const actual = source.slice(match.index, match.index + match[0].length);
+    if (!/spawn\(\s*binding\.node\.path\s*,\s*\[\s*(['"])--test\1\s*,\s*(['"])scripts\/check-native-hr-policy-parser-contract\.test\.mjs\2\s*\]\s*,\s*\{/.test(actual)) continue;
+    // shortcut: only this declared supervisor topology; review new child shapes separately.
+    const fixture = depthAt(match.index) === 0 && /^\s*import\s*\{\s*spawn\s*\}\s*from\s+;\s*const\s+binding\s*=\s*\{\s*node\s*:\s*\{\s*path\s*:\s*process\.execPath\s*\}\s*\}\s*;\s*$/.test(code.slice(0, match.index));
+    const owner = depthAt(match.index) === 2
+      && /export async function childProcess\(binding, run, nonce, isolation\)\s*\{\s*return await new Promise\(resolve =>\s*\{\s*$/.test(code.slice(0, match.index))
+      && [...code.matchAll(/^\s*child\s*=\s*await childProcess\(binding, run, nonce, isolation\);/gm)].some(call => {
+        const main = code.slice(0, call.index).match(/export async function main\(\)\s*\{\s*(?:let [^;]*;\s*)+try\s*\{([^}]*)$/);
+        return depthAt(call.index) === 2 && main && !/\breturn\b|\bif\s*\(\s*(?:false|0|null)\s*\)/.test(main[1]);
+      })
+      && [...code.matchAll(/^if \(process\.argv\[1\] === new URL\(import\.meta\.url\)\.pathname\) process\.exitCode = await main\(\);/gm)].some(call => depthAt(call.index) === 0 && /return status;\s*\}\s*$/.test(code.slice(0, call.index)));
+    if (fixture || owner) return [suite];
+  }
+  return [];
+}
+
+export function projectReachableSuites({ repoRoot, files, workflowPaths, scripts }) {
   const failures = [];
-  const re = /npm\s+(?:run\s+)?([A-Za-z0-9:_-]+)/g;
-  let match;
-  while ((match = re.exec(runText)) !== null) {
-    const name = match[1];
-    // ignore npm ci / npm install / npm audit etc. when not in scripts
-    if (!Object.hasOwn(scripts, name)) {
-      if (["ci", "install", "audit", "pack", "publish", "cache", "config", "version"].includes(name)) {
-        continue;
-      }
-      // bare `npm test` is special
-      if (name === "test" && scripts.test) continue;
-      if (name === "test" && !scripts.test) {
-        failures.push(`unresolvable npm script invoked by workflow surface: ${name}`);
-      }
-      // other unknown may be subcommands
-      continue;
+  const commands = [];
+  for (const wf of workflowPaths) {
+    const text = readFileSync(join(repoRoot, wf), "utf8");
+    try {
+      commands.push(...reachableWorkflowCommands(text));
+    } catch (error) {
+      failures.push(`${wf}: cannot extract executable commands: ${error.message}`);
     }
   }
-  return failures;
+
+  const invoked = new Set();
+  const reached = new Set();
+  const tracked = new Set(files);
+  let sweepInvoked = false;
+  for (let index = 0; index < commands.length; index += 1) {
+    const entry = commands[index];
+    if (entry.malformed) continue;
+    const direct = directExecutable(entry.tokens);
+    if (direct.malformed) continue;
+    const tokens = direct.tokens;
+    if (tokens[0] === "npm") {
+      const explicit = ["run", "run-script"].includes(tokens[1]);
+      const name = explicit ? tokens[2] : ["test", "start", "stop", "restart"].includes(tokens[1]) ? tokens[1] : null;
+      if (name === null) continue; // npm ci/install/audit are not script invocations.
+      if (!name || !Object.hasOwn(scripts, name)) {
+        failures.push(`unresolvable npm script invoked by workflow surface: ${name ?? "(missing name)"}`);
+      } else if (!invoked.has(name)) {
+        invoked.add(name);
+        commands.push(...reachableShellCommands(scripts[name]));
+      }
+    } else if (/(?:^|\/)node(?:\.exe)?$/.test(tokens[0] ?? "")) {
+      const paths = nodeFiles(tokens);
+      for (const file of paths) reached.add(file);
+      if (paths[0] === "tools/ci/gate-sweep.mjs" && !sweepInvoked) {
+        sweepInvoked = true;
+        commands.push(...reachableShellCommands(sweepReachableText(repoRoot)));
+      }
+    } else {
+      const script = ["sh", "bash", "/bin/sh", "/bin/bash"].includes(tokens[0]) ? tokens[1] : tokens[0];
+      if (script === "scripts/run-native-hr-policy-parser-contract.sh") {
+        for (const file of nativeHrChild(repoRoot, tracked)) reached.add(file);
+      }
+    }
+  }
+  return { reached, invoked, failures };
 }
 
 function main() {
@@ -100,39 +161,18 @@ function main() {
   }
   const pkg = loadJson("package.json");
   const scripts = pkg.scripts ?? {};
-
-  let runText = "";
-  for (const wf of workflows) {
-    const text = readFileSync(join(root, wf), "utf8");
-    try {
-      const execs = executableWorkflowCommands(text);
-      for (const entry of execs) {
-        // Prefer the raw step body (includes `run:` lines); tokens alone lose paths.
-        runText += `${entry.step ?? ""}\n${(entry.tokens ?? []).join(" ")}\n`;
-      }
-    } catch {
-      // fall through — raw YAML still contributes npm tokens for expansion
-    }
-    runText += text;
-  }
-
-  const unresolvable = resolveNpmInvocations(runText, scripts);
-  failures.push(...unresolvable);
-
-  const invoked = expandInvokedNpmScripts(runText, scripts);
-  // tools/ci/gate-sweep.json is a real execution path and therefore a real
-  // reachability source; see sweepReachableText. Without it every suite the
-  // sweep runs reports dark here.
-  const expanded = runText + [...invoked].map((n) => scripts[n] ?? "").join("\n")
-    + sweepReachableText(root);
+  const { reached, invoked, failures: projectionFailures } = projectReachableSuites({
+    repoRoot: root, files, workflowPaths: workflows, scripts,
+  });
+  failures.push(...projectionFailures);
 
   const wired = [];
   const basenameOnly = [];
   const dark = [];
   for (const suite of suites) {
     const base = suite.split("/").pop();
-    const exact = expanded.includes(suite);
-    const byBase = !exact && expanded.includes(base);
+    const exact = reached.has(suite);
+    const byBase = !exact && reached.has(base);
     if (exact) wired.push(suite);
     else if (byBase) {
       basenameOnly.push(suite);
@@ -216,4 +256,4 @@ function main() {
   process.exit(failures.length ? 1 : 0);
 }
 
-main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

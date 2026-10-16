@@ -13,6 +13,9 @@ use std::sync::Arc;
 
 use console_kernel_core::OrgId;
 use console_platform_auth::{PasskeyRegistrationStart, PasskeyService, WebauthnSettings};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use time::Duration;
 use tokio::sync::Barrier;
@@ -70,14 +73,16 @@ fn service() -> PasskeyService {
 /// Two concurrent `finish_registration` calls for the same ceremony and the
 /// same credential: exactly one must succeed, and exactly one passkey row must
 /// be written for the ceremony.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn concurrent_finish_registration_consumes_ceremony_exactly_once(pool: PgPool) {
+    prepare_account_test_database(&pool).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let service = Arc::new(service());
 
     let registration = service
         .start_registration(
-            &pool,
+            &auth,
             OrgId::knl(),
             PasskeyRegistrationStart {
                 user_id,
@@ -100,8 +105,8 @@ async fn concurrent_finish_registration_consumes_ceremony_exactly_once(pool: PgP
     let barrier = Arc::new(Barrier::new(2));
     let svc_a = Arc::clone(&service);
     let svc_b = Arc::clone(&service);
-    let pool_a = pool.clone();
-    let pool_b = pool.clone();
+    let pool_a = auth.clone();
+    let pool_b = auth.clone();
     let cred_a = credential.clone();
     let cred_b = credential.clone();
     let barrier_a = Arc::clone(&barrier);
@@ -155,17 +160,19 @@ async fn concurrent_finish_registration_consumes_ceremony_exactly_once(pool: PgP
 /// unfixed non-atomic consume lets BOTH callers succeed — a replay that mints two
 /// token pairs from one usernameless ceremony. Repeating the race makes the
 /// defect deterministic.
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn concurrent_discoverable_finish_authentication_consumes_ceremony_exactly_once(
     pool: PgPool,
 ) {
+    prepare_account_test_database(&pool).await;
+    let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
     let user_id = seed_user(&pool).await;
     let service = Arc::new(service());
 
     // Register a discoverable passkey once.
     let registration = service
         .start_registration(
-            &pool,
+            &auth,
             OrgId::knl(),
             PasskeyRegistrationStart {
                 user_id,
@@ -183,13 +190,13 @@ async fn concurrent_discoverable_finish_authentication_consumes_ceremony_exactly
         )
         .unwrap();
     let stored = service
-        .finish_registration(&pool, OrgId::knl(), registration.ceremony_id, credential)
+        .finish_registration(&auth, OrgId::knl(), registration.ceremony_id, credential)
         .await
         .unwrap();
 
     for iteration in 0..RACE_ITERATIONS {
         // Usernameless start: no user_id supplied.
-        let authentication = service.start_authentication(&pool).await.unwrap();
+        let authentication = service.start_authentication(&auth).await.unwrap();
         let ceremony_id = authentication.ceremony_id;
         let challenge = inject_allow_credential(authentication.challenge, &stored.credential_id);
         let assertion = authenticator
@@ -199,8 +206,8 @@ async fn concurrent_discoverable_finish_authentication_consumes_ceremony_exactly
         let barrier = Arc::new(Barrier::new(2));
         let svc_a = Arc::clone(&service);
         let svc_b = Arc::clone(&service);
-        let pool_a = pool.clone();
-        let pool_b = pool.clone();
+        let pool_a = auth.clone();
+        let pool_b = auth.clone();
         let assertion_a = assertion.clone();
         let assertion_b = assertion.clone();
         let barrier_a = Arc::clone(&barrier);

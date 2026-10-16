@@ -1,0 +1,17 @@
+{
+  "reviewer": "root",
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "manifest_sha256": "7a558d228f23925cbdb6a4476d244e06add8e5967904fbf7f2cc1da1292deaeb",
+  "checks": [
+    "Actual AppConfig10s family TTL and30s request timeout confirmed before genuine family issuance.",
+    "Positive and blocked request use same original signed credential, observed real source lock, strict database deadline, exact no-effect outcome and two independent recoveries.",
+    "Second genuine operator completes and audits independently while first remains observed blocked; first resumes with only its own one audit.",
+    "Parent declaration additive; preserved prior test source."
+  ],
+  "runtime_executed": 0,
+  "remaining": [
+    "Both SQLx leaves and committed candidate acceptance",
+    "Full release qualification"
+  ]
+}

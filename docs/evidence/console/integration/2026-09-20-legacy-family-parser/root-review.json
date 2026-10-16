@@ -1,0 +1,7 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_EXACT_PARSER_TESTS_AND_COMPATIBILITY_FIXTURE_ADAPTATION",
+  "manifest": "96fae2f4182310a746ce88bb7eb5d5093225194c1477c2e2ce7a318deb8059d9",
+  "fixture_manifest": "959e94602e088a2c84040ef97b0fb3cbacbd4e269b806ba3c6b75c1868e2c1dc",
+  "scope": "Seven additive actual signed-verifier tests retain old source exactly. Two None fixture fields preserve historical claim behavior with required skip-None serialization; future fields not compile before source and never admission RED. Only existing jwt_verifier target is parser admission boundary. No boundmint or guardedconsumption acceptance."
+}

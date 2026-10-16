@@ -1,0 +1,24 @@
+{
+  "base_sha": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "sources_sha256": {
+    "backend/app/src/lib.rs": "4954d9f706efd2b7bfc1cf926f62c3bb881a66707e0ae67e2f483d4304df638d",
+    "backend/crates/platform/platform-rest/src/lib.rs": "5673e666c52c7d41899277261e9423c175baa0fdbc424aa74506409d03372623",
+    "backend/crates/platform/platform-rest/src/view_as.rs": "3d3ea2738bf8aaf7410ad36216e5e5df83158bce27356552bc02a12a54903755",
+    "backend/crates/platform/provisioning/src/lib.rs": "03b7deffb08499811556ac7ae4d28d87828e9a3255a6ae347e116b8d7323e340",
+    "backend/crates/platform/request-context/src/lib.rs": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+    "backend/crates/platform/authz/src/lib.rs": "6d94a12dcaa1d5df4731577360665c2aa3765fe4ce8b5f2cf6a5745a3fb6d119",
+    "backend/crates/platform/authz/src/platform_policy.rs": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06",
+    "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedar": "80838954a2ccf18008632a7f9a082a60a7429e2519636c75d5caad9c48068136",
+    "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedarschema": "c7a83bf86301f3bfd27444c6e43ff70dfbabfa997e4749c383c07cba0097bff2",
+    "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+    "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql": "90ded6b338aa92907dc98bf74bc1fa563e05a4a8acb5d748aa24a44e237ff720",
+    "backend/crates/identity/rest/src/openapi.rs": "8a107461b1b284d8d5b3301b28aa030a809958db78c3f9095b5616bea3a86eef",
+    "backend/crates/platform/platform-rest/tests/platform_groups.rs": "5c1ffb2ea98bf55161dfdfe0ec7511471dbefc588a81072d9bebc306f548ab13",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "5c74247d562a089225e8238cca225d19b25d7273319e8069b4c2f4693e6f3c0f",
+    "backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "96133310d6f561e28476446b8c7d79432af947ddca1ab80f01e4070b9a2bd6a7",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "463b82646f4678eaea4ef014361636ec62009de4cb973ed22aee12817fc9f610",
+    "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "46baf534433dd37a5d9fc1919d0b87e5b1ce46e9a8be1b63cefa318d5cab0436"
+  },
+  "runtime_executed": 0,
+  "claim": "source-only facts; RED hypothesized, not authored or executed"
+}

@@ -1,0 +1,11 @@
+{
+  "head": "48c8f13ef1c7ba30e9fe3c8504fcf389369d5a5c",
+  "implementation_source_lock": "/private/tmp/console-native-browser-mirror-implementation-20260920.json",
+  "command": [
+    "npm",
+    "run",
+    "verify"
+  ],
+  "log": "/private/tmp/console-company-guards-fast-verify-round2-20260920.log",
+  "exit": 1
+}

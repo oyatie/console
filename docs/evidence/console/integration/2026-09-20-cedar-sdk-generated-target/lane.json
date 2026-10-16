@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "cedar-sdk-test-generated-target",
+    "owner": "/root",
+    "base_sha": "36ea256b2b32960e82f8d8784b22d6f8fb0a7e50",
+    "immutable_target": "Include the approved pure Cedar SDK regression in generated first-party test graph",
+    "allowed_paths": [
+      "tools/buck/gen_first_party.py",
+      "backend/crates/platform/authz/BUCK"
+    ],
+    "probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_generation_is_clean_for_all_first_party_buck_faces",
+    "mechanical_guide": "Add only tests/cedar_sdk_identity.rs:none to existing authz resource roster; unchanged generator emits authz BUCK test target. Review4b1b3b45; no generator algorithm or test assertion changes. Generated cleanliness probe compares HEAD, so retained generated output must be committed then exactprobe rerun; source gate not weakened.",
+    "reviewer": "/root/integration_security",
+    "pre_mortem": "Incorrectpostgres resource classification or unrelated generated churn",
+    "blast_radius": "Metadata and one generated testtarget only",
+    "detection": "Existing generationcleanliness test plus complete generator regressions, exactpathdiff and2pureSDKtests alreadygreen",
+    "rollback": "Revert metadata+generatedtarget together; preserve testsource and evidence",
+    "stop_conditions": [
+      "Unrelatedgeneratedchanges",
+      "Generatorlogicchange",
+      "Testassertionchange",
+      "Nonmetadata RED"
+    ],
+    "remaining_holds": [
+      "Exactgenerateddiffreview",
+      "Assembledrelease"
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 5,
+  "reviewed_utc": "2026-09-21T17:18:52.653976+00:00",
+  "base_sha": "85fe5377e721ba38e35098a27191069bac07b355",
+  "design_path": "/private/tmp/console-native-workspace-ui-design-20260921/design-round5.json",
+  "design_sha256": "e379f41e3c7b567aee182f35af5aba277906c0cee168c536bb78946ce55b2572",
+  "verdict": "APPROVE_FINAL_DESIGN_FOR_TEST_API_BASELINE; NO_DESIGN_BLOCKERS",
+  "scope": "Finite UI preview truthfulness, isolation and architecture review only",
+  "prior_receipt": "security-design-round2.json",
+  "accepted_amendments": [
+    "Shared cross-workflow SSR moves to console-platform-ui, a location explicitly classified as Layer::Ui by existing gate. This is presentation ownership, not new Platform business ownership.",
+    "Existing payroll UI source, hydration recipe, bundle and drift gate remain byte-identical. No Cargo product build, custom compiler, hash refresh or gate waiver.",
+    "Preview/test fixture isolation and unmounted renderer unchanged. All421/404/405 responses now explicitly preserve synthetic/no-persistence notice and safe headers. Unsupported mutations produce405.",
+    "No hydration/pkg_router; fixed known route builders; query values escaped only as content.",
+    "New package and installed dependencies only; generated Buck/CSS/test metadata serialized through existing generator."
+  ],
+  "source_evidence": [
+    "backend/ci/gates/layer-boundary/src/lib.rs:96,202,840 explicitly supports console-platform-ui as Ui rather than Platform",
+    "Exact design-round5.json read and hash verified",
+    "Prior round2 inspection of retained host and current closed UI DTOs remains applicable"
+  ],
+  "implementation_admission": "Exact test/API baseline bytes still require independent review and executed named semantic RED at clean SHA before fanout admission. This design verdict does not assert those artifacts already exist.",
+  "verification_remaining": [
+    "Same admitted semantic probe green",
+    "Relevant native/generator/current boundary checks preserving old tests",
+    "Real browser traversal and desktop/320px/200percent screenshot critique",
+    "No fixture fallback or current application registration"
+  ],
+  "limitations": [
+    "No implementation source accepted by this design receipt",
+    "No product edits, builds, tests, SQL or browser execution by reviewer",
+    "No workflow/release/production acceptance; real policy/owner persistence remains outstanding"
+  ]
+}

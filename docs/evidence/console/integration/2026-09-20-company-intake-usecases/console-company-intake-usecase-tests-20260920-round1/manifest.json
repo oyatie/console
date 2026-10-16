@@ -1,0 +1,24 @@
+{
+  "observed_head": "ec590f81879dc574a92d532fe5a2230127c54633",
+  "design_sha256": "b32bd97fbd4f035d49ff216562c2ba0ebd1ec63176a712b0c99778b3f13e16a0",
+  "source_locks": {
+    "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "de477d937de0cb538cadf6ea53628808c2edaa96e83223fb42945ed43c8e52b4",
+    "backend/app/tests/auth_rest/native_company_intake_owner.rs": "2f4e13baf77683d452fc81dd6d411884e13f08c62bea2b46b1648c6ae43e3d79",
+    "backend/app/tests/auth_rest/deployment_operator_designation.rs": "665b67a912233f29658f16ef003e98381e897879bf73f0be29b7c3b3820641d9",
+    "backend/crates/identity/application/src/company.rs": "58eb1cf312dc4718cd937658611315c86d88e1c2a8c7ec6828163a4d78e06abf",
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532"
+  },
+  "files": {
+    "REVIEW.md": "386ceb6efc2bd2de99f326be048ca1e3e8a83ad319c0e48fb2f40ff48ac5f164",
+    "TEST_ADDITIONS.rs": "f3a025c97b229e7320b56d238057479b2f2173eeb2ed5f50bbf9b49b8f4e8894",
+    "native_company_signed_credentials.rs": "e1f66ede25f4e457ae1f4d0cfbb04c6753074a734bbbb38fc592250b137961ca",
+    "projection_tests.rs": "1bb992bac86faf1182dc88cb5d1c7d086febaa595554ef5d58bcfed5ae9e881a",
+    "signed-tests.patch": "7478bf6a73b406a3c3b2a7e7a7ad62cb24d3c587ab59cc0c30a7608104443756"
+  },
+  "authored_sqlx_tests": 5,
+  "authored_pure_tests": 2,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "implementation_authored": false
+}

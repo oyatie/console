@@ -1,0 +1,20 @@
+{
+  "base_sha": "d06ae6379f2bb096b653a641041aa089b58c61c0",
+  "kind": "immutable private Company entry read implementation candidate",
+  "files": {
+    "GUIDE.md": "4efded889f936a6fc17b1c791339ff0fb7dda3ed795b8b28e899b8c3c79c0f42",
+    "base-custody.json": "0cc4db167bcc56b80b12ad73415f870f13637c89b03be070ee27aee31325ffc1",
+    "build_candidate.py": "a8fe7a2c873b819cbf9419d7232cf5e636256263f0c3380236b269c31acc033b",
+    "candidate/backend/app/src/lib.rs": "b5a5a79f7c90b33f3ab19d68c5caed673ad56c21589af6f73a71aeee8f3dcf72",
+    "candidate/backend/crates/payroll/ui/src/native_account.rs": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e",
+    "candidate/backend/crates/platform/auth/src/account.rs": "046cd1289f2df69fadcd23807f1e07a8a0e81f697a229e2eeccf36d5856e1bad",
+    "candidate/backend/crates/platform/auth-rest/src/account_browser.rs": "84e1a639c7ef72c8b5a62d9c44c1ed6d514efec8e0ddd67022f41577cbcde114",
+    "candidate/backend/crates/platform/auth-rest/src/account_entry.rs": "a89b7ae66af5f25cd73e9a30bb99d9b8718fb9e9ed2f207e9c04fd440fecdcc2",
+    "candidate/backend/crates/platform/auth-rest/src/lib.rs": "520ac39667c736cfdecc5881d777e7936c04e26569850766cba8f5434981d0f2",
+    "candidate.patch": "6cda55fb2c2c5cb5d6404cf3d68e82380357e3474d177a71869cba7cc2e43180",
+    "rustfmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seal.py": "69778d3aff835d1a14213e118b128dfe306fe4b7d943842e7834125e624ddd09",
+    "source-proof.json": "8ddceb446038ace137457c17c5b1bc407f9ce33585464d65e0c3f4543bc93cca",
+    "verification.json": "00c0aaa0914229f02765c313bfd4af9eb4ed208f4e4d76b7886dfa2c9940d57d"
+  }
+}

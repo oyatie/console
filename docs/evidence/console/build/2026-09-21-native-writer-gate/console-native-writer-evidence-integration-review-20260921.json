@@ -1,0 +1,26 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "approved_evidence_accuracy_bounded_native_writer_repair",
+  "receipt": "/private/tmp/console-mvp-dev-integrate-20260921/docs/evidence/console/build/2026-09-21-native-writer-gate/receipt.json",
+  "receipt_sha256": "b4fee2c3e78ba669081a393906972d0c4b682834adb297f5fae3cdbbe6f1b397",
+  "head": "a26a0f6e6f8c1c1b727c3478f7910b3f8fd9d803",
+  "evidence_hashes_verified": 20,
+  "root_input_source_hashes_verified": 4,
+  "findings": [],
+  "verified": [
+    "Exact linked regression semanticRED:3scanned versus6expected,1failed57filtered; same exact probeGREEN1pass57filtered.",
+    "Full unfiltered native10unit+58integration passed, no ignored/skipped/infra/build failures.",
+    "Generator71passed; actual runtime scanned357production sources and no ownership/ratchet/shared-writer violation.",
+    "Historical10unit/51integrationpass4fail evidence retained and truthfully described.",
+    "Current scanner/test source byte-identical to exact reviewed candidates;4root-input source hashes matched.",
+    "Copied logs byte-identical to originals where originals exist. ADR governance44ADRs8notes pass log read."
+  ],
+  "not_executed_by_reviewer": true,
+  "holds": [
+    "Separate PostgreSQL census suite",
+    "Documented static checker residual shapes",
+    "Protected dev integration",
+    "Native business/browser and complete release qualification"
+  ],
+  "state_promotion": "None"
+}

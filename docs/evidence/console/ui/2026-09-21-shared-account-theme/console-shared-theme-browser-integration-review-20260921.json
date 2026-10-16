@@ -1,0 +1,71 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "adopt bounded shared light theme; no blocking visual regression in five actual mobile Account captures",
+  "source_reference": "console-shared-theme-mechanical-integration-review-20260921.json",
+  "evidence": {
+    "/private/tmp/console-shared-theme-account-browser-20260921/result.json": "462ebe03c54f2f313438c4041ca0f5c95d7c06aacc221e86029b3b8d0449359b",
+    "/private/tmp/console-shared-theme-account-browser-20260921/owner-receipt.json": "c9bec887fa7498b125510733330b2b8b21f2841333c2f459fd1b024f2ba6031e",
+    "/private/tmp/console-shared-theme-20260921/contrast.json": "bd15b4039c97e977b396e615f30fc658f60512f5bb5c5fbfdf6054315b8bf6fd",
+    "/private/tmp/console-shared-theme-account-browser-20260921/01-public.png": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023",
+    "/private/tmp/console-shared-theme-account-browser-20260921/02-terms.png": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e",
+    "/private/tmp/console-shared-theme-account-browser-20260921/03-account-enrolled.png": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+    "/private/tmp/console-shared-theme-account-browser-20260921/04-sign-in.png": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e",
+    "/private/tmp/console-shared-theme-account-browser-20260921/05-account-returned.png": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+    "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/04-sign-in.png": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+    "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs/account-ci/05-account-returned.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2"
+  },
+  "visual_review": [
+    {
+      "screen": "01-public.png",
+      "finding": "320px card and two actions remain readable without clipping; strong primary action and darker secondary button boundary retain discoverability."
+    },
+    {
+      "screen": "02-terms.png",
+      "finding": "Korean labels and paragraphs wrap within cards; selected terms retain check marks and clear visible blue keyboard outline distinct from amber selection; registration action and alternate login remain legible."
+    },
+    {
+      "screen": "03-account-enrolled.png",
+      "finding": "Signed-in and no-workspace state remain distinguishable by headings, badge and explanatory copy; recheck and logout available; shared subdued canvas preserves hierarchy."
+    },
+    {
+      "screen": "04-sign-in.png",
+      "finding": "Passkey picker input has clearer border; label and helper text retained; primary login and alternate registration available without clipping. No human passkey-picker usability claim."
+    },
+    {
+      "screen": "05-account-returned.png",
+      "finding": "Returned Account reproduces enrollment state and hierarchy; browser result and independent DB acknowledgements report sameAccount login and active session."
+    }
+  ],
+  "decisions": {
+    "adopt": [
+      "One light semantic palette across Account and workspace",
+      "Darker shared control boundaries and footer text",
+      "Korean-capable local system font and visible blue focus"
+    ],
+    "adapt": [
+      "Prototype semantic roles mapped to established workspace token meanings rather than copy mismatched muted-surface token",
+      "Retain generous Account control dimensions and layout rather than prototype tiny text"
+    ],
+    "reject": [
+      "External font dependency and dark-theme expansion for this leaf",
+      "Treating mobile screenshots or source contrast calculations as complete accessibility certification"
+    ]
+  },
+  "interaction_evidence": [
+    "Read actual canonical account.cjs: keyboard skip/discovery/checkbox toggle/register submit use Tab/Space/Enter and verify visible focus and geometry",
+    "Driver reports320px geometric reflow for public/register/activeAccount; screenshots visually confirm no clipping on allfive captures",
+    "Logout/login exercised with click; do not claim keyboard-only completion for those actions",
+    "One request to each five expected auth POST paths, zero unexpected posts and zero external page requests",
+    "Independent database checkpoint receipt reports ENROLLED/LOGGED_OUT/LOGGED_IN and actual browser cleanup"
+  ],
+  "contrast": "Independently recomputed all8 frozen source foreground/background ratios; each agrees within0.001 and exceeds recorded threshold. This does not inspect every rendered state.",
+  "limits": [
+    "Only320px mobile captures; no desktop/200percentzoom/screenreader/KoreanIME/human-usability proof",
+    "Terms are test-only publications and virtual authenticator is synthetic",
+    "No successful Company creation, populated workspace, payroll, or release qualification",
+    "Root owns execution and final integrated evidence acceptance"
+  ]
+}

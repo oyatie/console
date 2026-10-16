@@ -2,6 +2,11 @@
 load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")
 
 export_file(
+    name = "Cargo.toml",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "crate-source-tree",
     src = "src",
     mode = "reference",
@@ -12,6 +17,8 @@ rust_library(
     name = "console-platform-test-support",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/test-support", glob(["src/**/*.rs"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
+        "//ops:postgres-finalize-account-credentials.sql": "ops/postgres-finalize-account-credentials.sql",
+        "//ops:postgres-finalize-account-custody.sql": "ops/postgres-finalize-account-custody.sql",
     }),
     crate = "console_platform_test_support",
     edition = "2024",
@@ -21,6 +28,7 @@ rust_library(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:sqlx",
+        "//third-party/rust:url",
         "//third-party/rust:uuid",
     ],
 )

@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "author": "/root/reference_inventory",
+  "decision": "approved-test-source-only",
+  "packet": "/private/tmp/console-platform-source-retained-transition-successor-20260920-round1",
+  "manifest_sha256": "3b1bdca5d459e2e6ee6840b75b3094fc9551fa6c9cae48e1051bd840c2160ad5",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "findings": [],
+  "independent_checks": [
+    "All 11 manifest files independently SHA256 verified.",
+    "Original strip_checked_one and strip_exact_additions bodies byte-identical. Existing historical test counts/names retained.",
+    "Live bridge signature/body/config/owner/raw and effective ACL independently vetted by existing checked_bridge SQL; observed pg_proc row must equal vetted row exactly.",
+    "Only exact bridge row and exact prior context ACL restored; context signature, owner and every other field preserved; arbitrary ACL filtering prohibited.",
+    "Original one-helper, two-helper and full audit-transition oracles consume vetted intermediate, preserving exact count and remaining metadata comparisons.",
+    "Transactional inverse uses exact DROP RESTRICT and sole REVOKE, then exact intermediate equality, reverse complete metadata delta and all business-row equality.",
+    "Two pure controls cover three actual composed oracle chains and 24 corruptions per chain; no skipped or removed assertions."
+  ],
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Root exact-preimage integration and build; additive pure controls, retained eligibility6, Business-session and audit-transition regressions; current Platform source runtime failures remain unresolved.",
+    "Diagnostic packet edits same include-owner file: serialize composition and recheck only exact include addition over reviewed diagnostic successor; do not overwrite either packet.",
+    "Broader lane, milestone and release qualification not accepted."
+  ]
+}

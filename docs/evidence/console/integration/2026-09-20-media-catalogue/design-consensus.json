@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root",
+  "round": 4,
+  "decision": "APPROVE exact media design for private additive test authoring and independentreview only",
+  "design_manifest_sha256": "637bfad1291c85539eb19f5593b24c5c2592dff72e8a0a155da30ee881c2aafd",
+  "reviews": {
+    "/private/tmp/console-media-catalogue-design-round1-security-review-20260920.json": "bb3a0c630aa004d768607c19cdcd69c4cbfe5598a4b86840d02d7deb3b376eb1",
+    "/private/tmp/console-media-catalogue-design-round2-security-review-20260920.json": "e32a3dde2fcf7e823913ea9f26bebcd5a9cea64958fccdd42f0d87f61be89ed3",
+    "/private/tmp/console-media-catalogue-design-round3-security-review-20260920.json": "a02ee30de9c959a89e31fcbc3d102985af10892ffe8cde3be5a71bcf1cb86e98",
+    "/private/tmp/console-media-catalogue-design-round4-security-review-20260920.json": "2110fb0aa70c65634145a90012018f281f7de6804eb7d42f1b8b5c48e34a2c1e",
+    "/private/tmp/console-media-catalogue-design-round1-root-review-20260920.json": "ee9943bb897edce19e1a6d0f0ed6315d57eeaa48d868f87055952726013918d4",
+    "/private/tmp/console-media-catalogue-design-round2-root-review-20260920.json": "0fc74f937b6fc0c73d338b9314de83092eee8829b682f65f24b3053adcc67f99",
+    "/private/tmp/console-media-catalogue-design-round3-root-review-20260920.json": "fb87efe1d903d36e88bb4388355df1c45fc761310ef1401c0676836211f1cacd",
+    "/private/tmp/console-media-catalogue-design-round4-author-confirmation-20260920.json": "17801c49971067e636dc580f2499f6d7a86e5296592e597374fe02a611bdff7b"
+  },
+  "consensus": [
+    "Fourdistinctindependentdesignrounds complete",
+    "Oneexistingregistry runtimeentry retains44originalrecords/43required andsoleVLMexclusion",
+    "Referenceunits/model/capture caveats remain conservative; nostate/executionpromotion",
+    "Existingowner/helper/attestation reused; exactenumerablekeys beforefixedpin andbindings",
+    "Rootsolewriter andactualownerRED/testreview beforeimplementation"
+  ],
+  "implementation_admitted": false,
+  "tests_executed": 0
+}

@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_receipt_accuracy_review",
+  "receipt": "docs/evidence/console/payroll/2026-09-21-collection-owner-recovery/receipt.json",
+  "receipt_sha256": "bf0592d9ccdc7f9087d6f119133ce805eed08f0ce080e53236c63ccbdeb535f4",
+  "evidence_manifest_sha256": "e1c0cc32817d71291a6e9c47c05519b356057e970e1328e99de7ba1e8249dcf6",
+  "verdict": "APPROVED exact bounded evidence receipt; no workflow or release promotion",
+  "findings": [],
+  "checks": [
+    "All17 source hashes match current10239028d plus exact approved label successor.",
+    "All35 evidence-file hashes match manifest. Receipt separately pinned by this review; no other unhashed files.",
+    "Every cited verification/failure log copy byte-equals retained /private/tmp original.",
+    "Recovery RED1failure\u2192GREEN1pass16filtered; retainedHTTP/RLS22pass; nativeapplication5pass; generator70pass; exactlabel1pass15filtered; unfilteredhealth15pass0fail1inheritedignored0filtered; layer176crates0violations match actual logs.",
+    "Preserved original missingmanifest0execution, cancelled0execution, obsolete label failure and writer0scan/stale-permission failure. Writer gate explicitly pending, not green.",
+    "Receipt explicitly records browser0, owner-fixture limit, no source-release/workflow/production qualification, no release inventory promotion or exposure authorization."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Writer gate real-tree census/native retained suite prerequisites pending.",
+    "Native Account business capability and actor scope, browser UI workflows and full release qualification remain required."
+  ]
+}

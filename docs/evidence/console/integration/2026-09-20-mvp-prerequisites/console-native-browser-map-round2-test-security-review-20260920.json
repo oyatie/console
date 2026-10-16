@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_DESIGN_AND_ADDITIVE_TESTS_PENDING_IMPLEMENTATION_REVIEW",
+  "base_sha": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "packet_manifest_sha256": "c68de073e83c9ae4af953abcb44f9afcd77f4e090b561ad54031a3863fb6a652",
+  "packet": "/private/tmp/console-native-browser-map-20260920-round2",
+  "source_hashes_verified": true,
+  "findings": [
+    "Exact candidate changes only native array and nativecount2; all legacy map metadata unchanged.",
+    "Independent current CI text census finds9unique wrappers, exact2native and7legacy remainder. This corrects round1 mistaken count.",
+    "Positive classification test admits exact native pair outside caller-supplied legacylimit1 while preserving legacy residual. Negative tests cover unknown/wrong target/reason/duplicate/overlap/missing/stale native and limit0.",
+    "Count test invokes real CLI with2native rows/count1 and requires specific drift error. Existing6residual+4count test sources untouched by appended candidates.",
+    "Finite exact native wrapper/target recognition is required; generic native-label exemption is prohibited."
+  ],
+  "limits": [
+    "Root must commit exact additive tests, admit real executable RED, implement then send exact source review and same-probe GREEN.",
+    "This is classification only; actual native execution retained in independent generator/CI contracts. No Company workflow, milestone or release acceptance."
+  ],
+  "execution": "Read-only source/JSON/hash/census inspection; no product tests/builds/SQL/runtime executed."
+}

@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_security",
+  "kind": "independent source design and test review",
+  "decision": "APPROVE bounded regression test and proposed ten-path config repair; implementation and runtime acceptance pending",
+  "head": "209af958af44fba8577ce8e2cae1068150a1b410",
+  "packet": "/private/tmp/console-buck-auth-fixtures-tests-20260920-round1",
+  "candidate_test_sha256": "b0e7acf0cefd413b7fc3d06e00f524cd973238d9d1054496e1ffc0a4e8444f06",
+  "manifest_sha256": "bb1d97e321b8f954b82f0a188d2de83f013b8fe2e0ddcc57b5819da8242103b9",
+  "facts": [
+    "Every packet file hash matches its manifest. Current repository test equals packet preimage.",
+    "Removing exactly addition.txt reconstructs the preimage byte for byte. All 59 inherited test function ASTs are unchanged; candidate adds one test for total 60.",
+    "Static extraction finds 47 literal include references representing 37 distinct existing fixture files. Ten are absent from the owning auth_rest integration srcs configuration.",
+    "The generator emits integration_resource_config srcs into the actual auth_rest rust_test source mapping. No console-app itest_srcs wildcard already supplies these fixtures.",
+    "The test derives required inputs from actual Rust sources and compares against the real resource owner; it does not merely check a synthetic duplicate list. Existing file and nonempty checks prevent trivial empty acceptance.",
+    "No SQL fixture, production assertion, inherited test, generated file, or repository source was edited by reviewer."
+  ],
+  "scope_limits": [
+    "Regex intentionally handles current literal include_str/include_bytes invocations only, not arbitrary Rust syntax or macro expansion. Full native build remains required.",
+    "This receipt approves the exact additive regression test and narrowly specified design, not an unseen implementation diff.",
+    "No tests, generator, build, database or runtime were executed by reviewer; static scripts only."
+  ],
+  "required_followup": [
+    "Named regression must execute RED for these ten missing files, receive lane admission, and execute GREEN after repair.",
+    "Implementation diff must add exactly the ten absent existing fixture paths while preserving previous declarations; root regenerates BUCK and checks no unrelated outputs.",
+    "Run full generator suite and actual native auth_rest build. Preserve historical fixture bytes. Obtain independent concrete source and final evidence review."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth",
+    "Red Team"
+  ],
+  "static_inspection_note": "Two initial literal_eval attempts failed on existing dictionary unpack nodes; narrowed AST traversal then completed. These were read-only inspection errors and are not test evidence.",
+  "release_state": "No capability promotion or release qualification."
+}

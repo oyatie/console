@@ -1,0 +1,23 @@
+{
+  "base_sha": "477e3eeb1359482e7580fbb9f4145741ff1d6939",
+  "source_sha256": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
+  "owner_probe": {
+    "executed": 1,
+    "red_failed": 1,
+    "green_passed": 1,
+    "filtered": 14
+  },
+  "browser": {
+    "histories_executed": 13,
+    "checks_passed": 189,
+    "checks_failed": 2,
+    "failure": "Final console503 matcher compared fragment-bearing consolelocation to fragment-freeHTTP response; independently reviewed correction and fullrerun required.",
+    "state": "NOT_ACCEPTED"
+  },
+  "pending": [
+    "RealDB outage/recovery2tests running",
+    "Browser finalmatcher correction/rerun/review",
+    "WASM rebuild",
+    "FullCompany/workspace/release incomplete"
+  ]
+}

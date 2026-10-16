@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "approved_bounded_helper_refactor_for_commit",
+  "base": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "verification": "/private/tmp/console-company-intake-lint-verification-20260920.json",
+  "verification_sha256": "9af03332a7caf7c582f96c27292cb66319827a069b0e51398cdcc2f775c5ac4f",
+  "design_review": "/private/tmp/console-company-intake-lint-round2-integration-tests-review-20260920.json",
+  "source_lock_sha256": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a",
+  "checks": [
+    "All three live candidate source hashes match reviewed source lock.",
+    "All ten callers preserve ordered bound expressions and tuple alias preserves exact eight element row shape; prior design review applies.",
+    "Inspected all three native result logs; each exact affected leaf passed once with 499 filtered out; log hashes match verification.",
+    "Inspected both strict Clippy GREEN outputs; dev-auth and ordinary commands retained -D warnings.",
+    "Root records rustfmt and diff check exit zero."
+  ],
+  "native_counts": {
+    "discovered": 500,
+    "executed": 3,
+    "passed": 3,
+    "failed": 0,
+    "ignored": 0
+  },
+  "limits": [
+    "No reviewer runtime execution.",
+    "Approval only for this semantics-preserving test-helper lint repair.",
+    "Browser registry/full verifier and full release remain unaccepted."
+  ],
+  "prior_review_correction": "Round2 review superseded incomplete two-file round1 review; all three files and ten callers are included."
+}

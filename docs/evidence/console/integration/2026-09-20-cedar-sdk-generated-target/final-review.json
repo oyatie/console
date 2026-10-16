@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_GENERATED_TARGET_AND_RETAINED_GENERATOR_GREEN",
+  "source_review_sha256": "336329c958b3fc1f714ba7674e7fab407ce203976ce36687cf4d79d1bc06a78e",
+  "observed_head": "1085613a03bcb24511885066040f3fefd219a302",
+  "source_after_hashes_reverified": true,
+  "retained_generator_tests": {
+    "executed": 59,
+    "passed": 59,
+    "failed": 0,
+    "seconds": 0.738,
+    "log_sha256": "a969c89314a4bfdeb0ff59e90a2f8c096d8a5ae82307f3f541f00e6029c42982"
+  },
+  "limits": [
+    "No independent Rust/Buck execution in this addendum.",
+    "Root discovered existing CI explicit Cedar invocation omits this new test; CI coverage remains a separate queued dependency.",
+    "No release acceptance."
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "owner": "/root",
+  "test_and_generated_candidate": "645c2d7d429003096b4e6b6b23927c03d09d2474",
+  "production_candidate": "4b31c70eaeb5623bb417ae7749a21fbcae0d98e8",
+  "current_head": "1f2601636e242811472e3cae817f79ae39027a00",
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-ops-acceptance-map-20260920.json --only platform-ops-owner,platform-list-and-ops-full55,platform-platform-rest-ops-dashboard-pg,app-console-route-telemetry-pg --fail-fast",
+  "exit_code": 0,
+  "actual_map_order": [
+    {
+      "invocation": "app-console-route-telemetry-pg",
+      "passed": 1,
+      "failed": 0,
+      "seconds": 5.88
+    },
+    {
+      "invocation": "platform-platform-rest-ops-dashboard-pg",
+      "passed": 2,
+      "failed": 0,
+      "seconds": 11.34
+    },
+    {
+      "invocation": "platform-ops-owner",
+      "passed": 1,
+      "failed": 0,
+      "filtered": 468,
+      "seconds": 8.61
+    },
+    {
+      "invocation": "platform-list-and-ops-full55",
+      "passed": 55,
+      "failed": 0,
+      "filtered": 414,
+      "seconds": 538.85
+    }
+  ],
+  "unique_tests": 58,
+  "total_executions": 59,
+  "repeated_leaf": "platform-ops-owner is also present in full55",
+  "full55_partition": {
+    "retained_company_list": 30,
+    "operations": 25
+  },
+  "ignored": 0,
+  "state_preservation": "No release-inventory state promotion; Rust production/tests unchanged since645c2d7d",
+  "limits": [
+    "Unresolved original source-snapshot intermittent failure remains a release blocker",
+    "No Group listing or mutation authority acceptance",
+    "No milestone or assembled release qualification",
+    "Independent final audit and exact final clippy recorded separately"
+  ],
+  "clippy": {
+    "command": "CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo +1.98.1 clippy --locked --manifest-path backend/Cargo.toml -p console-app -p console-platform-provisioning -p console-platform-rest -p console-platform-auth-rest --all-targets -- -D warnings",
+    "exit_code": 0,
+    "seconds": 20.45,
+    "warning": "existing proc-macro-error2 future-incompatibility warning"
+  }
+}

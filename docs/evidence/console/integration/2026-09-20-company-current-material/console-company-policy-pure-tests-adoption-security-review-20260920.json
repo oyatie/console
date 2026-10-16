@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_DORMANT_ADOPTION_AND_APPEND_ONLY_STRICT_PARSER_SEMANTIC_SUCCESSOR",
+  "base": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "adoption_manifest_sha256": "b4e1ca5eeebf7a1309589becae70ca0bb179c0f89dae6e18548fb3576d7e58eb",
+  "successor_manifest_sha256": "335bbde3351558b73dac107ae44f3e3e51d024cee2c733e2d0fcc3e10b19b731",
+  "adoption_source_sha256": "049c190a95794710dbb630de9ff5936f552bac39d50080e29f40d84a50a6e51e",
+  "successor_source_sha256": "9ad846c50c504d4fcfba883b4558ea80b5debc25177f6b4cdb624bd8af33da4d",
+  "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+  "verified": {
+    "adoption_members": 6,
+    "successor_members": 3,
+    "source_locks": 20,
+    "exact_gitbase_sources": 14,
+    "original_three_bodies_helpers_byte_preserved": true,
+    "successor_append_only": true
+  },
+  "findings": [],
+  "conclusions": [
+    "Only original adoption delta is ordinary child import use super::CompanyPolicy. Historical include comment does not authorize include! source workaround; ordinary cfg(test) path module registers only when actual implementation exists.",
+    "Fourth leaf tests explicit MATERIAL.md closed-map, original-text duplicate, canonical scalar and raw32768byte requirements; no additional product authority or unsupported acceptance promise.",
+    "29negative controls counted from source:11nested omissions,3unknowns,3same-value raw duplicates,2resource-arrayorders,8canonicalrevision/time/UUIDaliases,trailingJSON,32769bytevalidJSON. Duplicate controls constructed after serialization and assert actual replacement; aliases replace every occurrence to preserve semantic correlation.",
+    "Resource array tests cover both possible field orders; no false claim to exhaust all other map permutations. Strict map visitor at each actual boundary remains implementation review responsibility.",
+    "32768byte positive is valid: contract rejects raw byte count greater than32768 and canonicalizes scalar spellings, not whole JSON whitespace. Trailing JSON whitespace is accepted by normal JSON grammar.32769negative differs only in whitespace and catches trim-before-bound checking. Synthetic row itself never proves canonical SQL output or current authority.",
+    "Reuse retained approved empty-field amendment: context.requested_fields.isEmpty() for empty clauses; nonempty containsAll and strict Cedar schema unchanged. Existing positive loop covers both zero-field actions and must reach real SDK.",
+    "Normal dependency edges needed only at actual implementation; no stubs, new package version, downgraded toolchain or additional frontend framework justified by test adoption."
+  ],
+  "counts": {
+    "original_authored": 3,
+    "new_authored": 1,
+    "total_authored": 4,
+    "discovered": 0,
+    "executed": 0
+  },
+  "limits": [
+    "Dormant file alone is not test execution, actual owner RED, lane admission or accepted implementation. Retain complete Company authenticated HTTP probe for enclosing lane.",
+    "Register and run all4pure leaves against real application material and actual Cedar during admitted implementation; current SQL/Auth/store/browser and Company acceptance remain separate required evidence.",
+    "Root alone owns repository/generator/lockfiles/runtime and semantic successors. Reviewer performed read-only source/hash/Git inspection and private receipt writing only."
+  ]
+}
