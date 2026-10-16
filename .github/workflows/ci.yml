@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
+      classification_ready: ${{ steps.path_class.outcome == 'success' && steps.path_class.outputs.path_class != '' && (steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false') }}
       path_class: ${{ steps.path_class.outputs.path_class }}
       docs_only: ${{ steps.path_class.outputs.docs_only }}
       run_heavy: ${{ steps.path_class.outputs.run_heavy }}
@@ -255,7 +256,7 @@ jobs:
     name: Domain crates — unit tests
     runs-on: ubuntu-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 20
     env:
       # MUST match the cache writer (`backend`'s cargo leg). rust-cache folds every
@@ -520,6 +521,7 @@ jobs:
     name: Test PostgreSQL — app
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -578,6 +580,7 @@ jobs:
     name: Test PostgreSQL — platform
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -636,6 +639,7 @@ jobs:
     name: Test PostgreSQL — ontology
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -694,6 +698,7 @@ jobs:
     name: Test PostgreSQL — domain adapters A
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -752,6 +757,7 @@ jobs:
     name: Test PostgreSQL — domain adapters B
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 45
     env:
       # MUST match the cache writer (`backend`). rust-cache folds every CARGO_*
@@ -832,19 +838,19 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Preflight failure non-evaluation
-        if: ${{ needs.preflight.result != 'success' }}
+        if: ${{ needs.preflight.outputs.classification_ready != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'PostgreSQL reachability not evaluated because preflight result=%s\n' "${{ needs.preflight.result }}"
       - name: Path-class skip proof
-        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}
+        if: ${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'false' }}
         shell: bash
         run: |
           set -euo pipefail
           printf 'path-class skip proof: %s not required for class=%s\n' "${GITHUB_JOB}" "${{ needs.preflight.outputs.path_class }}"
       - name: Require all PostgreSQL reachability facets
-        if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}
+        if: ${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'true' }}
         run: |
           test "${{ needs.postgres-reachability-app.result }}" = success &&
           test "${{ needs.postgres-reachability-platform.result }}" = success &&
@@ -865,7 +871,7 @@ jobs:
     name: Company conformance — generic-engine regression
     runs-on: ubuntu-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 35
 
     steps:
@@ -903,7 +909,7 @@ jobs:
     name: Generated faces — full required drift authority
     runs-on: macos-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     timeout-minutes: 35
 
     steps:
@@ -962,7 +968,7 @@ jobs:
     name: Backend — ${{ matrix.leg }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     # Three legs run in PARALLEL. Measured on merge_group run 32402124838 this
     # job was the 17m critical path of a 19m CI run, and three steps were 757s
     # of its ~1,070s of work: the dev-auth PostgreSQL suites (355s), clippy
@@ -1909,7 +1915,7 @@ jobs:
     name: Migration expand/contract rehearsal — 0165 ontology key-revision, 0166 leave
     runs-on: ubuntu-latest
     needs: preflight
-    if: ${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
     # Serial integration execution avoids cluster-global role mutation races.
     #
     # NOTE: the "full workspace" this number was originally sized for no longer
@@ -2104,6 +2110,7 @@ jobs:
     name: Repo gates — ADR / foundation / domain maturity
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 20
 
     steps:
@@ -2216,6 +2223,7 @@ jobs:
     name: API contract — text-only contract checks
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 30
 
     steps:
@@ -2256,6 +2264,7 @@ jobs:
     name: Kubernetes manifests — render / hardening / NetworkPolicy preflight
     runs-on: ubuntu-latest
     needs: preflight
+    if: ${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}
     timeout-minutes: 15
 
     steps:

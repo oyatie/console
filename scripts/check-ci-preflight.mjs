@@ -39,9 +39,14 @@ const skipProofCondition = "${{ needs.preflight.outputs.run_heavy != 'true' }}";
 /** Live Postgres facets: oyatie pg-gate analog, independent of run_heavy. */
 const runLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}";
 const skipLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres != 'true' }}";
+// Independent jobs need valid classification, not unrelated preflight proofs.
+const classificationReadyOutput =
+  "${{ steps.path_class.outcome == 'success' && steps.path_class.outputs.path_class != '' && (steps.path_class.outputs.run_heavy == 'true' || steps.path_class.outputs.run_heavy == 'false') && (steps.path_class.outputs.run_live_postgres == 'true' || steps.path_class.outputs.run_live_postgres == 'false') }}";
+const classifiedJobIf =
+  "${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' }}";
 /** Heavy proofs that are postsubmit-only (push / workflow_dispatch). */
 const postsubmitHeavyJobIf =
-  "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}";
+  "${{ !cancelled() && needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_heavy == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}";
 const postsubmitProtectedJobs = Object.freeze([
   "backend",
   "company-conformance",
@@ -57,11 +62,11 @@ const runHeavyUnlessCancelledCondition =
 const runHeavyAlwaysCondition =
   "${{ always() && needs.preflight.outputs.run_heavy == 'true' }}";
 const postgresAggregateNonEvaluationCondition =
-  "${{ needs.preflight.result != 'success' }}";
+  "${{ needs.preflight.outputs.classification_ready != 'true' }}";
 const postgresAggregateSkipCondition =
-  "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres != 'true' }}";
+  "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'false' }}";
 const postgresAggregateHeavyCondition =
-  "${{ needs.preflight.result == 'success' && needs.preflight.outputs.run_live_postgres == 'true' }}";
+  "${{ needs.preflight.outputs.classification_ready == 'true' && needs.preflight.outputs.run_live_postgres == 'true' }}";
 
 // Fail-slow one-sweep CI (D4): independent steps run even after a sibling step
 // fails; dependent steps skip (not red) when their dependency failed. The step
@@ -977,8 +982,8 @@ const protectedJobs = [
   "kubernetes-manifests",
   "generated-face-authority",
   "domain-unit",
-  // Facets need preflight and have no job-level if (skip-proof when
-  // run_live_postgres is false). Aggregator is fail-closed with if: always()
+  // Facets need validated classification and still emit a skip proof when
+  // run_live_postgres is false. Aggregator is fail-closed with if: always()
   // (like required-ci) and is not in this list. backend/domain-unit/
   // company-conformance/generated-face-authority/migration-expand-contract
   // carry a locked postsubmit if. rust-fmt is merge-blocking but parallel
@@ -1313,21 +1318,21 @@ const requiredJobActionContracts = Object.freeze({
 // needs, timeout, services, environment, defaults, container, strategy and
 // permissions are all executable inputs and must change deliberately together.
 const requiredJobMetadataSha256 = Object.freeze({
-  "preflight": "11fa19135d0ea52d3146d17e341979233e3258d921a05e12e9db417dca2ac7ed",
-  "domain-unit": "3d9b04badac173aad3429543cc3424bebc53e79069ad0c97bc2822e57aec379b",
-  "backend": "537587fa01cac85002954990d91b38da5b8c77dce0db9852ab3fe0b25ac93655",
-  "migration-expand-contract": "c85263d9b8dbf3b26b4cf4eb8707fc712b8bdf28df5480795aec59cb2462ad2e",
-  "kubernetes-manifests": "1b215a62dac6d9a3decea6d6912792de3d033986833356b403fb157a15cb8b96",
-  "repo-gates": "da8a07f3a19a6f46a5901e6a6d8eac2f7f1c11f52818b7dea25caf362335ee92",
-  "api-contract": "101b70d29b1776058160ea23296e707a4f682f5987a9873371cb57180a737d41",
-  "generated-face-authority": "23919f88a894f1667c8c82c3584ff7132c85ce31208131384387b407c524cdba",
-  "company-conformance": "7adb052ce30381c0c041a53236fd9700b5f2efa732649a7cd9c8f2adcecf9067",
+  "preflight": "a84f77af4baad826d8f0c1d41fd70c0d4b5df9e3bbf6838bb65fbe60054b782d",
+  "domain-unit": "4608896cad18124e01121a0f7873b47ae3894674184292d10b027d3f26bcdfce",
+  "backend": "2c502cd30b0947af2314b2bba36156e407db1667e842c1bc9a46712ac9532eec",
+  "migration-expand-contract": "1f60b66b0ca8bd510f551acf65f0cfdd6a9c767b74e567c18c5071648490cb7b",
+  "kubernetes-manifests": "ba3f926ec8c2927aced4404b294b5879520daf6c57812b46b7e1118819fcecaa",
+  "repo-gates": "1091e6b598ea89bf796ef59381a20b1e7fd7dfac98fb32be58d4a8530b56534b",
+  "api-contract": "c1b4ff5ff3280be0468f9b163481de61b2379c983433a9b3e0ed3fe87095306e",
+  "generated-face-authority": "2c7be216bdb45850c88397ccdb6605e36868af7b6c699ca808da96a90e6d01be",
+  "company-conformance": "31da1efb68432db83402e96f3e133837d74fe347a54988ae47458a4665fd23ff",
   "rust-fmt": "83e6e2eb742d70daecef162aad28ad8513d8ab156e71485db4f682b0a97a3657",
-  "postgres-reachability-app": "34e297e0370053666f34ad3e6e9cd5d8f1bdd357ee05b8800746b0ead20a74af",
-  "postgres-reachability-platform": "ade19aead076742c4cf8b8d2b0c4100758c36fce6bfd37cf489630e6f2592539",
-  "postgres-reachability-ontology": "d6cba001f0a47c9f1da17ac150c9775cf277b9047d753f243603bc2096dd3a88",
-  "postgres-reachability-domain-a": "7e1459918a3bca5822d5ed43274fbffb807a21316cbe665406913b855aa67ec7",
-  "postgres-reachability-domain-b": "7b9513acbd48fef08433a26f2dedbee67b6ad017fc6041737fbf9212503ba754",
+  "postgres-reachability-app": "3b4c1674c029e698ad49d7d86c9ce7a75e72bc3aab55da53279a9a032646d0bb",
+  "postgres-reachability-platform": "7d1aea07c89b1e9e204fc3e87b253b3e892318239aca647b3de756fde92a95e4",
+  "postgres-reachability-ontology": "151452b17f6a7a82033fbaf207e864ade576e599e2ce47d0bd2e4235718f2194",
+  "postgres-reachability-domain-a": "25209444a2ebf6df5ecd8e05cd83b96e87a60b2b7b7aa17b92b9e67214a7582e",
+  "postgres-reachability-domain-b": "f39507ee095e32fc4688a08f62c3cd531863ce236b89d014230243382f0e02e2",
   "postgres-domain-reachability": "a550cd1d598d606236777ed184ee873c60a3a0e8844401c3ac14a5dc4bf8f074",
 });
 
@@ -2637,6 +2642,17 @@ export function evaluateCiPreflight(
       || !/^      run_heavy:/m.test(preflight)) {
       failures.push("preflight must expose path_class, docs_only, and run_heavy job outputs");
     }
+    for (const [name, expression] of Object.entries({
+      classification_ready: classificationReadyOutput,
+      path_class: "${{ steps.path_class.outputs.path_class }}",
+      run_heavy: "${{ steps.path_class.outputs.run_heavy }}",
+      run_live_postgres: "${{ steps.path_class.outputs.run_live_postgres }}",
+    })) {
+      const outputs = [...preflight.matchAll(new RegExp(`^      ${name}: (.*)$`, "gm"))];
+      if (outputs.length !== 1 || outputs[0][1] !== expression) {
+        failures.push(`preflight must expose exactly the validated ${name} classification output`);
+      }
+    }
   }
   requireReasoningLensManifest(preflightSteps, failures);
   requireConsoleRegressionCoverage(workflow, preflightSteps, failures);
@@ -3128,8 +3144,8 @@ export function evaluateCiPreflight(
       if (jobIf !== postsubmitHeavyJobIf) {
         failures.push(`${job} must run only on push/workflow_dispatch when run_heavy`);
       }
-    } else if (jobIf != null) {
-      failures.push(`${job} must not define job-level if`);
+    } else if (jobIf !== classifiedJobIf) {
+      failures.push(`${job} must require validated classification and preserve cancellation`);
     }
     if (/^    continue-on-error:/m.test(block)) failures.push(`${job} must not define job-level continue-on-error`);
     if (hasJobDefaultShell(block)) failures.push(`${job} must not override defaults.run.shell`);
